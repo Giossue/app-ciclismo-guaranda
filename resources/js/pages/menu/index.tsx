@@ -11,6 +11,20 @@ type PageProps = {
     auth: Auth;
 };
 
+const descriptions: Record<string, string> = {
+    Resumen: 'Estado general',
+    Rutas: 'Rutas oficiales',
+    POIs: 'Lugares y servicios',
+    Incidencias: 'Reportes activos',
+    Usuarios: 'Cuentas y roles',
+    Valoraciones: 'Opiniones revisadas',
+    Catálogos: 'Datos base',
+    Estadísticas: 'Métricas y reportes',
+    Configuración: 'Estado del sistema',
+    Favoritas: 'Rutas guardadas',
+    'Asistente IA': 'Ayuda turística',
+};
+
 export default function MenuIndex() {
     const { auth } = usePage<PageProps>().props;
     const modules = mainNavItems(auth);
@@ -19,49 +33,43 @@ export default function MenuIndex() {
         <>
             <Head title="Menú" />
 
-            <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-4">
                 <Heading
                     title="Menú"
-                    description="Accede a todos los módulos de Guaranda Go desde una vista rápida."
+                    description="Todos los módulos de Guaranda Go."
                 />
 
-                <section className="rounded-[2rem] border bg-card p-4 shadow-sm">
+                <section className="rounded-3xl border bg-card p-3 shadow-sm">
                     <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
                         Sesión activa
                     </p>
-                    <p className="mt-1 text-lg font-semibold">
+                    <p className="mt-1 text-base font-semibold">
                         {auth.user?.name}
                     </p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                         {auth.user?.email}
                     </p>
                 </section>
 
-                <section className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-                    {modules.map((item, index) => (
-                        <MenuCard
-                            key={item.title}
-                            item={item}
-                            featured={index === 0}
-                        />
+                <section className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-4">
+                    {modules.map((item) => (
+                        <MenuCard key={item.title} item={item} />
                     ))}
                 </section>
 
-                <section className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                <section className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-4">
                     <Link
                         href={edit()}
                         prefetch
-                        className="group flex min-h-36 flex-col justify-between rounded-[1.75rem] border bg-card p-4 shadow-sm transition-transform active:scale-[0.98]"
+                        className="flex min-h-20 items-center gap-3 rounded-3xl border bg-card p-3 shadow-sm transition-transform active:scale-[0.98]"
                     >
-                        <span className="flex size-14 items-center justify-center rounded-2xl bg-muted text-foreground">
-                            <Settings className="size-7" />
-                        </span>
-                        <span>
-                            <span className="block text-base leading-tight font-semibold">
+                        <Settings className="size-6 shrink-0" />
+                        <span className="min-w-0">
+                            <span className="block text-sm leading-tight font-semibold">
                                 Perfil
                             </span>
-                            <span className="text-xs text-muted-foreground">
-                                Cuenta y seguridad
+                            <span className="block truncate text-xs text-muted-foreground">
+                                Cuenta segura
                             </span>
                         </span>
                     </Link>
@@ -70,16 +78,14 @@ export default function MenuIndex() {
                         href={logout()}
                         method="post"
                         as="button"
-                        className="group flex min-h-36 flex-col justify-between rounded-[1.75rem] border bg-card p-4 text-left text-destructive shadow-sm transition-transform active:scale-[0.98]"
+                        className="flex min-h-20 items-center gap-3 rounded-3xl border bg-card p-3 text-left text-destructive shadow-sm transition-transform active:scale-[0.98]"
                     >
-                        <span className="flex size-14 items-center justify-center rounded-2xl bg-destructive/10">
-                            <LogOut className="size-7" />
-                        </span>
-                        <span>
-                            <span className="block text-base leading-tight font-semibold">
+                        <LogOut className="size-6 shrink-0" />
+                        <span className="min-w-0">
+                            <span className="block text-sm leading-tight font-semibold">
                                 Salir
                             </span>
-                            <span className="text-xs text-muted-foreground">
+                            <span className="block truncate text-xs text-muted-foreground">
                                 Cerrar sesión
                             </span>
                         </span>
@@ -90,7 +96,7 @@ export default function MenuIndex() {
     );
 }
 
-function MenuCard({ item, featured }: { item: NavItem; featured: boolean }) {
+function MenuCard({ item }: { item: NavItem }) {
     const Icon = item.icon;
 
     return (
@@ -98,32 +104,17 @@ function MenuCard({ item, featured }: { item: NavItem; featured: boolean }) {
             href={item.href}
             prefetch
             className={cn(
-                'group flex min-h-36 flex-col justify-between rounded-[1.75rem] border bg-card p-4 shadow-sm transition-transform active:scale-[0.98]',
+                'flex min-h-20 items-center gap-3 rounded-3xl border bg-card p-3 shadow-sm transition-transform active:scale-[0.98]',
                 'hover:border-primary/40 hover:bg-primary/5',
-                featured &&
-                    'border-primary/30 bg-primary text-primary-foreground shadow-lg shadow-primary/20',
             )}
         >
-            <span
-                className={cn(
-                    'flex size-14 items-center justify-center rounded-2xl bg-muted text-foreground transition-colors',
-                    featured &&
-                        'bg-primary-foreground/20 text-primary-foreground',
-                )}
-            >
-                {Icon && <Icon className="size-7" />}
-            </span>
-            <span>
-                <span className="block text-base leading-tight font-semibold">
+            {Icon && <Icon className="size-6 shrink-0" />}
+            <span className="min-w-0">
+                <span className="block text-sm leading-tight font-semibold">
                     {item.title}
                 </span>
-                <span
-                    className={cn(
-                        'text-xs text-muted-foreground',
-                        featured && 'text-primary-foreground/75',
-                    )}
-                >
-                    Abrir módulo
+                <span className="block truncate text-xs text-muted-foreground">
+                    {descriptions[item.title] ?? 'Acceso rápido'}
                 </span>
             </span>
         </Link>
