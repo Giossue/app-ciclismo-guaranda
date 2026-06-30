@@ -1,5 +1,5 @@
 import { Head, Link, usePage } from '@inertiajs/react';
-import { LogOut, Settings } from 'lucide-react';
+import { LogOut, UserRound } from 'lucide-react';
 import Heading from '@/components/heading';
 import { mainNavItems } from '@/lib/navigation';
 import { cn } from '@/lib/utils';
@@ -39,7 +39,7 @@ export default function MenuIndex() {
                     description="Todos los módulos de Guaranda Go."
                 />
 
-                <section className="rounded-3xl border bg-card p-3 shadow-sm">
+                <section className="rounded-2xl border bg-card p-3 shadow-sm">
                     <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
                         Sesión activa
                     </p>
@@ -55,15 +55,13 @@ export default function MenuIndex() {
                     {modules.map((item) => (
                         <MenuCard key={item.title} item={item} />
                     ))}
-                </section>
 
-                <section className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-4">
                     <Link
                         href={edit()}
                         prefetch
-                        className="flex min-h-20 items-center gap-3 rounded-3xl border bg-card p-3 shadow-sm transition-transform active:scale-[0.98]"
+                        className="flex min-h-20 items-center gap-3 rounded-2xl border bg-card p-3 shadow-sm transition-transform active:scale-[0.98]"
                     >
-                        <Settings className="size-6 shrink-0" />
+                        <UserRound className="size-6 shrink-0" />
                         <span className="min-w-0">
                             <span className="block text-sm leading-tight font-semibold">
                                 Perfil
@@ -73,24 +71,17 @@ export default function MenuIndex() {
                             </span>
                         </span>
                     </Link>
-
-                    <Link
-                        href={logout()}
-                        method="post"
-                        as="button"
-                        className="flex min-h-20 items-center gap-3 rounded-3xl border bg-card p-3 text-left text-destructive shadow-sm transition-transform active:scale-[0.98]"
-                    >
-                        <LogOut className="size-6 shrink-0" />
-                        <span className="min-w-0">
-                            <span className="block text-sm leading-tight font-semibold">
-                                Salir
-                            </span>
-                            <span className="block truncate text-xs text-muted-foreground">
-                                Cerrar sesión
-                            </span>
-                        </span>
-                    </Link>
                 </section>
+
+                <Link
+                    href={logout()}
+                    method="post"
+                    as="button"
+                    className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border bg-card px-4 text-sm font-semibold text-destructive shadow-sm transition-transform active:scale-[0.99]"
+                >
+                    <LogOut className="size-5" />
+                    Cerrar sesión
+                </Link>
             </div>
         </>
     );
@@ -104,7 +95,7 @@ function MenuCard({ item }: { item: NavItem }) {
             href={item.href}
             prefetch
             className={cn(
-                'flex min-h-20 items-center gap-3 rounded-3xl border bg-card p-3 shadow-sm transition-transform active:scale-[0.98]',
+                'flex min-h-20 items-center gap-3 rounded-2xl border bg-card p-3 shadow-sm transition-transform active:scale-[0.98]',
                 'hover:border-primary/40 hover:bg-primary/5',
             )}
         >
