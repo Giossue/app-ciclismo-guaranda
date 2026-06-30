@@ -1,7 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
 import { LogOut, Menu, Settings } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
 import {
     Sheet,
     SheetClose,
@@ -10,14 +8,12 @@ import {
     SheetTitle,
     SheetTrigger,
 } from '@/components/ui/sheet';
-import { UserInfo } from '@/components/user-info';
 import { useCurrentUrl } from '@/hooks/use-current-url';
-import { useInitials } from '@/hooks/use-initials';
 import { mobileMoreNavItems, mobilePrimaryNavItems } from '@/lib/navigation';
 import { cn } from '@/lib/utils';
 import { logout } from '@/routes';
 import { edit } from '@/routes/profile';
-import type { Auth } from '@/types';
+import type { Auth, NavItem } from '@/types';
 
 type PageProps = {
     auth: Auth;
@@ -26,7 +22,6 @@ type PageProps = {
 export function AppMobileNav() {
     const { auth } = usePage<PageProps>().props;
     const { isCurrentUrl } = useCurrentUrl();
-    const getInitials = useInitials();
     const primaryItems = mobilePrimaryNavItems(auth);
     const moreItems = mobileMoreNavItems(auth);
 
@@ -63,92 +58,87 @@ export function AppMobileNav() {
 
                 <Sheet>
                     <SheetTrigger asChild>
-                        <Button
-                            variant="ghost"
-                            className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl px-2 text-[11px] font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                        <button
+                            type="button"
+                            className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl px-2 text-[11px] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
                         >
                             <Menu className="size-5" />
                             Más
-                        </Button>
+                        </button>
                     </SheetTrigger>
                     <SheetContent
                         side="bottom"
-                        className="max-h-[85svh] rounded-t-3xl p-0"
+                        className="max-h-[92svh] rounded-t-[2rem] border-primary/10 bg-background p-0"
                     >
-                        <SheetHeader className="border-b text-left">
-                            <SheetTitle>Menú</SheetTitle>
+                        <SheetHeader className="border-b px-5 py-4 text-left">
+                            <SheetTitle className="text-xl">Módulos</SheetTitle>
                         </SheetHeader>
 
-                        <div className="grid gap-4 overflow-y-auto p-4 pb-8">
-                            <div className="rounded-2xl border bg-card p-3">
-                                <div className="flex items-center gap-3">
-                                    <Avatar className="size-10 overflow-hidden rounded-full">
-                                        <AvatarImage
-                                            src={auth.user.avatar}
-                                            alt={auth.user.name}
-                                        />
-                                        <AvatarFallback className="rounded-lg bg-muted text-foreground">
-                                            {getInitials(auth.user.name)}
-                                        </AvatarFallback>
-                                    </Avatar>
-                                    <UserInfo user={auth.user} showEmail />
-                                </div>
+                        <div className="overflow-y-auto px-5 pt-5 pb-8">
+                            <div className="mb-5 rounded-[1.75rem] border bg-card/80 p-4">
+                                <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                                    Sesión activa
+                                </p>
+                                <p className="mt-1 text-base font-semibold">
+                                    {auth.user.name}
+                                </p>
+                                <p className="text-sm text-muted-foreground">
+                                    {auth.user.email}
+                                </p>
                             </div>
 
                             {moreItems.length > 0 && (
-                                <div className="grid gap-2">
-                                    <p className="px-1 text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                                        Módulos
-                                    </p>
-                                    <div className="grid gap-2">
-                                        {moreItems.map((item) => {
-                                            const Icon = item.icon;
-
-                                            return (
-                                                <SheetClose
-                                                    key={item.title}
-                                                    asChild
-                                                >
-                                                    <Link
-                                                        href={item.href}
-                                                        prefetch
-                                                        className="flex min-h-12 items-center gap-3 rounded-2xl border bg-card px-3 text-sm font-medium hover:bg-accent"
-                                                    >
-                                                        {Icon && (
-                                                            <Icon className="size-5" />
-                                                        )}
-                                                        {item.title}
-                                                    </Link>
-                                                </SheetClose>
-                                            );
-                                        })}
-                                    </div>
+                                <div className="grid grid-cols-2 gap-3">
+                                    {moreItems.map((item, index) => (
+                                        <MobileMenuCard
+                                            key={item.title}
+                                            item={item}
+                                            active={isCurrentUrl(item.href)}
+                                            featured={index === 0}
+                                        />
+                                    ))}
                                 </div>
                             )}
 
-                            <div className="grid gap-2">
-                                <p className="px-1 text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                                    Cuenta
-                                </p>
+                            <div className="mt-5 grid grid-cols-2 gap-3">
                                 <SheetClose asChild>
                                     <Link
                                         href={edit()}
                                         prefetch
-                                        className="flex min-h-12 items-center gap-3 rounded-2xl border bg-card px-3 text-sm font-medium hover:bg-accent"
+                                        className="group flex min-h-32 flex-col justify-between rounded-[1.75rem] border bg-card p-4 text-left shadow-sm transition-transform active:scale-[0.98]"
                                     >
-                                        <Settings className="size-5" />
-                                        Perfil y seguridad
+                                        <span className="flex size-12 items-center justify-center rounded-2xl bg-muted text-foreground">
+                                            <Settings className="size-6" />
+                                        </span>
+                                        <span>
+                                            <span className="block text-base font-semibold">
+                                                Perfil
+                                            </span>
+                                            <span className="text-xs text-muted-foreground">
+                                                Cuenta y seguridad
+                                            </span>
+                                        </span>
                                     </Link>
                                 </SheetClose>
+
                                 <SheetClose asChild>
                                     <Link
                                         href={logout()}
                                         method="post"
                                         as="button"
-                                        className="flex min-h-12 w-full items-center gap-3 rounded-2xl border bg-card px-3 text-left text-sm font-medium text-destructive hover:bg-destructive/10"
+                                        className="group flex min-h-32 flex-col justify-between rounded-[1.75rem] border bg-card p-4 text-left text-destructive shadow-sm transition-transform active:scale-[0.98]"
                                     >
-                                        <LogOut className="size-5" />
-                                        Cerrar sesión
+                                        <span className="flex size-12 items-center justify-center rounded-2xl bg-destructive/10">
+                                            <LogOut className="size-6" />
+                                        </span>
+                                        <span>
+                                            <span className="block text-base font-semibold">
+                                                Salir
+                                            </span>
+                                            <span className="text-xs text-muted-foreground">
+                                                Cerrar sesión
+                                            </span>
+                                        </span>
                                     </Link>
                                 </SheetClose>
                             </div>
@@ -157,6 +147,57 @@ export function AppMobileNav() {
                 </Sheet>
             </div>
         </nav>
+    );
+}
+
+function MobileMenuCard({
+    item,
+    active,
+    featured,
+}: {
+    item: NavItem;
+    active: boolean;
+    featured: boolean;
+}) {
+    const Icon = item.icon;
+
+    return (
+        <SheetClose asChild>
+            <Link
+                href={item.href}
+                prefetch
+                className={cn(
+                    'group flex min-h-32 flex-col justify-between rounded-[1.75rem] border bg-card p-4 text-left shadow-sm transition-transform active:scale-[0.98]',
+                    'hover:border-primary/40 hover:bg-primary/5',
+                    (active || featured) &&
+                        'border-primary/30 bg-primary text-primary-foreground shadow-lg shadow-primary/20',
+                )}
+            >
+                <span
+                    className={cn(
+                        'flex size-12 items-center justify-center rounded-2xl bg-muted text-foreground transition-colors',
+                        (active || featured) &&
+                            'bg-primary-foreground/20 text-primary-foreground',
+                    )}
+                >
+                    {Icon && <Icon className="size-6" />}
+                </span>
+                <span>
+                    <span className="block text-base leading-tight font-semibold">
+                        {item.title}
+                    </span>
+                    <span
+                        className={cn(
+                            'text-xs text-muted-foreground',
+                            (active || featured) &&
+                                'text-primary-foreground/75',
+                        )}
+                    >
+                        Abrir módulo
+                    </span>
+                </span>
+            </Link>
+        </SheetClose>
     );
 }
 
