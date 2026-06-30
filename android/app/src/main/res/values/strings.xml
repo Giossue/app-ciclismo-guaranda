@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Guaranda Go</string>
+    <string name="title_activity_main">Guaranda Go</string>
+    <string name="package_name">ec.edu.ueb.guarandago</string>
+    <string name="custom_url_scheme">ec.edu.ueb.guarandago</string>
+</resources>
