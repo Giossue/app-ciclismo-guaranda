@@ -26,6 +26,7 @@ Route::inertia('/', 'welcome')->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', DashboardRedirectController::class)->name('dashboard');
+    Route::inertia('menu', 'menu/index')->name('menu.index');
     Route::get('chat', [ChatController::class, 'index'])->name('chat.index');
     Route::post('chat/messages', [ChatController::class, 'store'])->middleware('throttle:12,1')->name('chat.messages.store');
     Route::delete('chat/conversations/{conversation}', [ChatController::class, 'destroy'])->name('chat.conversations.destroy');
