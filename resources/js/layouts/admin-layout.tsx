@@ -10,7 +10,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     const { isCurrentUrl } = useCurrentUrl();
 
     return (
-        <div className="flex flex-col gap-5 p-4 md:p-6">
+        <div className="flex flex-col gap-5">
             <section className="flex flex-col gap-4 rounded-2xl border bg-card p-4 shadow-sm md:p-5">
                 <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                     <div className="flex flex-col gap-1">

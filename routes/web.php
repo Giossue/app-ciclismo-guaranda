@@ -17,12 +17,13 @@ use App\Http\Controllers\Cyclist\RouteController as CyclistRouteController;
 use App\Http\Controllers\Cyclist\RouteRatingController;
 use App\Http\Controllers\Cyclist\SyncController;
 use App\Http\Controllers\Cyclist\TrackController as CyclistTrackController;
+use App\Http\Controllers\DashboardRedirectController;
 use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'welcome')->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::inertia('dashboard', 'dashboard')->name('dashboard');
+    Route::get('dashboard', DashboardRedirectController::class)->name('dashboard');
     Route::get('chat', [ChatController::class, 'index'])->name('chat.index');
     Route::post('chat/messages', [ChatController::class, 'store'])->middleware('throttle:12,1')->name('chat.messages.store');
     Route::delete('chat/conversations/{conversation}', [ChatController::class, 'destroy'])->name('chat.conversations.destroy');

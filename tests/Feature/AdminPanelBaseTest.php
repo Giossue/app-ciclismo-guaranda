@@ -25,6 +25,17 @@ test('admin index redirects to admin dashboard', function () {
         ->assertRedirect(route('admin.dashboard'));
 });
 
+test('dashboard route redirects users to their role home', function (string $state, string $expectedRoute) {
+    $user = User::factory()->{$state}()->create();
+
+    $this->actingAs($user)
+        ->get(route('dashboard'))
+        ->assertRedirect(route($expectedRoute));
+})->with([
+    'administrator' => ['administrator', 'admin.dashboard'],
+    'cyclist' => ['cyclist', 'routes.index'],
+]);
+
 test('cyclist can not access admin dashboard', function () {
     $cyclist = User::factory()->cyclist()->create();
 
