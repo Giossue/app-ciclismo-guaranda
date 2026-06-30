@@ -150,7 +150,7 @@ class ChatController extends Controller
             ]);
 
             $conversation->forceFill(['last_activity_at' => now()])->save();
-            Inertia::flash('toast', ['type' => 'success', 'message' => __('Assistant response received.')]);
+            Inertia::flash('toast', ['type' => 'success', 'message' => __('Respuesta del asistente recibida.')]);
         } catch (ConnectionException $exception) {
             $this->storeAssistantError(
                 $conversation,
@@ -173,7 +173,7 @@ class ChatController extends Controller
         abort_unless($conversation->user_id === $request->user()?->id, 403);
 
         $conversation->delete();
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Conversation hidden.')]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Conversación ocultada.')]);
 
         return to_route('chat.index');
     }
@@ -335,7 +335,7 @@ class ChatController extends Controller
         ]);
 
         $conversation->forceFill(['last_activity_at' => now()])->save();
-        Inertia::flash('toast', ['type' => 'error', 'message' => __('Assistant service unavailable.')]);
+        Inertia::flash('toast', ['type' => 'error', 'message' => __('Servicio del asistente no disponible.')]);
     }
 
     /**

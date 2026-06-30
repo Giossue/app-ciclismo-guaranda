@@ -25,7 +25,7 @@ class EnsureUserIsActive
             $request->session()->regenerateToken();
 
             return redirect()->route('login')->withErrors([
-                'email' => __('Your account is disabled.'),
+                'email' => __('Tu cuenta está deshabilitada.'),
             ]);
         }
 

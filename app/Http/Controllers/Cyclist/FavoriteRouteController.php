@@ -44,7 +44,7 @@ class FavoriteRouteController extends Controller
             ]
         );
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Route added to favorites.')]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Ruta agregada a favoritos.')]);
 
         return back();
     }
@@ -59,7 +59,7 @@ class FavoriteRouteController extends Controller
             ->where('route_id', $route->id)
             ->delete();
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Route removed from favorites.')]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Ruta quitada de favoritos.')]);
 
         return back();
     }

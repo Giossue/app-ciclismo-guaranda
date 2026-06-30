@@ -52,7 +52,7 @@ class IncidentController extends Controller
             'message' => "La incidencia {$incident->title} cambió a estado {$status->name}.",
         ]);
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Incident updated.')]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Incidencia actualizada.')]);
 
         return back();
     }

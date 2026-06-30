@@ -79,7 +79,7 @@ class PoiController extends Controller
             $this->syncPoiPayload($poi, $payload);
         });
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('POI created.')]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('POI creado.')]);
 
         return to_route('admin.pois.index');
     }
@@ -115,7 +115,7 @@ class PoiController extends Controller
             $this->syncPoiPayload($poi, $payload);
         });
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('POI updated.')]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('POI actualizado.')]);
 
         return to_route('admin.pois.index');
     }
@@ -127,7 +127,7 @@ class PoiController extends Controller
         $poi->forceFill(['active' => false])->save();
         $poi->delete();
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('POI disabled.')]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('POI deshabilitado.')]);
 
         return to_route('admin.pois.index');
     }

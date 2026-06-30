@@ -19,7 +19,7 @@ class PoiReportController extends Controller
             'reported_at' => now(),
         ]);
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('POI report sent.')]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Reporte de POI enviado.')]);
 
         return back();
     }

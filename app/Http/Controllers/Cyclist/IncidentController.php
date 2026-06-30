@@ -50,7 +50,7 @@ class IncidentController extends Controller
             $this->notifyAdministrators($incident);
         });
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Incident reported for review.')]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Incidencia reportada para revisión.')]);
 
         return back();
     }

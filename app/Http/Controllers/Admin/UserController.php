@@ -42,7 +42,7 @@ class UserController extends Controller
 
         $user->save();
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('User updated.')]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Usuario actualizado.')]);
 
         return to_route('admin.users.index');
     }
@@ -54,7 +54,7 @@ class UserController extends Controller
         $user->forceFill(['active' => false])->save();
         $user->delete();
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('User disabled.')]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Usuario deshabilitado.')]);
 
         return to_route('admin.users.index');
     }
@@ -69,7 +69,7 @@ class UserController extends Controller
 
         $user->forceFill(['active' => true])->save();
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('User enabled.')]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Usuario habilitado.')]);
 
         return to_route('admin.users.index');
     }
@@ -80,7 +80,7 @@ class UserController extends Controller
 
         Password::sendResetLink(['email' => $user->email]);
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Password reset link sent.')]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Enlace de recuperación enviado.')]);
 
         return to_route('admin.users.index');
     }

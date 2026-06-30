@@ -36,7 +36,7 @@ class TrackController extends Controller
             'summary' => $this->calculateSummaryData($route, collect()),
         ]);
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Track started.')]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Recorrido iniciado.')]);
 
         return to_route('routes.show', $route->slug)->with('track_id', $track->id);
     }
@@ -87,7 +87,7 @@ class TrackController extends Controller
             'track_status_id' => $this->statusId('pausado'),
         ])->save();
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Track paused.')]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Recorrido pausado.')]);
 
         return back();
     }
@@ -101,7 +101,7 @@ class TrackController extends Controller
             'track_status_id' => $this->statusId('en curso'),
         ])->save();
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Track resumed.')]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Recorrido reanudado.')]);
 
         return back();
     }
@@ -118,7 +118,7 @@ class TrackController extends Controller
 
         $this->refreshMetrics($track);
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Track finished.')]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Recorrido finalizado.')]);
 
         return to_route('tracks.show', $track);
     }
@@ -136,7 +136,7 @@ class TrackController extends Controller
 
         $this->refreshMetrics($track, forceInvalid: true);
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Track cancelled.')]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Recorrido cancelado.')]);
 
         return to_route('routes.show', $track->route->slug);
     }

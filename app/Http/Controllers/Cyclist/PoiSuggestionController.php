@@ -19,7 +19,7 @@ class PoiSuggestionController extends Controller
             'suggested_at' => now(),
         ]);
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('POI suggestion sent.')]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Sugerencia de POI enviada.')]);
 
         return back();
     }

@@ -20,7 +20,7 @@ type Props = {
 
 const labels: Record<string, string> = {
     application: 'Aplicación',
-    drivers: 'Drivers de Laravel',
+    drivers: 'Servicios de Laravel',
     integrations: 'Integraciones',
     security: 'Seguridad',
     deployment: 'Despliegue',
@@ -29,7 +29,7 @@ const labels: Record<string, string> = {
 const valueLabels: Record<string, string> = {
     name: 'Nombre',
     environment: 'Ambiente',
-    debug: 'Debug activo',
+    debug: 'Depuración activa',
     url: 'URL pública',
     timezone: 'Zona horaria',
     locale: 'Idioma',
@@ -39,12 +39,12 @@ const valueLabels: Record<string, string> = {
     queue: 'Colas',
     filesystem: 'Archivos',
     n8n_webhook_configured: 'Webhook n8n configurado',
-    n8n_timeout_seconds: 'Timeout n8n',
+    n8n_timeout_seconds: 'Tiempo de espera n8n',
     postgis_available: 'PostGIS disponible',
-    public_storage_linked: 'Storage público enlazado',
+    public_storage_linked: 'Almacenamiento público enlazado',
     app_key_configured: 'APP_KEY configurada',
     https_url: 'APP_URL HTTPS',
-    mailer: 'Mailer',
+    mailer: 'Correo',
     run_seeders: 'RUN_SEEDERS',
     mobile_server_url_env: 'URL móvil',
     migrations_table_exists: 'Tabla de migraciones',

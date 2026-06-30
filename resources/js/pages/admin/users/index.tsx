@@ -363,7 +363,8 @@ export default function AdminUsersIndex({ users, roles, genders }: Props) {
                                                     }
                                                     data-test={`admin-reset-user-password-${user.id}`}
                                                 >
-                                                    Enviar reset de contraseña
+                                                    Enviar enlace de
+                                                    recuperación
                                                 </Button>
                                             )}
                                         </Form>

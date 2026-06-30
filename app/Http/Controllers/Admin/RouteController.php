@@ -64,7 +64,7 @@ class RouteController extends Controller
             $this->syncRoutePayload($route, $payload);
         });
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Route created.')]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Ruta creada.')]);
 
         return to_route('admin.routes.index');
     }
@@ -101,7 +101,7 @@ class RouteController extends Controller
             $this->syncRoutePayload($route, $payload);
         });
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Route updated.')]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Ruta actualizada.')]);
 
         return to_route('admin.routes.index');
     }
@@ -117,7 +117,7 @@ class RouteController extends Controller
             'route_version' => $route->route_version + 1,
         ])->save();
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Route disabled.')]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Ruta deshabilitada.')]);
 
         return to_route('admin.routes.index');
     }
