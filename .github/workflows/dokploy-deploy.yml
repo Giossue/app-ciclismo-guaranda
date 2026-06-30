@@ -1,0 +1,71 @@
+name: dokploy-deploy
+
+on:
+  workflow_run:
+    workflows:
+      - tests
+    types:
+      - completed
+
+permissions:
+  actions: read
+
+concurrency:
+  group: dokploy-deploy-${{ github.event.workflow_run.head_sha }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy web to Dokploy
+    runs-on: ubuntu-latest
+
+    if: >
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_branch == 'main'
+
+    steps:
+      - name: Check linter passed
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+
+          for i in 1 2 3 4 5 6 7 8 9 10; do
+            conclusion="$(gh run list \
+              --repo Giossue/app-ciclismo-guaranda \
+              --workflow lint.yml \
+              --commit "$SHA" \
+              --limit 1 \
+              --json conclusion \
+              --jq '.[0].conclusion // ""')"
+
+            if [ "$conclusion" = "success" ]; then
+              echo "linter passed"
+              exit 0
+            fi
+
+            if [ "$conclusion" = "failure" ] || [ "$conclusion" = "cancelled" ] || [ "$conclusion" = "timed_out" ]; then
+              echo "linter finished with conclusion: $conclusion" >&2
+              exit 1
+            fi
+
+            echo "linter is not finished yet. Waiting..."
+            sleep 30
+          done
+
+          echo "linter did not finish in time" >&2
+          exit 1
+
+      - name: Trigger Dokploy deploy
+        env:
+          DOKPLOY_DEPLOY_WEBHOOK_URL: ${{ secrets.DOKPLOY_DEPLOY_WEBHOOK_URL }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "$DOKPLOY_DEPLOY_WEBHOOK_URL" ]; then
+            echo "Missing secret: DOKPLOY_DEPLOY_WEBHOOK_URL" >&2
+            exit 1
+          fi
+
+          curl --fail --silent --show-error --request GET "$DOKPLOY_DEPLOY_WEBHOOK_URL"

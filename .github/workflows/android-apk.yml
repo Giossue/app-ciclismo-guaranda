@@ -7,18 +7,12 @@ on:
       - main
     paths:
       - '.github/workflows/android-apk.yml'
+      - '.github/workflows/release-apk.yml'
       - 'android/**'
-      - 'app/**'
-      - 'bootstrap/**'
       - 'capacitor-www/**'
       - 'capacitor.config.ts'
-      - 'composer.json'
-      - 'composer.lock'
-      - 'config/**'
       - 'package.json'
       - 'package-lock.json'
-      - 'resources/**'
-      - 'routes/**'
       - 'vite.config.ts'
       - 'tsconfig.json'
 
@@ -97,4 +91,3 @@ jobs:
           path: android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 14
-
