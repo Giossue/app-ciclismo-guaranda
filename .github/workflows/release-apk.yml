@@ -39,6 +39,7 @@ jobs:
 
             for i in 1 2 3 4 5 6 7 8 9 10; do
               conclusion="$(gh run list \
+                --repo Giossue/app-ciclismo-guaranda \
                 --workflow "$workflow" \
                 --commit "$SHA" \
                 --limit 1 \
