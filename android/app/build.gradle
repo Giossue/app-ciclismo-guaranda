@@ -1,5 +1,11 @@
 apply plugin: 'com.android.application'
 
+def releaseStoreFile = System.getenv('ANDROID_RELEASE_STORE_FILE')
+def releaseStorePassword = System.getenv('ANDROID_RELEASE_STORE_PASSWORD')
+def releaseKeyAlias = System.getenv('ANDROID_RELEASE_KEY_ALIAS')
+def releaseKeyPassword = System.getenv('ANDROID_RELEASE_KEY_PASSWORD')
+def hasReleaseSigning = releaseStoreFile && releaseStorePassword && releaseKeyAlias && releaseKeyPassword
+
 android {
     namespace = "ec.edu.ueb.guarandago"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -7,8 +13,8 @@ android {
         applicationId "ec.edu.ueb.guarandago"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        versionCode (System.getenv('ANDROID_VERSION_CODE') ?: '1').toInteger()
+        versionName (System.getenv('ANDROID_VERSION_NAME') ?: '1.0')
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -16,8 +22,21 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        release {
+            if (hasReleaseSigning) {
+                storeFile file(releaseStoreFile)
+                storePassword releaseStorePassword
+                keyAlias releaseKeyAlias
+                keyPassword releaseKeyPassword
+            }
+        }
+    }
     buildTypes {
         release {
+            if (hasReleaseSigning) {
+                signingConfig signingConfigs.release
+            }
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
