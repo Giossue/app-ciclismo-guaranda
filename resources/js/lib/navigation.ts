@@ -31,3 +31,23 @@ export function homePath(auth: Auth): string {
 export function mainNavItems(auth: Auth): NavItem[] {
     return isAdmin(auth) ? adminNavItems : cyclistNavItems;
 }
+
+export function mobilePrimaryNavItems(auth: Auth): NavItem[] {
+    if (!isAdmin(auth)) {
+        return cyclistNavItems;
+    }
+
+    return [
+        adminNavItems.find((item) => item.href === '/admin/dashboard'),
+        adminNavItems.find((item) => item.href === '/admin/routes'),
+        adminNavItems.find((item) => item.href === '/admin/incidents'),
+    ].filter((item): item is NavItem => Boolean(item));
+}
+
+export function mobileMoreNavItems(auth: Auth): NavItem[] {
+    const primaryHrefs = new Set(
+        mobilePrimaryNavItems(auth).map((item) => item.href),
+    );
+
+    return mainNavItems(auth).filter((item) => !primaryHrefs.has(item.href));
+}

@@ -1,4 +1,5 @@
 import { AppContent } from '@/components/app-content';
+import { AppMobileNav } from '@/components/app-mobile-nav';
 import { AppShell } from '@/components/app-shell';
 import { AppSidebar } from '@/components/app-sidebar';
 import { AppSidebarHeader } from '@/components/app-sidebar-header';
@@ -13,9 +14,10 @@ export default function AppSidebarLayout({
             <AppSidebar />
             <AppContent variant="sidebar" className="overflow-x-hidden">
                 <AppSidebarHeader breadcrumbs={breadcrumbs} />
-                <main className="flex flex-1 flex-col gap-4 p-4 md:p-6">
+                <main className="flex flex-1 flex-col gap-4 p-4 pb-28 md:p-6">
                     {children}
                 </main>
+                <AppMobileNav />
             </AppContent>
         </AppShell>
     );

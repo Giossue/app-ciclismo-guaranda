@@ -155,7 +155,7 @@ export default function RouteMap({ routes, selectedSlug, className }: Props) {
 
             <div
                 className={cn(
-                    'overflow-hidden rounded-2xl border bg-card shadow-sm',
+                    'relative isolate z-0 overflow-hidden rounded-2xl border bg-card shadow-sm',
                     className,
                 )}
             >
@@ -163,7 +163,7 @@ export default function RouteMap({ routes, selectedSlug, className }: Props) {
                     center={center}
                     zoom={12}
                     scrollWheelZoom={false}
-                    className="h-[420px] w-full md:h-[520px]"
+                    className="relative z-0 h-[420px] w-full md:h-[520px]"
                 >
                     <TileLayer
                         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'

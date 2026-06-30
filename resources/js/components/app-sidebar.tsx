@@ -11,6 +11,7 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { homePath, mainNavItems } from '@/lib/navigation';
 import type { Auth } from '@/types';
 
@@ -20,8 +21,13 @@ type PageProps = {
 
 export function AppSidebar() {
     const { auth } = usePage<PageProps>().props;
+    const isMobile = useIsMobile();
     const navItems = mainNavItems(auth);
     const startPath = homePath(auth);
+
+    if (isMobile) {
+        return null;
+    }
 
     return (
         <Sidebar collapsible="icon" variant="inset">
