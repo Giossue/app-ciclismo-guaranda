@@ -6,13 +6,16 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreRouteRequest;
 use App\Http\Requests\Admin\UpdateRouteRequest;
 use App\Models\CyclingRoute;
+use App\Models\PointOfInterest;
 use App\Models\RouteCategory;
 use App\Models\RouteDifficulty;
 use App\Models\RouteGeometry;
 use App\Models\RouteStatus;
 use App\Models\RoutingEngine;
 use App\Models\TransportMode;
+use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
@@ -42,19 +45,13 @@ class RouteController extends Controller
 
         return Inertia::render('admin/routes/create', [
             ...$this->catalogProps(),
-            'defaultGeojson' => $this->encodePretty([
-                'type' => 'LineString',
-                'coordinates' => [
-                    [-79.0, -1.6],
-                    [-79.01, -1.61],
-                ],
-            ]),
+            'defaultGeojson' => null,
         ]);
     }
 
     public function store(StoreRouteRequest $request): RedirectResponse
     {
-        $payload = $request->validated();
+        $payload = $this->storeUploadedRouteFiles($request, $request->validated());
 
         DB::transaction(function () use ($request, $payload): void {
             $route = CyclingRoute::query()->create([
@@ -76,7 +73,7 @@ class RouteController extends Controller
     {
         $this->authorize('update', $route);
 
-        $route->load(['geometry', 'metrics.routingEngine', 'metrics.transportMode', 'images', 'recommendations', 'observations']);
+        $route->load(['geometry', 'metrics.routingEngine', 'metrics.transportMode', 'images', 'recommendations', 'observations', 'pointsOfInterest']);
 
         return Inertia::render('admin/routes/edit', [
             ...$this->catalogProps(),
@@ -86,10 +83,10 @@ class RouteController extends Controller
 
     public function update(UpdateRouteRequest $request, CyclingRoute $route): RedirectResponse
     {
-        $payload = $request->validated();
+        $payload = $this->storeUploadedRouteFiles($request, $request->validated());
 
         DB::transaction(function () use ($payload, $route): void {
-            $route->load(['geometry', 'metrics', 'images', 'recommendations', 'observations']);
+            $route->load(['geometry', 'metrics', 'images', 'recommendations', 'observations', 'pointsOfInterest']);
             $route->fill([
                 ...$this->routeAttributes($payload),
                 'slug' => $this->uniqueSlug((string) $payload['name'], $route->id),
@@ -136,6 +133,19 @@ class RouteController extends Controller
             'difficulties' => RouteDifficulty::query()->orderBy('id')->get(['id', 'name']),
             'transportModes' => TransportMode::query()->orderBy('id')->get(['id', 'name']),
             'routingEngines' => RoutingEngine::query()->where('active', true)->orderBy('id')->get(['id', 'name']),
+            'pois' => PointOfInterest::query()
+                ->with('category:id,name')
+                ->where('active', true)
+                ->orderBy('name')
+                ->get(['id', 'poi_category_id', 'name', 'latitude', 'longitude'])
+                ->map(fn (PointOfInterest $poi): array => [
+                    'id' => $poi->id,
+                    'name' => $poi->name,
+                    'latitude' => (float) $poi->latitude,
+                    'longitude' => (float) $poi->longitude,
+                    'category' => $poi->category === null ? null : ['id' => $poi->category->id, 'name' => $poi->category->name],
+                ])
+                ->values(),
         ];
     }
 
@@ -202,6 +212,8 @@ class RouteController extends Controller
         foreach ($this->imageRows($payload) as $imageRow) {
             $route->images()->create($imageRow);
         }
+
+        $route->pointsOfInterest()->sync($this->poiSyncRows($payload));
     }
 
     private function syncPostgisGeometry(RouteGeometry $geometry): void
@@ -233,7 +245,8 @@ class RouteController extends Controller
             || abs((float) $latestMetric->negative_elevation_m - (float) $payload['negative_elevation_m']) > 0.0001
             || $route->recommendations->pluck('text')->values()->all() !== $this->splitLines($payload['recommendations_text'])
             || $route->observations->pluck('text')->values()->all() !== $this->splitLines($payload['observations_text'])
-            || $this->existingImageRows($route) !== $this->imageRows($payload);
+            || $this->existingImageRows($route) !== $this->imageRows($payload)
+            || $route->pointsOfInterest->pluck('id')->map(fn ($id): int => (int) $id)->sort()->values()->all() !== $this->normalizedPoiIds($payload);
     }
 
     /**
@@ -242,12 +255,16 @@ class RouteController extends Controller
      */
     private function imageRows(array $payload): array
     {
-        $rows = [[
-            'image_path' => (string) $payload['main_image_path'],
-            'description' => null,
-            'is_main' => true,
-            'sort_order' => 0,
-        ]];
+        $rows = [];
+
+        if (filled($payload['main_image_path'] ?? null)) {
+            $rows[] = [
+                'image_path' => (string) $payload['main_image_path'],
+                'description' => null,
+                'is_main' => true,
+                'sort_order' => 0,
+            ];
+        }
 
         foreach ($this->splitLines($payload['additional_images_text'] ?? null) as $index => $line) {
             [$path, $description] = array_pad(explode('|', $line, 2), 2, null);
@@ -257,6 +274,23 @@ class RouteController extends Controller
                 'description' => $description === null || trim($description) === '' ? null : trim($description),
                 'is_main' => false,
                 'sort_order' => $index + 1,
+            ];
+        }
+
+        $uploadedImages = is_array($payload['uploaded_additional_images'] ?? null)
+            ? $payload['uploaded_additional_images']
+            : [];
+
+        foreach ($uploadedImages as $index => $path) {
+            if (! is_string($path) || $path === '') {
+                continue;
+            }
+
+            $rows[] = [
+                'image_path' => $path,
+                'description' => null,
+                'is_main' => false,
+                'sort_order' => count($rows) + $index + 1,
             ];
         }
 
@@ -283,6 +317,43 @@ class RouteController extends Controller
     }
 
     /**
+     * @param  array<string, mixed>  $payload
+     * @return array<int, array{sort_order: int, is_required: bool, distance_from_start_km: null, route_observation: null}>
+     */
+    private function poiSyncRows(array $payload): array
+    {
+        $rows = [];
+
+        foreach ($this->normalizedPoiIds($payload) as $index => $id) {
+            $rows[$id] = [
+                'sort_order' => $index + 1,
+                'is_required' => false,
+                'distance_from_start_km' => null,
+                'route_observation' => null,
+            ];
+        }
+
+        return $rows;
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     * @return array<int, int>
+     */
+    private function normalizedPoiIds(array $payload): array
+    {
+        $ids = is_array($payload['poi_ids'] ?? null) ? $payload['poi_ids'] : [];
+
+        return collect($ids)
+            ->map(fn ($id): int => (int) $id)
+            ->filter(fn (int $id): bool => $id > 0)
+            ->unique()
+            ->sort()
+            ->values()
+            ->all();
+    }
+
+    /**
      * @return list<string>
      */
     private function splitLines(mixed $text): array
@@ -294,6 +365,38 @@ class RouteController extends Controller
         $lines = preg_split('/\R/u', trim($text)) ?: [];
 
         return array_values(array_filter(array_map('trim', $lines), fn (string $line): bool => $line !== ''));
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
+     */
+    private function storeUploadedRouteFiles(FormRequest $request, array $payload): array
+    {
+        $mainImage = $request->file('main_image');
+
+        if ($mainImage instanceof UploadedFile) {
+            $payload['main_image_path'] = $mainImage->store('routes', 'public');
+        }
+
+        $payload['uploaded_additional_images'] = [];
+        $additionalImages = $request->file('additional_images');
+
+        if ($additionalImages instanceof UploadedFile) {
+            $payload['uploaded_additional_images'][] = $additionalImages->store('routes', 'public');
+
+            return $payload;
+        }
+
+        if ($additionalImages === null) {
+            return $payload;
+        }
+
+        foreach ($additionalImages as $image) {
+            $payload['uploaded_additional_images'][] = $image->store('routes', 'public');
+        }
+
+        return $payload;
     }
 
     private function uniqueSlug(string $name, ?int $ignoreId = null): string
@@ -375,7 +478,7 @@ class RouteController extends Controller
             'required_experience' => $route->required_experience,
             'main_image_path' => $route->main_image_path,
             'route_version' => $route->route_version,
-            'geojson' => $this->encodePretty($route->geometry->geojson),
+            'geojson' => $route->geometry === null ? '' : $this->encodePretty($route->geometry->geojson),
             'transport_mode_id' => $latestMetric?->transport_mode_id,
             'routing_engine_id' => $latestMetric?->routing_engine_id,
             'distance_km' => $latestMetric?->distance_km,
@@ -385,6 +488,7 @@ class RouteController extends Controller
             'recommendations_text' => $route->recommendations->pluck('text')->implode("\n"),
             'observations_text' => $route->observations->pluck('text')->implode("\n"),
             'additional_images_text' => $additionalImages,
+            'poi_ids' => $route->pointsOfInterest->pluck('id')->map(fn ($id): int => (int) $id)->values()->all(),
         ];
     }
 

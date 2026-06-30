@@ -59,7 +59,7 @@ class RouteController extends Controller
                 ->latest('reported_at'),
             'ratings' => fn ($query) => $query
                 ->whereHas('moderationStatus', fn ($statusQuery) => $statusQuery->where('name', 'aprobado'))
-                ->with(['user:id,name,last_name', 'moderationStatus:id,name'])
+                ->with(['user:id,name,last_name', 'moderationStatus:id,name', 'files'])
                 ->latest('rated_at'),
         ]);
 
@@ -173,7 +173,7 @@ class RouteController extends Controller
     private function approvedRatings(CyclingRoute $route): array
     {
         return RouteRating::query()
-            ->with(['user:id,name,last_name', 'moderationStatus:id,name'])
+            ->with(['user:id,name,last_name', 'moderationStatus:id,name', 'files'])
             ->where('route_id', $route->id)
             ->whereHas('moderationStatus', fn ($query) => $query->where('name', 'aprobado'))
             ->latest('rated_at')
@@ -210,7 +210,7 @@ class RouteController extends Controller
         $rating = RouteRating::query()
             ->where('user_id', $userId)
             ->where('route_id', $route->id)
-            ->with('moderationStatus:id,name')
+            ->with(['moderationStatus:id,name', 'files'])
             ->first();
 
         return [
@@ -243,6 +243,12 @@ class RouteController extends Controller
                 'id' => $rating->moderationStatus->id,
                 'name' => $rating->moderationStatus->name,
             ],
+            'files' => $rating->files->map(fn ($file): array => [
+                'id' => $file->id,
+                'file_path' => $file->file_path,
+                'file_type' => $file->file_type,
+                'mime_type' => $file->mime_type,
+            ])->values()->all(),
         ];
 
         if ($includePrivateFields) {

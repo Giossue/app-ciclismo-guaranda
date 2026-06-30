@@ -9,6 +9,7 @@ use App\Models\ModerationStatus;
 use App\Models\RouteRating;
 use App\Models\Track;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\UploadedFile;
 use Inertia\Inertia;
 
 class RouteRatingController extends Controller
@@ -50,6 +51,8 @@ class RouteRatingController extends Controller
             'deleted_at' => null,
         ])->save();
 
+        $this->storeMedia($request, $rating);
+
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Rating sent for moderation.')]);
 
         return back();
@@ -78,6 +81,8 @@ class RouteRatingController extends Controller
             'rated_at' => now(),
         ])->save();
 
+        $this->storeMedia($request, $rating);
+
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Rating updated and sent for moderation.')]);
 
         return back();
@@ -104,5 +109,33 @@ class RouteRatingController extends Controller
             ->latest('ended_at')
             ->latest('id')
             ->first();
+    }
+
+    private function storeMedia(StoreRouteRatingRequest $request, RouteRating $rating): void
+    {
+        $media = $request->file('media');
+
+        if ($media instanceof UploadedFile) {
+            $media = [$media];
+        }
+
+        if ($media === null || $media === []) {
+            return;
+        }
+
+        $nextSortOrder = (int) $rating->files()->max('sort_order') + 1;
+
+        foreach ($media as $file) {
+            $mimeType = $file->getMimeType();
+            $rating->files()->create([
+                'file_path' => $file->store('route-rating-media', 'public'),
+                'file_type' => str_starts_with((string) $mimeType, 'video/') ? 'video' : 'image',
+                'mime_type' => $mimeType,
+                'size_kb' => (int) ceil($file->getSize() / 1024),
+                'sort_order' => $nextSortOrder,
+            ]);
+
+            $nextSortOrder++;
+        }
     }
 }

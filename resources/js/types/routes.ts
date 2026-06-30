@@ -56,6 +56,13 @@ export type RouteIncident = {
     files?: RouteIncidentFile[];
 };
 
+export type RouteRatingFile = {
+    id: number;
+    file_path: string;
+    file_type: 'image' | 'video' | string;
+    mime_type: string | null;
+};
+
 export type RouteRating = {
     id: number;
     rating: number;
@@ -64,6 +71,7 @@ export type RouteRating = {
     admin_response?: string | null;
     user: { id: number; name: string } | null;
     status: CatalogOption | null;
+    files: RouteRatingFile[];
 };
 
 export type RouteRatingSummary = {

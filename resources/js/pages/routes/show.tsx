@@ -5,6 +5,7 @@ import {
     Clock,
     Database,
     Download,
+    ImageIcon,
     Heart,
     HeartOff,
     MapPinned,
@@ -50,6 +51,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
+import { mediaUrl } from '@/lib/media';
 import {
     deleteOfflineRoute,
     enqueueOfflineEvent,
@@ -68,6 +70,7 @@ import type {
     CatalogOption,
     CyclingRouteMapItem,
     RoutePoi,
+    RouteRating,
 } from '@/types';
 
 type Props = {
@@ -113,6 +116,8 @@ export default function RoutesShow({
                         </AlertDescription>
                     </Alert>
                 )}
+
+                <RouteHero route={route} />
 
                 <Card>
                     <CardHeader>
@@ -283,6 +288,45 @@ export default function RoutesShow({
                 )}
             </div>
         </>
+    );
+}
+
+function RouteHero({ route }: { route: CyclingRouteMapItem }) {
+    if (!route.main_image_path) {
+        return (
+            <Card className="overflow-hidden">
+                <div className="flex min-h-40 items-center justify-center bg-gradient-to-br from-primary/15 via-muted to-card text-muted-foreground">
+                    <div className="flex flex-col items-center gap-2 text-center">
+                        <ImageIcon className="size-8" />
+                        <span className="text-sm font-medium">
+                            Ruta sin portada
+                        </span>
+                    </div>
+                </div>
+            </Card>
+        );
+    }
+
+    return (
+        <Card className="overflow-hidden">
+            <div className="relative min-h-56 md:min-h-72">
+                <img
+                    src={mediaUrl(route.main_image_path)}
+                    alt={route.name}
+                    className="absolute inset-0 size-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
+                <div className="absolute inset-x-0 bottom-0 flex flex-col gap-2 p-5 text-white">
+                    <Badge className="w-fit bg-white/20 text-white backdrop-blur">
+                        Portada de ruta
+                    </Badge>
+                    <h2 className="text-2xl font-semibold">{route.name}</h2>
+                    <p className="text-sm text-white/85">
+                        {route.start_name} → {route.end_name}
+                    </p>
+                </div>
+            </div>
+        </Card>
     );
 }
 
@@ -584,6 +628,7 @@ function FavoriteRatingPanel({ route }: { route: CyclingRouteMapItem }) {
                         <Form
                             {...ratingAction}
                             options={{ preserveScroll: true }}
+                            encType="multipart/form-data"
                             className="grid gap-3 rounded-xl border bg-muted/30 p-3"
                         >
                             {({ processing, errors }) => (
@@ -651,6 +696,29 @@ function FavoriteRatingPanel({ route }: { route: CyclingRouteMapItem }) {
                                         />
                                         <InputError message={errors.comment} />
                                         <InputError message={errors.route} />
+                                    </div>
+
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="rating_media">
+                                            Fotos o videos de tu experiencia
+                                        </Label>
+                                        <Input
+                                            id="rating_media"
+                                            name="media[]"
+                                            type="file"
+                                            accept="image/*,video/mp4,video/quicktime,video/webm"
+                                            multiple
+                                            aria-invalid={Boolean(errors.media)}
+                                        />
+                                        <p className="text-xs text-muted-foreground">
+                                            Hasta 4 archivos. Formatos:
+                                            imágenes, MP4, MOV o WebM. Límite:
+                                            20 MB por archivo.
+                                        </p>
+                                        <InputError message={errors.media} />
+                                        <InputError
+                                            message={errors['media.0']}
+                                        />
                                     </div>
 
                                     {userRating?.status && (
@@ -733,6 +801,7 @@ function FavoriteRatingPanel({ route }: { route: CyclingRouteMapItem }) {
                                         {rating.comment}
                                     </p>
                                 )}
+                                <RatingMediaGrid rating={rating} />
                             </div>
                         ))}
 
@@ -745,6 +814,34 @@ function FavoriteRatingPanel({ route }: { route: CyclingRouteMapItem }) {
                 </div>
             </CardContent>
         </Card>
+    );
+}
+
+function RatingMediaGrid({ rating }: { rating: RouteRating }) {
+    if (rating.files.length === 0) {
+        return null;
+    }
+
+    return (
+        <div className="mt-3 grid gap-2 sm:grid-cols-2">
+            {rating.files.map((file) =>
+                file.file_type === 'video' ? (
+                    <video
+                        key={file.id}
+                        src={mediaUrl(file.file_path)}
+                        controls
+                        className="h-40 w-full rounded-xl border object-cover"
+                    />
+                ) : (
+                    <img
+                        key={file.id}
+                        src={mediaUrl(file.file_path)}
+                        alt="Evidencia de experiencia de ruta"
+                        className="h-40 w-full rounded-xl border object-cover"
+                    />
+                ),
+            )}
+        </div>
     );
 }
 
@@ -1191,9 +1288,18 @@ function formatStorageEstimate(estimate: StorageEstimate | null): string {
 }
 
 function PoiCard({ poi }: { poi: RoutePoi }) {
+    const image = poi.images?.[0];
+
     return (
-        <div className="flex flex-col gap-3 rounded-xl border p-3">
-            <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-3 overflow-hidden rounded-xl border">
+            {image && (
+                <img
+                    src={mediaUrl(image.image_path)}
+                    alt={image.description ?? poi.name}
+                    className="h-32 w-full object-cover"
+                />
+            )}
+            <div className="flex flex-col gap-1 p-3">
                 <div className="flex flex-wrap items-center gap-2">
                     <strong>{poi.name}</strong>
                     {poi.is_required && (
@@ -1225,8 +1331,14 @@ function PoiCard({ poi }: { poi: RoutePoi }) {
                 )}
             </div>
 
+            {poi.description && (
+                <p className="px-3 text-sm text-muted-foreground">
+                    {poi.description}
+                </p>
+            )}
+
             {poi.hours && poi.hours.length > 0 && (
-                <div className="flex flex-col gap-1 text-sm text-muted-foreground">
+                <div className="flex flex-col gap-1 px-3 text-sm text-muted-foreground">
                     {poi.hours.map((hour) => (
                         <span key={`${poi.id}-${hour.weekday}`}>
                             Día {hour.weekday}: {hour.opens_at ?? '--'}–
@@ -1236,7 +1348,9 @@ function PoiCard({ poi }: { poi: RoutePoi }) {
                 </div>
             )}
 
-            <PoiReportForm poiId={poi.id} />
+            <div className="p-3 pt-0">
+                <PoiReportForm poiId={poi.id} />
+            </div>
         </div>
     );
 }

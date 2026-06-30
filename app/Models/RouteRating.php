@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class RouteRating extends Model
@@ -44,6 +45,14 @@ class RouteRating extends Model
     public function moderationStatus(): BelongsTo
     {
         return $this->belongsTo(ModerationStatus::class, 'moderation_status_id');
+    }
+
+    /**
+     * @return HasMany<RouteRatingFile, $this>
+     */
+    public function files(): HasMany
+    {
+        return $this->hasMany(RouteRatingFile::class, 'route_rating_id')->orderBy('sort_order');
     }
 
     public function isApproved(): bool

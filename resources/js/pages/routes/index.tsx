@@ -1,5 +1,12 @@
 import { Head, Link } from '@inertiajs/react';
-import { Bike, Clock, MapPinned, RouteIcon, Star } from 'lucide-react';
+import {
+    Bike,
+    Clock,
+    ImageIcon,
+    MapPinned,
+    RouteIcon,
+    Star,
+} from 'lucide-react';
 import Heading from '@/components/heading';
 import RouteMap from '@/components/routes/route-map';
 import { Badge } from '@/components/ui/badge';
@@ -12,7 +19,8 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import type { PaginatedRoutes } from '@/types';
+import { mediaUrl } from '@/lib/media';
+import type { CyclingRouteMapItem, PaginatedRoutes } from '@/types';
 
 type Props = {
     routes: PaginatedRoutes;
@@ -56,9 +64,10 @@ export default function RoutesIndex({ routes }: Props) {
                     </CardContent>
                 </Card>
 
-                <div className="grid gap-4">
+                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                     {routes.data.map((route) => (
-                        <Card key={route.id}>
+                        <Card key={route.id} className="overflow-hidden">
+                            <RouteCover route={route} />
                             <CardHeader>
                                 <div className="flex flex-col gap-2">
                                     <div className="flex flex-wrap gap-2">
@@ -100,9 +109,6 @@ export default function RoutesIndex({ routes }: Props) {
                                                 )
                                             </Badge>
                                         )}
-                                        <Badge variant="outline">
-                                            v{route.route_version}
-                                        </Badge>
                                     </div>
                                     <CardTitle>{route.name}</CardTitle>
                                     <CardDescription>
@@ -110,7 +116,7 @@ export default function RoutesIndex({ routes }: Props) {
                                     </CardDescription>
                                 </div>
                             </CardHeader>
-                            <CardContent className="grid gap-3 text-sm text-muted-foreground sm:grid-cols-3">
+                            <CardContent className="grid gap-3 text-sm text-muted-foreground">
                                 <div className="flex items-center gap-2">
                                     <MapPinned />
                                     <span>
@@ -118,7 +124,7 @@ export default function RoutesIndex({ routes }: Props) {
                                     </span>
                                 </div>
                                 {route.metric && (
-                                    <>
+                                    <div className="grid gap-3 sm:grid-cols-2">
                                         <div className="flex items-center gap-2">
                                             <Bike />
                                             <span>
@@ -139,11 +145,11 @@ export default function RoutesIndex({ routes }: Props) {
                                                 min
                                             </span>
                                         </div>
-                                    </>
+                                    </div>
                                 )}
                             </CardContent>
                             <CardFooter>
-                                <Button variant="outline" asChild>
+                                <Button className="w-full" asChild>
                                     <Link
                                         href={`/routes/${route.slug}`}
                                         prefetch
@@ -175,6 +181,34 @@ export default function RoutesIndex({ routes }: Props) {
                 </div>
             </div>
         </>
+    );
+}
+
+function RouteCover({ route }: { route: CyclingRouteMapItem }) {
+    if (route.main_image_path) {
+        return (
+            <div className="relative h-48 overflow-hidden bg-muted">
+                <img
+                    src={mediaUrl(route.main_image_path)}
+                    alt={route.name}
+                    className="size-full object-cover transition-transform duration-500 hover:scale-105"
+                />
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/65 to-transparent p-4 text-white">
+                    <p className="text-xs font-medium tracking-wide uppercase opacity-90">
+                        Ruta oficial
+                    </p>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="flex h-48 items-center justify-center bg-gradient-to-br from-primary/15 via-muted to-card text-muted-foreground">
+            <div className="flex flex-col items-center gap-2 text-center">
+                <ImageIcon className="size-8" />
+                <span className="text-sm font-medium">Sin portada</span>
+            </div>
+        </div>
     );
 }
 

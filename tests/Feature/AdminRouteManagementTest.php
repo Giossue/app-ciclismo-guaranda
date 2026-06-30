@@ -8,6 +8,8 @@ use App\Models\RoutingEngine;
 use App\Models\TransportMode;
 use App\Models\User;
 use Database\Seeders\CatalogSeeder;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 
 beforeEach(function () {
     $this->seed(CatalogSeeder::class);
@@ -101,6 +103,33 @@ test('administrator can create a complete route', function () {
         ->and($route->recommendations()->count())->toBe(2)
         ->and($route->observations()->count())->toBe(2)
         ->and($route->images()->count())->toBe(3);
+});
+
+test('administrator can upload route cover and gallery images', function () {
+    Storage::fake('public');
+
+    $admin = User::factory()->administrator()->create();
+
+    $this->actingAs($admin)
+        ->post(route('admin.routes.store'), routePayload([
+            'main_image_path' => null,
+            'main_image' => UploadedFile::fake()->image('salinas-cover.jpg'),
+            'additional_images_text' => '',
+            'additional_images' => [
+                UploadedFile::fake()->image('mirador.jpg'),
+                UploadedFile::fake()->image('descanso.jpg'),
+            ],
+        ]))
+        ->assertSessionHasNoErrors()
+        ->assertRedirect(route('admin.routes.index'));
+
+    $route = CyclingRoute::query()->where('name', 'Ruta Salinas de Bolívar')->firstOrFail();
+
+    expect($route->main_image_path)->toStartWith('routes/')
+        ->and($route->images()->count())->toBe(3)
+        ->and($route->images()->where('is_main', true)->count())->toBe(1);
+
+    Storage::disk('public')->assertExists($route->main_image_path);
 });
 
 test('administrator can update a route and increment its version', function () {

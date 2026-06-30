@@ -1,5 +1,5 @@
 import { Head, Link, usePage } from '@inertiajs/react';
-import { Bike, MapPinned, ShieldCheck, Wifi } from 'lucide-react';
+import { Bike, ShieldCheck } from 'lucide-react';
 import { homePath } from '@/lib/navigation';
 import { login, register } from '@/routes';
 import type { Auth } from '@/types';
@@ -7,25 +7,6 @@ import type { Auth } from '@/types';
 type PageProps = {
     auth: Auth;
 };
-
-const features = [
-    {
-        title: 'Rutas cicloturísticas',
-        description:
-            'Consulta rutas activas, dificultad, POIs e incidencias visibles.',
-        icon: MapPinned,
-    },
-    {
-        title: 'Recorridos GPS',
-        description: 'Registra avances, puntos GPS y evidencia de recorrido.',
-        icon: Bike,
-    },
-    {
-        title: 'Modo híbrido Android',
-        description: 'Preparado para APK con GPS, cámara, red y datos offline.',
-        icon: Wifi,
-    },
-];
 
 export default function Welcome() {
     const { auth } = usePage<PageProps>().props;
@@ -78,7 +59,7 @@ export default function Welcome() {
                         </nav>
                     </header>
 
-                    <section className="grid flex-1 items-center gap-8 lg:grid-cols-[1.1fr_0.9fr]">
+                    <section className="flex flex-1 items-center">
                         <div className="flex flex-col gap-6">
                             <div className="inline-flex w-fit items-center gap-2 rounded-full border bg-card px-3 py-1 text-sm text-muted-foreground">
                                 <ShieldCheck className="size-4" />
@@ -111,35 +92,6 @@ export default function Welcome() {
                                 >
                                     Ver rutas
                                 </Link>
-                            </div>
-                        </div>
-
-                        <div className="rounded-3xl border bg-card p-4 shadow-sm">
-                            <div className="grid gap-3">
-                                {features.map((feature) => {
-                                    const Icon = feature.icon;
-
-                                    return (
-                                        <article
-                                            key={feature.title}
-                                            className="rounded-2xl border bg-background p-4"
-                                        >
-                                            <div className="flex items-start gap-3">
-                                                <div className="flex size-10 shrink-0 items-center justify-center rounded-full border bg-card">
-                                                    <Icon className="size-5" />
-                                                </div>
-                                                <div className="grid gap-1">
-                                                    <h2 className="font-semibold">
-                                                        {feature.title}
-                                                    </h2>
-                                                    <p className="text-sm text-muted-foreground">
-                                                        {feature.description}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </article>
-                                    );
-                                })}
                             </div>
                         </div>
                     </section>

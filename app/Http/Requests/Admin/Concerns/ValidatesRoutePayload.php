@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Admin\Concerns;
 
+use App\Models\PointOfInterest;
 use App\Models\RouteCategory;
 use App\Models\RouteDifficulty;
 use App\Models\RouteStatus;
@@ -45,7 +46,10 @@ trait ValidatesRoutePayload
             'end_longitude' => ['required', 'numeric', 'between:-180,180'],
             'road_type' => ['required', 'string', 'max:255'],
             'required_experience' => ['required', 'string', 'max:10000'],
-            'main_image_path' => ['required', 'string', 'max:2048'],
+            'main_image_path' => ['nullable', 'string', 'max:2048', 'required_without:main_image'],
+            'main_image' => ['nullable', 'image', 'max:5120'],
+            'additional_images' => ['nullable', 'array', 'max:8'],
+            'additional_images.*' => ['image', 'max:5120'],
             'geojson' => ['required', 'array'],
             'geojson.type' => ['required', 'string', 'in:LineString'],
             'geojson.coordinates' => ['required', 'array', 'min:2'],
@@ -58,6 +62,8 @@ trait ValidatesRoutePayload
             'recommendations_text' => ['required', 'string', 'max:10000'],
             'observations_text' => ['required', 'string', 'max:10000'],
             'additional_images_text' => ['nullable', 'string', 'max:10000'],
+            'poi_ids' => ['nullable', 'array'],
+            'poi_ids.*' => ['integer', Rule::exists(PointOfInterest::class, 'id')->where('active', true)],
         ];
     }
 

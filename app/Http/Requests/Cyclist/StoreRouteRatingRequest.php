@@ -24,6 +24,8 @@ class StoreRouteRatingRequest extends FormRequest
         return [
             'rating' => ['required', 'integer', 'min:1', 'max:5'],
             'comment' => ['nullable', 'string', 'max:5000'],
+            'media' => ['nullable', 'array', 'max:4'],
+            'media.*' => ['file', 'mimes:jpg,jpeg,png,webp,mp4,mov,webm', 'max:20480'],
         ];
     }
 

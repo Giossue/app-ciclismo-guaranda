@@ -15,6 +15,7 @@ import {
     CircleMarker,
     GeoJSON,
     MapContainer,
+    Polyline,
     Popup,
     TileLayer,
     useMap,
@@ -22,8 +23,9 @@ import {
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { mediaUrl } from '@/lib/media';
 import { cn } from '@/lib/utils';
-import type { CyclingRouteMapItem } from '@/types';
+import type { CyclingRouteMapItem, RoutePoi } from '@/types';
 
 type Props = {
     routes: CyclingRouteMapItem[];
@@ -64,6 +66,12 @@ const userPathOptions = {
     fillOpacity: 0.85,
     opacity: 1,
 };
+const connectorPathOptions = {
+    color: 'var(--chart-1)',
+    opacity: 0.8,
+    weight: 4,
+    dashArray: '8 8',
+};
 
 export default function RouteMap({ routes, selectedSlug, className }: Props) {
     const [isOnline, setIsOnline] = useState(() =>
@@ -72,6 +80,10 @@ export default function RouteMap({ routes, selectedSlug, className }: Props) {
     const [gpsStatus, setGpsStatus] = useState<GpsStatus>('idle');
     const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
     const center = useMemo(() => mapCenter(routes), [routes]);
+    const navigationRoute = useMemo(
+        () => selectedRoute(routes, selectedSlug),
+        [routes, selectedSlug],
+    );
 
     useEffect(() => {
         const handleOnline = () => setIsOnline(true);
@@ -139,6 +151,18 @@ export default function RouteMap({ routes, selectedSlug, className }: Props) {
                     <LocateFixed data-icon="inline-start" />
                     Ubicación actual
                 </Button>
+                {userLocation && navigationRoute && (
+                    <Button type="button" variant="outline" size="sm" asChild>
+                        <a
+                            href={navigationUrl(userLocation, navigationRoute)}
+                            target="_blank"
+                            rel="noreferrer"
+                        >
+                            <Navigation data-icon="inline-start" />
+                            Ir al inicio
+                        </a>
+                    </Button>
+                )}
             </div>
 
             {(gpsStatus === 'denied' || gpsStatus === 'unsupported') && (
@@ -180,6 +204,41 @@ export default function RouteMap({ routes, selectedSlug, className }: Props) {
                             selected={selectedSlug === route.slug}
                         />
                     ))}
+
+                    {userLocation && navigationRoute && (
+                        <Polyline
+                            positions={[
+                                [userLocation.latitude, userLocation.longitude],
+                                [
+                                    navigationRoute.start_latitude,
+                                    navigationRoute.start_longitude,
+                                ],
+                            ]}
+                            pathOptions={connectorPathOptions}
+                        >
+                            <Popup>
+                                <div className="flex flex-col gap-2 text-sm">
+                                    <strong>Conexión hacia el inicio</strong>
+                                    <span>
+                                        Línea referencial desde tu ubicación al
+                                        punto inicial. Para navegación real abre
+                                        el mapa externo.
+                                    </span>
+                                    <a
+                                        href={navigationUrl(
+                                            userLocation,
+                                            navigationRoute,
+                                        )}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="font-medium text-primary underline-offset-4 hover:underline"
+                                    >
+                                        Abrir navegación
+                                    </a>
+                                </div>
+                            </Popup>
+                        </Polyline>
+                    )}
 
                     {userLocation && (
                         <CircleMarker
@@ -264,19 +323,7 @@ function RouteLayers({
                     radius={6}
                 >
                     <Popup>
-                        <div className="flex flex-col gap-1 text-sm">
-                            <strong>{poi.name}</strong>
-                            {poi.category && <span>{poi.category.name}</span>}
-                            {poi.distance_from_start_km !== null && (
-                                <span>
-                                    Km{' '}
-                                    {poi.distance_from_start_km.toLocaleString()}
-                                </span>
-                            )}
-                            {poi.route_observation && (
-                                <span>{poi.route_observation}</span>
-                            )}
-                        </div>
+                        <PoiPopup poi={poi} />
                     </Popup>
                 </CircleMarker>
             ))}
@@ -303,7 +350,14 @@ function RouteLayers({
 
 function RoutePopup({ route }: { route: CyclingRouteMapItem }) {
     return (
-        <div className="flex flex-col gap-2 text-sm">
+        <div className="flex max-w-56 flex-col gap-2 text-sm">
+            {route.main_image_path && (
+                <img
+                    src={mediaUrl(route.main_image_path)}
+                    alt={route.name}
+                    className="h-24 w-full rounded-lg object-cover"
+                />
+            )}
             <strong>{route.name}</strong>
             <span>
                 {route.start_name} → {route.end_name}
@@ -320,6 +374,30 @@ function RoutePopup({ route }: { route: CyclingRouteMapItem }) {
             >
                 Ver detalle
             </Link>
+        </div>
+    );
+}
+
+function PoiPopup({ poi }: { poi: RoutePoi }) {
+    const image = poi.images?.[0];
+
+    return (
+        <div className="flex max-w-56 flex-col gap-2 text-sm">
+            {image && (
+                <img
+                    src={mediaUrl(image.image_path)}
+                    alt={image.description ?? poi.name}
+                    className="h-24 w-full rounded-lg object-cover"
+                />
+            )}
+            <strong>{poi.name}</strong>
+            {poi.category && <span>{poi.category.name}</span>}
+            {poi.description && <span>{poi.description}</span>}
+            {poi.address && <span>{poi.address}</span>}
+            {poi.distance_from_start_km !== null && (
+                <span>Km {poi.distance_from_start_km.toLocaleString()}</span>
+            )}
+            {poi.route_observation && <span>{poi.route_observation}</span>}
         </div>
     );
 }
@@ -375,6 +453,27 @@ function mapCenter(routes: CyclingRouteMapItem[]): [number, number] {
     }
 
     return [firstRoute.start_latitude, firstRoute.start_longitude];
+}
+
+function selectedRoute(
+    routes: CyclingRouteMapItem[],
+    selectedSlug?: string,
+): CyclingRouteMapItem | null {
+    if (selectedSlug) {
+        return routes.find((route) => route.slug === selectedSlug) ?? null;
+    }
+
+    return routes[0] ?? null;
+}
+
+function navigationUrl(
+    location: UserLocation,
+    route: CyclingRouteMapItem,
+): string {
+    const origin = `${location.latitude},${location.longitude}`;
+    const destination = `${route.start_latitude},${route.start_longitude}`;
+
+    return `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&travelmode=bicycling`;
 }
 
 function gpsLabel(status: GpsStatus): string {

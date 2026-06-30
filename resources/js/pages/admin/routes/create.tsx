@@ -3,13 +3,16 @@ import Heading from '@/components/heading';
 import type { CatalogOption } from '@/types';
 import RouteForm from './partials/route-form';
 
+type RoutePoiOption = Parameters<typeof RouteForm>[0]['pois'][number];
+
 type Props = {
     statuses: CatalogOption[];
     categories: CatalogOption[];
     difficulties: CatalogOption[];
     transportModes: CatalogOption[];
     routingEngines: CatalogOption[];
-    defaultGeojson: string;
+    pois: RoutePoiOption[];
+    defaultGeojson?: string | null;
 };
 
 export default function AdminRoutesCreate({
@@ -18,6 +21,7 @@ export default function AdminRoutesCreate({
     difficulties,
     transportModes,
     routingEngines,
+    pois,
     defaultGeojson,
 }: Props) {
     return (
@@ -27,7 +31,7 @@ export default function AdminRoutesCreate({
             <div className="flex flex-col gap-6">
                 <Heading
                     title="Nueva ruta oficial"
-                    description="Crea una ruta completa con estado, geometría GeoJSON, métricas e indicaciones operativas"
+                    description="Dibuja el recorrido, carga portada y conecta POIs turísticos desde una sola pantalla"
                 />
 
                 <RouteForm
@@ -37,6 +41,7 @@ export default function AdminRoutesCreate({
                     difficulties={difficulties}
                     transportModes={transportModes}
                     routingEngines={routingEngines}
+                    pois={pois}
                     defaultGeojson={defaultGeojson}
                 />
             </div>

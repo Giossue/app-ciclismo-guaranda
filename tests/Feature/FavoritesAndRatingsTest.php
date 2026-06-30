@@ -12,6 +12,8 @@ use App\Models\TrackStatus;
 use App\Models\TransportMode;
 use App\Models\User;
 use Database\Seeders\CatalogSeeder;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function () {
@@ -167,6 +169,32 @@ test('cyclist can create and update one rating per route', function () {
     expect(RouteRating::query()->where('user_id', $cyclist->id)->where('route_id', $route->id)->count())->toBe(1)
         ->and($rating->rating)->toBe(5)
         ->and($rating->comment)->toBe('Mejor de lo esperado.');
+});
+
+test('cyclist can attach media files to a route rating', function () {
+    Storage::fake('public');
+
+    $cyclist = User::factory()->cyclist()->create();
+    $route = createRouteForFavoritesAndRatings();
+    createValidTrackForRating($cyclist, $route);
+
+    $this->actingAs($cyclist)
+        ->post(route('routes.ratings.store', $route->slug), [
+            'rating' => 5,
+            'comment' => 'Linda experiencia con fotos.',
+            'media' => [
+                UploadedFile::fake()->image('experiencia.jpg'),
+            ],
+        ])
+        ->assertRedirect();
+
+    $rating = RouteRating::query()->where('user_id', $cyclist->id)->where('route_id', $route->id)->firstOrFail();
+    $file = $rating->files()->firstOrFail();
+
+    expect($file->file_type)->toBe('image')
+        ->and($file->file_path)->toStartWith('route-rating-media/');
+
+    Storage::disk('public')->assertExists($file->file_path);
 });
 
 test('admin moderation controls visibility and approved average', function () {
