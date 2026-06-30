@@ -60,6 +60,7 @@ jobs:
       - name: Trigger Dokploy deploy
         env:
           DOKPLOY_DEPLOY_WEBHOOK_URL: ${{ secrets.DOKPLOY_DEPLOY_WEBHOOK_URL }}
+          SHA: ${{ github.event.workflow_run.head_sha }}
         run: |
           set -euo pipefail
 
@@ -68,4 +69,21 @@ jobs:
             exit 1
           fi
 
-          curl --fail --silent --show-error --request GET "$DOKPLOY_DEPLOY_WEBHOOK_URL"
+          payload="$(cat <<JSON
+          {
+            "ref": "refs/heads/main",
+            "after": "$SHA",
+            "repository": {
+              "full_name": "Giossue/app-ciclismo-guaranda",
+              "default_branch": "main"
+            }
+          }
+          JSON
+          )"
+
+          curl --fail --silent --show-error \
+            --request POST \
+            --header "Content-Type: application/json" \
+            --header "X-GitHub-Event: push" \
+            --data "$payload" \
+            "$DOKPLOY_DEPLOY_WEBHOOK_URL"
