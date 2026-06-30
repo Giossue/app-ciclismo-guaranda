@@ -1,9 +1,20 @@
 apply plugin: 'com.android.application'
 
+def androidVersionCode = System.getenv('ANDROID_VERSION_CODE')
+def androidVersionName = System.getenv('ANDROID_VERSION_NAME')
 def releaseStoreFile = System.getenv('ANDROID_RELEASE_STORE_FILE')
 def releaseStorePassword = System.getenv('ANDROID_RELEASE_STORE_PASSWORD')
 def releaseKeyAlias = System.getenv('ANDROID_RELEASE_KEY_ALIAS')
 def releaseKeyPassword = System.getenv('ANDROID_RELEASE_KEY_PASSWORD')
+
+if (androidVersionCode == null || androidVersionCode.trim().isEmpty()) {
+    androidVersionCode = '1'
+}
+
+if (androidVersionName == null || androidVersionName.trim().isEmpty()) {
+    androidVersionName = '1.0'
+}
+
 def hasReleaseSigning = releaseStoreFile && releaseStorePassword && releaseKeyAlias && releaseKeyPassword
 
 android {
@@ -13,8 +24,8 @@ android {
         applicationId "ec.edu.ueb.guarandago"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode (System.getenv('ANDROID_VERSION_CODE') ?: '1').toInteger()
-        versionName (System.getenv('ANDROID_VERSION_NAME') ?: '1.0')
+        versionCode androidVersionCode.toInteger()
+        versionName androidVersionName
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
