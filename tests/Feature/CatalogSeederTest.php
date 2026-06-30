@@ -5,7 +5,7 @@ use Database\Seeders\CatalogSeeder;
 it('seeds the initial catalogs idempotently', function () {
     $expectedCatalogs = [
         'roles_usuario' => ['ciclista', 'administrador'],
-        'generos' => ['masculino', 'femenino', 'otro', 'prefiero no decir'],
+        'generos' => ['masculino', 'femenino'],
         'estados_ruta' => ['borrador', 'activa', 'inactiva'],
         'dificultades_ruta' => ['fácil', 'media', 'difícil'],
         'categorias_ruta' => ['familiar', 'MTB', 'urbana', 'montaña', 'turística'],

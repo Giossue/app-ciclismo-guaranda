@@ -1023,7 +1023,7 @@ Para datos geográficos se recomienda usar:
 | Campo | Tipo sugerido | Descripción |
 |---|---|---|
 | id_genero | SERIAL PK | Identificador |
-| nombre_genero | VARCHAR UNIQUE | masculino, femenino, otro, prefiero no decir |
+| nombre_genero | VARCHAR UNIQUE | masculino, femenino |
 
 ### `usuario`
 

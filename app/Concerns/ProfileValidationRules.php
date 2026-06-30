@@ -52,7 +52,12 @@ trait ProfileValidationRules
      */
     protected function genderRules(): array
     {
-        return ['required', 'integer', Rule::exists(Gender::class, 'id')];
+        return [
+            'required',
+            'integer',
+            Rule::exists(Gender::class, 'id')
+                ->where(fn ($query) => $query->whereIn('name', Gender::ALLOWED_NAMES)),
+        ];
     }
 
     /**

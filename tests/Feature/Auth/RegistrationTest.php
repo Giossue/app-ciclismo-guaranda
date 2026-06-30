@@ -18,7 +18,7 @@ test('registration screen can be rendered', function () {
 });
 
 test('new users can register with cyclist role and required profile fields', function () {
-    $gender = Gender::query()->where('name', 'prefiero no decir')->firstOrFail();
+    $gender = Gender::query()->where('name', Gender::MASCULINE)->firstOrFail();
 
     $response = $this->post(route('register.store'), [
         'name' => 'Test',
@@ -52,6 +52,23 @@ test('registration requires complete profile fields', function () {
     ]);
 
     $response->assertSessionHasErrors(['last_name', 'gender_id', 'birth_date']);
+    $this->assertGuest();
+});
+
+test('registration rejects unsupported gender catalog values', function () {
+    $unsupportedGender = Gender::query()->create(['name' => 'otro']);
+
+    $response = $this->post(route('register.store'), [
+        'name' => 'Test',
+        'last_name' => 'User',
+        'gender_id' => $unsupportedGender->id,
+        'birth_date' => now()->subYears(20)->toDateString(),
+        'email' => 'unsupported-gender@example.com',
+        'password' => 'password',
+        'password_confirmation' => 'password',
+    ]);
+
+    $response->assertSessionHasErrors('gender_id');
     $this->assertGuest();
 });
 

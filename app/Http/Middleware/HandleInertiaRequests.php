@@ -57,10 +57,12 @@ class HandleInertiaRequests extends Middleware
 
         $user->loadMissing(['role:id,name', 'gender:id,name']);
 
+        $gender = $user->gender?->isAllowed() ? $user->gender : null;
+
         return [
             'id' => $user->id,
             'role_id' => $user->role_id,
-            'gender_id' => $user->gender_id,
+            'gender_id' => $gender?->id,
             'name' => $user->name,
             'last_name' => $user->last_name,
             'birth_date' => $user->birth_date?->toDateString(),
@@ -73,9 +75,9 @@ class HandleInertiaRequests extends Middleware
                 'id' => $user->role->id,
                 'name' => $user->role->name,
             ],
-            'gender' => $user->gender === null ? null : [
-                'id' => $user->gender->id,
-                'name' => $user->gender->name,
+            'gender' => $gender === null ? null : [
+                'id' => $gender->id,
+                'name' => $gender->displayName(),
             ],
         ];
     }

@@ -72,7 +72,7 @@ class FortifyServiceProvider extends ServiceProvider
         ]));
 
         Fortify::registerView(fn () => Inertia::render('auth/register', [
-            'genders' => Gender::query()->orderBy('id')->get(['id', 'name']),
+            'genders' => Gender::allowedOptions(),
             'passwordRules' => Password::defaults()->toPasswordRulesString(),
         ]));
 

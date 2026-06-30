@@ -33,7 +33,7 @@ use Inertia\Inertia;
 use Inertia\Response;
 
 /**
- * @phpstan-type CatalogDefinition array{title: string, model: class-string<Model>, locked?: bool}
+ * @phpstan-type CatalogDefinition array{title: string, model: class-string<Model>, locked?: bool, allowed_names?: list<string>}
  */
 class CatalogController extends Controller
 {
@@ -58,8 +58,9 @@ class CatalogController extends Controller
         $table = $model->getTable();
         $hasDescription = Schema::hasColumn($table, 'description');
         $hasActive = Schema::hasColumn($table, 'active');
+        $allowedNames = $definition['allowed_names'] ?? null;
 
-        $validated = $request->validate($this->rules($table, $hasDescription, $hasActive));
+        $validated = $request->validate($this->rules($table, $hasDescription, $hasActive, allowedNames: $allowedNames));
 
         $record = $modelClass::query()->create($this->payload($validated, $hasDescription, $hasActive));
         $recordName = (string) $record->getAttribute('name');
@@ -77,8 +78,9 @@ class CatalogController extends Controller
         $table = $model->getTable();
         $hasDescription = Schema::hasColumn($table, 'description');
         $hasActive = Schema::hasColumn($table, 'active');
+        $allowedNames = $definition['allowed_names'] ?? null;
 
-        $validated = $request->validate($this->rules($table, $hasDescription, $hasActive, $record));
+        $validated = $request->validate($this->rules($table, $hasDescription, $hasActive, $record, $allowedNames));
 
         $catalogRecord = $modelClass::query()->findOrFail($record);
         $catalogRecord->forceFill($this->payload($validated, $hasDescription, $hasActive))->save();
@@ -98,8 +100,9 @@ class CatalogController extends Controller
         $table = $model->getTable();
         $hasDescription = Schema::hasColumn($table, 'description');
         $hasActive = Schema::hasColumn($table, 'active');
+        $allowedNames = $catalog['allowed_names'] ?? null;
 
-        $records = $modelClass::query()
+        $recordsQuery = $modelClass::query()
             ->select(array_values(array_filter([
                 'id',
                 'name',
@@ -107,7 +110,13 @@ class CatalogController extends Controller
                 $hasActive ? 'active' : null,
                 'created_at',
                 'updated_at',
-            ])))
+            ])));
+
+        if ($allowedNames !== null) {
+            $recordsQuery->whereIn('name', $allowedNames);
+        }
+
+        $records = $recordsQuery
             ->orderBy('name')
             ->get()
             ->map(function (Model $record) use ($hasDescription, $hasActive): array {
@@ -153,12 +162,19 @@ class CatalogController extends Controller
     }
 
     /**
+     * @param  list<string>|null  $allowedNames
      * @return array<string, mixed>
      */
-    private function rules(string $table, bool $hasDescription, bool $hasActive, ?int $ignoreId = null): array
+    private function rules(string $table, bool $hasDescription, bool $hasActive, ?int $ignoreId = null, ?array $allowedNames = null): array
     {
+        $nameRules = ['required', 'string', 'max:255', Rule::unique($table, 'name')->ignore($ignoreId)];
+
+        if ($allowedNames !== null) {
+            $nameRules[] = Rule::in($allowedNames);
+        }
+
         return array_filter([
-            'name' => ['required', 'string', 'max:255', Rule::unique($table, 'name')->ignore($ignoreId)],
+            'name' => $nameRules,
             'description' => $hasDescription ? ['nullable', 'string', 'max:1000'] : null,
             'active' => $hasActive ? ['nullable', 'boolean'] : null,
         ]);
@@ -190,7 +206,7 @@ class CatalogController extends Controller
     {
         return [
             'roles' => ['title' => 'Roles de usuario', 'model' => UserRole::class, 'locked' => true],
-            'genders' => ['title' => 'Géneros', 'model' => Gender::class],
+            'genders' => ['title' => 'Géneros', 'model' => Gender::class, 'locked' => true, 'allowed_names' => Gender::ALLOWED_NAMES],
             'route-statuses' => ['title' => 'Estados de ruta', 'model' => RouteStatus::class, 'locked' => true],
             'route-difficulties' => ['title' => 'Dificultades de ruta', 'model' => RouteDifficulty::class],
             'route-categories' => ['title' => 'Categorías de ruta', 'model' => RouteCategory::class],

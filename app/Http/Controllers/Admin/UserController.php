@@ -28,7 +28,7 @@ class UserController extends Controller
         return Inertia::render('admin/users/index', [
             'users' => $users,
             'roles' => UserRole::query()->orderBy('id')->get(['id', 'name']),
-            'genders' => Gender::query()->orderBy('id')->get(['id', 'name']),
+            'genders' => Gender::allowedOptions(),
         ]);
     }
 
@@ -90,10 +90,12 @@ class UserController extends Controller
      */
     private function serializeUser(User $user): array
     {
+        $gender = $user->gender?->isAllowed() ? $user->gender : null;
+
         return [
             'id' => $user->id,
             'role_id' => $user->role_id,
-            'gender_id' => $user->gender_id,
+            'gender_id' => $gender?->id,
             'name' => $user->name,
             'last_name' => $user->last_name,
             'birth_date' => $user->birth_date?->toDateString(),
@@ -105,9 +107,9 @@ class UserController extends Controller
                 'id' => $user->role->id,
                 'name' => $user->role->name,
             ],
-            'gender' => $user->gender === null ? null : [
-                'id' => $user->gender->id,
-                'name' => $user->gender->name,
+            'gender' => $gender === null ? null : [
+                'id' => $gender->id,
+                'name' => $gender->displayName(),
             ],
         ];
     }

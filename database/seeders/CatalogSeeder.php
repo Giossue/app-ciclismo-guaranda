@@ -41,10 +41,8 @@ class CatalogSeeder extends Seeder
         ]);
 
         $this->seedCatalog(Gender::class, [
-            ['name' => 'masculino'],
-            ['name' => 'femenino'],
-            ['name' => 'otro'],
-            ['name' => 'prefiero no decir'],
+            ['name' => Gender::MASCULINE],
+            ['name' => Gender::FEMININE],
         ]);
 
         $this->seedCatalog(RouteStatus::class, [

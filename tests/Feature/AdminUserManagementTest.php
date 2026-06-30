@@ -34,7 +34,7 @@ test('administrator can update another user profile and role', function () {
     $admin = User::factory()->administrator()->create();
     $user = User::factory()->cyclist()->create();
     $adminRole = UserRole::query()->where('name', 'administrador')->firstOrFail();
-    $gender = Gender::query()->where('name', 'otro')->firstOrFail();
+    $gender = Gender::query()->where('name', Gender::FEMININE)->firstOrFail();
 
     $this->actingAs($admin)
         ->patch(route('admin.users.update', $user), [
