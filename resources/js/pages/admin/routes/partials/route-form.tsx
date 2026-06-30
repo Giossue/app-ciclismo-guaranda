@@ -190,8 +190,8 @@ export default function RouteForm({
                         <CardHeader>
                             <CardTitle>Inicio, final y geometría</CardTitle>
                             <CardDescription>
-                                La geometría se guarda como GeoJSON LineString.
-                                El dibujo en mapa queda para la siguiente fase.
+                                La geometría se guarda como GeoJSON LineString y
+                                se usa para dibujar la ruta en el mapa.
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="grid gap-4 sm:grid-cols-2">

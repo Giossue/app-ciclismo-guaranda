@@ -1,11 +1,13 @@
 <?php
 
+use App\Http\Controllers\Admin\CatalogController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\IncidentController as AdminIncidentController;
-use App\Http\Controllers\Admin\ModuleController;
 use App\Http\Controllers\Admin\PoiController as AdminPoiController;
 use App\Http\Controllers\Admin\RatingController as AdminRatingController;
 use App\Http\Controllers\Admin\RouteController as AdminRouteController;
+use App\Http\Controllers\Admin\StatisticsController;
+use App\Http\Controllers\Admin\SystemSettingsController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Cyclist\ChatController;
 use App\Http\Controllers\Cyclist\FavoriteRouteController;
@@ -62,9 +64,12 @@ Route::middleware(['auth', 'verified', 'admin'])
         Route::resource('pois', AdminPoiController::class)->except(['show']);
         Route::resource('incidents', AdminIncidentController::class)->only(['index', 'update']);
         Route::resource('ratings', AdminRatingController::class)->only(['index', 'update']);
-        Route::get('catalogs', ModuleController::class)->defaults('module', 'catalogs')->name('catalogs.index');
-        Route::get('statistics', ModuleController::class)->defaults('module', 'statistics')->name('statistics.index');
-        Route::get('settings', ModuleController::class)->defaults('module', 'settings')->name('settings.index');
+        Route::get('catalogs', [CatalogController::class, 'index'])->name('catalogs.index');
+        Route::post('catalogs/{catalog}', [CatalogController::class, 'store'])->name('catalogs.store');
+        Route::patch('catalogs/{catalog}/{record}', [CatalogController::class, 'update'])->name('catalogs.update');
+        Route::get('statistics', [StatisticsController::class, 'index'])->name('statistics.index');
+        Route::get('statistics/export', [StatisticsController::class, 'export'])->name('statistics.export');
+        Route::get('settings', SystemSettingsController::class)->name('settings.index');
 
         Route::get('users', [UserController::class, 'index'])->name('users.index');
         Route::patch('users/{user}', [UserController::class, 'update'])->name('users.update');

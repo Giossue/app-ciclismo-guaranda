@@ -26,7 +26,7 @@ php artisan storage:link --force --no-interaction || true
 
 php artisan migrate --force --no-interaction
 
-if [ "${RUN_SEEDERS:-true}" = "true" ]; then
+if [ "${RUN_SEEDERS:-false}" = "true" ]; then
     php artisan db:seed --force --no-interaction
 fi
 

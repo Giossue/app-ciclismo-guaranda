@@ -11,6 +11,7 @@ use App\Models\PoiCategory;
 use App\Models\PoiHour;
 use App\Models\PointOfInterest;
 use App\Models\RouteRating;
+use App\Models\RouteView;
 use App\Models\Track;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Builder;
@@ -36,6 +37,12 @@ class RouteController extends Controller
     public function show(CyclingRoute $route): Response
     {
         abort_unless($route->status?->name === 'activa', 404);
+
+        RouteView::query()->create([
+            'route_id' => $route->id,
+            'user_id' => request()->user()?->id,
+            'viewed_at' => now(),
+        ]);
 
         $route->load([
             'status:id,name',
