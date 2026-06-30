@@ -44,8 +44,8 @@ class SystemSettingsController extends Controller
                     'mailer' => config('mail.default'),
                 ],
                 'deployment' => [
-                    'run_seeders' => env('RUN_SEEDERS', 'false'),
-                    'mobile_server_url_env' => env('GUARANDA_GO_MOBILE_SERVER_URL') ? 'configured' : 'runtime backend only',
+                    'run_seeders' => config('guaranda.deployment.run_seeders', 'false'),
+                    'mobile_server_url_env' => filled(config('guaranda.deployment.mobile_server_url')) ? 'configured' : 'runtime backend only',
                     'migrations_table_exists' => Schema::hasTable(config('database.migrations.table', 'migrations')),
                 ],
             ],

@@ -11,4 +11,9 @@ return [
         'webhook_url' => env('GUARANDA_GO_N8N_WEBHOOK_URL'),
         'timeout_seconds' => (int) env('GUARANDA_GO_N8N_TIMEOUT_SECONDS', 20),
     ],
+
+    'deployment' => [
+        'run_seeders' => env('RUN_SEEDERS', 'false'),
+        'mobile_server_url' => env('GUARANDA_GO_MOBILE_SERVER_URL'),
+    ],
 ];

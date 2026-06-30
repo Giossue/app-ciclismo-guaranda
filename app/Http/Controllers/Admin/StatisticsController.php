@@ -6,12 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Models\CyclingRoute;
 use App\Models\Incident;
 use App\Models\RouteDownload;
-use App\Models\RouteRating;
 use App\Models\RouteView;
 use App\Models\Track;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -52,6 +52,10 @@ class StatisticsController extends Controller
 
         return response()->streamDownload(function () use ($metrics, $topViewedRoutes, $topDownloadedRoutes, $topRatedRoutes, $incidentsByStatus): void {
             $output = fopen('php://output', 'w');
+
+            if ($output === false) {
+                throw new \RuntimeException('No se pudo abrir el stream de exportación CSV.');
+            }
 
             fputcsv($output, ['Sección', 'Indicador', 'Valor', 'Detalle']);
 
@@ -146,9 +150,12 @@ class StatisticsController extends Controller
         ];
     }
 
+    /**
+     * @return array<int, array{id: int, name: string, status: string|null, views_count: int}>
+     */
     private function topViewedRoutes(?CarbonImmutable $from, ?CarbonImmutable $to): array
     {
-        return $this->applyDateRange(RouteView::query(), 'viewed_at', $from, $to)
+        return $this->applyQueryDateRange(DB::table('consultas_ruta'), 'consultas_ruta.viewed_at', $from, $to)
             ->join('rutas', 'rutas.id', '=', 'consultas_ruta.route_id')
             ->leftJoin('estados_ruta', 'estados_ruta.id', '=', 'rutas.route_status_id')
             ->groupBy('rutas.id', 'rutas.name', 'estados_ruta.name')
@@ -160,18 +167,26 @@ class StatisticsController extends Controller
                 'estados_ruta.name as status',
                 DB::raw('count(*) as views_count'),
             ])
-            ->map(fn ($route): array => [
-                'id' => $route->id,
-                'name' => $route->name,
-                'status' => $route->status,
-                'views_count' => (int) $route->views_count,
-            ])
+            ->map(function (object $route): array {
+                $row = (array) $route;
+
+                return [
+                    'id' => (int) $row['id'],
+                    'name' => (string) $row['name'],
+                    'status' => $row['status'] === null ? null : (string) $row['status'],
+                    'views_count' => (int) $row['views_count'],
+                ];
+            })
+            ->values()
             ->all();
     }
 
+    /**
+     * @return array<int, array{id: int, name: string, status: string|null, downloads_count: int}>
+     */
     private function topDownloadedRoutes(?CarbonImmutable $from, ?CarbonImmutable $to): array
     {
-        return $this->applyDateRange(RouteDownload::query(), 'downloaded_at', $from, $to)
+        return $this->applyQueryDateRange(DB::table('descargas_ruta'), 'descargas_ruta.downloaded_at', $from, $to)
             ->join('rutas', 'rutas.id', '=', 'descargas_ruta.route_id')
             ->leftJoin('estados_ruta', 'estados_ruta.id', '=', 'rutas.route_status_id')
             ->groupBy('rutas.id', 'rutas.name', 'estados_ruta.name')
@@ -183,18 +198,26 @@ class StatisticsController extends Controller
                 'estados_ruta.name as status',
                 DB::raw('count(*) as downloads_count'),
             ])
-            ->map(fn ($route): array => [
-                'id' => $route->id,
-                'name' => $route->name,
-                'status' => $route->status,
-                'downloads_count' => (int) $route->downloads_count,
-            ])
+            ->map(function (object $route): array {
+                $row = (array) $route;
+
+                return [
+                    'id' => (int) $row['id'],
+                    'name' => (string) $row['name'],
+                    'status' => $row['status'] === null ? null : (string) $row['status'],
+                    'downloads_count' => (int) $row['downloads_count'],
+                ];
+            })
+            ->values()
             ->all();
     }
 
+    /**
+     * @return array<int, array{id: int, name: string, average_rating: string, ratings_count: int}>
+     */
     private function topRatedRoutes(?CarbonImmutable $from, ?CarbonImmutable $to): array
     {
-        return $this->applyDateRange(RouteRating::query(), 'rated_at', $from, $to)
+        return $this->applyQueryDateRange(DB::table('valoraciones_ruta'), 'valoraciones_ruta.rated_at', $from, $to)
             ->join('rutas', 'rutas.id', '=', 'valoraciones_ruta.route_id')
             ->leftJoin('estados_moderacion', 'estados_moderacion.id', '=', 'valoraciones_ruta.moderation_status_id')
             ->where('estados_moderacion.name', 'aprobado')
@@ -207,18 +230,26 @@ class StatisticsController extends Controller
                 DB::raw('round(avg(valoraciones_ruta.rating), 2) as average_rating'),
                 DB::raw('count(*) as ratings_count'),
             ])
-            ->map(fn ($route): array => [
-                'id' => $route->id,
-                'name' => $route->name,
-                'average_rating' => (string) $route->average_rating,
-                'ratings_count' => (int) $route->ratings_count,
-            ])
+            ->map(function (object $route): array {
+                $row = (array) $route;
+
+                return [
+                    'id' => (int) $row['id'],
+                    'name' => (string) $row['name'],
+                    'average_rating' => (string) $row['average_rating'],
+                    'ratings_count' => (int) $row['ratings_count'],
+                ];
+            })
+            ->values()
             ->all();
     }
 
+    /**
+     * @return array<int, array{id: int, name: string, count: int}>
+     */
     private function incidentsByStatus(?CarbonImmutable $from, ?CarbonImmutable $to): array
     {
-        return $this->applyDateRange(Incident::query(), 'reported_at', $from, $to)
+        return $this->applyQueryDateRange(DB::table('incidencias'), 'incidencias.reported_at', $from, $to)
             ->join('estados_incidencia', 'estados_incidencia.id', '=', 'incidencias.incident_status_id')
             ->groupBy('estados_incidencia.id', 'estados_incidencia.name')
             ->orderBy('estados_incidencia.name')
@@ -227,11 +258,16 @@ class StatisticsController extends Controller
                 'estados_incidencia.name',
                 DB::raw('count(*) as count'),
             ])
-            ->map(fn ($status): array => [
-                'id' => $status->id,
-                'name' => $status->name,
-                'count' => (int) $status->count,
-            ])
+            ->map(function (object $status): array {
+                $row = (array) $status;
+
+                return [
+                    'id' => (int) $row['id'],
+                    'name' => (string) $row['name'],
+                    'count' => (int) $row['count'],
+                ];
+            })
+            ->values()
             ->all();
     }
 
@@ -246,5 +282,12 @@ class StatisticsController extends Controller
         return $query
             ->when($from, fn (Builder $query) => $query->where($column, '>=', $from))
             ->when($to, fn (Builder $query) => $query->where($column, '<=', $to));
+    }
+
+    private function applyQueryDateRange(QueryBuilder $query, string $column, ?CarbonImmutable $from, ?CarbonImmutable $to): QueryBuilder
+    {
+        return $query
+            ->when($from, fn (QueryBuilder $query) => $query->where($column, '>=', $from))
+            ->when($to, fn (QueryBuilder $query) => $query->where($column, '<=', $to));
     }
 }
