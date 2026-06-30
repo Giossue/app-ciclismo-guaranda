@@ -77,7 +77,7 @@ export default function MenuIndex() {
                     href={logout()}
                     method="post"
                     as="button"
-                    className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border bg-card px-4 text-sm font-semibold text-destructive shadow-sm transition-transform active:scale-[0.99]"
+                    className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-destructive px-4 text-sm font-semibold text-destructive-foreground shadow-sm shadow-destructive/20 transition-transform hover:bg-destructive/90 active:scale-[0.99]"
                 >
                     <LogOut className="size-5" />
                     Cerrar sesión
