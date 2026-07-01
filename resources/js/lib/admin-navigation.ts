@@ -1,5 +1,6 @@
 import {
     BarChart3,
+    Bell,
     Bike,
     ClipboardList,
     LayoutDashboard,
@@ -17,6 +18,11 @@ export const adminNavItems: NavItem[] = [
         title: 'Resumen',
         href: '/admin/dashboard',
         icon: LayoutDashboard,
+    },
+    {
+        title: 'Notificaciones',
+        href: '/notifications',
+        icon: Bell,
     },
     {
         title: 'Rutas',

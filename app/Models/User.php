@@ -128,6 +128,14 @@ class User extends Authenticatable implements PasskeyUser
         return $this->hasMany(AiConversation::class, 'user_id');
     }
 
+    /**
+     * @return HasMany<AppNotification, $this>
+     */
+    public function appNotifications(): HasMany
+    {
+        return $this->hasMany(AppNotification::class, 'user_id');
+    }
+
     public function isAdministrator(): bool
     {
         return $this->role?->name === 'administrador';

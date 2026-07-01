@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\AppNotification;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -42,8 +43,25 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $this->serializeUser($request->user()),
             ],
+            'notifications' => [
+                'unread_count' => fn (): int => $this->unreadNotificationsCount($request),
+            ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
+    }
+
+    private function unreadNotificationsCount(Request $request): int
+    {
+        $user = $request->user();
+
+        if (! $user instanceof User) {
+            return 0;
+        }
+
+        return AppNotification::query()
+            ->where('user_id', $user->id)
+            ->where('read', false)
+            ->count();
     }
 
     /**

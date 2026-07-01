@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\RouteElevationController;
 use App\Http\Controllers\Admin\StatisticsController;
 use App\Http\Controllers\Admin\SystemSettingsController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\AppNotificationController;
 use App\Http\Controllers\Cyclist\ChatController;
 use App\Http\Controllers\Cyclist\FavoriteRouteController;
 use App\Http\Controllers\Cyclist\IncidentController as CyclistIncidentController;
@@ -27,6 +28,9 @@ Route::inertia('/', 'welcome')->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', DashboardRedirectController::class)->name('dashboard');
+    Route::get('notifications', [AppNotificationController::class, 'index'])->name('notifications.index');
+    Route::patch('notifications/read-all', [AppNotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
+    Route::patch('notifications/{notification}/read', [AppNotificationController::class, 'markAsRead'])->name('notifications.read');
     Route::inertia('menu', 'menu/index')->name('menu.index');
     Route::get('chat', [ChatController::class, 'index'])->name('chat.index');
     Route::post('chat/messages', [ChatController::class, 'store'])->middleware('throttle:12,1')->name('chat.messages.store');

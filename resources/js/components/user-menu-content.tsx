@@ -1,5 +1,5 @@
 import { Link, router } from '@inertiajs/react';
-import { LogOut, Settings } from 'lucide-react';
+import { Bell, LogOut, Settings } from 'lucide-react';
 import {
     DropdownMenuGroup,
     DropdownMenuItem,
@@ -42,6 +42,17 @@ export function UserMenuContent({ user }: Props) {
                     >
                         <Settings className="mr-2" />
                         Ajustes
+                    </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                    <Link
+                        className="block w-full cursor-pointer"
+                        href="/notifications"
+                        prefetch
+                        onClick={cleanup}
+                    >
+                        <Bell className="mr-2" />
+                        Notificaciones
                     </Link>
                 </DropdownMenuItem>
             </DropdownMenuGroup>

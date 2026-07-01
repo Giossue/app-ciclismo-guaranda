@@ -7,12 +7,16 @@ import type { Auth } from '@/types';
 
 type PageProps = {
     auth: Auth;
+    notifications?: {
+        unread_count?: number;
+    };
 };
 
 export function AppMobileNav() {
-    const { auth } = usePage<PageProps>().props;
+    const { auth, notifications } = usePage<PageProps>().props;
     const { isCurrentUrl } = useCurrentUrl();
     const primaryItems = mobilePrimaryNavItems(auth);
+    const unreadCount = notifications?.unread_count ?? 0;
 
     if (!auth.user) {
         return null;
@@ -38,9 +42,19 @@ export function AppMobileNav() {
                                     : 'text-[var(--text-muted)] hover:text-foreground',
                             )}
                         >
-                            {Icon && (
-                                <Icon className="size-5 transition-transform" />
-                            )}
+                            <span className="relative">
+                                {Icon && (
+                                    <Icon className="size-5 transition-transform" />
+                                )}
+                                {item.href === '/notifications' &&
+                                    unreadCount > 0 && (
+                                        <span className="absolute -top-1.5 -right-2 grid min-w-4 place-items-center rounded-full bg-primary px-1 text-[9px] leading-4 font-black text-primary-foreground">
+                                            {unreadCount > 9
+                                                ? '9+'
+                                                : unreadCount}
+                                        </span>
+                                    )}
+                            </span>
                             <span className="max-w-full truncate">
                                 {shortTitle(item.title)}
                             </span>

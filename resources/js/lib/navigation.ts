@@ -1,4 +1,4 @@
-import { Bot, Heart, Route } from 'lucide-react';
+import { Bell, Bot, Heart, Route } from 'lucide-react';
 import { adminNavItems } from '@/lib/admin-navigation';
 import type { Auth, NavItem } from '@/types';
 
@@ -12,6 +12,11 @@ const cyclistNavItems: NavItem[] = [
         title: 'Favoritas',
         href: '/favorites',
         icon: Heart,
+    },
+    {
+        title: 'Notificaciones',
+        href: '/notifications',
+        icon: Bell,
     },
     {
         title: 'Asistente IA',
@@ -34,7 +39,11 @@ export function mainNavItems(auth: Auth): NavItem[] {
 
 export function mobilePrimaryNavItems(auth: Auth): NavItem[] {
     if (!isAdmin(auth)) {
-        return cyclistNavItems;
+        return [
+            cyclistNavItems.find((item) => item.href === '/routes'),
+            cyclistNavItems.find((item) => item.href === '/notifications'),
+            cyclistNavItems.find((item) => item.href === '/chat'),
+        ].filter((item): item is NavItem => Boolean(item));
     }
 
     return [
