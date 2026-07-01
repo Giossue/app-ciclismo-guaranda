@@ -43,16 +43,11 @@ export default function RoutesIndex({
             <Head title="Rutas" />
 
             <div className="flex flex-col gap-4">
-                <div className="flex flex-col gap-3 rounded-lg border bg-card p-4 sm:flex-row sm:items-start sm:justify-between">
+                <div className="rounded-lg border bg-card p-4">
                     <Heading
                         title="Rutas"
                         description="Elige una ruta, revisa el mapa o guarda tus favoritas."
                     />
-                    <Button variant="outline" asChild>
-                        <Link href="/favorites" prefetch>
-                            Mis favoritas
-                        </Link>
-                    </Button>
                 </div>
 
                 <CategoryFilter

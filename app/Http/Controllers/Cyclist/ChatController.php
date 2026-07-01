@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Cyclist;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Cyclist\StoreChatMessageRequest;
 use App\Models\AiConversation;
+use App\Models\AiMessage;
 use App\Models\CyclingRoute;
 use App\Models\Incident;
 use App\Models\PoiHour;
@@ -27,11 +28,50 @@ class ChatController extends Controller
 {
     public function index(Request $request): Response
     {
+        $user = $request->user();
+        abort_unless($user instanceof User, 403);
+
+        $conversations = AiConversation::query()
+            ->where('user_id', $user->id)
+            ->withCount('messages')
+            ->latest('last_activity_at')
+            ->latest('id')
+            ->limit(30)
+            ->get();
+
+        $lastMessages = AiMessage::query()
+            ->whereIn('ai_conversation_id', $conversations->pluck('id'))
+            ->latest('sent_at')
+            ->latest('id')
+            ->get()
+            ->unique('ai_conversation_id')
+            ->keyBy('ai_conversation_id');
+
+        $requestedConversationId = $request->integer('conversation');
+        $activeConversation = null;
+
+        if (! $request->boolean('new')) {
+            $activeConversation = AiConversation::query()
+                ->with('messages')
+                ->where('user_id', $user->id)
+                ->when($requestedConversationId > 0, fn ($query) => $query->whereKey($requestedConversationId))
+                ->when($requestedConversationId <= 0, fn ($query) => $query->latest('last_activity_at')->latest('id'))
+                ->first();
+        }
+
         return Inertia::render('chat/index', [
             'webhookConfigured' => $this->webhookUrl() !== null,
-            'conversations' => [],
-            'activeConversation' => null,
-            'latestMessages' => session('chat_exchange.messages', []),
+            'conversations' => $conversations
+                ->map(fn (AiConversation $conversation): array => $this->serializeConversationSummary(
+                    $conversation,
+                    $lastMessages->get($conversation->id),
+                ))
+                ->values()
+                ->all(),
+            'activeConversation' => $this->serializeConversation($activeConversation),
+            'latestMessages' => $activeConversation === null
+                ? session('chat_exchange.messages', [])
+                : $activeConversation->messages->map(fn (AiMessage $message): array => $this->serializeMessage($message))->values()->all(),
             'routes' => CyclingRoute::query()
                 ->with(['difficulty:id,name', 'category:id,name'])
                 ->whereHas('status', fn ($query) => $query->where('name', 'activa'))
@@ -80,6 +120,7 @@ class ChatController extends Controller
 
         $message = trim((string) $payload['message']);
         $context = $this->buildContext($user, $route);
+        $conversation = $this->requestedConversation($user, $payload);
         $sessionId = 'guaranda-go-user-'.$user->id;
 
         try {
@@ -100,11 +141,10 @@ class ChatController extends Controller
 
             $json = $response->json();
             $assistantText = $this->extractAssistantText($json);
+            $conversation = $this->persistExchange($user, $conversation, $message, $assistantText, $context, $json);
             Inertia::flash('toast', ['type' => 'success', 'message' => __('Respuesta del asistente recibida.')]);
 
-            return to_route('chat.index')->with('chat_exchange', [
-                'messages' => $this->exchangeMessages($message, $assistantText, 'n8n'),
-            ]);
+            return to_route('chat.index', ['conversation' => $conversation->id]);
         } catch (ConnectionException $exception) {
             return $this->assistantErrorResponse(
                 $message,
@@ -196,6 +236,141 @@ class ChatController extends Controller
                 'title' => $incident->title,
                 'description' => Str::limit($incident->description, 180),
             ])->values()->all(),
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     */
+    private function requestedConversation(User $user, array $payload): ?AiConversation
+    {
+        $conversationId = $payload['conversation_id'] ?? null;
+
+        if ($conversationId === null) {
+            return null;
+        }
+
+        return AiConversation::query()
+            ->where('user_id', $user->id)
+            ->find((int) $conversationId);
+    }
+
+    /**
+     * @param  array<string, mixed>  $context
+     */
+    private function persistExchange(User $user, ?AiConversation $conversation, string $userMessage, string $assistantMessage, array $context, mixed $rawResponse): AiConversation
+    {
+        $now = now();
+
+        if ($conversation === null) {
+            $conversation = AiConversation::query()->create([
+                'user_id' => $user->id,
+                'title' => Str::limit($userMessage, 80),
+                'context' => $context,
+                'started_at' => $now,
+                'last_activity_at' => $now,
+            ]);
+        } else {
+            $conversation->forceFill([
+                'context' => $context,
+                'last_activity_at' => $now,
+            ])->save();
+        }
+
+        $conversation->messages()->create([
+            'role' => 'user',
+            'message' => $userMessage,
+            'provider' => null,
+            'metadata' => [],
+            'sent_at' => $now,
+        ]);
+
+        $conversation->messages()->create([
+            'role' => 'assistant',
+            'message' => $assistantMessage,
+            'provider' => 'n8n',
+            'metadata' => $this->assistantMetadata($rawResponse),
+            'sent_at' => $now->copy()->addSecond(),
+        ]);
+
+        return $conversation;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function assistantMetadata(mixed $rawResponse): array
+    {
+        if (! is_array($rawResponse)) {
+            return [];
+        }
+
+        $source = Arr::isList($rawResponse) ? ($rawResponse[0] ?? []) : $rawResponse;
+
+        if (! is_array($source)) {
+            return [];
+        }
+
+        return array_filter([
+            'voice_text' => Arr::get($source, 'voice_text'),
+            'cards' => Arr::get($source, 'cards'),
+            'suggested_actions' => Arr::get($source, 'suggested_actions'),
+        ], fn (mixed $value): bool => $value !== null && $value !== []);
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function serializeConversation(?AiConversation $conversation): ?array
+    {
+        if ($conversation === null) {
+            return null;
+        }
+
+        $startedAt = $conversation->getAttribute('started_at');
+        $lastActivityAt = $conversation->getAttribute('last_activity_at');
+
+        return [
+            'id' => $conversation->id,
+            'title' => $conversation->title,
+            'started_at' => $startedAt instanceof DateTimeInterface ? $startedAt->format(DATE_ATOM) : null,
+            'last_activity_at' => $lastActivityAt instanceof DateTimeInterface ? $lastActivityAt->format(DATE_ATOM) : null,
+            'messages' => $conversation->messages->map(fn (AiMessage $message): array => $this->serializeMessage($message))->values()->all(),
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function serializeConversationSummary(AiConversation $conversation, ?AiMessage $lastMessage): array
+    {
+        $startedAt = $conversation->getAttribute('started_at');
+        $lastActivityAt = $conversation->getAttribute('last_activity_at');
+
+        return [
+            'id' => $conversation->id,
+            'title' => $conversation->title,
+            'started_at' => $startedAt instanceof DateTimeInterface ? $startedAt->format(DATE_ATOM) : null,
+            'last_activity_at' => $lastActivityAt instanceof DateTimeInterface ? $lastActivityAt->format(DATE_ATOM) : null,
+            'messages_count' => (int) $conversation->getAttribute('messages_count'),
+            'last_message' => $lastMessage?->message,
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function serializeMessage(AiMessage $message): array
+    {
+        $sentAt = $message->getAttribute('sent_at');
+
+        return [
+            'id' => $message->id,
+            'role' => $message->role,
+            'message' => $message->message,
+            'provider' => $message->provider,
+            'sent_at' => $sentAt instanceof DateTimeInterface ? $sentAt->format(DATE_ATOM) : null,
+            'metadata' => $message->metadata ?? [],
         ];
     }
 

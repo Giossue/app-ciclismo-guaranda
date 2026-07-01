@@ -8,13 +8,27 @@ import type { LineString } from 'geojson';
 import L from 'leaflet';
 import { Layers, LocateFixed, MapPinned, RouteIcon } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
-import { CircleMarker, MapContainer, TileLayer, useMap } from 'react-leaflet';
+import {
+    CircleMarker,
+    MapContainer,
+    Popup,
+    TileLayer,
+    useMap,
+    useMapEvents,
+} from 'react-leaflet';
 import InputError from '@/components/input-error';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
+
+type RoutePoiDraft = {
+    key: string;
+    name: string;
+    latitude: string;
+    longitude: string;
+};
 
 type Props = {
     initialGeojson?: string | null;
@@ -25,6 +39,13 @@ type Props = {
     errors: Partial<Record<string, string>>;
     onDistanceChange: (distanceKm: string) => void;
     onGeojsonChange?: (geojson: string) => void;
+    poiDrafts?: RoutePoiDraft[];
+    activePoiKey?: string | null;
+    onPoiLocationChange?: (
+        key: string,
+        latitude: string,
+        longitude: string,
+    ) => void;
 };
 
 type GeometryState = {
@@ -81,6 +102,9 @@ export default function RouteGeometryEditor({
     errors,
     onDistanceChange,
     onGeojsonChange,
+    poiDrafts = [],
+    activePoiKey = null,
+    onPoiLocationChange,
 }: Props) {
     const initialLine = useMemo(
         () => parseLineString(initialGeojson),
@@ -104,6 +128,7 @@ export default function RouteGeometryEditor({
     const [locationRequest, setLocationRequest] = useState(0);
     const activeLayer =
         mapLayer === 'satellite' ? satelliteLayer : standardLayer;
+    const activePoi = poiDrafts.find((poi) => poi.key === activePoiKey);
 
     useEffect(() => {
         if (geometry.distanceKm !== '') {
@@ -125,11 +150,20 @@ export default function RouteGeometryEditor({
                     <RouteIcon />
                     <AlertTitle>Dibuja el trayecto real</AlertTitle>
                     <AlertDescription>
-                        Usa el buscador para ubicarte, dibuja la línea siguiendo
-                        la vía o sendero, y edita los vértices si hace falta. El
-                        primer punto será el inicio y el último será el final.
+                        Dibuja la línea de la ruta. Para puntos de interés,
+                        pulsa “Marcar en mapa” en el punto y toca su ubicación.
                     </AlertDescription>
                 </Alert>
+                {activePoi && (
+                    <Alert>
+                        <MapPinned />
+                        <AlertTitle>Marcando punto de interés</AlertTitle>
+                        <AlertDescription>
+                            Toca el mapa para ubicar “
+                            {activePoi.name || 'Punto nuevo'}”.
+                        </AlertDescription>
+                    </Alert>
+                )}
             </div>
 
             <div className="flex flex-wrap gap-2">
@@ -172,6 +206,11 @@ export default function RouteGeometryEditor({
                     <DrawToolbar
                         initialLatLngs={initialLatLngs}
                         onChange={setGeometry}
+                    />
+                    <PoiPlacementLayer
+                        poiDrafts={poiDrafts}
+                        activePoiKey={activePoiKey}
+                        onPoiLocationChange={onPoiLocationChange}
                     />
                     <AdminLocationMarker requestToken={locationRequest} />
                 </MapContainer>
@@ -251,6 +290,74 @@ export default function RouteGeometryEditor({
                 <InputError message={errors.end_longitude} />
             </div>
         </div>
+    );
+}
+
+function PoiPlacementLayer({
+    poiDrafts,
+    activePoiKey,
+    onPoiLocationChange,
+}: {
+    poiDrafts: RoutePoiDraft[];
+    activePoiKey: string | null;
+    onPoiLocationChange?: (
+        key: string,
+        latitude: string,
+        longitude: string,
+    ) => void;
+}) {
+    useMapEvents({
+        click(event) {
+            if (!activePoiKey || !onPoiLocationChange) {
+                return;
+            }
+
+            onPoiLocationChange(
+                activePoiKey,
+                String(roundCoordinate(event.latlng.lat)),
+                String(roundCoordinate(event.latlng.lng)),
+            );
+        },
+    });
+
+    return (
+        <>
+            {poiDrafts.map((poi) => {
+                const latitude = Number(poi.latitude);
+                const longitude = Number(poi.longitude);
+
+                if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+                    return null;
+                }
+
+                return (
+                    <CircleMarker
+                        key={poi.key}
+                        center={[latitude, longitude]}
+                        pathOptions={{
+                            color:
+                                poi.key === activePoiKey
+                                    ? '#f97316'
+                                    : '#0369a1',
+                            fillColor:
+                                poi.key === activePoiKey
+                                    ? '#fb923c'
+                                    : '#38bdf8',
+                            fillOpacity: 0.95,
+                            opacity: 1,
+                        }}
+                        radius={8}
+                    >
+                        <Popup>
+                            <div className="flex flex-col gap-1 text-sm">
+                                <strong>{poi.name || 'Punto nuevo'}</strong>
+                                <span>Punto de interés de la ruta</span>
+                            </div>
+                        </Popup>
+                    </CircleMarker>
+                );
+            })}
+        </>
     );
 }
 

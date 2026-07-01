@@ -118,6 +118,14 @@ export type CyclingRouteMapItem = {
     user_interaction: RouteUserInteraction;
 };
 
+export type ActiveTrackPoint = {
+    id: number;
+    latitude: number;
+    longitude: number;
+    accuracy_m: number | null;
+    recorded_at: string | null;
+};
+
 export type ActiveTrack = {
     id: number;
     status: CatalogOption | null;
@@ -129,6 +137,7 @@ export type ActiveTrack = {
     is_valid: boolean;
     summary: Record<string, unknown>;
     gps_points_count: number;
+    points: ActiveTrackPoint[];
 };
 
 export type PaginatedRoutes = {

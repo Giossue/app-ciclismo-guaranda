@@ -1,6 +1,8 @@
 <?php
 
 use App\Models\CyclingRoute;
+use App\Models\PoiCategory;
+use App\Models\PointOfInterest;
 use App\Models\RouteCategory;
 use App\Models\RouteDifficulty;
 use App\Models\RouteStatus;
@@ -86,7 +88,6 @@ test('cyclist can not access route administration', function () {
         ->assertForbidden();
 });
 
-
 test('administrator can calculate route elevation preview with opentopodata', function () {
     config([
         'guaranda.elevation.opentopodata.base_url' => 'https://opentopo.test',
@@ -138,6 +139,34 @@ test('administrator can create a complete route', function () {
         ->and($route->recommendations()->count())->toBe(2)
         ->and($route->observations()->count())->toBe(2)
         ->and($route->images()->count())->toBe(3);
+});
+
+test('administrator can create route scoped points of interest from route form', function () {
+    $admin = User::factory()->administrator()->create();
+    $category = PoiCategory::query()->where('name', 'mirador')->firstOrFail();
+
+    $this->actingAs($admin)
+        ->post(route('admin.routes.store'), routePayload([
+            'new_pois' => [
+                [
+                    'name' => 'Mirador propio de ruta',
+                    'poi_category_id' => $category->id,
+                    'description' => 'Parada panorámica creada desde la ruta.',
+                    'latitude' => -1.4055000,
+                    'longitude' => -79.0215000,
+                ],
+            ],
+        ]))
+        ->assertSessionHasNoErrors()
+        ->assertRedirect(route('admin.routes.index'));
+
+    $route = CyclingRoute::query()->where('name', 'Ruta Salinas de Bolívar')->firstOrFail();
+    $poi = PointOfInterest::query()->where('name', 'Mirador propio de ruta')->firstOrFail();
+
+    expect($poi->active)->toBeTrue()
+        ->and((float) $poi->latitude)->toBe(-1.4055)
+        ->and((float) $poi->longitude)->toBe(-79.0215)
+        ->and($route->pointsOfInterest()->whereKey($poi->id)->exists())->toBeTrue();
 });
 
 test('administrator can upload route cover and gallery images', function () {

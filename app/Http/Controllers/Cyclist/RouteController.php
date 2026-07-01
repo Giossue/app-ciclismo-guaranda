@@ -14,6 +14,7 @@ use App\Models\RouteCategory;
 use App\Models\RouteRating;
 use App\Models\RouteView;
 use App\Models\Track;
+use App\Models\TrackGpsPoint;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\Pivot;
@@ -323,6 +324,27 @@ class RouteController extends Controller
             'is_valid' => (bool) $track->is_valid,
             'summary' => $track->summary ?? [],
             'gps_points_count' => $track->gpsPoints->count(),
+            'points' => $track->gpsPoints
+                ->sortBy('recorded_at')
+                ->map(fn (TrackGpsPoint $point): array => $this->serializeTrackPoint($point))
+                ->values()
+                ->all(),
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function serializeTrackPoint(TrackGpsPoint $point): array
+    {
+        $recordedAt = $point->getAttribute('recorded_at');
+
+        return [
+            'id' => $point->id,
+            'latitude' => (float) $point->latitude,
+            'longitude' => (float) $point->longitude,
+            'accuracy_m' => $point->accuracy_m === null ? null : (float) $point->accuracy_m,
+            'recorded_at' => $recordedAt instanceof DateTimeInterface ? $recordedAt->format(DATE_ATOM) : null,
         ];
     }
 

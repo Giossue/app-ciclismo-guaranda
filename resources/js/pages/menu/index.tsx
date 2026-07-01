@@ -1,40 +1,51 @@
 import { Head, Link, usePage } from '@inertiajs/react';
-import { LogOut, UserRound } from 'lucide-react';
+import { LogOut, Palette, ShieldCheck, UserRound } from 'lucide-react';
 import Heading from '@/components/heading';
-import { mainNavItems } from '@/lib/navigation';
 import { cn } from '@/lib/utils';
 import { logout } from '@/routes';
-import { edit } from '@/routes/profile';
-import type { Auth, NavItem } from '@/types';
+import type { Auth } from '@/types';
 
 type PageProps = {
     auth: Auth;
 };
 
-const descriptions: Record<string, string> = {
-    Resumen: 'Estado general',
-    Rutas: 'Rutas oficiales',
-    POIs: 'Lugares y servicios',
-    Incidencias: 'Reportes activos',
-    Usuarios: 'Cuentas y roles',
-    Valoraciones: 'Opiniones revisadas',
-    Catálogos: 'Datos base',
-    Estadísticas: 'Métricas y reportes',
-    Configuración: 'Estado del sistema',
-    Favoritas: 'Rutas guardadas',
-    'Asistente IA': 'Ayuda turística',
+type AccountItem = {
+    title: string;
+    description: string;
+    href: string;
+    icon: typeof UserRound;
 };
+
+const accountItems: AccountItem[] = [
+    {
+        title: 'Perfil',
+        description: 'Datos de tu cuenta',
+        href: '/settings/profile',
+        icon: UserRound,
+    },
+    {
+        title: 'Seguridad',
+        description: 'Contraseña y acceso',
+        href: '/settings/security',
+        icon: ShieldCheck,
+    },
+    {
+        title: 'Apariencia',
+        description: 'Tema de la app',
+        href: '/settings/appearance',
+        icon: Palette,
+    },
+];
 
 export default function MenuIndex() {
     const { auth } = usePage<PageProps>().props;
-    const modules = mainNavItems(auth);
 
     return (
         <>
             <Head title="Menú" />
 
             <div className="flex flex-col gap-4">
-                <Heading title="Menú" description="Accesos principales." />
+                <Heading title="Menú" description="Ajustes de tu cuenta." />
 
                 <section className="rounded-lg border bg-card p-4">
                     <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
@@ -48,33 +59,17 @@ export default function MenuIndex() {
                     </p>
                 </section>
 
-                <section className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-4">
-                    {modules.map((item) => (
+                <section className="grid gap-2.5">
+                    {accountItems.map((item) => (
                         <MenuCard key={item.title} item={item} />
                     ))}
-
-                    <Link
-                        href={edit()}
-                        prefetch
-                        className="flex min-h-20 items-center gap-3 rounded-lg border bg-card p-3 transition-colors hover:bg-accent/60"
-                    >
-                        <UserRound className="size-6 shrink-0" />
-                        <span className="min-w-0">
-                            <span className="block text-sm leading-tight font-semibold">
-                                Perfil
-                            </span>
-                            <span className="block truncate text-xs text-muted-foreground">
-                                Cuenta segura
-                            </span>
-                        </span>
-                    </Link>
                 </section>
 
                 <Link
                     href={logout()}
                     method="post"
                     as="button"
-                    className="flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-destructive px-4 text-sm font-semibold text-destructive-foreground transition-colors hover:opacity-90"
+                    className="flex min-h-12 w-full items-center justify-center gap-2 rounded-lg border border-destructive/30 bg-card px-4 text-sm font-semibold text-destructive transition-colors hover:bg-destructive/10"
                 >
                     <LogOut className="size-5" />
                     Cerrar sesión
@@ -84,7 +79,7 @@ export default function MenuIndex() {
     );
 }
 
-function MenuCard({ item }: { item: NavItem }) {
+function MenuCard({ item }: { item: AccountItem }) {
     const Icon = item.icon;
 
     return (
@@ -92,17 +87,17 @@ function MenuCard({ item }: { item: NavItem }) {
             href={item.href}
             prefetch
             className={cn(
-                'flex min-h-20 items-center gap-3 rounded-lg border bg-card p-3 transition-colors',
+                'flex min-h-16 items-center gap-3 rounded-lg border bg-card p-3 transition-colors',
                 'hover:border-primary/30 hover:bg-accent/70',
             )}
         >
-            {Icon && <Icon className="size-6 shrink-0" />}
+            <Icon className="size-6 shrink-0" />
             <span className="min-w-0">
                 <span className="block text-sm leading-tight font-semibold">
                     {item.title}
                 </span>
                 <span className="block truncate text-xs text-muted-foreground">
-                    {descriptions[item.title] ?? 'Acceso rápido'}
+                    {item.description}
                 </span>
             </span>
         </Link>

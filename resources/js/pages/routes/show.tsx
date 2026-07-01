@@ -166,6 +166,7 @@ export default function RoutesShow({
                                                 routes={[route]}
                                                 selectedSlug={route.slug}
                                                 mode="detail"
+                                                activeTrack={activeTrack}
                                                 className="[&_.leaflet-container]:h-[calc(100svh-280px)] [&_.leaflet-container]:min-h-96 md:[&_.leaflet-container]:h-[560px]"
                                             />
                                         </CardContent>
@@ -381,6 +382,7 @@ function TrackPanel({
 }) {
     const isInProgress = activeTrack?.status?.name === 'en curso';
     const isPaused = activeTrack?.status?.name === 'pausado';
+    const hasActiveTrack = activeTrack !== null && (isInProgress || isPaused);
     const isPostingPoint = useRef(false);
     const [startMessage, setStartMessage] = useState<string | null>(null);
     const [isStarting, setIsStarting] = useState(false);
@@ -508,7 +510,7 @@ function TrackPanel({
                             Usa los controles para iniciar, pausar o finalizar.
                         </CardDescription>
                     </div>
-                    {activeTrack?.status && (
+                    {hasActiveTrack && activeTrack.status && (
                         <Badge variant={isInProgress ? 'secondary' : 'outline'}>
                             {activeTrack.status.name}
                         </Badge>
@@ -524,7 +526,7 @@ function TrackPanel({
                     </Alert>
                 )}
 
-                {activeTrack ? (
+                {hasActiveTrack ? (
                     <>
                         <div className="grid gap-3 text-sm text-muted-foreground sm:grid-cols-4">
                             <Metric
@@ -591,29 +593,37 @@ function TrackPanel({
                                 </Form>
                             )}
 
-                            <Form
-                                {...TrackController.finish.form(activeTrack.id)}
-                                options={{ preserveScroll: true }}
-                            >
-                                {({ processing }) => (
-                                    <Button disabled={processing}>
-                                        Finalizar
-                                    </Button>
-                                )}
-                            </Form>
-                            <Form
-                                {...TrackController.cancel.form(activeTrack.id)}
-                                options={{ preserveScroll: true }}
-                            >
-                                {({ processing }) => (
-                                    <Button
-                                        variant="destructive"
-                                        disabled={processing}
+                            {(isInProgress || isPaused) && (
+                                <>
+                                    <Form
+                                        {...TrackController.finish.form(
+                                            activeTrack.id,
+                                        )}
+                                        options={{ preserveScroll: true }}
                                     >
-                                        Cancelar
-                                    </Button>
-                                )}
-                            </Form>
+                                        {({ processing }) => (
+                                            <Button disabled={processing}>
+                                                Finalizar
+                                            </Button>
+                                        )}
+                                    </Form>
+                                    <Form
+                                        {...TrackController.cancel.form(
+                                            activeTrack.id,
+                                        )}
+                                        options={{ preserveScroll: true }}
+                                    >
+                                        {({ processing }) => (
+                                            <Button
+                                                variant="destructive"
+                                                disabled={processing}
+                                            >
+                                                Cancelar
+                                            </Button>
+                                        )}
+                                    </Form>
+                                </>
+                            )}
                         </div>
                     </>
                 ) : (

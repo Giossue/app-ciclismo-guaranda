@@ -1,28 +1,17 @@
 import { Form, Head, Link } from '@inertiajs/react';
 import {
     Bot,
+    History,
     MessageSquareText,
     Plus,
     Send,
-    Trash2,
     WifiOff,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import ChatController from '@/actions/App/Http/Controllers/Cyclist/ChatController';
-import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
-import { MobileTabs } from '@/components/mobile-tabs';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardFooter,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import {
     Select,
@@ -32,6 +21,14 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import {
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger,
+} from '@/components/ui/sheet';
 import {
     browserNetworkStatus,
     getNetworkStatus,
@@ -78,7 +75,7 @@ type Props = {
 };
 
 const textareaClass =
-    'min-h-24 w-full rounded-lg border border-input bg-card px-3 py-3 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/30 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20';
+    'max-h-28 min-h-11 flex-1 resize-none border-0 bg-transparent px-1 py-2 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50';
 
 export default function ChatIndex({
     webhookConfigured,
@@ -103,33 +100,41 @@ export default function ChatIndex({
         <>
             <Head title="Asistente" />
 
-            <div className="flex flex-col gap-4">
-                <div className="flex flex-col gap-3 rounded-lg border bg-card p-4 sm:flex-row sm:items-start sm:justify-between">
-                    <Heading
-                        title="Asistente"
-                        description="Haz preguntas rápidas sobre rutas, preparación, clima o puntos útiles."
+            <section className="flex min-h-[calc(100svh-7.5rem)] flex-col overflow-hidden rounded-lg border bg-card">
+                <header className="flex items-center justify-between gap-3 border-b px-4 py-3">
+                    <div className="flex min-w-0 items-center gap-3">
+                        <div className="flex size-10 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground">
+                            <Bot className="size-5" />
+                        </div>
+                        <div className="min-w-0">
+                            <h1 className="truncate text-base font-semibold">
+                                Asistente
+                            </h1>
+                            <p className="truncate text-xs text-muted-foreground">
+                                {activeConversation?.title ??
+                                    'Pregunta sobre rutas y puntos útiles'}
+                            </p>
+                        </div>
+                    </div>
+
+                    <HistorySheet
+                        conversations={conversations}
+                        activeConversation={activeConversation}
                     />
-                    <Button variant="outline" asChild>
-                        <Link href="/chat?new=1" replace prefetch>
-                            <Plus data-icon="inline-start" />
-                            Nueva consulta
-                        </Link>
-                    </Button>
-                </div>
+                </header>
 
                 {!isOnline && (
-                    <Alert variant="destructive">
+                    <Alert variant="destructive" className="m-3">
                         <WifiOff />
-                        <AlertTitle>Chat sin conexión</AlertTitle>
+                        <AlertTitle>Sin conexión</AlertTitle>
                         <AlertDescription>
-                            Vuelve a conectarte para enviar mensajes. Las rutas
-                            descargadas siguen disponibles.
+                            Conéctate para enviar mensajes al asistente.
                         </AlertDescription>
                     </Alert>
                 )}
 
                 {!webhookConfigured && (
-                    <Alert>
+                    <Alert className="m-3">
                         <Bot />
                         <AlertTitle>Asistente no disponible</AlertTitle>
                         <AlertDescription>
@@ -138,245 +143,186 @@ export default function ChatIndex({
                     </Alert>
                 )}
 
-                <MobileTabs
-                    defaultValue="chat"
-                    items={[
-                        {
-                            value: 'chat',
-                            label: 'Chat',
-                            content: (
-                                <Card className="overflow-hidden">
-                                    <CardHeader>
-                                        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                                            <div className="flex flex-col gap-1">
-                                                <Badge
-                                                    variant="secondary"
-                                                    className="w-fit"
-                                                >
-                                                    <Bot data-icon="inline-start" />
-                                                    Guía online
-                                                </Badge>
-                                                <CardTitle>
-                                                    {activeConversation?.title ??
-                                                        'Nueva consulta'}
-                                                </CardTitle>
-                                                <CardDescription>
-                                                    Escribe una pregunta
-                                                    concreta para recibir una
-                                                    respuesta más útil.
-                                                </CardDescription>
-                                            </div>
-                                            {activeConversation && (
-                                                <Form
-                                                    {...ChatController.destroy.form(
-                                                        activeConversation.id,
-                                                    )}
-                                                    options={{
-                                                        preserveScroll: true,
-                                                    }}
-                                                >
-                                                    {({ processing }) => (
-                                                        <Button
-                                                            variant="outline"
-                                                            disabled={
-                                                                processing
-                                                            }
-                                                        >
-                                                            <Trash2 data-icon="inline-start" />
-                                                            Ocultar
-                                                        </Button>
-                                                    )}
-                                                </Form>
-                                            )}
-                                        </div>
-                                    </CardHeader>
+                <div className="flex flex-1 flex-col gap-3 overflow-y-auto bg-muted/20 px-3 py-4">
+                    {latestMessages.map((message) => (
+                        <MessageBubble
+                            key={`${message.role}-${message.id}`}
+                            message={message}
+                        />
+                    ))}
 
-                                    <CardContent className="flex flex-col gap-4">
-                                        <div className="flex h-[44svh] min-h-72 flex-col gap-3 overflow-y-auto rounded-lg border bg-muted/30 p-3">
-                                            {latestMessages.map((message) => (
-                                                <MessageBubble
-                                                    key={`${message.role}-${message.id}`}
-                                                    message={message}
-                                                />
+                    {latestMessages.length === 0 && (
+                        <div className="m-auto flex max-w-64 flex-col items-center gap-3 text-center text-muted-foreground">
+                            <div className="flex size-12 items-center justify-center rounded-md border bg-card">
+                                <MessageSquareText className="size-6" />
+                            </div>
+                            <div className="space-y-1">
+                                <p className="text-sm font-medium text-foreground">
+                                    Empieza una consulta
+                                </p>
+                                <p className="text-sm">
+                                    Puedes preguntar por rutas, dificultad,
+                                    lugares útiles o qué llevar.
+                                </p>
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                <Form
+                    {...ChatController.store.form()}
+                    options={{ preserveScroll: true }}
+                    className="border-t bg-card p-3"
+                >
+                    {({ processing, errors }) => (
+                        <div className="flex flex-col gap-2">
+                            {activeConversation && (
+                                <input
+                                    type="hidden"
+                                    name="conversation_id"
+                                    value={activeConversation.id}
+                                />
+                            )}
+
+                            <div className="grid gap-1">
+                                <Label htmlFor="route_id" className="sr-only">
+                                    Ruta opcional
+                                </Label>
+                                <Select name="route_id" defaultValue="none">
+                                    <SelectTrigger
+                                        id="route_id"
+                                        className="h-9 w-full rounded-md border bg-background text-xs"
+                                        aria-invalid={Boolean(errors.route_id)}
+                                    >
+                                        <SelectValue placeholder="Sin ruta específica" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectGroup>
+                                            <SelectItem value="none">
+                                                Sin ruta específica
+                                            </SelectItem>
+                                            {routes.map((route) => (
+                                                <SelectItem
+                                                    key={route.id}
+                                                    value={String(route.id)}
+                                                >
+                                                    {route.name}
+                                                </SelectItem>
                                             ))}
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                                <InputError message={errors.route_id} />
+                            </div>
 
-                                            {latestMessages.length === 0 && (
-                                                <div className="flex h-full flex-col items-center justify-center gap-2 text-center text-muted-foreground">
-                                                    <MessageSquareText />
-                                                    <p>
-                                                        Pregunta por rutas,
-                                                        preparación o lugares
-                                                        útiles.
-                                                    </p>
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        <Form
-                                            {...ChatController.store.form()}
-                                            options={{ preserveScroll: true }}
-                                            className="grid gap-3"
-                                        >
-                                            {({ processing, errors }) => (
-                                                <>
-                                                    <div className="grid gap-2">
-                                                        <Label htmlFor="route_id">
-                                                            Ruta opcional
-                                                        </Label>
-                                                        <Select
-                                                            name="route_id"
-                                                            defaultValue="none"
-                                                        >
-                                                            <SelectTrigger
-                                                                id="route_id"
-                                                                className="w-full"
-                                                                aria-invalid={Boolean(
-                                                                    errors.route_id,
-                                                                )}
-                                                            >
-                                                                <SelectValue placeholder="Sin ruta específica" />
-                                                            </SelectTrigger>
-                                                            <SelectContent>
-                                                                <SelectGroup>
-                                                                    <SelectItem value="none">
-                                                                        Sin ruta
-                                                                        específica
-                                                                    </SelectItem>
-                                                                    {routes.map(
-                                                                        (
-                                                                            route,
-                                                                        ) => (
-                                                                            <SelectItem
-                                                                                key={
-                                                                                    route.id
-                                                                                }
-                                                                                value={String(
-                                                                                    route.id,
-                                                                                )}
-                                                                            >
-                                                                                {
-                                                                                    route.name
-                                                                                }
-                                                                            </SelectItem>
-                                                                        ),
-                                                                    )}
-                                                                </SelectGroup>
-                                                            </SelectContent>
-                                                        </Select>
-                                                        <InputError
-                                                            message={
-                                                                errors.route_id
-                                                            }
-                                                        />
-                                                    </div>
-
-                                                    <div className="grid gap-2">
-                                                        <Label htmlFor="message">
-                                                            Mensaje
-                                                        </Label>
-                                                        <textarea
-                                                            id="message"
-                                                            name="message"
-                                                            required
-                                                            className={
-                                                                textareaClass
-                                                            }
-                                                            placeholder="Ej. ¿Qué ruta me recomiendas para una salida familiar?"
-                                                            aria-invalid={Boolean(
-                                                                errors.message,
-                                                            )}
-                                                            disabled={
-                                                                !canSend ||
-                                                                processing
-                                                            }
-                                                        />
-                                                        <InputError
-                                                            message={
-                                                                errors.message
-                                                            }
-                                                        />
-                                                    </div>
-
-                                                    <CardFooter className="px-0 pb-0">
-                                                        <Button
-                                                            disabled={
-                                                                !canSend ||
-                                                                processing
-                                                            }
-                                                            className="w-full"
-                                                        >
-                                                            <Send data-icon="inline-start" />
-                                                            Enviar
-                                                        </Button>
-                                                    </CardFooter>
-                                                </>
-                                            )}
-                                        </Form>
-                                    </CardContent>
-                                </Card>
-                            ),
-                        },
-                        {
-                            value: 'history',
-                            label: 'Historial',
-                            badge: conversations.length,
-                            content: (
-                                <Card>
-                                    <CardHeader>
-                                        <CardTitle>Historial</CardTitle>
-                                        <CardDescription>
-                                            Consultas anteriores disponibles
-                                            para continuar rápidamente.
-                                        </CardDescription>
-                                    </CardHeader>
-                                    <CardContent className="flex flex-col gap-2">
-                                        {conversations.map((conversation) => (
-                                            <Link
-                                                key={conversation.id}
-                                                href={`/chat?conversation=${conversation.id}`}
-                                                replace
-                                                prefetch
-                                                className={cn(
-                                                    'rounded-lg border bg-card p-3 text-sm transition-colors hover:bg-accent/70',
-                                                    activeConversation?.id ===
-                                                        conversation.id &&
-                                                        'border-primary bg-secondary text-secondary-foreground',
-                                                )}
-                                            >
-                                                <div className="flex items-center justify-between gap-2">
-                                                    <strong>
-                                                        {conversation.title ??
-                                                            `Consulta ${conversation.id}`}
-                                                    </strong>
-                                                    <Badge variant="outline">
-                                                        {
-                                                            conversation.messages_count
-                                                        }
-                                                    </Badge>
-                                                </div>
-                                                {conversation.last_message && (
-                                                    <p className="mt-1 line-clamp-2 text-muted-foreground">
-                                                        {
-                                                            conversation.last_message
-                                                        }
-                                                    </p>
-                                                )}
-                                            </Link>
-                                        ))}
-
-                                        {conversations.length === 0 && (
-                                            <p className="text-sm text-muted-foreground">
-                                                Aún no hay consultas anteriores.
-                                            </p>
-                                        )}
-                                    </CardContent>
-                                </Card>
-                            ),
-                        },
-                    ]}
-                />
-            </div>
+                            <div className="flex items-end gap-2 rounded-lg border bg-background px-2 py-1">
+                                <textarea
+                                    id="message"
+                                    name="message"
+                                    required
+                                    rows={1}
+                                    className={textareaClass}
+                                    placeholder="Escribe tu mensaje..."
+                                    aria-invalid={Boolean(errors.message)}
+                                    disabled={!canSend || processing}
+                                />
+                                <Button
+                                    size="icon"
+                                    disabled={!canSend || processing}
+                                    className="mb-1 size-9 shrink-0 rounded-md"
+                                    aria-label="Enviar mensaje"
+                                >
+                                    <Send className="size-4" />
+                                </Button>
+                            </div>
+                            <InputError message={errors.message} />
+                        </div>
+                    )}
+                </Form>
+            </section>
         </>
+    );
+}
+
+function HistorySheet({
+    conversations,
+    activeConversation,
+}: {
+    conversations: ConversationSummary[];
+    activeConversation: ChatConversation | null;
+}) {
+    return (
+        <Sheet>
+            <SheetTrigger asChild>
+                <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    className="size-9 shrink-0 rounded-md"
+                    aria-label="Abrir historial"
+                >
+                    <History className="size-4" />
+                </Button>
+            </SheetTrigger>
+            <SheetContent
+                side="right"
+                className="w-[86vw] gap-0 p-0 sm:max-w-sm"
+            >
+                <SheetHeader className="border-b p-4 pr-10">
+                    <SheetTitle>Historial</SheetTitle>
+                    <SheetDescription>
+                        Continúa una consulta anterior o empieza una nueva.
+                    </SheetDescription>
+                </SheetHeader>
+
+                <div className="flex flex-1 flex-col gap-3 overflow-y-auto p-4">
+                    <Button variant="outline" asChild className="justify-start">
+                        <Link href="/chat?new=1" replace prefetch>
+                            <Plus data-icon="inline-start" />
+                            Nueva consulta
+                        </Link>
+                    </Button>
+
+                    <div className="flex flex-col gap-2">
+                        {conversations.map((conversation) => (
+                            <Link
+                                key={conversation.id}
+                                href={`/chat?conversation=${conversation.id}`}
+                                replace
+                                prefetch
+                                className={cn(
+                                    'rounded-lg border bg-card p-3 text-sm transition-colors hover:bg-accent/70',
+                                    activeConversation?.id ===
+                                        conversation.id &&
+                                        'border-primary bg-secondary text-secondary-foreground',
+                                )}
+                            >
+                                <div className="flex items-start justify-between gap-2">
+                                    <strong className="line-clamp-1">
+                                        {conversation.title ??
+                                            `Consulta ${conversation.id}`}
+                                    </strong>
+                                    <span className="text-xs text-muted-foreground">
+                                        {conversation.messages_count}
+                                    </span>
+                                </div>
+                                {conversation.last_message && (
+                                    <p className="mt-1 line-clamp-2 text-muted-foreground">
+                                        {conversation.last_message}
+                                    </p>
+                                )}
+                            </Link>
+                        ))}
+
+                        {conversations.length === 0 && (
+                            <p className="rounded-lg border bg-muted/30 p-3 text-sm text-muted-foreground">
+                                Aún no hay consultas guardadas.
+                            </p>
+                        )}
+                    </div>
+                </div>
+            </SheetContent>
+        </Sheet>
     );
 }
 
@@ -387,17 +333,22 @@ function MessageBubble({ message }: { message: ChatMessage }) {
         <div className={cn('flex', isUser ? 'justify-end' : 'justify-start')}>
             <div
                 className={cn(
-                    'max-w-[88%] rounded-lg border px-3 py-2 text-sm',
+                    'max-w-[82%] rounded-lg px-3 py-2 text-sm leading-relaxed shadow-sm',
                     isUser
-                        ? 'border-primary bg-primary text-primary-foreground'
-                        : 'border-border bg-card',
+                        ? 'bg-primary text-primary-foreground'
+                        : 'border bg-card text-card-foreground',
                 )}
             >
-                <div className="mb-1 flex items-center gap-2 text-xs opacity-80">
-                    <span>{isUser ? 'Tú' : 'Asistente'}</span>
+                <div
+                    className={cn(
+                        'mb-1 text-[0.7rem] font-medium opacity-80',
+                        isUser ? 'text-primary-foreground' : 'text-primary',
+                    )}
+                >
+                    {isUser ? 'Tú' : 'Guía'}
                     {message.sent_at && (
-                        <span>
-                            · {new Date(message.sent_at).toLocaleString()}
+                        <span className="ml-1 opacity-70">
+                            · {new Date(message.sent_at).toLocaleTimeString()}
                         </span>
                     )}
                 </div>

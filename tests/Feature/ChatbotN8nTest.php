@@ -82,7 +82,7 @@ test('chat page renders without exposing configured webhook url', function () {
             ->has('conversations', 0));
 });
 
-test('chat proxies message to n8n without storing local conversation or messages', function () {
+test('chat proxies message to n8n and stores exchange after response', function () {
     config(['guaranda.n8n.webhook_url' => 'https://n8n.example/webhook/secret-token']);
 
     Http::fake([
@@ -97,11 +97,14 @@ test('chat proxies message to n8n without storing local conversation or messages
             'message' => '¿Qué debo llevar para esta ruta?',
             'route_id' => $route->id,
         ])
-        ->assertRedirect(route('chat.index'))
-        ->assertSessionHas('chat_exchange');
+        ->assertRedirect();
 
-    expect(AiConversation::query()->count())->toBe(0);
-    $this->assertDatabaseCount('mensajes_ia', 0);
+    $conversation = AiConversation::query()->firstOrFail();
+
+    expect(AiConversation::query()->count())->toBe(1)
+        ->and($conversation->messages()->count())->toBe(2)
+        ->and($conversation->messages()->where('role', 'user')->first()?->message)->toBe('¿Qué debo llevar para esta ruta?')
+        ->and($conversation->messages()->where('role', 'assistant')->first()?->message)->toBe('Respuesta IA para Guaranda Go.');
 
     Http::assertSent(function (Request $request) use ($route, $cyclist): bool {
         $payload = $request->data();
@@ -133,7 +136,7 @@ test('chat requires configured webhook before storing messages', function () {
     $this->assertDatabaseCount('mensajes_ia', 0);
 });
 
-test('chat returns transient assistant error when webhook fails without local storage', function () {
+test('chat returns transient assistant error when webhook fails without storing history', function () {
     config(['guaranda.n8n.webhook_url' => 'https://n8n.example/webhook/secret-token']);
 
     Http::fake([

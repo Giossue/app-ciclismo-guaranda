@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Admin\Concerns;
 
+use App\Models\PoiCategory;
 use App\Models\PointOfInterest;
 use App\Models\RouteCategory;
 use App\Models\RouteDifficulty;
@@ -64,6 +65,12 @@ trait ValidatesRoutePayload
             'additional_images_text' => ['nullable', 'string', 'max:10000'],
             'poi_ids' => ['nullable', 'array'],
             'poi_ids.*' => ['integer', Rule::exists(PointOfInterest::class, 'id')->where('active', true)],
+            'new_pois' => ['nullable', 'array', 'max:20'],
+            'new_pois.*.name' => ['required_with:new_pois', 'string', 'max:255'],
+            'new_pois.*.poi_category_id' => ['required_with:new_pois', 'integer', Rule::exists(PoiCategory::class, 'id')],
+            'new_pois.*.description' => ['nullable', 'string', 'max:2000'],
+            'new_pois.*.latitude' => ['required_with:new_pois', 'numeric', 'between:-90,90'],
+            'new_pois.*.longitude' => ['required_with:new_pois', 'numeric', 'between:-180,180'],
         ];
     }
 

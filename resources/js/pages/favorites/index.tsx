@@ -51,16 +51,11 @@ export default function FavoritesIndex({ favorites }: Props) {
             <Head title="Favoritas" />
 
             <div className="flex flex-col gap-4">
-                <div className="flex flex-col gap-3 rounded-lg border bg-card p-4 sm:flex-row sm:items-start sm:justify-between">
+                <div className="rounded-lg border bg-card p-4">
                     <Heading
                         title="Favoritas"
                         description="Tus rutas guardadas para encontrarlas rápido."
                     />
-                    <Button variant="outline" asChild>
-                        <Link href="/routes" prefetch>
-                            Ver rutas
-                        </Link>
-                    </Button>
                 </div>
 
                 <div className="grid gap-3">

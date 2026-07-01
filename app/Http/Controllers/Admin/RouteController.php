@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreRouteRequest;
 use App\Http\Requests\Admin\UpdateRouteRequest;
 use App\Models\CyclingRoute;
+use App\Models\PoiCategory;
 use App\Models\PointOfInterest;
 use App\Models\RouteCategory;
 use App\Models\RouteDifficulty;
@@ -133,6 +134,7 @@ class RouteController extends Controller
             'difficulties' => RouteDifficulty::query()->orderBy('id')->get(['id', 'name']),
             'transportModes' => TransportMode::query()->orderBy('id')->get(['id', 'name']),
             'routingEngines' => RoutingEngine::query()->where('active', true)->orderBy('id')->get(['id', 'name']),
+            'poiCategories' => PoiCategory::query()->orderBy('name')->get(['id', 'name']),
             'pois' => PointOfInterest::query()
                 ->with('category:id,name')
                 ->where('active', true)
@@ -213,7 +215,12 @@ class RouteController extends Controller
             $route->images()->create($imageRow);
         }
 
-        $route->pointsOfInterest()->sync($this->poiSyncRows($payload));
+        $poiIds = [
+            ...$this->normalizedPoiIds($payload),
+            ...$this->createRoutePois($payload),
+        ];
+
+        $route->pointsOfInterest()->sync($this->poiSyncRowsFromIds($poiIds));
     }
 
     private function syncPostgisGeometry(RouteGeometry $geometry): void
@@ -246,6 +253,7 @@ class RouteController extends Controller
             || $route->recommendations->pluck('text')->values()->all() !== $this->splitLines($payload['recommendations_text'])
             || $route->observations->pluck('text')->values()->all() !== $this->splitLines($payload['observations_text'])
             || $this->existingImageRows($route) !== $this->imageRows($payload)
+            || $this->hasNewRoutePois($payload)
             || $route->pointsOfInterest->pluck('id')->map(fn ($id): int => (int) $id)->sort()->values()->all() !== $this->normalizedPoiIds($payload);
     }
 
@@ -317,14 +325,14 @@ class RouteController extends Controller
     }
 
     /**
-     * @param  array<string, mixed>  $payload
+     * @param  list<int>  $ids
      * @return array<int, array{sort_order: int, is_required: bool, distance_from_start_km: null, route_observation: null}>
      */
-    private function poiSyncRows(array $payload): array
+    private function poiSyncRowsFromIds(array $ids): array
     {
         $rows = [];
 
-        foreach ($this->normalizedPoiIds($payload) as $index => $id) {
+        foreach (array_values(array_unique($ids)) as $index => $id) {
             $rows[$id] = [
                 'sort_order' => $index + 1,
                 'is_required' => false,
@@ -334,6 +342,83 @@ class RouteController extends Controller
         }
 
         return $rows;
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     * @return list<int>
+     */
+    private function createRoutePois(array $payload): array
+    {
+        $createdIds = [];
+
+        foreach ($this->normalizedNewPois($payload) as $poiPayload) {
+            /** @var PointOfInterest $poi */
+            $poi = PointOfInterest::query()->create([
+                'poi_category_id' => $poiPayload['poi_category_id'],
+                'name' => $poiPayload['name'],
+                'description' => $poiPayload['description'],
+                'observations' => null,
+                'latitude' => $poiPayload['latitude'],
+                'longitude' => $poiPayload['longitude'],
+                'address' => null,
+                'phone' => null,
+                'active' => true,
+            ]);
+
+            $this->syncPostgisPoint($poi);
+            $createdIds[] = $poi->id;
+        }
+
+        return $createdIds;
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     */
+    private function hasNewRoutePois(array $payload): bool
+    {
+        return $this->normalizedNewPois($payload) !== [];
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     * @return list<array{name: string, poi_category_id: int, description: string|null, latitude: float, longitude: float}>
+     */
+    private function normalizedNewPois(array $payload): array
+    {
+        $pois = is_array($payload['new_pois'] ?? null) ? $payload['new_pois'] : [];
+        $normalized = [];
+
+        foreach ($pois as $poi) {
+            if (! is_array($poi) || trim((string) ($poi['name'] ?? '')) === '') {
+                continue;
+            }
+
+            $normalized[] = [
+                'name' => trim((string) $poi['name']),
+                'poi_category_id' => (int) $poi['poi_category_id'],
+                'description' => isset($poi['description']) && trim((string) $poi['description']) !== ''
+                    ? trim((string) $poi['description'])
+                    : null,
+                'latitude' => (float) $poi['latitude'],
+                'longitude' => (float) $poi['longitude'],
+            ];
+        }
+
+        return $normalized;
+    }
+
+    private function syncPostgisPoint(PointOfInterest $poi): void
+    {
+        if (DB::getDriverName() !== 'pgsql' || ! Schema::hasColumn('puntos_interes', 'geom')) {
+            return;
+        }
+
+        DB::statement(
+            'UPDATE puntos_interes SET geom = ST_SetSRID(ST_MakePoint(?, ?), 4326) WHERE id = ?',
+            [(float) $poi->longitude, (float) $poi->latitude, $poi->id]
+        );
     }
 
     /**

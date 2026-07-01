@@ -15,6 +15,10 @@ class StoreChatMessageRequest extends FormRequest
         if ($this->input('route_id') === 'none' || $this->input('route_id') === '') {
             $this->merge(['route_id' => null]);
         }
+
+        if ($this->input('conversation_id') === '') {
+            $this->merge(['conversation_id' => null]);
+        }
     }
 
     public function authorize(): bool
@@ -30,6 +34,7 @@ class StoreChatMessageRequest extends FormRequest
         return [
             'message' => ['required', 'string', 'min:2', 'max:2000'],
             'route_id' => ['nullable', 'integer', Rule::exists(CyclingRoute::class, 'id')],
+            'conversation_id' => ['nullable', 'integer', Rule::exists('conversaciones_ia', 'id')],
         ];
     }
 

@@ -124,7 +124,6 @@ test('cyclist can not start track for inactive route or duplicate active track',
         ->assertSessionHasErrors('route');
 });
 
-
 test('cyclist can not start a track far from the route start', function () {
     $cyclist = User::factory()->cyclist()->create();
     $route = createRouteForTrackLifecycle();
@@ -221,6 +220,27 @@ test('cyclist can pause resume finish and produce valid summary', function () {
         ->and($track->ended_at)->not->toBeNull()
         ->and($track->is_valid)->toBeTrue()
         ->and($track->summary['is_valid_for_rating'])->toBeTrue();
+});
+
+test('finished track is not exposed as active on route detail', function () {
+    $cyclist = User::factory()->cyclist()->create();
+    $route = createRouteForTrackLifecycle(distanceKm: 10.0);
+    $track = startTrackForUser($cyclist, $route);
+
+    $this->actingAs($cyclist)
+        ->patch(route('tracks.finish', $track))
+        ->assertRedirect(route('tracks.show', $track));
+
+    $track->refresh();
+
+    expect($track->status?->name)->toBe('finalizado');
+
+    $this->actingAs($cyclist)
+        ->get(route('routes.show', $route->slug))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('routes/show')
+            ->where('activeTrack', null));
 });
 
 test('cancelled track is not valid', function () {

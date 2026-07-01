@@ -19,6 +19,7 @@ import {
     CircleMarker,
     GeoJSON,
     MapContainer,
+    Polyline,
     Popup,
     TileLayer,
     useMap,
@@ -28,13 +29,14 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { mediaUrl } from '@/lib/media';
 import { cn } from '@/lib/utils';
-import type { CyclingRouteMapItem, RoutePoi } from '@/types';
+import type { ActiveTrack, CyclingRouteMapItem, RoutePoi } from '@/types';
 
 type Props = {
     routes: CyclingRouteMapItem[];
     selectedSlug?: string;
     className?: string;
     mode?: 'overview' | 'detail';
+    activeTrack?: ActiveTrack | null;
 };
 
 type UserLocation = {
@@ -107,12 +109,18 @@ const userPathOptions = {
     fillOpacity: 0.9,
     opacity: 1,
 };
+const userTrackPathOptions = {
+    color: '#2563eb',
+    opacity: 0.95,
+    weight: 6,
+};
 
 export default function RouteMap({
     routes,
     selectedSlug,
     className,
     mode = 'detail',
+    activeTrack = null,
 }: Props) {
     const [isOnline, setIsOnline] = useState(() =>
         typeof navigator === 'undefined' ? true : navigator.onLine,
@@ -291,8 +299,16 @@ export default function RouteMap({
                         url={activeLayer.url}
                     />
 
-                    <FitRouteBounds routes={routes} filters={filters} />
+                    <FitRouteBounds
+                        routes={routes}
+                        filters={filters}
+                        activeTrack={activeTrack}
+                    />
                     <FlyToUserLocation location={userLocation} />
+                    <UserTrackLine
+                        activeTrack={activeTrack}
+                        userLocation={userLocation}
+                    />
 
                     {routes.map((route) => (
                         <RouteLayers
@@ -350,6 +366,51 @@ function FilterButton({
             <Icon data-icon="inline-start" />
             {label}
         </Button>
+    );
+}
+
+function UserTrackLine({
+    activeTrack,
+    userLocation,
+}: {
+    activeTrack: ActiveTrack | null;
+    userLocation: UserLocation | null;
+}) {
+    const points = useMemo(() => {
+        const trackPoints = activeTrack?.points ?? [];
+        const line = trackPoints.map((point): [number, number] => [
+            point.latitude,
+            point.longitude,
+        ]);
+
+        if (userLocation) {
+            const last = line.at(-1);
+            const current: [number, number] = [
+                userLocation.latitude,
+                userLocation.longitude,
+            ];
+
+            if (!last || distanceBetweenLatLng(last, current) > 2) {
+                line.push(current);
+            }
+        }
+
+        return line;
+    }, [activeTrack, userLocation]);
+
+    if (points.length < 2) {
+        return null;
+    }
+
+    return (
+        <Polyline pathOptions={userTrackPathOptions} positions={points}>
+            <Popup>
+                <div className="flex flex-col gap-1 text-sm">
+                    <strong>Tu recorrido</strong>
+                    <span>Trayecto registrado con tu GPS.</span>
+                </div>
+            </Popup>
+        </Polyline>
     );
 }
 
@@ -511,14 +572,20 @@ function PoiPopup({ poi }: { poi: RoutePoi }) {
 function FitRouteBounds({
     routes,
     filters,
+    activeTrack,
 }: {
     routes: CyclingRouteMapItem[];
     filters: OverlayFilters;
+    activeTrack: ActiveTrack | null;
 }) {
     const map = useMap();
 
     useEffect(() => {
         const points: L.LatLngExpression[] = [];
+
+        activeTrack?.points.forEach((point) => {
+            points.push([point.latitude, point.longitude]);
+        });
 
         routes.forEach((route) => {
             if (filters.tracks && route.geojson) {
@@ -554,7 +621,7 @@ function FitRouteBounds({
         if (bounds.isValid()) {
             map.fitBounds(bounds, { padding: [24, 24], maxZoom: 15 });
         }
-    }, [filters, map, routes]);
+    }, [activeTrack, filters, map, routes]);
 
     return null;
 }
@@ -571,6 +638,27 @@ function FlyToUserLocation({ location }: { location: UserLocation | null }) {
     }, [location, map]);
 
     return null;
+}
+
+function distanceBetweenLatLng(
+    from: [number, number],
+    to: [number, number],
+): number {
+    const earthRadiusMeters = 6371000;
+    const latitudeDelta = degreesToRadians(to[0] - from[0]);
+    const longitudeDelta = degreesToRadians(to[1] - from[1]);
+    const fromLat = degreesToRadians(from[0]);
+    const toLat = degreesToRadians(to[0]);
+
+    const a =
+        Math.sin(latitudeDelta / 2) ** 2 +
+        Math.cos(fromLat) * Math.cos(toLat) * Math.sin(longitudeDelta / 2) ** 2;
+
+    return earthRadiusMeters * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function degreesToRadians(value: number): number {
+    return (value * Math.PI) / 180;
 }
 
 function mapCenter(routes: CyclingRouteMapItem[]): [number, number] {

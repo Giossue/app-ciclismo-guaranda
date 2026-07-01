@@ -11,6 +11,7 @@ type Props = {
     difficulties: CatalogOption[];
     transportModes: CatalogOption[];
     routingEngines: CatalogOption[];
+    poiCategories: CatalogOption[];
     pois: RoutePoiOption[];
     defaultGeojson?: string | null;
 };
@@ -21,6 +22,7 @@ export default function AdminRoutesCreate({
     difficulties,
     transportModes,
     routingEngines,
+    poiCategories,
     pois,
     defaultGeojson,
 }: Props) {
@@ -41,6 +43,7 @@ export default function AdminRoutesCreate({
                     difficulties={difficulties}
                     transportModes={transportModes}
                     routingEngines={routingEngines}
+                    poiCategories={poiCategories}
                     pois={pois}
                     defaultGeojson={defaultGeojson}
                 />

@@ -12,6 +12,7 @@ type Props = {
     difficulties: CatalogOption[];
     transportModes: CatalogOption[];
     routingEngines: CatalogOption[];
+    poiCategories: CatalogOption[];
     pois: RoutePoiOption[];
     route: NonNullable<RouteFormData>;
 };
@@ -22,6 +23,7 @@ export default function AdminRoutesEdit({
     difficulties,
     transportModes,
     routingEngines,
+    poiCategories,
     pois,
     route,
 }: Props) {
@@ -43,6 +45,7 @@ export default function AdminRoutesEdit({
                     difficulties={difficulties}
                     transportModes={transportModes}
                     routingEngines={routingEngines}
+                    poiCategories={poiCategories}
                     pois={pois}
                 />
             </div>
