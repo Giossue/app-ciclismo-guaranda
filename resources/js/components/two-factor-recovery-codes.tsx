@@ -105,14 +105,14 @@ export default function TwoFactorRecoveryCodes({
                     className={`relative overflow-hidden transition-all duration-300 ${codesAreVisible ? 'h-auto opacity-100' : 'h-0 opacity-0'}`}
                     aria-hidden={!codesAreVisible}
                 >
-                    <div className="mt-3 space-y-3">
+                    <div className="mt-3 flex flex-col gap-3">
                         {errors?.length ? (
                             <AlertError errors={errors} />
                         ) : (
                             <>
                                 <div
                                     ref={codesSectionRef}
-                                    className="grid gap-1 rounded-lg bg-muted p-4 font-mono text-sm"
+                                    className="grid gap-1 rounded-2xl bg-muted p-4 font-mono text-sm"
                                     role="list"
                                     aria-label="Códigos de recuperación"
                                 >
@@ -128,7 +128,7 @@ export default function TwoFactorRecoveryCodes({
                                         ))
                                     ) : (
                                         <div
-                                            className="space-y-2"
+                                            className="flex flex-col gap-2"
                                             aria-label="Cargando códigos de recuperación"
                                         >
                                             {Array.from(

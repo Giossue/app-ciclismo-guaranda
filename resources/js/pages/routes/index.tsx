@@ -43,7 +43,7 @@ export default function RoutesIndex({
             <Head title="Rutas" />
 
             <div className="flex flex-col gap-4">
-                <div className="rounded-lg border bg-card p-4">
+                <div className="rounded-2xl border bg-card p-4">
                     <Heading
                         title="Rutas"
                         description="Elige una ruta, revisa el mapa o guarda tus favoritas."
@@ -110,7 +110,7 @@ export default function RoutesIndex({
                 )}
 
                 <div className="text-sm text-muted-foreground">
-                    {routes.from ?? 0}–{routes.to ?? 0} de {routes.total} rutas.
+                    {routes.from ?? 0}-{routes.to ?? 0} de {routes.total} rutas.
                 </div>
             </div>
         </>
@@ -125,7 +125,7 @@ function CategoryFilter({
     selectedCategory: number | null;
 }) {
     return (
-        <div className="-mx-4 overflow-x-auto border-y bg-card px-4 py-2 md:mx-0 md:rounded-lg md:border">
+        <div className="-mx-4 overflow-x-auto border-y bg-card px-4 py-2 md:mx-0 md:rounded-2xl md:border">
             <div className="flex w-max min-w-full gap-2">
                 <Button
                     variant={
@@ -216,14 +216,14 @@ function RoutesList({ routes }: { routes: CyclingRouteMapItem[] }) {
                         </div>
                         {route.metric && (
                             <div className="grid grid-cols-2 gap-2">
-                                <div className="flex items-center gap-2 rounded-md border bg-muted/30 p-2">
+                                <div className="flex items-center gap-2 rounded-xl border bg-muted/30 p-2">
                                     <Bike />
                                     <span>
                                         {route.metric.distance_km.toLocaleString()}{' '}
                                         km
                                     </span>
                                 </div>
-                                <div className="flex items-center gap-2 rounded-md border bg-muted/30 p-2">
+                                <div className="flex items-center gap-2 rounded-xl border bg-muted/30 p-2">
                                     <Clock />
                                     <span>
                                         {route.metric.estimated_time_minutes}{' '}

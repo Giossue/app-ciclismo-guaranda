@@ -222,7 +222,7 @@ export default function AdminPoisIndex({
                 )}
 
                 <div className="text-sm text-muted-foreground">
-                    Mostrando {pois.from ?? 0}–{pois.to ?? 0} de {pois.total}{' '}
+                    Mostrando {pois.from ?? 0}-{pois.to ?? 0} de {pois.total}{' '}
                     POIs.
                 </div>
             </div>

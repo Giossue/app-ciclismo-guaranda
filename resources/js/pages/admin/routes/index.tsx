@@ -194,7 +194,7 @@ export default function AdminRoutesIndex({ routes }: Props) {
                 )}
 
                 <div className="text-sm text-muted-foreground">
-                    Mostrando {routes.from ?? 0}–{routes.to ?? 0} de{' '}
+                    Mostrando {routes.from ?? 0}-{routes.to ?? 0} de{' '}
                     {routes.total} rutas.
                 </div>
             </div>

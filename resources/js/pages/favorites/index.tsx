@@ -51,7 +51,7 @@ export default function FavoritesIndex({ favorites }: Props) {
             <Head title="Favoritas" />
 
             <div className="flex flex-col gap-4">
-                <div className="rounded-lg border bg-card p-4">
+                <div className="rounded-2xl border bg-card p-4">
                     <Heading
                         title="Favoritas"
                         description="Tus rutas guardadas para encontrarlas rápido."
@@ -86,7 +86,7 @@ export default function FavoritesIndex({ favorites }: Props) {
                                 </CardHeader>
 
                                 <CardContent className="grid gap-2 text-sm text-muted-foreground sm:grid-cols-3">
-                                    <div className="flex items-center gap-2 rounded-md border bg-muted/30 p-2">
+                                    <div className="flex items-center gap-2 rounded-xl border bg-muted/30 p-2">
                                         <MapPinned />
                                         <span className="line-clamp-1">
                                             {favorite.route.start_name} →{' '}
@@ -95,14 +95,14 @@ export default function FavoritesIndex({ favorites }: Props) {
                                     </div>
                                     {favorite.route.metric && (
                                         <>
-                                            <div className="flex items-center gap-2 rounded-md border bg-muted/30 p-2">
+                                            <div className="flex items-center gap-2 rounded-xl border bg-muted/30 p-2">
                                                 <Bike />
                                                 <span>
                                                     {favorite.route.metric.distance_km.toLocaleString()}{' '}
                                                     km
                                                 </span>
                                             </div>
-                                            <div className="flex items-center gap-2 rounded-md border bg-muted/30 p-2">
+                                            <div className="flex items-center gap-2 rounded-xl border bg-muted/30 p-2">
                                                 <Clock />
                                                 <span>
                                                     {
@@ -160,7 +160,7 @@ export default function FavoritesIndex({ favorites }: Props) {
                 )}
 
                 <div className="text-sm text-muted-foreground">
-                    {favorites.from ?? 0}–{favorites.to ?? 0} de{' '}
+                    {favorites.from ?? 0}-{favorites.to ?? 0} de{' '}
                     {favorites.total} favoritas.
                 </div>
             </div>

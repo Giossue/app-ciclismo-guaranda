@@ -119,7 +119,7 @@ function SettingBadge({ value }: { value: SettingValue }) {
         );
     }
 
-    return <Badge variant="outline">{String(value ?? '—')}</Badge>;
+    return <Badge variant="outline">{String(value ?? 'Sin datos')}</Badge>;
 }
 
 AdminSettingsIndex.layout = {

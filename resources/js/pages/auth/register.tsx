@@ -261,7 +261,7 @@ function PasswordChecklist({ checks }: { checks: PasswordCheck[] }) {
                         className="flex items-center gap-2 text-sm"
                     >
                         {check.valid ? (
-                            <CheckCircle2 className="size-4 text-emerald-600" />
+                            <CheckCircle2 className="size-4 text-success" />
                         ) : (
                             <XCircle className="size-4 text-muted-foreground" />
                         )}

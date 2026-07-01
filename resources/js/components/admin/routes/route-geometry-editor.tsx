@@ -80,7 +80,7 @@ const standardLayer = {
 const satelliteLayer = {
     label: 'Satélite',
     attribution:
-        'Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community',
+        'Tiles &copy; Esri - Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community',
     url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
 };
 const emptyGeometry: GeometryState = {
@@ -337,12 +337,12 @@ function PoiPlacementLayer({
                         pathOptions={{
                             color:
                                 poi.key === activePoiKey
-                                    ? '#f97316'
-                                    : '#0369a1',
+                                    ? 'var(--warning)'
+                                    : 'var(--info)',
                             fillColor:
                                 poi.key === activePoiKey
-                                    ? '#fb923c'
-                                    : '#38bdf8',
+                                    ? 'var(--warning)'
+                                    : 'var(--info)',
                             fillOpacity: 0.95,
                             opacity: 1,
                         }}
@@ -376,7 +376,7 @@ function DrawToolbar({
 
         if (initialLatLngs && initialLatLngs.length >= 2) {
             const existingLine = L.polyline(initialLatLngs, {
-                color: '#f97316',
+                color: 'var(--warning)',
                 weight: 6,
             });
             editableLayers.addLayer(existingLine);
@@ -391,7 +391,7 @@ function DrawToolbar({
             draw: {
                 polyline: {
                     shapeOptions: {
-                        color: '#f97316',
+                        color: 'var(--warning)',
                         weight: 6,
                     },
                 },
@@ -502,8 +502,8 @@ function AdminLocationMarker({ requestToken }: { requestToken: number }) {
         <CircleMarker
             center={location}
             pathOptions={{
-                color: '#7c3aed',
-                fillColor: '#a78bfa',
+                color: 'var(--secondary)',
+                fillColor: 'var(--secondary)',
                 fillOpacity: 0.9,
                 opacity: 1,
             }}

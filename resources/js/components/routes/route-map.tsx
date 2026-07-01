@@ -64,36 +64,36 @@ const standardLayer = {
 const satelliteLayer = {
     label: 'Satélite',
     attribution:
-        'Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community',
+        'Tiles &copy; Esri - Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community',
     url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
 };
 const routePathOptions = {
-    color: '#f97316',
-    fillColor: '#f97316',
+    color: 'var(--warning)',
+    fillColor: 'var(--warning)',
     opacity: 0.98,
     weight: 5,
 };
 const routeHaloPathOptions = {
-    color: '#111827',
-    fillColor: '#111827',
+    color: 'var(--foreground)',
+    fillColor: 'var(--foreground)',
     opacity: 0.85,
     weight: 9,
 };
 const startPathOptions = {
-    color: '#0f766e',
-    fillColor: '#14b8a6',
+    color: 'var(--primary)',
+    fillColor: 'var(--primary)',
     fillOpacity: 0.9,
     opacity: 1,
 };
 const endPathOptions = {
-    color: '#ea580c',
-    fillColor: '#fb923c',
+    color: 'var(--warning)',
+    fillColor: 'var(--warning)',
     fillOpacity: 0.9,
     opacity: 1,
 };
 const poiPathOptions = {
-    color: '#0369a1',
-    fillColor: '#38bdf8',
+    color: 'var(--info)',
+    fillColor: 'var(--info)',
     fillOpacity: 0.9,
     opacity: 1,
 };
@@ -104,13 +104,13 @@ const incidentPathOptions = {
     opacity: 1,
 };
 const userPathOptions = {
-    color: '#7c3aed',
-    fillColor: '#a78bfa',
+    color: 'var(--secondary)',
+    fillColor: 'var(--secondary)',
     fillOpacity: 0.9,
     opacity: 1,
 };
 const userTrackPathOptions = {
-    color: '#2563eb',
+    color: 'var(--secondary)',
     opacity: 0.95,
     weight: 6,
 };

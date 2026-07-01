@@ -422,7 +422,7 @@ export default function AdminUsersIndex({ users, roles, genders }: Props) {
                 </div>
 
                 <div className="text-sm text-muted-foreground">
-                    Mostrando {users.from ?? 0}–{users.to ?? 0} de {users.total}{' '}
+                    Mostrando {users.from ?? 0}-{users.to ?? 0} de {users.total}{' '}
                     usuarios.
                 </div>
             </div>

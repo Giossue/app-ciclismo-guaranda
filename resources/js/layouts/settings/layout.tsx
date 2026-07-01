@@ -11,64 +11,52 @@ import { edit as editSecurity } from '@/routes/security';
 import type { NavItem } from '@/types';
 
 const sidebarNavItems: NavItem[] = [
-    {
-        title: 'Perfil',
-        href: edit(),
-        icon: null,
-    },
-    {
-        title: 'Seguridad',
-        href: editSecurity(),
-        icon: null,
-    },
-    {
-        title: 'Apariencia',
-        href: editAppearance(),
-        icon: null,
-    },
+    { title: 'Perfil', href: edit(), icon: null },
+    { title: 'Seguridad', href: editSecurity(), icon: null },
+    { title: 'Apariencia', href: editAppearance(), icon: null },
 ];
 
 export default function SettingsLayout({ children }: PropsWithChildren) {
     const { isCurrentOrParentUrl } = useCurrentUrl();
 
     return (
-        <div className="px-4 py-6">
+        <div className="flex flex-col gap-5">
             <Heading
                 title="Ajustes"
-                description="Administra tu perfil y los ajustes de tu cuenta"
+                description="Administra tu perfil, seguridad y apariencia de la app"
             />
 
-            <div className="flex flex-col lg:flex-row lg:space-x-12">
-                <aside className="w-full max-w-xl lg:w-48">
+            <div className="flex flex-col gap-5 lg:grid lg:grid-cols-[13rem_1fr] lg:gap-8">
+                <aside className="w-full lg:sticky lg:top-20 lg:self-start">
                     <nav
-                        className="flex flex-col space-y-1 space-x-0"
+                        className="flex gap-2 overflow-x-auto rounded-2xl border bg-card/90 p-1 shadow-sm lg:flex-col lg:overflow-visible"
                         aria-label="Ajustes"
                     >
-                        {sidebarNavItems.map((item, index) => (
-                            <Button
-                                key={`${toUrl(item.href)}-${index}`}
-                                size="sm"
-                                variant="ghost"
-                                asChild
-                                className={cn('w-full justify-start', {
-                                    'bg-muted': isCurrentOrParentUrl(item.href),
-                                })}
-                            >
-                                <Link href={item.href}>
-                                    {item.icon && (
-                                        <item.icon className="h-4 w-4" />
+                        {sidebarNavItems.map((item, index) => {
+                            const active = isCurrentOrParentUrl(item.href);
+
+                            return (
+                                <Button
+                                    key={`${toUrl(item.href)}-${index}`}
+                                    size="sm"
+                                    variant={active ? 'default' : 'ghost'}
+                                    asChild
+                                    className={cn(
+                                        'min-w-28 justify-center lg:w-full lg:justify-start',
+                                        active && 'shadow-none',
                                     )}
-                                    {item.title}
-                                </Link>
-                            </Button>
-                        ))}
+                                >
+                                    <Link href={item.href}>{item.title}</Link>
+                                </Button>
+                            );
+                        })}
                     </nav>
                 </aside>
 
-                <Separator className="my-6 lg:hidden" />
+                <Separator className="lg:hidden" />
 
-                <div className="flex-1 md:max-w-2xl">
-                    <section className="max-w-xl space-y-12">
+                <div className="min-w-0 flex-1">
+                    <section className="flex max-w-2xl flex-col gap-8">
                         {children}
                     </section>
                 </div>

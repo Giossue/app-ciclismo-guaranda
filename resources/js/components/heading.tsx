@@ -11,15 +11,15 @@ export default function Heading({
         <header
             className={
                 variant === 'small'
-                    ? 'flex flex-col gap-1'
-                    : 'flex flex-col gap-1.5'
+                    ? 'flex flex-col gap-1.5'
+                    : 'flex flex-col gap-2'
             }
         >
             <h2
                 className={
                     variant === 'small'
-                        ? 'text-base font-semibold tracking-tight'
-                        : 'text-2xl font-black tracking-tight text-foreground sm:text-3xl'
+                        ? 'font-display text-lg leading-tight font-extrabold tracking-[-0.02em] text-foreground'
+                        : 'font-display text-2xl leading-tight font-black tracking-[-0.035em] text-foreground sm:text-3xl'
                 }
             >
                 {title}

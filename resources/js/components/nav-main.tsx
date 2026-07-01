@@ -13,15 +13,18 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
     const { isCurrentUrl } = useCurrentUrl();
 
     return (
-        <SidebarGroup className="px-2 py-0">
-            <SidebarGroupLabel>Guaranda Go</SidebarGroupLabel>
-            <SidebarMenu>
+        <SidebarGroup className="px-2 py-1">
+            <SidebarGroupLabel className="px-3 text-[11px] font-black tracking-[0.08em] text-sidebar-foreground/60 uppercase">
+                Guaranda Go
+            </SidebarGroupLabel>
+            <SidebarMenu className="gap-1">
                 {items.map((item) => (
                     <SidebarMenuItem key={item.title}>
                         <SidebarMenuButton
                             asChild
                             isActive={isCurrentUrl(item.href)}
                             tooltip={{ children: item.title }}
+                            className="min-h-11 rounded-xl font-bold"
                         >
                             <Link href={item.href} prefetch>
                                 {item.icon && <item.icon />}

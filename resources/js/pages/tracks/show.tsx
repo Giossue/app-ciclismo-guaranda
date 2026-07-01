@@ -45,7 +45,7 @@ export default function TracksShow({ track }: Props) {
             <Head title="Resumen de recorrido" />
 
             <div className="flex flex-col gap-4">
-                <div className="flex flex-col gap-3 rounded-lg border bg-card p-4 sm:flex-row sm:items-start sm:justify-between">
+                <div className="flex flex-col gap-3 rounded-2xl border bg-card p-4 sm:flex-row sm:items-start sm:justify-between">
                     <Heading
                         title="Resumen"
                         description={track.route?.name ?? 'Recorrido GPS'}
@@ -200,7 +200,7 @@ function PointsCard({ points }: { points: TrackPoint[] }) {
                 {points.slice(-12).map((point) => (
                     <div
                         key={point.id}
-                        className="flex flex-col gap-1 rounded-lg border p-3 text-sm text-muted-foreground"
+                        className="flex flex-col gap-1 rounded-2xl border p-3 text-sm text-muted-foreground"
                     >
                         <div className="flex items-center gap-2 text-foreground">
                             <MapPinned />
@@ -234,7 +234,7 @@ function PointsCard({ points }: { points: TrackPoint[] }) {
 
 function Metric({ label, value }: { label: string; value: string }) {
     return (
-        <div className="rounded-lg border bg-muted/30 p-3">
+        <div className="rounded-2xl border bg-muted/30 p-3">
             <span className="text-xs tracking-wide text-muted-foreground uppercase">
                 {label}
             </span>

@@ -86,7 +86,7 @@ type Props = {
 };
 
 const textareaClass =
-    'min-h-24 w-full rounded-lg border border-input bg-card px-3 py-3 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/30 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20';
+    'min-h-24 w-full rounded-2xl border border-input bg-card px-3 py-3 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/30 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20';
 
 export default function RoutesShow({
     route,
@@ -99,7 +99,7 @@ export default function RoutesShow({
             <Head title={route.name} />
 
             <div className="flex flex-col gap-4">
-                <div className="flex flex-col gap-3 rounded-lg border bg-card p-4 sm:flex-row sm:items-start sm:justify-between">
+                <div className="flex flex-col gap-3 rounded-2xl border bg-card p-4 sm:flex-row sm:items-start sm:justify-between">
                     <div className="flex flex-col gap-3">
                         <Heading
                             title={route.name}
@@ -249,11 +249,11 @@ function RouteDetailPanel({ route }: { route: CyclingRouteMapItem }) {
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
                 <div className="grid gap-2 text-sm text-muted-foreground sm:grid-cols-2">
-                    <div className="flex items-center gap-2 rounded-md border bg-muted/30 p-2">
+                    <div className="flex items-center gap-2 rounded-xl border bg-muted/30 p-2">
                         <MapPinned />
                         <span>Inicio: {route.start_name}</span>
                     </div>
-                    <div className="flex items-center gap-2 rounded-md border bg-muted/30 p-2">
+                    <div className="flex items-center gap-2 rounded-xl border bg-muted/30 p-2">
                         <MapPinned />
                         <span>Final: {route.end_name}</span>
                     </div>
@@ -324,7 +324,7 @@ function IncidentsPanel({ route }: { route: CyclingRouteMapItem }) {
                 {route.incidents.map((incident) => (
                     <div
                         key={incident.id}
-                        className="flex flex-col gap-1 rounded-lg border bg-card p-3"
+                        className="flex flex-col gap-1 rounded-2xl border bg-card p-3"
                     >
                         <div className="flex flex-wrap gap-2">
                             {incident.type && (
@@ -673,7 +673,7 @@ function degreesToRadians(value: number): number {
 
 function Metric({ label, value }: { label: string; value: string }) {
     return (
-        <div className="rounded-lg border bg-muted/30 p-3">
+        <div className="rounded-2xl border bg-muted/30 p-3">
             <span className="text-xs tracking-wide text-muted-foreground uppercase">
                 {label}
             </span>
@@ -747,7 +747,7 @@ function FavoriteRatingPanel({ route }: { route: CyclingRouteMapItem }) {
                         </Form>
                     )}
 
-                    <div className="rounded-lg border bg-muted/30 p-3 text-sm text-muted-foreground">
+                    <div className="rounded-2xl border bg-muted/30 p-3 text-sm text-muted-foreground">
                         <p>
                             Recorridos válidos para valorar:{' '}
                             <strong className="text-foreground">
@@ -767,7 +767,7 @@ function FavoriteRatingPanel({ route }: { route: CyclingRouteMapItem }) {
                             {...ratingAction}
                             options={{ preserveScroll: true }}
                             encType="multipart/form-data"
-                            className="grid gap-3 rounded-lg border border-primary/10 bg-muted/30 p-3"
+                            className="grid gap-3 rounded-2xl border border-primary/10 bg-muted/30 p-3"
                         >
                             {({ processing, errors }) => (
                                 <>
@@ -924,7 +924,7 @@ function FavoriteRatingPanel({ route }: { route: CyclingRouteMapItem }) {
                         {route.approved_ratings.map((rating) => (
                             <div
                                 key={rating.id}
-                                className="rounded-lg border bg-card p-3"
+                                className="rounded-2xl border bg-card p-3"
                             >
                                 <div className="flex flex-wrap items-center gap-2">
                                     <Badge variant="secondary">
@@ -1311,7 +1311,7 @@ function OfflinePanel({
                 <div className="grid gap-4 lg:grid-cols-2">
                     <form
                         onSubmit={enqueueIncident}
-                        className="grid gap-3 rounded-lg border border-primary/10 bg-muted/30 p-4"
+                        className="grid gap-3 rounded-2xl border border-primary/10 bg-muted/30 p-4"
                     >
                         <div>
                             <h3 className="font-medium">Alerta sin conexión</h3>
@@ -1380,7 +1380,7 @@ function OfflinePanel({
                         </Button>
                     </form>
 
-                    <div className="flex flex-col gap-3 rounded-lg border border-primary/10 bg-muted/30 p-4">
+                    <div className="flex flex-col gap-3 rounded-2xl border border-primary/10 bg-muted/30 p-4">
                         <div>
                             <h3 className="font-medium">Recorrido offline</h3>
                             <p className="text-sm text-muted-foreground">
@@ -1425,7 +1425,7 @@ function PoiCard({ poi }: { poi: RoutePoi }) {
     const image = poi.images?.[0];
 
     return (
-        <div className="flex flex-col gap-3 overflow-hidden rounded-lg border bg-card">
+        <div className="flex flex-col gap-3 overflow-hidden rounded-2xl border bg-card">
             {image && (
                 <img
                     src={mediaUrl(image.image_path)}
@@ -1475,7 +1475,7 @@ function PoiCard({ poi }: { poi: RoutePoi }) {
                 <div className="flex flex-col gap-1 px-3 text-sm text-muted-foreground">
                     {poi.hours.map((hour) => (
                         <span key={`${poi.id}-${hour.weekday}`}>
-                            Día {hour.weekday}: {hour.opens_at ?? '--'}–
+                            Día {hour.weekday}: {hour.opens_at ?? '--'}-
                             {hour.closes_at ?? '--'} {hour.description ?? ''}
                         </span>
                     ))}
@@ -1494,7 +1494,7 @@ function PoiReportForm({ poiId }: { poiId: number }) {
         <Form
             {...PoiReportController.store.form(poiId)}
             options={{ preserveScroll: true }}
-            className="grid gap-2 rounded-lg bg-muted/30 p-3"
+            className="grid gap-2 rounded-2xl bg-muted/30 p-3"
         >
             {({ processing, errors }) => (
                 <>
@@ -1647,7 +1647,7 @@ function PoiSuggestionForm({
 
                             <div className="grid gap-2 md:col-span-2">
                                 <Label>Ubicación del POI</Label>
-                                <div className="overflow-hidden rounded-lg border border-primary/10">
+                                <div className="overflow-hidden rounded-2xl border border-primary/10">
                                     <MapContainer
                                         center={[
                                             selectedPoint?.latitude ??
@@ -1742,8 +1742,8 @@ function SuggestionLocationPicker({
         <CircleMarker
             center={[selectedPoint.latitude, selectedPoint.longitude]}
             pathOptions={{
-                color: '#0f766e',
-                fillColor: '#14b8a6',
+                color: 'var(--primary)',
+                fillColor: 'var(--primary)',
                 fillOpacity: 0.9,
                 opacity: 1,
             }}

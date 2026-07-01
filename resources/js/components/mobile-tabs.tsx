@@ -33,10 +33,10 @@ export function MobileTabs({
     }
 
     return (
-        <section className={cn('flex min-h-0 flex-col gap-3', className)}>
-            <div className="overflow-x-auto py-1">
-                <div className="mx-auto flex w-max max-w-full overflow-hidden rounded-lg border bg-card">
-                    {items.map((item, index) => {
+        <section className={cn('flex min-h-0 flex-col gap-4', className)}>
+            <div className="sticky top-2 z-20 -mx-1 overflow-x-auto px-1 py-1 md:static md:z-auto">
+                <div className="flex w-max max-w-full gap-1 rounded-2xl border bg-card/90 p-1 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-card/75">
+                    {items.map((item) => {
                         const active = item.value === activeItem.value;
 
                         return (
@@ -45,14 +45,25 @@ export function MobileTabs({
                                 type="button"
                                 onClick={() => setActiveValue(item.value)}
                                 className={cn(
-                                    'min-h-10 min-w-24 px-4 text-sm font-medium whitespace-nowrap transition-colors',
-                                    index > 0 && 'border-l',
+                                    'flex min-h-11 min-w-24 touch-manipulation items-center justify-center gap-1.5 rounded-xl px-4 text-sm font-bold whitespace-nowrap transition-[background,color,transform] active:scale-[0.98]',
                                     active
-                                        ? 'bg-foreground text-background'
-                                        : 'bg-card text-foreground hover:bg-muted',
+                                        ? 'bg-primary text-primary-foreground shadow-sm'
+                                        : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
                                 )}
                             >
-                                {item.label}
+                                <span>{item.label}</span>
+                                {item.badge ? (
+                                    <span
+                                        className={cn(
+                                            'rounded-full px-1.5 py-0.5 text-[10px] leading-none font-black',
+                                            active
+                                                ? 'bg-primary-foreground/18 text-primary-foreground'
+                                                : 'bg-muted text-muted-foreground',
+                                        )}
+                                    >
+                                        {item.badge}
+                                    </span>
+                                ) : null}
                             </button>
                         );
                     })}

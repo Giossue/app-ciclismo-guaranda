@@ -45,14 +45,14 @@ export default function ManageTwoFactor(props: Props) {
     }
 
     return (
-        <div className="space-y-6">
+        <div className="flex flex-col gap-6">
             <Heading
                 variant="small"
                 title="Autenticación en dos pasos"
                 description="Administra la autenticación en dos pasos de tu cuenta"
             />
             {twoFactorEnabled ? (
-                <div className="flex flex-col items-start justify-start space-y-4">
+                <div className="flex flex-col items-start justify-start gap-4">
                     <p className="text-sm text-muted-foreground">
                         Se te pedirá un código seguro durante el inicio de
                         sesión. Puedes obtenerlo desde una aplicación compatible
@@ -80,7 +80,7 @@ export default function ManageTwoFactor(props: Props) {
                     />
                 </div>
             ) : (
-                <div className="flex flex-col items-start justify-start space-y-4">
+                <div className="flex flex-col items-start justify-start gap-4">
                     <p className="text-sm text-muted-foreground">
                         Al activar la autenticación en dos pasos, se te pedirá
                         un código seguro al iniciar sesión. Ese código se

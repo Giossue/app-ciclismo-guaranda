@@ -26,7 +26,7 @@ export default function DeleteUser() {
                 title="Desactivar cuenta"
                 description="Deshabilita tu cuenta y cierra la sesión actual"
             />
-            <div className="flex flex-col gap-4 rounded-lg border border-destructive/20 bg-destructive/5 p-4">
+            <div className="flex flex-col gap-4 rounded-2xl border border-destructive/20 bg-destructive/5 p-4">
                 <div className="relative flex flex-col gap-0.5 text-destructive">
                     <p className="font-medium">Advertencia</p>
                     <p className="text-sm">

@@ -91,7 +91,7 @@ type Props = {
 };
 
 const textareaClass =
-    'min-h-28 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-xs outline-none transition-[color,box-shadow] placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20';
+    'min-h-28 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm shadow-sm outline-none transition-[color,box-shadow] placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20';
 
 const experienceOptions = [
     {
@@ -751,7 +751,7 @@ export default function RouteForm({
                                 />
                             ))}
 
-                            <div className="grid gap-3 rounded-lg border bg-muted/20 p-3">
+                            <div className="grid gap-3 rounded-2xl border bg-muted/20 p-3">
                                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                                     <div className="grid gap-1">
                                         <h3 className="text-sm font-semibold">
@@ -775,7 +775,7 @@ export default function RouteForm({
                                 </div>
 
                                 {newPois.length === 0 && (
-                                    <p className="rounded-md border bg-card p-3 text-sm text-muted-foreground">
+                                    <p className="rounded-xl border bg-card p-3 text-sm text-muted-foreground">
                                         Aún no agregas puntos propios a esta
                                         ruta.
                                     </p>
@@ -784,7 +784,7 @@ export default function RouteForm({
                                 {newPois.map((poi, index) => (
                                     <div
                                         key={poi.key}
-                                        className="grid gap-3 rounded-lg border bg-card p-3"
+                                        className="grid gap-3 rounded-2xl border bg-card p-3"
                                     >
                                         <div className="flex items-center justify-between gap-2">
                                             <strong className="text-sm">
@@ -993,7 +993,7 @@ export default function RouteForm({
                                                 <label
                                                     key={poi.id}
                                                     className={cn(
-                                                        'flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-colors',
+                                                        'flex cursor-pointer items-start gap-3 rounded-2xl border p-3 transition-colors',
                                                         checked
                                                             ? 'border-primary bg-primary/5'
                                                             : 'bg-card hover:bg-muted/40',

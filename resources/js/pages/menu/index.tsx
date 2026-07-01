@@ -47,7 +47,7 @@ export default function MenuIndex() {
             <div className="flex flex-col gap-4">
                 <Heading title="Menú" description="Ajustes de tu cuenta." />
 
-                <section className="rounded-lg border bg-card p-4">
+                <section className="rounded-2xl border bg-card p-4">
                     <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
                         Sesión activa
                     </p>
@@ -69,7 +69,7 @@ export default function MenuIndex() {
                     href={logout()}
                     method="post"
                     as="button"
-                    className="flex min-h-12 w-full items-center justify-center gap-2 rounded-lg border border-destructive/30 bg-card px-4 text-sm font-semibold text-destructive transition-colors hover:bg-destructive/10"
+                    className="flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl border border-destructive/30 bg-card px-4 text-sm font-semibold text-destructive transition-colors hover:bg-destructive/10"
                 >
                     <LogOut className="size-5" />
                     Cerrar sesión
@@ -87,7 +87,7 @@ function MenuCard({ item }: { item: AccountItem }) {
             href={item.href}
             prefetch
             className={cn(
-                'flex min-h-16 items-center gap-3 rounded-lg border bg-card p-3 transition-colors',
+                'flex min-h-16 items-center gap-3 rounded-2xl border bg-card p-3 transition-colors',
                 'hover:border-primary/30 hover:bg-accent/70',
             )}
         >

@@ -15,12 +15,12 @@ export default function ForgotPassword({ status }: { status?: string }) {
             <Head title="Recuperar contraseña" />
 
             {status && (
-                <div className="mb-4 text-center text-sm font-medium text-green-600">
+                <div className="mb-4 text-center text-sm font-medium text-success">
                     {status}
                 </div>
             )}
 
-            <div className="space-y-6">
+            <div className="flex flex-col gap-6">
                 <Form {...email.form()}>
                     {({ processing, errors }) => (
                         <>

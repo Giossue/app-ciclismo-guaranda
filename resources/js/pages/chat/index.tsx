@@ -100,10 +100,10 @@ export default function ChatIndex({
         <>
             <Head title="Asistente" />
 
-            <section className="flex min-h-[calc(100svh-7.5rem)] flex-col overflow-hidden rounded-lg border bg-card">
+            <section className="flex min-h-[calc(100svh-7.5rem)] flex-col overflow-hidden rounded-2xl border bg-card">
                 <header className="flex items-center justify-between gap-3 border-b px-4 py-3">
                     <div className="flex min-w-0 items-center gap-3">
-                        <div className="flex size-10 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground">
+                        <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground">
                             <Bot className="size-5" />
                         </div>
                         <div className="min-w-0">
@@ -153,10 +153,10 @@ export default function ChatIndex({
 
                     {latestMessages.length === 0 && (
                         <div className="m-auto flex max-w-64 flex-col items-center gap-3 text-center text-muted-foreground">
-                            <div className="flex size-12 items-center justify-center rounded-md border bg-card">
+                            <div className="flex size-12 items-center justify-center rounded-xl border bg-card">
                                 <MessageSquareText className="size-6" />
                             </div>
-                            <div className="space-y-1">
+                            <div className="flex flex-col gap-1">
                                 <p className="text-sm font-medium text-foreground">
                                     Empieza una consulta
                                 </p>
@@ -191,7 +191,7 @@ export default function ChatIndex({
                                 <Select name="route_id" defaultValue="none">
                                     <SelectTrigger
                                         id="route_id"
-                                        className="h-9 w-full rounded-md border bg-background text-xs"
+                                        className="h-9 w-full rounded-xl border bg-background text-xs"
                                         aria-invalid={Boolean(errors.route_id)}
                                     >
                                         <SelectValue placeholder="Sin ruta específica" />
@@ -215,7 +215,7 @@ export default function ChatIndex({
                                 <InputError message={errors.route_id} />
                             </div>
 
-                            <div className="flex items-end gap-2 rounded-lg border bg-background px-2 py-1">
+                            <div className="flex items-end gap-2 rounded-2xl border bg-background px-2 py-1">
                                 <textarea
                                     id="message"
                                     name="message"
@@ -229,7 +229,7 @@ export default function ChatIndex({
                                 <Button
                                     size="icon"
                                     disabled={!canSend || processing}
-                                    className="mb-1 size-9 shrink-0 rounded-md"
+                                    className="mb-1 size-9 shrink-0 rounded-xl"
                                     aria-label="Enviar mensaje"
                                 >
                                     <Send className="size-4" />
@@ -258,7 +258,7 @@ function HistorySheet({
                     type="button"
                     variant="outline"
                     size="icon"
-                    className="size-9 shrink-0 rounded-md"
+                    className="size-9 shrink-0 rounded-xl"
                     aria-label="Abrir historial"
                 >
                     <History className="size-4" />
@@ -291,7 +291,7 @@ function HistorySheet({
                                 replace
                                 prefetch
                                 className={cn(
-                                    'rounded-lg border bg-card p-3 text-sm transition-colors hover:bg-accent/70',
+                                    'rounded-2xl border bg-card p-3 text-sm transition-colors hover:bg-accent/70',
                                     activeConversation?.id ===
                                         conversation.id &&
                                         'border-primary bg-secondary text-secondary-foreground',
@@ -315,7 +315,7 @@ function HistorySheet({
                         ))}
 
                         {conversations.length === 0 && (
-                            <p className="rounded-lg border bg-muted/30 p-3 text-sm text-muted-foreground">
+                            <p className="rounded-2xl border bg-muted/30 p-3 text-sm text-muted-foreground">
                                 Aún no hay consultas guardadas.
                             </p>
                         )}
@@ -333,7 +333,7 @@ function MessageBubble({ message }: { message: ChatMessage }) {
         <div className={cn('flex', isUser ? 'justify-end' : 'justify-start')}>
             <div
                 className={cn(
-                    'max-w-[82%] rounded-lg px-3 py-2 text-sm leading-relaxed shadow-sm',
+                    'max-w-[82%] rounded-2xl px-3 py-2 text-sm leading-relaxed shadow-sm',
                     isUser
                         ? 'bg-primary text-primary-foreground'
                         : 'border bg-card text-card-foreground',

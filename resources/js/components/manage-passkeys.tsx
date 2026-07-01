@@ -44,14 +44,14 @@ export default function ManagePasskeys(props: Props) {
     }
 
     return (
-        <div className="space-y-6">
+        <div className="flex flex-col gap-6">
             <Heading
                 variant="small"
                 title="Claves de acceso"
                 description="Administra tus claves para iniciar sesión sin contraseña"
             />
 
-            <div className="overflow-hidden rounded-lg border border-border">
+            <div className="overflow-hidden rounded-2xl border border-border">
                 {passkeys.length > 0 ? (
                     passkeys.map((passkey) => (
                         <PasskeyItem

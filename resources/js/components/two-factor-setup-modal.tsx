@@ -73,11 +73,11 @@ function TwoFactorSetupStep({
             ) : (
                 <>
                     <div className="mx-auto flex max-w-md overflow-hidden">
-                        <div className="mx-auto aspect-square w-64 rounded-lg border border-border">
+                        <div className="mx-auto aspect-square w-64 rounded-2xl border border-border">
                             <div className="z-10 flex h-full w-full items-center justify-center p-5">
                                 {qrCodeSvg ? (
                                     <div
-                                        className="aspect-square w-full rounded-lg bg-white p-2 [&_svg]:size-full"
+                                        className="aspect-square w-full rounded-2xl bg-white p-2 [&_svg]:size-full"
                                         dangerouslySetInnerHTML={{
                                             __html: qrCodeSvg,
                                         }}
@@ -108,7 +108,7 @@ function TwoFactorSetupStep({
                         </span>
                     </div>
 
-                    <div className="flex w-full space-x-2">
+                    <div className="flex w-full gap-2">
                         <div className="flex w-full items-stretch overflow-hidden rounded-xl border border-border">
                             {!manualSetupKey ? (
                                 <div className="flex h-full w-full items-center justify-center bg-muted p-3">
@@ -171,9 +171,9 @@ function TwoFactorVerificationStep({
                 <>
                     <div
                         ref={pinInputContainerRef}
-                        className="relative w-full space-y-3"
+                        className="relative flex w-full flex-col gap-3"
                     >
-                        <div className="flex w-full flex-col items-center space-y-3 py-2">
+                        <div className="flex w-full flex-col items-center gap-3 py-2">
                             <InputOTP
                                 id="otp"
                                 name="code"
@@ -329,7 +329,7 @@ export default function TwoFactorSetupModal({
                     </DialogDescription>
                 </DialogHeader>
 
-                <div className="flex flex-col items-center space-y-5">
+                <div className="flex flex-col items-center gap-5">
                     {showVerificationStep ? (
                         <TwoFactorVerificationStep
                             onClose={handleClose}

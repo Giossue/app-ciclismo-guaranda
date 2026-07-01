@@ -77,7 +77,7 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                     <AppLogoIcon className="size-6 fill-current text-sidebar-foreground" />
                                 </SheetHeader>
                                 {auth.user && (
-                                    <div className="mx-4 rounded-lg border bg-card p-3">
+                                    <div className="mx-4 rounded-2xl border bg-card p-3">
                                         <p className="mb-2 text-xs font-medium text-muted-foreground">
                                             Bienvenido/a
                                         </p>
@@ -91,7 +91,7 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                         <Link
                                             key={item.title}
                                             href={item.href}
-                                            className="flex items-center gap-2 rounded-lg px-3 py-2 font-semibold transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                                            className="flex items-center gap-2 rounded-2xl px-3 py-2 font-semibold transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                                         >
                                             {item.icon && (
                                                 <item.icon className="size-5" />
@@ -128,7 +128,7 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                                     item.href,
                                                     activeItemStyles,
                                                 ),
-                                                'h-9 cursor-pointer rounded-lg px-3',
+                                                'h-9 cursor-pointer rounded-2xl px-3',
                                             )}
                                         >
                                             {item.icon && (
@@ -158,14 +158,14 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                             <DropdownMenuTrigger asChild>
                                 <Button
                                     variant="ghost"
-                                    className="size-10 rounded-lg p-1"
+                                    className="size-10 rounded-2xl p-1"
                                 >
                                     <Avatar className="size-8 overflow-hidden rounded-full">
                                         <AvatarImage
                                             src={auth.user?.avatar}
                                             alt={userFullName}
                                         />
-                                        <AvatarFallback className="rounded-lg bg-secondary text-secondary-foreground">
+                                        <AvatarFallback className="rounded-2xl bg-secondary text-secondary-foreground">
                                             {getInitials(userFullName)}
                                         </AvatarFallback>
                                     </Avatar>
