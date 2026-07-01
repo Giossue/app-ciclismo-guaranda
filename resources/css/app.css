@@ -85,7 +85,7 @@
     --lh-body: 1.45;
     --page-max-mobile: 430px;
     --page-max-tablet: 760px;
-    --page-max-admin: 1120px;
+    --page-max-admin: 1600px;
     --page-pad-x: clamp(16px, 4vw, 28px);
     --page-pad-y: clamp(18px, 4vw, 34px);
     --page-gap: 18px;
