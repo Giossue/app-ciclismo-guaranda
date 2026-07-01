@@ -1,8 +1,9 @@
 import { Head, Link, usePage } from '@inertiajs/react';
 import { LogOut, Palette, ShieldCheck, UserRound } from 'lucide-react';
+import { mobileMoreNavItems } from '@/lib/navigation';
 import { cn } from '@/lib/utils';
 import { logout } from '@/routes';
-import type { Auth } from '@/types';
+import type { Auth, NavItem } from '@/types';
 
 type PageProps = {
     auth: Auth;
@@ -38,6 +39,7 @@ const accountItems: AccountItem[] = [
 
 export default function MenuIndex() {
     const { auth } = usePage<PageProps>().props;
+    const moduleItems = mobileMoreNavItems(auth);
 
     return (
         <>
@@ -57,11 +59,30 @@ export default function MenuIndex() {
                     </p>
                 </section>
 
-                {/* Options Cards */}
-                <section className="grid gap-3">
-                    {accountItems.map((item) => (
-                        <MenuCard key={item.title} item={item} />
-                    ))}
+                {/* Navigation Modules */}
+                {moduleItems.length > 0 && (
+                    <section className="flex flex-col gap-2">
+                        <p className="px-1 text-[10px] font-black tracking-wider text-[var(--text-secondary)] uppercase">
+                            Explorar
+                        </p>
+                        <div className="grid grid-cols-2 gap-3">
+                            {moduleItems.map((item) => (
+                                <NavTile key={item.title} item={item} />
+                            ))}
+                        </div>
+                    </section>
+                )}
+
+                {/* Account Options */}
+                <section className="flex flex-col gap-2">
+                    <p className="px-1 text-[10px] font-black tracking-wider text-[var(--text-secondary)] uppercase">
+                        Cuenta
+                    </p>
+                    <div className="grid gap-3">
+                        {accountItems.map((item) => (
+                            <MenuCard key={item.title} item={item} />
+                        ))}
+                    </div>
                 </section>
 
                 {/* Log Out Button */}
@@ -76,6 +97,28 @@ export default function MenuIndex() {
                 </Link>
             </div>
         </>
+    );
+}
+
+function NavTile({ item }: { item: NavItem }) {
+    const Icon = item.icon;
+
+    return (
+        <Link
+            href={item.href}
+            prefetch
+            className={cn(
+                'group flex min-h-[76px] flex-col justify-between gap-2 rounded-2xl border border-[var(--input-border)] bg-[var(--bg-card-color)] p-3.5 transition-all duration-300',
+                'hover:-translate-y-0.5 hover:border-[#b2f000]/40 hover:shadow-[0_4px_16px_var(--shadow-color)]',
+            )}
+        >
+            {Icon && (
+                <Icon className="size-5 shrink-0 text-[var(--text-secondary)] transition-colors duration-250 group-hover:text-[#b2f000]" />
+            )}
+            <span className="text-sm font-bold text-[var(--text-color)] transition-colors duration-250 group-hover:text-[#b2f000]">
+                {item.title}
+            </span>
+        </Link>
     );
 }
 
