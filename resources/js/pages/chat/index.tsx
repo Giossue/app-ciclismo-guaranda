@@ -74,9 +74,6 @@ type Props = {
     routes: RouteContextOption[];
 };
 
-const textareaClass =
-    'max-h-28 min-h-11 flex-1 resize-none border-0 bg-transparent px-1 py-2 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50';
-
 export default function ChatIndex({
     webhookConfigured,
     conversations,
@@ -100,27 +97,41 @@ export default function ChatIndex({
         <>
             <Head title="Asistente" />
 
-            <section className="flex min-h-[calc(100svh-7.5rem)] flex-col overflow-hidden rounded-2xl border bg-card">
-                <header className="flex items-center justify-between gap-3 border-b px-4 py-3">
-                    <div className="flex min-w-0 items-center gap-3">
-                        <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+            <section className="ueb-page ueb-chat-shell md:w-full">
+                <header className="ueb-chat-header">
+                    <div className="flex items-center gap-3">
+                        <div className="ueb-chat-icon">
                             <Bot className="size-5" />
                         </div>
-                        <div className="min-w-0">
-                            <h1 className="truncate text-base font-semibold">
+                        <div className="min-w-0 flex-1">
+                            <h1 className="truncate leading-tight font-black tracking-[-0.03em] text-[var(--fs-lg)]">
                                 Asistente
                             </h1>
-                            <p className="truncate text-xs text-muted-foreground">
+                            <p className="truncate font-semibold text-[var(--fs-xs)] text-muted-foreground">
                                 {activeConversation?.title ??
                                     'Pregunta sobre rutas y puntos útiles'}
                             </p>
                         </div>
+                        <HistorySheet
+                            conversations={conversations}
+                            activeConversation={activeConversation}
+                        />
                     </div>
 
-                    <HistorySheet
-                        conversations={conversations}
-                        activeConversation={activeConversation}
-                    />
+                    <div className="ueb-chat-subheader">
+                        <span
+                            className={cn(
+                                'size-1.5 rounded-full shadow-[0_0_6px_currentColor]',
+                                isOnline
+                                    ? 'bg-success text-success'
+                                    : 'bg-warning text-warning',
+                            )}
+                        />
+                        <span>
+                            <strong className="text-primary">Modo guía</strong>{' '}
+                            para ciclistas en Guaranda
+                        </span>
+                    </div>
                 </header>
 
                 {!isOnline && (
@@ -143,7 +154,7 @@ export default function ChatIndex({
                     </Alert>
                 )}
 
-                <div className="flex flex-1 flex-col gap-3 overflow-y-auto bg-muted/20 px-3 py-4">
+                <div className="ueb-chat-messages">
                     {latestMessages.map((message) => (
                         <MessageBubble
                             key={`${message.role}-${message.id}`}
@@ -153,16 +164,16 @@ export default function ChatIndex({
 
                     {latestMessages.length === 0 && (
                         <div className="m-auto flex max-w-64 flex-col items-center gap-3 text-center text-muted-foreground">
-                            <div className="flex size-12 items-center justify-center rounded-xl border bg-card">
+                            <div className="grid size-12 place-items-center rounded-xl border bg-card">
                                 <MessageSquareText className="size-6" />
                             </div>
                             <div className="flex flex-col gap-1">
-                                <p className="text-sm font-medium text-foreground">
+                                <p className="text-sm font-black text-foreground">
                                     Empieza una consulta
                                 </p>
                                 <p className="text-sm">
-                                    Puedes preguntar por rutas, dificultad,
-                                    lugares útiles o qué llevar.
+                                    Pregunta por rutas, dificultad, lugares
+                                    útiles o qué llevar.
                                 </p>
                             </div>
                         </div>
@@ -172,7 +183,7 @@ export default function ChatIndex({
                 <Form
                     {...ChatController.store.form()}
                     options={{ preserveScroll: true }}
-                    className="border-t bg-card p-3"
+                    className="ueb-chat-footer"
                 >
                     {({ processing, errors }) => (
                         <div className="flex flex-col gap-2">
@@ -191,7 +202,7 @@ export default function ChatIndex({
                                 <Select name="route_id" defaultValue="none">
                                     <SelectTrigger
                                         id="route_id"
-                                        className="h-9 w-full rounded-xl border bg-background text-xs"
+                                        className="h-9 w-full rounded-xl border bg-input text-xs"
                                         aria-invalid={Boolean(errors.route_id)}
                                     >
                                         <SelectValue placeholder="Sin ruta específica" />
@@ -215,24 +226,26 @@ export default function ChatIndex({
                                 <InputError message={errors.route_id} />
                             </div>
 
-                            <div className="flex items-end gap-2 rounded-2xl border bg-background px-2 py-1">
-                                <textarea
-                                    id="message"
-                                    name="message"
-                                    required
-                                    rows={1}
-                                    className={textareaClass}
-                                    placeholder="Escribe tu mensaje..."
-                                    aria-invalid={Boolean(errors.message)}
-                                    disabled={!canSend || processing}
-                                />
+                            <div className="ueb-chat-input-area">
+                                <div className="ueb-chat-input-box">
+                                    <textarea
+                                        id="message"
+                                        name="message"
+                                        required
+                                        rows={1}
+                                        className="ueb-chat-input"
+                                        placeholder="Escribe tu mensaje..."
+                                        aria-invalid={Boolean(errors.message)}
+                                        disabled={!canSend || processing}
+                                    />
+                                </div>
                                 <Button
                                     size="icon"
                                     disabled={!canSend || processing}
-                                    className="mb-1 size-9 shrink-0 rounded-xl"
+                                    className="ueb-chat-send"
                                     aria-label="Enviar mensaje"
                                 >
-                                    <Send className="size-4" />
+                                    <Send className="size-5" />
                                 </Button>
                             </div>
                             <InputError message={errors.message} />
@@ -330,39 +343,20 @@ function MessageBubble({ message }: { message: ChatMessage }) {
     const isUser = message.role === 'user';
 
     return (
-        <div className={cn('flex', isUser ? 'justify-end' : 'justify-start')}>
-            <div
-                className={cn(
-                    'max-w-[82%] rounded-2xl px-3 py-2 text-sm leading-relaxed shadow-sm',
-                    isUser
-                        ? 'bg-primary text-primary-foreground'
-                        : 'border bg-card text-card-foreground',
-                )}
-            >
-                <div
-                    className={cn(
-                        'mb-1 text-[0.7rem] font-medium opacity-80',
-                        isUser ? 'text-primary-foreground' : 'text-primary',
-                    )}
-                >
-                    {isUser ? 'Tú' : 'Guía'}
-                    {message.sent_at && (
-                        <span className="ml-1 opacity-70">
-                            · {new Date(message.sent_at).toLocaleTimeString()}
-                        </span>
-                    )}
+        <div className={cn('ueb-message-row', isUser ? 'user' : 'bot')}>
+            <div className={cn('ueb-message-avatar', isUser ? 'user' : 'bot')}>
+                {isUser ? 'Tú'.slice(0, 1) : <Bot className="size-4" />}
+            </div>
+            <div className="flex flex-col gap-1">
+                <div className="ueb-message-bubble">
+                    <p className="whitespace-pre-wrap">{message.message}</p>
                 </div>
-                <p className="whitespace-pre-wrap">{message.message}</p>
+                {message.sent_at && (
+                    <span className="px-1 font-bold text-[var(--fs-xs)] text-[var(--text-muted)]">
+                        {new Date(message.sent_at).toLocaleTimeString()}
+                    </span>
+                )}
             </div>
         </div>
     );
 }
-
-ChatIndex.layout = {
-    breadcrumbs: [
-        {
-            title: 'Asistente',
-            href: '/chat',
-        },
-    ],
-};

@@ -1,5 +1,4 @@
 import { Link } from '@inertiajs/react';
-import { Bike, MapPinned } from 'lucide-react';
 import AppLogoIcon from '@/components/app-logo-icon';
 import { home } from '@/routes';
 import type { AuthLayoutProps } from '@/types';
@@ -9,54 +8,60 @@ export default function AuthSimpleLayout({
     title,
     description,
 }: AuthLayoutProps) {
+    const safeTitle = title ?? '';
+    const titleParts = safeTitle.split(' ').filter(Boolean);
+    const titleLead = titleParts.slice(0, -1).join(' ') || safeTitle;
+    const titleTail = titleParts.slice(-1)[0] ?? '';
+
     return (
-        <main className="relative flex min-h-[100dvh] flex-col overflow-hidden bg-background text-foreground">
-            <div className="pointer-events-none absolute inset-x-0 top-0 h-64 bg-[radial-gradient(circle_at_30%_10%,color-mix(in_oklch,var(--primary)_28%,transparent),transparent_62%)]" />
-            <div className="relative mx-auto flex min-h-[100dvh] w-full max-w-md flex-col justify-center gap-6 px-5 py-8">
-                <header className="flex flex-col gap-5">
-                    <Link
-                        href={home()}
-                        className="flex w-fit items-center gap-3 rounded-2xl border bg-card/90 px-3 py-2 shadow-sm backdrop-blur"
-                    >
-                        <span className="flex size-11 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-                            <AppLogoIcon className="size-7 fill-current" />
-                        </span>
-                        <span className="grid gap-0.5">
-                            <span className="font-display text-sm font-black tracking-[-0.02em]">
-                                Guaranda Go
-                            </span>
-                            <span className="text-xs font-semibold text-muted-foreground">
-                                Cicloturismo móvil
-                            </span>
-                        </span>
-                    </Link>
+        <main className="ueb-auth-shell">
+            <section className="ueb-auth-hero">
+                <Link href={home()} className="ueb-auth-logo">
+                    <span className="ueb-auth-logo-mark">
+                        <AppLogoIcon className="size-9" />
+                    </span>
+                    <span className="ueb-auth-logo-text">
+                        Guaranda <span>Go</span>
+                    </span>
+                </Link>
 
-                    <div className="rounded-3xl border bg-card/90 p-5 shadow-sm backdrop-blur">
-                        <div className="mb-4 flex items-center gap-2 text-xs font-bold text-muted-foreground">
-                            <Bike className="size-4 text-primary" />
-                            <span>Rutas, GPS y turismo local</span>
-                        </div>
-                        <div className="flex flex-col gap-2">
-                            <h1 className="font-display text-3xl leading-tight font-black tracking-[-0.04em] text-foreground">
-                                {title}
-                            </h1>
-                            {description ? (
-                                <p className="text-sm leading-relaxed text-muted-foreground">
-                                    {description}
-                                </p>
-                            ) : null}
-                        </div>
-                        <div className="mt-4 flex items-center gap-2 rounded-2xl bg-accent px-3 py-2 text-xs font-bold text-accent-foreground">
-                            <MapPinned className="size-4" />
-                            <span>Diseñado para usar en Android</span>
-                        </div>
-                    </div>
-                </header>
+                <MountainScene />
 
-                <section className="rounded-3xl border bg-card/95 p-4 shadow-[0_18px_60px_color-mix(in_oklch,var(--foreground)_10%,transparent)] backdrop-blur">
-                    {children}
-                </section>
-            </div>
+                <div className="ueb-auth-banner">
+                    <h1>
+                        {titleLead}{' '}
+                        {titleTail ? <strong>{titleTail}</strong> : null}
+                    </h1>
+                    {description ? <p>{description}</p> : null}
+                </div>
+            </section>
+
+            <section className="ueb-auth-card">{children}</section>
         </main>
+    );
+}
+
+function MountainScene() {
+    return (
+        <svg
+            className="ueb-auth-mountains"
+            viewBox="0 0 430 200"
+            fill="none"
+            preserveAspectRatio="none"
+            aria-hidden="true"
+        >
+            <path
+                d="M0 140L72 74L122 118L182 46L268 132L332 86L430 154V200H0V140Z"
+                fill="rgb(178 240 0 / 0.11)"
+            />
+            <path
+                d="M0 166L88 104L150 140L224 72L302 154L362 116L430 162V200H0V166Z"
+                fill="rgb(178 240 0 / 0.16)"
+            />
+            <path
+                d="M0 182L68 138L132 162L206 112L286 174L350 144L430 176V200H0V182Z"
+                fill="rgb(178 240 0 / 0.24)"
+            />
+        </svg>
     );
 }

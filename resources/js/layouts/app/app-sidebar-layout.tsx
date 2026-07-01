@@ -12,9 +12,12 @@ export default function AppSidebarLayout({
     return (
         <AppShell variant="sidebar">
             <AppSidebar />
-            <AppContent variant="sidebar" className="overflow-x-hidden">
+            <AppContent
+                variant="sidebar"
+                className="overflow-x-hidden overflow-y-auto"
+            >
                 <AppSidebarHeader breadcrumbs={breadcrumbs} />
-                <main className="safe-bottom-pad mx-auto flex w-full max-w-7xl flex-1 flex-col gap-5 px-4 pt-4 md:gap-6 md:p-6">
+                <main className="safe-bottom-pad ueb-admin-page flex w-full flex-1 flex-col gap-[var(--page-gap)] px-0 py-[var(--page-pad-y)] md:px-0">
                     {children}
                 </main>
                 <AppMobileNav />

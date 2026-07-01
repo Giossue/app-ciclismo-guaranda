@@ -1,12 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
-import {
-    Bike,
-    Clock,
-    ImageIcon,
-    MapPinned,
-    RouteIcon,
-    Star,
-} from 'lucide-react';
+import { ImageIcon, RouteIcon, Star } from 'lucide-react';
 import Heading from '@/components/heading';
 import { MobileTabs } from '@/components/mobile-tabs';
 import RouteMap from '@/components/routes/route-map';
@@ -16,7 +9,6 @@ import {
     Card,
     CardContent,
     CardDescription,
-    CardFooter,
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
@@ -42,8 +34,8 @@ export default function RoutesIndex({
         <>
             <Head title="Rutas" />
 
-            <div className="flex flex-col gap-4">
-                <div className="rounded-2xl border bg-card p-4">
+            <div className="ueb-page flex flex-col gap-4 md:w-full">
+                <div className="ueb-header-card">
                     <Heading
                         title="Rutas"
                         description="Elige una ruta, revisa el mapa o guarda tus favoritas."
@@ -109,7 +101,7 @@ export default function RoutesIndex({
                     </Card>
                 )}
 
-                <div className="text-sm text-muted-foreground">
+                <div className="text-sm font-bold text-muted-foreground">
                     {routes.from ?? 0}-{routes.to ?? 0} de {routes.total} rutas.
                 </div>
             </div>
@@ -125,122 +117,102 @@ function CategoryFilter({
     selectedCategory: number | null;
 }) {
     return (
-        <div className="-mx-4 overflow-x-auto border-y bg-card px-4 py-2 md:mx-0 md:rounded-2xl md:border">
-            <div className="flex w-max min-w-full gap-2">
+        <div className="ueb-chip-row -mx-1 px-1 py-1">
+            <Button
+                variant={selectedCategory === null ? 'secondary' : 'outline'}
+                size="sm"
+                asChild
+                className="shrink-0 rounded-full px-4"
+            >
+                <Link href="/routes" replace prefetch>
+                    Todas
+                </Link>
+            </Button>
+            {categories.map((category) => (
                 <Button
+                    key={category.id}
                     variant={
-                        selectedCategory === null ? 'secondary' : 'outline'
+                        selectedCategory === category.id
+                            ? 'secondary'
+                            : 'outline'
                     }
                     size="sm"
                     asChild
+                    className="shrink-0 rounded-full px-4"
                 >
-                    <Link href="/routes" replace prefetch>
-                        Todas
+                    <Link
+                        href={`/routes?category=${category.id}`}
+                        replace
+                        prefetch
+                    >
+                        {category.name}
                     </Link>
                 </Button>
-                {categories.map((category) => (
-                    <Button
-                        key={category.id}
-                        variant={
-                            selectedCategory === category.id
-                                ? 'secondary'
-                                : 'outline'
-                        }
-                        size="sm"
-                        asChild
-                    >
-                        <Link
-                            href={`/routes?category=${category.id}`}
-                            replace
-                            prefetch
-                        >
-                            {category.name}
-                        </Link>
-                    </Button>
-                ))}
-            </div>
+            ))}
         </div>
     );
 }
 
 function RoutesList({ routes }: { routes: CyclingRouteMapItem[] }) {
     return (
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+        <div className="ueb-route-grid">
             {routes.map((route) => (
-                <Card key={route.id} className="group overflow-hidden">
-                    <RouteCover route={route} />
-                    <CardHeader className="gap-2">
-                        <div className="flex flex-wrap gap-2">
-                            {route.category && (
-                                <Badge variant="outline">
-                                    {route.category.name}
-                                </Badge>
-                            )}
-                            {route.difficulty && (
+                <Link
+                    key={route.id}
+                    href={`/routes/${route.slug}`}
+                    prefetch
+                    className="ueb-route-card"
+                >
+                    <div className="flex items-start justify-between gap-2">
+                        <RouteCover route={route} />
+                        <div className="flex flex-wrap justify-end gap-1.5">
+                            {route.user_interaction.is_favorite && (
                                 <Badge variant="secondary">
-                                    {route.difficulty.name}
+                                    <Star data-icon="inline-start" />
+                                    fav
                                 </Badge>
                             )}
                             {route.incidents.length > 0 && (
                                 <Badge variant="destructive">
-                                    {route.incidents.length} alerta
-                                    {route.incidents.length === 1 ? '' : 's'}
-                                </Badge>
-                            )}
-                            {route.user_interaction.is_favorite && (
-                                <Badge variant="secondary">
-                                    <Star data-icon="inline-start" />
-                                    favorita
-                                </Badge>
-                            )}
-                            {route.rating_summary.average_rating !== null && (
-                                <Badge variant="outline">
-                                    ★{' '}
-                                    {route.rating_summary.average_rating.toLocaleString()}
+                                    {route.incidents.length}
                                 </Badge>
                             )}
                         </div>
-                        <CardTitle className="text-xl leading-tight">
-                            {route.name}
-                        </CardTitle>
-                        <CardDescription className="line-clamp-2">
-                            {route.description}
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="grid gap-2 text-sm text-muted-foreground">
-                        <div className="flex items-center gap-2">
-                            <MapPinned />
-                            <span className="line-clamp-1">
-                                {route.start_name} → {route.end_name}
-                            </span>
-                        </div>
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                        <h3 className="ueb-route-title">{route.name}</h3>
+                        <p className="ueb-route-meta line-clamp-2">
+                            {route.start_name} - {route.end_name}
+                        </p>
                         {route.metric && (
-                            <div className="grid grid-cols-2 gap-2">
-                                <div className="flex items-center gap-2 rounded-xl border bg-muted/30 p-2">
-                                    <Bike />
-                                    <span>
-                                        {route.metric.distance_km.toLocaleString()}{' '}
-                                        km
-                                    </span>
-                                </div>
-                                <div className="flex items-center gap-2 rounded-xl border bg-muted/30 p-2">
-                                    <Clock />
-                                    <span>
-                                        {route.metric.estimated_time_minutes}{' '}
-                                        min
-                                    </span>
-                                </div>
+                            <div className="ueb-route-meta mt-1">
+                                <span>
+                                    {route.metric.distance_km.toLocaleString()}{' '}
+                                    km
+                                </span>
+                                <span>•</span>
+                                <span>
+                                    {route.metric.estimated_time_minutes} min
+                                </span>
                             </div>
                         )}
-                    </CardContent>
-                    <CardFooter>
-                        <Button className="w-full" asChild>
-                            <Link href={`/routes/${route.slug}`} prefetch>
-                                Ver ruta
-                            </Link>
-                        </Button>
-                    </CardFooter>
-                </Card>
+                    </div>
+
+                    <div className="ueb-route-actions">
+                        <span className="ueb-difficulty-tag">
+                            {route.difficulty?.name ??
+                                route.category?.name ??
+                                'Ruta'}
+                        </span>
+                        {route.rating_summary.average_rating !== null && (
+                            <span className="ueb-stat-pill">
+                                ★{' '}
+                                {route.rating_summary.average_rating.toLocaleString()}
+                            </span>
+                        )}
+                    </div>
+                </Link>
             ))}
         </div>
     );
@@ -249,22 +221,15 @@ function RoutesList({ routes }: { routes: CyclingRouteMapItem[] }) {
 function RouteCover({ route }: { route: CyclingRouteMapItem }) {
     if (route.main_image_path) {
         return (
-            <div className="relative h-40 overflow-hidden bg-muted sm:h-44">
-                <img
-                    src={mediaUrl(route.main_image_path)}
-                    alt={route.name}
-                    className="size-full object-cover"
-                />
+            <div className="ueb-route-thumb">
+                <img src={mediaUrl(route.main_image_path)} alt={route.name} />
             </div>
         );
     }
 
     return (
-        <div className="flex h-40 items-center justify-center border-b bg-muted text-muted-foreground sm:h-44">
-            <div className="flex flex-col items-center gap-2 text-center">
-                <ImageIcon className="size-8" />
-                <span className="text-sm font-medium">Sin portada</span>
-            </div>
+        <div className="ueb-route-thumb">
+            <ImageIcon className="size-6" />
         </div>
     );
 }

@@ -5,24 +5,18 @@ import * as React from 'react';
 import { cn } from '@/lib/utils';
 
 const badgeVariants = cva(
-    'inline-flex w-fit shrink-0 touch-manipulation items-center justify-center gap-1 overflow-hidden rounded-full border px-2.5 py-1 text-[11px] leading-none font-extrabold tracking-[0.01em] whitespace-nowrap transition-colors focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/35 aria-invalid:border-destructive aria-invalid:ring-destructive/20 [&>svg]:pointer-events-none [&>svg]:size-3',
+    'inline-flex w-fit shrink-0 items-center justify-center gap-1 rounded-xl border px-2.5 py-1 text-[var(--fs-xs)] leading-none font-black tracking-[0.05em] whitespace-nowrap uppercase transition-colors [&>svg]:pointer-events-none [&>svg]:size-3',
     {
         variants: {
             variant: {
-                default:
-                    'border-transparent bg-primary text-primary-foreground [a&]:hover:bg-primary/90',
-                secondary:
-                    'border-transparent bg-secondary text-secondary-foreground [a&]:hover:bg-secondary/90',
-                destructive:
-                    'border-transparent bg-destructive text-destructive-foreground [a&]:hover:bg-destructive/90 focus-visible:ring-destructive/20',
-                outline:
-                    'border-border/80 bg-card/80 text-foreground [a&]:hover:bg-accent [a&]:hover:text-accent-foreground',
-                success:
-                    'border-transparent bg-success text-success-foreground [a&]:hover:bg-success/90',
-                warning:
-                    'border-transparent bg-warning text-warning-foreground [a&]:hover:bg-warning/90',
-                info: 'border-transparent bg-info text-info-foreground [a&]:hover:bg-info/90',
-                muted: 'border-transparent bg-muted text-muted-foreground [a&]:hover:bg-muted/90',
+                default: 'border-primary bg-primary text-primary-foreground',
+                secondary: 'border-primary bg-primary text-primary-foreground',
+                destructive: 'border-destructive bg-destructive text-destructive-foreground',
+                outline: 'border-input bg-input text-muted-foreground',
+                success: 'border-success bg-success text-success-foreground',
+                warning: 'border-warning bg-warning text-warning-foreground',
+                info: 'border-info bg-info text-info-foreground',
+                muted: 'border-input bg-input text-muted-foreground',
             },
         },
         defaultVariants: {
