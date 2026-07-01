@@ -1446,7 +1446,11 @@ function PoiCard({ poi }: { poi: RoutePoi }) {
     return (
         <div className="flex flex-col gap-3 overflow-hidden rounded-2xl border bg-card">
             {images.length > 0 && (
-                <ImageGallery images={images} slideClassName="h-40" />
+                <ImageGallery
+                    images={images}
+                    variant="thumbnails"
+                    className="p-3 pb-0"
+                />
             )}
             <div className="flex flex-col gap-1 p-3">
                 <div className="flex flex-wrap items-center gap-2">
