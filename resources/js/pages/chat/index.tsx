@@ -10,7 +10,7 @@ import {
     Trash2,
     WifiOff,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
 import ChatController from '@/actions/App/Http/Controllers/Cyclist/ChatController';
 import InputError from '@/components/input-error';
@@ -111,12 +111,21 @@ export default function ChatIndex({
 
         return chatLocationFromSnapshot(rememberedLocation);
     });
+    const messagesRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         void getNetworkStatus().then((status) => setIsOnline(status.connected));
 
         return watchNetworkStatus((status) => setIsOnline(status.connected));
     }, []);
+
+    useEffect(() => {
+        const element = messagesRef.current;
+
+        if (element) {
+            element.scrollTop = element.scrollHeight;
+        }
+    }, [latestMessages]);
 
     const canSend = webhookConfigured && isOnline;
 
@@ -142,56 +151,34 @@ export default function ChatIndex({
 
             <section className="ueb-page ueb-chat-shell md:w-full">
                 <header className="ueb-chat-header">
-                    <div className="flex items-center gap-3">
-                        <div className="ueb-chat-icon">
-                            <Bot className="size-5" />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                            <h1 className="truncate leading-tight font-black tracking-[-0.03em] text-[var(--fs-lg)]">
-                                Asistente
-                            </h1>
-                            <p className="truncate font-semibold text-[var(--fs-xs)] text-muted-foreground">
-                                {activeConversation?.title ??
-                                    'Pregunta sobre rutas y puntos útiles'}
-                            </p>
-                        </div>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            asChild
-                            className="h-9 shrink-0 rounded-xl px-3"
-                        >
-                            <Link href="/chat?new=1" replace prefetch>
-                                <Plus className="size-4" />
-                                <span>Nueva</span>
-                            </Link>
-                        </Button>
-                        {activeConversation && (
-                            <DeleteConversationForm
-                                conversation={activeConversation}
-                                compact
-                            />
-                        )}
-                        <HistorySheet
-                            conversations={conversations}
-                            activeConversation={activeConversation}
-                        />
+                    <div className="ueb-chat-icon shrink-0">
+                        <Bot className="size-5" />
                     </div>
-
-                    <div className="ueb-chat-subheader">
-                        <span
-                            className={cn(
-                                'size-1.5 rounded-full shadow-[0_0_6px_currentColor]',
-                                isOnline
-                                    ? 'bg-success text-success'
-                                    : 'bg-warning text-warning',
-                            )}
+                    <p className="min-w-0 flex-1 truncate text-sm font-semibold text-muted-foreground">
+                        {activeConversation?.title ??
+                            'Pregunta sobre rutas y puntos útiles'}
+                    </p>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        asChild
+                        className="h-9 shrink-0 rounded-xl px-3"
+                    >
+                        <Link href="/chat?new=1" replace prefetch>
+                            <Plus className="size-4" />
+                            <span>Nueva</span>
+                        </Link>
+                    </Button>
+                    {activeConversation && (
+                        <DeleteConversationForm
+                            conversation={activeConversation}
+                            compact
                         />
-                        <span>
-                            <strong className="text-primary">Modo guía</strong>{' '}
-                            para ciclistas en Guaranda
-                        </span>
-                    </div>
+                    )}
+                    <HistorySheet
+                        conversations={conversations}
+                        activeConversation={activeConversation}
+                    />
                 </header>
 
                 {!isOnline && (
@@ -214,7 +201,7 @@ export default function ChatIndex({
                     </Alert>
                 )}
 
-                <div className="ueb-chat-messages">
+                <div ref={messagesRef} className="ueb-chat-messages">
                     {latestMessages.map((message) => (
                         <MessageBubble
                             key={`${message.role}-${message.id}`}
@@ -672,3 +659,12 @@ function renderInlineMarkdown(text: string): ReactNode[] {
 
     return nodes.length > 0 ? nodes : [text];
 }
+
+ChatIndex.layout = {
+    breadcrumbs: [
+        {
+            title: 'Asistente',
+            href: '/chat',
+        },
+    ],
+};

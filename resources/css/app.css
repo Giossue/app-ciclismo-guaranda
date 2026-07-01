@@ -668,17 +668,26 @@
         min-height: 0;
         flex-direction: column;
         overflow: hidden;
-        background: var(--bg-color);
+        border: 1px solid var(--input-border);
+        border-radius: var(--card-radius);
+        background: var(--bg-card-color);
+        box-shadow: 0 2px 8px var(--shadow-color);
+    }
+
+    @media (min-width: 768px) {
+        .ueb-chat-shell {
+            height: calc(100dvh - 64px - (var(--page-pad-y) * 2));
+        }
     }
 
     .ueb-chat-header {
         display: flex;
         flex-shrink: 0;
-        flex-direction: column;
-        gap: 12px;
+        align-items: center;
+        gap: 8px;
         border-bottom: 1px solid var(--input-border);
-        background: var(--bg-color);
-        padding: 18px 22px 14px;
+        background: var(--bg-card-color);
+        padding: 12px 14px;
     }
 
     .ueb-chat-icon {
@@ -691,19 +700,6 @@
         background: var(--primary-color);
         color: var(--primary-text);
         box-shadow: 0 4px 10px var(--shadow-color);
-    }
-
-    .ueb-chat-subheader {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        border: 1px solid rgb(178 240 0 / 0.15);
-        border-radius: 12px;
-        background: rgb(178 240 0 / 0.1);
-        padding: 8px 12px;
-        color: var(--text-color);
-        font-size: var(--fs-xs);
-        font-weight: 700;
     }
 
     .ueb-chat-messages {
@@ -813,10 +809,10 @@
         display: flex;
         flex-shrink: 0;
         flex-direction: column;
-        gap: 12px;
+        gap: 10px;
         border-top: 1px solid var(--input-border);
-        background: var(--bg-color);
-        padding: 14px 22px 18px;
+        background: var(--bg-card-color);
+        padding: 12px 14px;
     }
 
     .ueb-chat-input-area {
