@@ -34,12 +34,9 @@ export default function MenuIndex() {
             <Head title="Menú" />
 
             <div className="flex flex-col gap-4">
-                <Heading
-                    title="Menú"
-                    description="Todos los módulos de Guaranda Go."
-                />
+                <Heading title="Menú" description="Accesos principales." />
 
-                <section className="rounded-[1.75rem] border border-primary/10 bg-gradient-to-br from-primary/10 via-card to-secondary/50 p-4 shadow-sm shadow-primary/10">
+                <section className="rounded-lg border bg-card p-4">
                     <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
                         Sesión activa
                     </p>
@@ -59,7 +56,7 @@ export default function MenuIndex() {
                     <Link
                         href={edit()}
                         prefetch
-                        className="flex min-h-20 items-center gap-3 rounded-[1.5rem] border border-primary/10 bg-card p-3 shadow-sm shadow-primary/10 transition-transform hover:bg-accent/60 active:scale-[0.98]"
+                        className="flex min-h-20 items-center gap-3 rounded-lg border bg-card p-3 transition-colors hover:bg-accent/60"
                     >
                         <UserRound className="size-6 shrink-0" />
                         <span className="min-w-0">
@@ -77,7 +74,7 @@ export default function MenuIndex() {
                     href={logout()}
                     method="post"
                     as="button"
-                    className="flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-destructive px-4 text-sm font-semibold text-destructive-foreground shadow-sm transition-transform hover:opacity-90 active:scale-[0.99]"
+                    className="flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-destructive px-4 text-sm font-semibold text-destructive-foreground transition-colors hover:opacity-90"
                 >
                     <LogOut className="size-5" />
                     Cerrar sesión
@@ -95,7 +92,7 @@ function MenuCard({ item }: { item: NavItem }) {
             href={item.href}
             prefetch
             className={cn(
-                'flex min-h-20 items-center gap-3 rounded-[1.5rem] border border-primary/10 bg-card p-3 shadow-sm shadow-primary/10 transition-transform active:scale-[0.98]',
+                'flex min-h-20 items-center gap-3 rounded-lg border bg-card p-3 transition-colors',
                 'hover:border-primary/30 hover:bg-accent/70',
             )}
         >

@@ -1,3 +1,4 @@
+import { App as CapacitorApp } from '@capacitor/app';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import type { Photo } from '@capacitor/camera';
 import { Capacitor } from '@capacitor/core';
@@ -8,6 +9,7 @@ import type { Position } from '@capacitor/geolocation';
 import { LocalNotifications } from '@capacitor/local-notifications';
 import { Network } from '@capacitor/network';
 import type { ConnectionStatus } from '@capacitor/network';
+import { router } from '@inertiajs/react';
 
 type NetworkStatusCallback = (status: ConnectionStatus) => void;
 
@@ -17,6 +19,36 @@ export function isNativeMobile(): boolean {
 
 export function hasNativePlugin(pluginName: string): boolean {
     return isNativeMobile() && Capacitor.isPluginAvailable(pluginName);
+}
+
+export function setupNativeBackButton(): void {
+    if (!hasNativePlugin('App')) {
+        return;
+    }
+
+    void CapacitorApp.addListener('backButton', ({ canGoBack }) => {
+        if (canGoBack && window.history.length > 1) {
+            window.history.back();
+
+            return;
+        }
+
+        const fallbackPath = window.location.pathname.startsWith('/admin')
+            ? '/admin/dashboard'
+            : '/routes';
+
+        if (window.location.pathname !== fallbackPath) {
+            router.visit(fallbackPath, {
+                replace: true,
+                preserveScroll: false,
+                preserveState: false,
+            });
+
+            return;
+        }
+
+        void CapacitorApp.exitApp();
+    });
 }
 
 export function browserNetworkStatus(): ConnectionStatus {

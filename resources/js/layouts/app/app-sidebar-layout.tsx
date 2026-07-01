@@ -14,7 +14,7 @@ export default function AppSidebarLayout({
             <AppSidebar />
             <AppContent variant="sidebar" className="overflow-x-hidden">
                 <AppSidebarHeader breadcrumbs={breadcrumbs} />
-                <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-4 p-4 pb-28 md:p-6">
+                <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-4 p-4 pb-24 md:p-6">
                     {children}
                 </main>
                 <AppMobileNav />

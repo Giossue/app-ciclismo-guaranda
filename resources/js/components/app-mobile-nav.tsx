@@ -19,8 +19,8 @@ export function AppMobileNav() {
     }
 
     return (
-        <nav className="fixed inset-x-3 bottom-3 z-[70] md:hidden">
-            <div className="grid grid-cols-4 gap-1 rounded-[1.8rem] border border-primary/10 bg-card/95 p-1.5 shadow-2xl shadow-primary/15 backdrop-blur supports-[backdrop-filter]:bg-card/85">
+        <nav className="fixed inset-x-0 bottom-0 z-[70] border-t bg-card md:hidden">
+            <div className="mx-auto grid max-w-md grid-cols-4 gap-1 p-1">
                 {primaryItems.map((item) => {
                     const active = isCurrentUrl(item.href);
                     const Icon = item.icon;
@@ -31,9 +31,9 @@ export function AppMobileNav() {
                             href={item.href}
                             prefetch
                             className={cn(
-                                'flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl px-2 text-[10px] font-bold transition-[color,background-color,transform] active:scale-[0.98]',
+                                'flex min-h-14 flex-col items-center justify-center gap-1 rounded-md px-2 text-[10px] font-bold transition-colors',
                                 active
-                                    ? 'bg-primary text-primary-foreground shadow-md shadow-primary/25'
+                                    ? 'bg-primary text-primary-foreground'
                                     : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
                             )}
                         >
@@ -49,9 +49,9 @@ export function AppMobileNav() {
                     href="/menu"
                     prefetch
                     className={cn(
-                        'flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl px-2 text-[10px] font-bold transition-[color,background-color,transform] active:scale-[0.98]',
+                        'flex min-h-14 flex-col items-center justify-center gap-1 rounded-md px-2 text-[10px] font-bold transition-colors',
                         isCurrentUrl('/menu')
-                            ? 'bg-primary text-primary-foreground shadow-md shadow-primary/25'
+                            ? 'bg-primary text-primary-foreground'
                             : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
                     )}
                 >

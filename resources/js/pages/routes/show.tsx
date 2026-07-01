@@ -1,8 +1,6 @@
 import { Form, Head, Link, router } from '@inertiajs/react';
 import {
     AlertTriangle,
-    Bike,
-    Clock,
     Database,
     Download,
     ImageIcon,
@@ -10,7 +8,6 @@ import {
     Heart,
     HeartOff,
     MapPinned,
-    Mountain,
     MessageSquareText,
     RefreshCw,
     Send,
@@ -36,6 +33,7 @@ import RouteRatingController from '@/actions/App/Http/Controllers/Cyclist/RouteR
 import TrackController from '@/actions/App/Http/Controllers/Cyclist/TrackController';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
+import { MobileTabs } from '@/components/mobile-tabs';
 import RouteMap from '@/components/routes/route-map';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -88,7 +86,7 @@ type Props = {
 };
 
 const textareaClass =
-    'min-h-24 w-full rounded-2xl border border-input bg-card px-4 py-3 text-sm shadow-xs outline-none transition-[color,box-shadow] placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/35 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20';
+    'min-h-24 w-full rounded-lg border border-input bg-card px-3 py-3 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/30 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20';
 
 export default function RoutesShow({
     route,
@@ -100,34 +98,13 @@ export default function RoutesShow({
         <>
             <Head title={route.name} />
 
-            <div className="flex flex-col gap-6">
-                <div className="flex flex-col gap-4 rounded-[2rem] border border-primary/10 bg-gradient-to-br from-primary/10 via-card to-secondary/45 p-5 shadow-sm shadow-primary/10 sm:flex-row sm:items-start sm:justify-between">
-                    <Heading
-                        title={route.name}
-                        description={`${route.start_name} → ${route.end_name}`}
-                    />
-                    <Button variant="outline" asChild>
-                        <Link href="/routes" prefetch>
-                            Volver a rutas
-                        </Link>
-                    </Button>
-                </div>
-
-                {route.incidents.length > 0 && (
-                    <Alert variant="destructive">
-                        <AlertTriangle />
-                        <AlertTitle>Incidencias activas en revisión</AlertTitle>
-                        <AlertDescription>
-                            Revisa los puntos marcados en el mapa antes de
-                            iniciar el recorrido.
-                        </AlertDescription>
-                    </Alert>
-                )}
-
-                <RouteHero route={route} />
-
-                <Card className="overflow-hidden border-primary/10 bg-card/95">
-                    <CardHeader>
+            <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-3 rounded-lg border bg-card p-4 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="flex flex-col gap-3">
+                        <Heading
+                            title={route.name}
+                            description={`${route.start_name} → ${route.end_name}`}
+                        />
                         <div className="flex flex-wrap gap-2">
                             {route.category && (
                                 <Badge variant="outline">
@@ -139,171 +116,238 @@ export default function RoutesShow({
                                     {route.difficulty.name}
                                 </Badge>
                             )}
-                            <Badge variant="outline">
-                                v{route.route_version}
-                            </Badge>
-                        </div>
-                        <CardTitle>Mapa de la ruta</CardTitle>
-                        <CardDescription>
-                            Trazado oficial, puntos de inicio/final, POIs e
-                            incidencias validadas activas.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <RouteMap
-                            routes={[route]}
-                            selectedSlug={route.slug}
-                            mode="detail"
-                            className="[&_.leaflet-container]:h-[360px] md:[&_.leaflet-container]:h-[500px]"
-                        />
-                    </CardContent>
-                </Card>
-
-                <TrackPanel route={route} activeTrack={activeTrack} />
-
-                <FavoriteRatingPanel route={route} />
-
-                <OfflinePanel route={route} incidentTypes={incidentTypes} />
-
-                <section className="grid gap-4 lg:grid-cols-3">
-                    <Card className="border-primary/10 bg-card/95 lg:col-span-2">
-                        <CardHeader>
-                            <CardTitle>Detalle</CardTitle>
-                            <CardDescription>
-                                {route.description}
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="flex flex-col gap-4">
-                            <div className="grid gap-3 text-sm text-muted-foreground sm:grid-cols-2">
-                                <div className="flex items-center gap-2">
-                                    <MapPinned />
-                                    <span>Inicio: {route.start_name}</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <MapPinned />
-                                    <span>Final: {route.end_name}</span>
-                                </div>
-                                {route.metric && (
-                                    <>
-                                        <div className="flex items-center gap-2">
-                                            <Bike />
-                                            <span>
-                                                {route.metric.distance_km.toLocaleString()}{' '}
-                                                km
-                                            </span>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <Clock />
-                                            <span>
-                                                {
-                                                    route.metric
-                                                        .estimated_time_minutes
-                                                }{' '}
-                                                min estimados
-                                            </span>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <Mountain />
-                                            <span>
-                                                +
-                                                {route.metric.positive_elevation_m?.toLocaleString() ??
-                                                    0}{' '}
-                                                m / -
-                                                {route.metric.negative_elevation_m?.toLocaleString() ??
-                                                    0}{' '}
-                                                m
-                                            </span>
-                                        </div>
-                                    </>
-                                )}
-                            </div>
-
-                            <Separator />
-
-                            <InfoList
-                                title="Recomendaciones"
-                                items={route.recommendations}
-                            />
-                            <InfoList
-                                title="Observaciones"
-                                items={route.observations}
-                            />
-                        </CardContent>
-                    </Card>
-
-                    <Card className="border-primary/10 bg-card/95">
-                        <CardHeader>
-                            <CardTitle>POIs de la ruta</CardTitle>
-                            <CardDescription>
-                                Puntos útiles vinculados al recorrido. Reporta
-                                si alguno está cerrado o tiene datos
-                                incorrectos.
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="flex flex-col gap-3">
-                            {route.points_of_interest.map((poi) => (
-                                <PoiCard key={poi.id} poi={poi} />
-                            ))}
-
-                            {route.points_of_interest.length === 0 && (
-                                <p className="text-sm text-muted-foreground">
-                                    Esta ruta aún no tiene POIs asociados.
-                                </p>
+                            {route.incidents.length > 0 && (
+                                <Badge variant="destructive">
+                                    {route.incidents.length} alerta
+                                    {route.incidents.length === 1 ? '' : 's'}
+                                </Badge>
                             )}
-                        </CardContent>
-                    </Card>
-                </section>
+                        </div>
+                    </div>
+                    <Button variant="outline" asChild>
+                        <Link href="/routes" prefetch>
+                            Volver
+                        </Link>
+                    </Button>
+                </div>
 
-                <IncidentReportForm route={route} types={incidentTypes} />
+                <RouteHero route={route} />
 
-                <PoiSuggestionForm route={route} categories={poiCategories} />
-
-                {route.incidents.length > 0 && (
-                    <Card className="border-primary/10 bg-card/95">
-                        <CardHeader>
-                            <CardTitle>Incidencias activas</CardTitle>
-                            <CardDescription>
-                                Reportes en revisión administrativa asociados a
-                                esta ruta.
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="grid gap-3 md:grid-cols-2">
-                            {route.incidents.map((incident) => (
-                                <div
-                                    key={incident.id}
-                                    className="flex flex-col gap-1 rounded-2xl border border-primary/10 bg-card p-3 shadow-sm shadow-primary/5"
-                                >
-                                    <div className="flex flex-wrap gap-2">
-                                        {incident.type && (
-                                            <Badge variant="destructive">
-                                                {incident.type.name}
-                                            </Badge>
-                                        )}
-                                        {incident.status && (
-                                            <Badge variant="outline">
-                                                {incident.status.name}
-                                            </Badge>
-                                        )}
-                                    </div>
-                                    <strong>{incident.title}</strong>
-                                    <p className="text-sm text-muted-foreground">
-                                        {incident.description}
-                                    </p>
+                <MobileTabs
+                    defaultValue="map"
+                    items={[
+                        {
+                            value: 'map',
+                            label: 'Mapa',
+                            content: (
+                                <div className="flex flex-col gap-3">
+                                    {route.incidents.length > 0 && (
+                                        <Alert variant="destructive">
+                                            <AlertTriangle />
+                                            <AlertTitle>
+                                                Revisa las alertas
+                                            </AlertTitle>
+                                            <AlertDescription>
+                                                Hay reportes visibles en esta
+                                                ruta.
+                                            </AlertDescription>
+                                        </Alert>
+                                    )}
+                                    <Card className="overflow-hidden">
+                                        <CardHeader>
+                                            <CardTitle>Mapa</CardTitle>
+                                            <CardDescription>
+                                                Trazado, inicio, final y puntos
+                                                útiles.
+                                            </CardDescription>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <RouteMap
+                                                routes={[route]}
+                                                selectedSlug={route.slug}
+                                                mode="detail"
+                                                className="[&_.leaflet-container]:h-[calc(100svh-280px)] [&_.leaflet-container]:min-h-96 md:[&_.leaflet-container]:h-[560px]"
+                                            />
+                                        </CardContent>
+                                    </Card>
                                 </div>
-                            ))}
-                        </CardContent>
-                    </Card>
-                )}
+                            ),
+                        },
+                        {
+                            value: 'route',
+                            label: 'Ruta',
+                            content: (
+                                <div className="flex flex-col gap-3">
+                                    <RouteDetailPanel route={route} />
+                                    <TrackPanel
+                                        route={route}
+                                        activeTrack={activeTrack}
+                                    />
+                                </div>
+                            ),
+                        },
+                        {
+                            value: 'pois',
+                            label: 'POIs',
+                            badge: route.points_of_interest.length,
+                            content: (
+                                <div className="flex flex-col gap-3">
+                                    <PoisPanel route={route} />
+                                    <PoiSuggestionForm
+                                        route={route}
+                                        categories={poiCategories}
+                                    />
+                                </div>
+                            ),
+                        },
+                        {
+                            value: 'reports',
+                            label: 'Reportar',
+                            badge: route.incidents.length || null,
+                            content: (
+                                <div className="flex flex-col gap-3">
+                                    <IncidentReportForm
+                                        route={route}
+                                        types={incidentTypes}
+                                    />
+                                    {route.incidents.length > 0 && (
+                                        <IncidentsPanel route={route} />
+                                    )}
+                                </div>
+                            ),
+                        },
+                        {
+                            value: 'ratings',
+                            label: 'Opiniones',
+                            badge: route.approved_ratings.length || null,
+                            content: <FavoriteRatingPanel route={route} />,
+                        },
+                        {
+                            value: 'offline',
+                            label: 'Sin conexión',
+                            content: (
+                                <OfflinePanel
+                                    route={route}
+                                    incidentTypes={incidentTypes}
+                                />
+                            ),
+                        },
+                    ]}
+                />
             </div>
         </>
+    );
+}
+
+function RouteDetailPanel({ route }: { route: CyclingRouteMapItem }) {
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>Detalle</CardTitle>
+                <CardDescription>{route.description}</CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-4">
+                <div className="grid gap-2 text-sm text-muted-foreground sm:grid-cols-2">
+                    <div className="flex items-center gap-2 rounded-md border bg-muted/30 p-2">
+                        <MapPinned />
+                        <span>Inicio: {route.start_name}</span>
+                    </div>
+                    <div className="flex items-center gap-2 rounded-md border bg-muted/30 p-2">
+                        <MapPinned />
+                        <span>Final: {route.end_name}</span>
+                    </div>
+                    {route.metric && (
+                        <>
+                            <Metric
+                                label="Distancia"
+                                value={`${route.metric.distance_km.toLocaleString()} km`}
+                            />
+                            <Metric
+                                label="Tiempo"
+                                value={`${route.metric.estimated_time_minutes} min`}
+                            />
+                            <Metric
+                                label="Desnivel"
+                                value={`+${route.metric.positive_elevation_m?.toLocaleString() ?? 0} m / -${route.metric.negative_elevation_m?.toLocaleString() ?? 0} m`}
+                            />
+                        </>
+                    )}
+                </div>
+
+                <Separator />
+
+                <InfoList
+                    title="Recomendaciones"
+                    items={route.recommendations}
+                />
+                <InfoList title="Observaciones" items={route.observations} />
+            </CardContent>
+        </Card>
+    );
+}
+
+function PoisPanel({ route }: { route: CyclingRouteMapItem }) {
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>Puntos útiles</CardTitle>
+                <CardDescription>
+                    Lugares y servicios vinculados al recorrido.
+                </CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-3">
+                {route.points_of_interest.map((poi) => (
+                    <PoiCard key={poi.id} poi={poi} />
+                ))}
+
+                {route.points_of_interest.length === 0 && (
+                    <p className="text-sm text-muted-foreground">
+                        Esta ruta aún no tiene puntos útiles.
+                    </p>
+                )}
+            </CardContent>
+        </Card>
+    );
+}
+
+function IncidentsPanel({ route }: { route: CyclingRouteMapItem }) {
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>Alertas de la ruta</CardTitle>
+                <CardDescription>
+                    Puntos reportados por ciclistas para manejar con precaución.
+                </CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-3 md:grid-cols-2">
+                {route.incidents.map((incident) => (
+                    <div
+                        key={incident.id}
+                        className="flex flex-col gap-1 rounded-lg border bg-card p-3"
+                    >
+                        <div className="flex flex-wrap gap-2">
+                            {incident.type && (
+                                <Badge variant="destructive">
+                                    {incident.type.name}
+                                </Badge>
+                            )}
+                        </div>
+                        <strong>{incident.title}</strong>
+                        <p className="text-sm text-muted-foreground">
+                            {incident.description}
+                        </p>
+                    </div>
+                ))}
+            </CardContent>
+        </Card>
     );
 }
 
 function RouteHero({ route }: { route: CyclingRouteMapItem }) {
     if (!route.main_image_path) {
         return (
-            <Card className="overflow-hidden border-primary/10 bg-card/95">
-                <div className="flex min-h-40 items-center justify-center bg-gradient-to-br from-primary/20 via-secondary/45 to-card text-muted-foreground">
+            <Card className="overflow-hidden">
+                <div className="flex min-h-36 items-center justify-center border-b bg-muted text-muted-foreground">
                     <div className="flex flex-col items-center gap-2 text-center">
                         <ImageIcon className="size-8" />
                         <span className="text-sm font-medium">
@@ -316,23 +360,13 @@ function RouteHero({ route }: { route: CyclingRouteMapItem }) {
     }
 
     return (
-        <Card className="overflow-hidden border-primary/10 bg-card/95">
-            <div className="relative min-h-56 md:min-h-72">
+        <Card className="overflow-hidden">
+            <div className="relative min-h-44 md:min-h-64">
                 <img
                     src={mediaUrl(route.main_image_path)}
                     alt={route.name}
                     className="absolute inset-0 size-full object-cover"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent" />
-                <div className="absolute inset-x-0 bottom-0 flex flex-col gap-2 p-5 text-white">
-                    <Badge className="w-fit bg-white/20 text-white backdrop-blur">
-                        Portada de ruta
-                    </Badge>
-                    <h2 className="text-2xl font-semibold">{route.name}</h2>
-                    <p className="text-sm text-white/85">
-                        {route.start_name} → {route.end_name}
-                    </p>
-                </div>
             </div>
         </Card>
     );
@@ -464,15 +498,14 @@ function TrackPanel({
     }, [activeTrack, capturePoint, isInProgress]);
 
     return (
-        <Card className="border-primary/10 bg-card/95">
+        <Card>
             <CardHeader>
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div className="flex flex-col gap-2">
                         <CardTitle>Recorrido GPS</CardTitle>
                         <CardDescription>
                             Para iniciar debes estar cerca del punto de partida.
-                            Durante el recorrido se registran puntos GPS cada 60
-                            segundos.
+                            Usa los controles para iniciar, pausar o finalizar.
                         </CardDescription>
                     </div>
                     {activeTrack?.status && (
@@ -586,10 +619,7 @@ function TrackPanel({
                 ) : (
                     <div className="flex flex-col gap-3">
                         <p className="text-sm text-muted-foreground">
-                            El sistema comprobará tu ubicación antes de iniciar.
-                            Si estás lejos del inicio, solo verás el aviso para
-                            acercarte; no se dibuja ninguna línea recta hasta el
-                            punto de partida.
+                            Comprobaremos tu ubicación antes de iniciar.
                         </p>
                         <div className="flex flex-col gap-2">
                             <Button
@@ -633,7 +663,7 @@ function degreesToRadians(value: number): number {
 
 function Metric({ label, value }: { label: string; value: string }) {
     return (
-        <div className="rounded-2xl border border-primary/10 bg-secondary/20 p-3">
+        <div className="rounded-lg border bg-muted/30 p-3">
             <span className="text-xs tracking-wide text-muted-foreground uppercase">
                 {label}
             </span>
@@ -649,7 +679,7 @@ function FavoriteRatingPanel({ route }: { route: CyclingRouteMapItem }) {
         : RouteRatingController.store.form(route.slug);
 
     return (
-        <Card className="border-primary/10 bg-card/95">
+        <Card>
             <CardHeader>
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div className="flex flex-col gap-2">
@@ -707,7 +737,7 @@ function FavoriteRatingPanel({ route }: { route: CyclingRouteMapItem }) {
                         </Form>
                     )}
 
-                    <div className="rounded-2xl border border-primary/10 bg-secondary/20 p-3 text-sm text-muted-foreground">
+                    <div className="rounded-lg border bg-muted/30 p-3 text-sm text-muted-foreground">
                         <p>
                             Recorridos válidos para valorar:{' '}
                             <strong className="text-foreground">
@@ -727,7 +757,7 @@ function FavoriteRatingPanel({ route }: { route: CyclingRouteMapItem }) {
                             {...ratingAction}
                             options={{ preserveScroll: true }}
                             encType="multipart/form-data"
-                            className="grid gap-3 rounded-2xl border border-primary/10 bg-secondary/25 p-3"
+                            className="grid gap-3 rounded-lg border border-primary/10 bg-muted/30 p-3"
                         >
                             {({ processing, errors }) => (
                                 <>
@@ -823,12 +853,12 @@ function FavoriteRatingPanel({ route }: { route: CyclingRouteMapItem }) {
                                         <Alert>
                                             <MessageSquareText />
                                             <AlertTitle>
-                                                Estado de tu valoración:{' '}
+                                                Tu valoración:{' '}
                                                 {userRating.status.name}
                                             </AlertTitle>
                                             <AlertDescription>
                                                 {userRating.admin_response ??
-                                                    'Tu comentario se mostrará públicamente cuando sea aprobado.'}
+                                                    'Tu comentario aparecerá cuando esté listo.'}
                                             </AlertDescription>
                                         </Alert>
                                     )}
@@ -880,11 +910,11 @@ function FavoriteRatingPanel({ route }: { route: CyclingRouteMapItem }) {
                     <Separator />
 
                     <div className="flex flex-col gap-3">
-                        <h3 className="font-medium">Comentarios aprobados</h3>
+                        <h3 className="font-medium">Comentarios</h3>
                         {route.approved_ratings.map((rating) => (
                             <div
                                 key={rating.id}
-                                className="rounded-2xl border border-primary/10 bg-card p-3 shadow-sm shadow-primary/5"
+                                className="rounded-lg border bg-card p-3"
                             >
                                 <div className="flex flex-wrap items-center gap-2">
                                     <Badge variant="secondary">
@@ -905,7 +935,7 @@ function FavoriteRatingPanel({ route }: { route: CyclingRouteMapItem }) {
 
                         {route.approved_ratings.length === 0 && (
                             <p className="text-sm text-muted-foreground">
-                                Aún no hay comentarios aprobados para esta ruta.
+                                Aún no hay comentarios para esta ruta.
                             </p>
                         )}
                     </div>
@@ -1085,15 +1115,15 @@ function OfflinePanel({
 
             setMessage(
                 results.length === 0
-                    ? 'No hay eventos offline pendientes.'
-                    : `${sentCount} de ${results.length} evento(s) sincronizado(s).`,
+                    ? 'No hay datos pendientes.'
+                    : `${sentCount} de ${results.length} dato(s) sincronizado(s).`,
             );
             await loadOfflineState();
         } catch (error) {
             setMessage(
                 error instanceof Error
                     ? error.message
-                    : 'No se pudo sincronizar la cola offline.',
+                    : 'No se pudo sincronizar.',
             );
             await loadOfflineState();
         } finally {
@@ -1120,13 +1150,13 @@ function OfflinePanel({
                 reported_at: new Date().toISOString(),
             });
             form.reset();
-            setMessage('Incidencia guardada localmente en cola offline.');
+            setMessage('Alerta guardada en este dispositivo.');
             await loadOfflineState();
         } catch (error) {
             setMessage(
                 error instanceof Error
                     ? error.message
-                    : 'No se pudo guardar la incidencia offline.',
+                    : 'No se pudo guardar la alerta.',
             );
         } finally {
             setIsBusy(false);
@@ -1158,15 +1188,13 @@ function OfflinePanel({
                     },
                 ],
             });
-            setMessage(
-                'Recorrido offline guardado localmente para sincronizar.',
-            );
+            setMessage('Recorrido guardado para sincronizar.');
             await loadOfflineState();
         } catch (error) {
             setMessage(
                 error instanceof Error
                     ? error.message
-                    : 'No se pudo guardar el recorrido offline.',
+                    : 'No se pudo guardar el recorrido.',
             );
         } finally {
             setIsBusy(false);
@@ -1178,16 +1206,14 @@ function OfflinePanel({
         downloadedVersion !== null && downloadedVersion < route.route_version;
 
     return (
-        <Card className="border-primary/10 bg-card/95">
+        <Card>
             <CardHeader>
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div className="flex flex-col gap-2">
-                        <CardTitle>Offline y sincronización</CardTitle>
+                        <CardTitle>Uso sin conexión</CardTitle>
                         <CardDescription>
-                            Descarga la ruta, guarda eventos locales y
-                            sincroniza cuando recuperes conexión. En
-                            Android/Capacitor esta capa queda lista para migrar
-                            a SQLite nativo.
+                            Descarga la ruta y sincroniza tus datos cuando
+                            recuperes conexión.
                         </CardDescription>
                     </div>
                     <Badge variant={isOnline ? 'secondary' : 'outline'}>
@@ -1206,7 +1232,7 @@ function OfflinePanel({
                                 : 'No descargada'
                         }
                     />
-                    <Metric label="Cola pendiente" value={String(queueCount)} />
+                    <Metric label="Pendiente" value={String(queueCount)} />
                     <Metric
                         label="Almacenamiento"
                         value={formatStorageEstimate(storageEstimate)}
@@ -1227,7 +1253,7 @@ function OfflinePanel({
                 {message && (
                     <Alert>
                         <Database />
-                        <AlertTitle>Estado offline</AlertTitle>
+                        <AlertTitle>Estado</AlertTitle>
                         <AlertDescription>{message}</AlertDescription>
                     </Alert>
                 )}
@@ -1256,7 +1282,7 @@ function OfflinePanel({
                         onClick={syncQueue}
                         disabled={isBusy || !isOnline}
                     >
-                        Sincronizar cola
+                        Sincronizar
                     </Button>
                     {downloadedRoute && (
                         <Button
@@ -1275,13 +1301,12 @@ function OfflinePanel({
                 <div className="grid gap-4 lg:grid-cols-2">
                     <form
                         onSubmit={enqueueIncident}
-                        className="grid gap-3 rounded-2xl border border-primary/10 bg-secondary/15 p-4"
+                        className="grid gap-3 rounded-lg border border-primary/10 bg-muted/30 p-4"
                     >
                         <div>
-                            <h3 className="font-medium">Incidencia offline</h3>
+                            <h3 className="font-medium">Alerta sin conexión</h3>
                             <p className="text-sm text-muted-foreground">
-                                Se guarda localmente y se envía al servidor al
-                                sincronizar.
+                                Se enviará cuando recuperes conexión.
                             </p>
                         </div>
                         <div className="grid gap-2">
@@ -1341,18 +1366,16 @@ function OfflinePanel({
                             variant="outline"
                             disabled={isBusy}
                         >
-                            Guardar incidencia local
+                            Guardar alerta
                         </Button>
                     </form>
 
-                    <div className="flex flex-col gap-3 rounded-2xl border border-primary/10 bg-secondary/15 p-4">
+                    <div className="flex flex-col gap-3 rounded-lg border border-primary/10 bg-muted/30 p-4">
                         <div>
                             <h3 className="font-medium">Recorrido offline</h3>
                             <p className="text-sm text-muted-foreground">
-                                Registra un recorrido local básico con inicio y
-                                fin de la ruta para validar la cola de
-                                sincronización. La captura GPS nativa continua
-                                se cerrará en la fase Android/Capacitor.
+                                Guarda un recorrido en este dispositivo para
+                                enviarlo cuando tengas conexión.
                             </p>
                         </div>
                         <Button
@@ -1361,7 +1384,7 @@ function OfflinePanel({
                             onClick={enqueueCompletedTrack}
                             disabled={isBusy}
                         >
-                            Guardar recorrido offline local
+                            Guardar recorrido sin conexión
                         </Button>
                     </div>
                 </div>
@@ -1392,7 +1415,7 @@ function PoiCard({ poi }: { poi: RoutePoi }) {
     const image = poi.images?.[0];
 
     return (
-        <div className="flex flex-col gap-3 overflow-hidden rounded-[1.5rem] border border-primary/10 bg-card shadow-sm shadow-primary/10">
+        <div className="flex flex-col gap-3 overflow-hidden rounded-lg border bg-card">
             {image && (
                 <img
                     src={mediaUrl(image.image_path)}
@@ -1406,7 +1429,7 @@ function PoiCard({ poi }: { poi: RoutePoi }) {
                     {poi.is_required && (
                         <Badge variant="secondary">
                             <Star data-icon="inline-start" />
-                            obligatorio
+                            clave
                         </Badge>
                     )}
                 </div>
@@ -1461,11 +1484,13 @@ function PoiReportForm({ poiId }: { poiId: number }) {
         <Form
             {...PoiReportController.store.form(poiId)}
             options={{ preserveScroll: true }}
-            className="grid gap-2 rounded-2xl bg-secondary/25 p-3"
+            className="grid gap-2 rounded-lg bg-muted/30 p-3"
         >
             {({ processing, errors }) => (
                 <>
-                    <Label htmlFor={`report_type_${poiId}`}>Reportar POI</Label>
+                    <Label htmlFor={`report_type_${poiId}`}>
+                        Reportar punto
+                    </Label>
                     <Select
                         name="report_type"
                         defaultValue="datos incorrectos"
@@ -1498,7 +1523,7 @@ function PoiReportForm({ poiId }: { poiId: number }) {
                     <InputError message={errors.description} />
 
                     <Button size="sm" disabled={processing}>
-                        Enviar reporte
+                        Enviar
                     </Button>
                 </>
             )}
@@ -1537,7 +1562,7 @@ function PoiSuggestionForm({
     };
 
     return (
-        <Card className="border-primary/10 bg-card/95">
+        <Card>
             <CardHeader>
                 <CardTitle>Sugerir un punto de interés</CardTitle>
                 <CardDescription>
@@ -1612,7 +1637,7 @@ function PoiSuggestionForm({
 
                             <div className="grid gap-2 md:col-span-2">
                                 <Label>Ubicación del POI</Label>
-                                <div className="overflow-hidden rounded-[1.5rem] border border-primary/10 shadow-sm shadow-primary/10">
+                                <div className="overflow-hidden rounded-lg border border-primary/10">
                                     <MapContainer
                                         center={[
                                             selectedPoint?.latitude ??
@@ -1773,13 +1798,12 @@ function IncidentReportForm({
     };
 
     return (
-        <Card className="border-primary/10 bg-card/95">
+        <Card>
             <CardHeader>
-                <CardTitle>Reportar incidencia</CardTitle>
+                <CardTitle>Reportar alerta</CardTitle>
                 <CardDescription>
                     Envía obstáculos, derrumbes, inseguridad u otros problemas
-                    de esta ruta. El reporte queda como reportado y se mostrará
-                    a ciclistas solo después de revisión administrativa.
+                    de esta ruta.
                 </CardDescription>
             </CardHeader>
             <CardContent>

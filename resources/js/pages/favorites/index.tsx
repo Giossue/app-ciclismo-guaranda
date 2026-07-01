@@ -48,13 +48,13 @@ type Props = {
 export default function FavoritesIndex({ favorites }: Props) {
     return (
         <>
-            <Head title="Rutas favoritas" />
+            <Head title="Favoritas" />
 
-            <div className="flex flex-col gap-6">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-3 rounded-lg border bg-card p-4 sm:flex-row sm:items-start sm:justify-between">
                     <Heading
-                        title="Rutas favoritas"
-                        description="Tus rutas guardadas para consultarlas rápido antes de salir"
+                        title="Favoritas"
+                        description="Tus rutas guardadas para encontrarlas rápido."
                     />
                     <Button variant="outline" asChild>
                         <Link href="/routes" prefetch>
@@ -63,66 +63,51 @@ export default function FavoritesIndex({ favorites }: Props) {
                     </Button>
                 </div>
 
-                <div className="grid gap-4">
+                <div className="grid gap-3">
                     {favorites.data.map((favorite) =>
                         favorite.route ? (
                             <Card key={favorite.route.id}>
-                                <CardHeader>
-                                    <div className="flex flex-col gap-2">
-                                        <div className="flex flex-wrap gap-2">
-                                            <Badge variant="secondary">
-                                                <Star data-icon="inline-start" />
-                                                favorita
+                                <CardHeader className="gap-2">
+                                    <div className="flex flex-wrap gap-2">
+                                        <Badge variant="secondary">
+                                            <Star data-icon="inline-start" />
+                                            favorita
+                                        </Badge>
+                                        {favorite.route.category && (
+                                            <Badge variant="outline">
+                                                {favorite.route.category.name}
                                             </Badge>
-                                            {favorite.route.status && (
-                                                <Badge variant="outline">
-                                                    {favorite.route.status.name}
-                                                </Badge>
-                                            )}
-                                            {favorite.route.category && (
-                                                <Badge variant="outline">
-                                                    {
-                                                        favorite.route.category
-                                                            .name
-                                                    }
-                                                </Badge>
-                                            )}
-                                            {favorite.route.difficulty && (
-                                                <Badge variant="secondary">
-                                                    {
-                                                        favorite.route
-                                                            .difficulty.name
-                                                    }
-                                                </Badge>
-                                            )}
-                                        </div>
-                                        <CardTitle>
-                                            {favorite.route.name}
-                                        </CardTitle>
-                                        <CardDescription>
-                                            {favorite.route.description}
-                                        </CardDescription>
+                                        )}
+                                        {favorite.route.difficulty && (
+                                            <Badge variant="secondary">
+                                                {favorite.route.difficulty.name}
+                                            </Badge>
+                                        )}
                                     </div>
+                                    <CardTitle>{favorite.route.name}</CardTitle>
+                                    <CardDescription className="line-clamp-2">
+                                        {favorite.route.description}
+                                    </CardDescription>
                                 </CardHeader>
 
-                                <CardContent className="grid gap-3 text-sm text-muted-foreground sm:grid-cols-3">
-                                    <div className="flex items-center gap-2">
+                                <CardContent className="grid gap-2 text-sm text-muted-foreground sm:grid-cols-3">
+                                    <div className="flex items-center gap-2 rounded-md border bg-muted/30 p-2">
                                         <MapPinned />
-                                        <span>
+                                        <span className="line-clamp-1">
                                             {favorite.route.start_name} →{' '}
                                             {favorite.route.end_name}
                                         </span>
                                     </div>
                                     {favorite.route.metric && (
                                         <>
-                                            <div className="flex items-center gap-2">
+                                            <div className="flex items-center gap-2 rounded-md border bg-muted/30 p-2">
                                                 <Bike />
                                                 <span>
                                                     {favorite.route.metric.distance_km.toLocaleString()}{' '}
                                                     km
                                                 </span>
                                             </div>
-                                            <div className="flex items-center gap-2">
+                                            <div className="flex items-center gap-2 rounded-md border bg-muted/30 p-2">
                                                 <Clock />
                                                 <span>
                                                     {
@@ -136,13 +121,13 @@ export default function FavoritesIndex({ favorites }: Props) {
                                     )}
                                 </CardContent>
 
-                                <CardFooter className="flex flex-wrap gap-2">
-                                    <Button variant="outline" asChild>
+                                <CardFooter className="grid gap-2 sm:grid-cols-2">
+                                    <Button asChild>
                                         <Link
                                             href={`/routes/${favorite.route.slug}`}
                                             prefetch
                                         >
-                                            Ver detalle
+                                            Ver ruta
                                         </Link>
                                     </Button>
                                     <Form
@@ -155,6 +140,7 @@ export default function FavoritesIndex({ favorites }: Props) {
                                             <Button
                                                 variant="outline"
                                                 disabled={processing}
+                                                className="w-full"
                                             >
                                                 <HeartOff data-icon="inline-start" />
                                                 Quitar
@@ -170,17 +156,16 @@ export default function FavoritesIndex({ favorites }: Props) {
                 {favorites.data.length === 0 && (
                     <Card>
                         <CardHeader>
-                            <CardTitle>No tienes rutas favoritas</CardTitle>
+                            <CardTitle>No tienes favoritas</CardTitle>
                             <CardDescription>
-                                Guarda una ruta desde su detalle para
-                                encontrarla aquí rápidamente.
+                                Guarda una ruta para verla aquí.
                             </CardDescription>
                         </CardHeader>
                     </Card>
                 )}
 
                 <div className="text-sm text-muted-foreground">
-                    Mostrando {favorites.from ?? 0}–{favorites.to ?? 0} de{' '}
+                    {favorites.from ?? 0}–{favorites.to ?? 0} de{' '}
                     {favorites.total} favoritas.
                 </div>
             </div>

@@ -75,7 +75,7 @@ export default function Welcome() {
                                     Plataforma para ciclistas y administradores:
                                     rutas oficiales, puntos de interés,
                                     incidencias, favoritos, recorridos GPS y
-                                    asistente IA conectado a n8n.
+                                    asistente de rutas y recomendaciones.
                                 </p>
                             </div>
 

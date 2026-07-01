@@ -6,6 +6,7 @@ import AdminLayout from '@/layouts/admin-layout';
 import AppLayout from '@/layouts/app-layout';
 import AuthLayout from '@/layouts/auth-layout';
 import SettingsLayout from '@/layouts/settings/layout';
+import { setupNativeBackButton } from '@/lib/native/capacitor';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Guaranda Go';
 
@@ -41,3 +42,4 @@ createInertiaApp({
 
 // This will set light / dark mode on load...
 initializeTheme();
+setupNativeBackButton();

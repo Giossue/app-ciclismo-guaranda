@@ -62,31 +62,31 @@
 }
 
 :root {
-    --background: oklch(0.985 0.012 145);
-    --foreground: oklch(0.18 0.018 145);
-    --card: oklch(1 0.005 145);
-    --card-foreground: oklch(0.18 0.018 145);
-    --popover: oklch(1 0.005 145);
-    --popover-foreground: oklch(0.18 0.018 145);
-    --primary: oklch(0.63 0.19 135);
-    --primary-foreground: oklch(0.99 0.01 145);
-    --secondary: oklch(0.93 0.06 135);
-    --secondary-foreground: oklch(0.32 0.13 135);
-    --muted: oklch(0.95 0.018 145);
-    --muted-foreground: oklch(0.54 0.025 145);
-    --accent: oklch(0.91 0.08 135);
-    --accent-foreground: oklch(0.3 0.13 135);
-    --destructive: oklch(0.58 0.22 28);
-    --destructive-foreground: oklch(0.99 0.01 28);
-    --border: oklch(0.9 0.018 145);
-    --input: oklch(0.91 0.02 145);
-    --ring: oklch(0.68 0.18 135);
+    --background: oklch(0.975 0.006 150);
+    --foreground: oklch(0.18 0.015 150);
+    --card: oklch(0.998 0.003 150);
+    --card-foreground: oklch(0.18 0.015 150);
+    --popover: oklch(0.998 0.003 150);
+    --popover-foreground: oklch(0.18 0.015 150);
+    --primary: oklch(0.48 0.15 145);
+    --primary-foreground: oklch(0.99 0.004 150);
+    --secondary: oklch(0.93 0.035 145);
+    --secondary-foreground: oklch(0.27 0.095 145);
+    --muted: oklch(0.94 0.008 150);
+    --muted-foreground: oklch(0.48 0.018 150);
+    --accent: oklch(0.9 0.045 145);
+    --accent-foreground: oklch(0.25 0.09 145);
+    --destructive: oklch(0.56 0.2 28);
+    --destructive-foreground: oklch(0.99 0.004 28);
+    --border: oklch(0.84 0.012 150);
+    --input: oklch(0.84 0.012 150);
+    --ring: oklch(0.5 0.14 145);
     --chart-1: oklch(0.63 0.19 135);
     --chart-2: oklch(0.67 0.15 175);
     --chart-3: oklch(0.56 0.16 78);
     --chart-4: oklch(0.75 0.17 92);
     --chart-5: oklch(0.62 0.2 35);
-    --radius: 1.25rem;
+    --radius: 0.75rem;
     --sidebar: oklch(0.98 0.014 145);
     --sidebar-foreground: oklch(0.22 0.02 145);
     --sidebar-primary: oklch(0.63 0.19 135);
@@ -139,24 +139,6 @@
 
     body {
         @apply bg-background text-foreground antialiased;
-        background-attachment: fixed;
-        background-image:
-            radial-gradient(
-                circle at 18% -6%,
-                color-mix(in oklch, var(--primary) 15%, transparent),
-                transparent 24rem
-            ),
-            radial-gradient(
-                circle at 100% 18%,
-                color-mix(in oklch, var(--secondary) 55%, transparent),
-                transparent 18rem
-            ),
-            linear-gradient(
-                180deg,
-                color-mix(in oklch, var(--background) 82%, white),
-                var(--background) 42%,
-                color-mix(in oklch, var(--secondary) 25%, var(--background))
-            );
     }
 
     ::selection {
@@ -169,20 +151,10 @@
 }
 
 @layer components {
-    [data-slot='card'] {
-        box-shadow:
-            0 18px 45px color-mix(in oklch, var(--primary) 8%, transparent),
-            0 2px 8px color-mix(in oklch, var(--foreground) 6%, transparent);
-    }
-
-    [data-slot='badge'] {
-        box-shadow: inset 0 -1px 0
-            color-mix(in oklch, var(--foreground) 6%, transparent);
-    }
-
+    [data-slot='card'],
+    [data-slot='badge'],
     [data-slot='alert'] {
-        box-shadow: 0 14px 30px
-            color-mix(in oklch, var(--foreground) 5%, transparent);
+        box-shadow: none;
     }
 
     .leaflet-container {
@@ -199,8 +171,8 @@
     }
 
     .leaflet-popup-content-wrapper {
-        border-radius: 1rem;
-        box-shadow: 0 18px 35px color-mix(in oklch, black 18%, transparent);
+        border-radius: var(--radius);
+        box-shadow: none;
     }
 
     .leaflet-popup-tip {
