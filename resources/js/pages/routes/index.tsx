@@ -1,6 +1,7 @@
 import { Head, Link } from '@inertiajs/react';
 import { ImageIcon, RouteIcon, Star } from 'lucide-react';
 import Heading from '@/components/heading';
+import ImageWithFallback from '@/components/image-with-fallback';
 import { MobileTabs } from '@/components/mobile-tabs';
 import RouteMap from '@/components/routes/route-map';
 import { Badge } from '@/components/ui/badge';
@@ -219,17 +220,15 @@ function RoutesList({ routes }: { routes: CyclingRouteMapItem[] }) {
 }
 
 function RouteCover({ route }: { route: CyclingRouteMapItem }) {
-    if (route.main_image_path) {
-        return (
-            <div className="ueb-route-thumb">
-                <img src={mediaUrl(route.main_image_path)} alt={route.name} />
-            </div>
-        );
-    }
-
     return (
         <div className="ueb-route-thumb">
-            <ImageIcon className="size-6" />
+            <ImageWithFallback
+                src={
+                    route.main_image_path ? mediaUrl(route.main_image_path) : ''
+                }
+                alt={route.name}
+                fallback={<ImageIcon className="size-6" />}
+            />
         </div>
     );
 }

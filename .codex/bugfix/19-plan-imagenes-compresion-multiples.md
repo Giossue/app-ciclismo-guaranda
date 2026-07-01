@@ -55,6 +55,25 @@ Implementado 2026-07-01.
   `npm run build` pasan.
 - Wayfinder regenerado con `php artisan wayfinder:generate --with-form`.
 
+## Imágenes que no se visualizan ("dañadas") 2026-07-01
+
+- Causa: datos de rutas con `main_image_path` apuntando a archivos inexistentes,
+  p. ej. `Routes/img1.png` (con `R` mayúscula; el flujo real guarda en `routes`
+  minúscula con nombre hash). La URL `/storage/Routes/img1.png` responde 404.
+- El flujo de subida y el serving del disco `public` funcionan (un archivo real
+  `pois/xxxx.jpg` responde HTTP 200). El problema es solo el dato semilla/manual.
+- Fix de código: `resources/js/components/image-with-fallback.tsx` muestra un
+  placeholder en vez del ícono de imagen rota cuando el archivo no existe.
+  Integrado en `routes/index`, `routes/show` (portada y POIs) y el preview de
+  portada del formulario admin de rutas.
+- Fix de datos (ejecutar en el servidor, desde `/var/www/html`): limpiar rutas
+  con portada inexistente para que muestren "sin portada" y luego resubir la
+  imagen real desde el admin:
+
+  ```bash
+  php artisan tinker --execute="\App\Models\CyclingRoute::whereNotNull('main_image_path')->get()->each(function(\$r){ if(! \Illuminate\Support\Facades\Storage::disk('public')->exists(\$r->main_image_path)){ \$r->forceFill(['main_image_path'=>null])->saveQuietly(); } });"
+  ```
+
 ## Pendiente de prueba manual
 
 - Subir imagen > 5 MB en ruta/POI y confirmar que se optimiza y guarda.

@@ -4,6 +4,7 @@ import { useCallback, useMemo, useState } from 'react';
 import RouteController from '@/actions/App/Http/Controllers/Admin/RouteController';
 import RouteGeometryEditor from '@/components/admin/routes/route-geometry-editor';
 import ImageFileInput from '@/components/image-file-input';
+import ImageWithFallback from '@/components/image-with-fallback';
 import InputError from '@/components/input-error';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -614,12 +615,21 @@ export default function RouteForm({
                                 )}
                                 {route?.main_image_path && (
                                     <div className="overflow-hidden rounded-2xl border bg-muted/30">
-                                        <img
+                                        <ImageWithFallback
                                             src={mediaUrl(
                                                 route.main_image_path,
                                             )}
                                             alt={`Imagen actual de ${route.name}`}
                                             className="h-44 w-full object-cover"
+                                            fallback={
+                                                <div className="flex h-44 w-full flex-col items-center justify-center gap-2 bg-muted text-muted-foreground">
+                                                    <ImageIcon className="size-7" />
+                                                    <span className="text-xs">
+                                                        La portada guardada no
+                                                        existe. Sube una nueva.
+                                                    </span>
+                                                </div>
+                                            }
                                         />
                                     </div>
                                 )}

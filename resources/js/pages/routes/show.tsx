@@ -33,6 +33,7 @@ import RouteRatingController from '@/actions/App/Http/Controllers/Cyclist/RouteR
 import TrackController from '@/actions/App/Http/Controllers/Cyclist/TrackController';
 import Heading from '@/components/heading';
 import ImageFileInput from '@/components/image-file-input';
+import ImageWithFallback from '@/components/image-with-fallback';
 import InputError from '@/components/input-error';
 import { MobileTabs } from '@/components/mobile-tabs';
 import RouteMap from '@/components/routes/route-map';
@@ -346,30 +347,29 @@ function IncidentsPanel({ route }: { route: CyclingRouteMapItem }) {
 }
 
 function RouteHero({ route }: { route: CyclingRouteMapItem }) {
-    if (!route.main_image_path) {
-        return (
-            <Card className="overflow-hidden">
-                <div className="flex min-h-36 items-center justify-center border-b bg-muted text-muted-foreground">
-                    <div className="flex flex-col items-center gap-2 text-center">
-                        <ImageIcon className="size-8" />
-                        <span className="text-sm font-medium">
-                            Ruta sin portada
-                        </span>
-                    </div>
-                </div>
-            </Card>
-        );
-    }
+    const placeholder = (
+        <div className="flex min-h-44 items-center justify-center border-b bg-muted text-muted-foreground md:min-h-64">
+            <div className="flex flex-col items-center gap-2 text-center">
+                <ImageIcon className="size-8" />
+                <span className="text-sm font-medium">Ruta sin portada</span>
+            </div>
+        </div>
+    );
 
     return (
         <Card className="overflow-hidden">
-            <div className="relative min-h-44 md:min-h-64">
-                <img
-                    src={mediaUrl(route.main_image_path)}
-                    alt={route.name}
-                    className="absolute inset-0 size-full object-cover"
-                />
-            </div>
+            {route.main_image_path ? (
+                <div className="relative min-h-44 md:min-h-64">
+                    <ImageWithFallback
+                        src={mediaUrl(route.main_image_path)}
+                        alt={route.name}
+                        className="absolute inset-0 size-full object-cover"
+                        fallback={placeholder}
+                    />
+                </div>
+            ) : (
+                placeholder
+            )}
         </Card>
     );
 }
@@ -1437,10 +1437,15 @@ function PoiCard({ poi }: { poi: RoutePoi }) {
     return (
         <div className="flex flex-col gap-3 overflow-hidden rounded-2xl border bg-card">
             {image && (
-                <img
+                <ImageWithFallback
                     src={mediaUrl(image.image_path)}
                     alt={image.description ?? poi.name}
                     className="h-32 w-full object-cover"
+                    fallback={
+                        <div className="flex h-32 w-full items-center justify-center bg-muted text-muted-foreground">
+                            <ImageIcon className="size-7" />
+                        </div>
+                    }
                 />
             )}
             <div className="flex flex-col gap-1 p-3">
