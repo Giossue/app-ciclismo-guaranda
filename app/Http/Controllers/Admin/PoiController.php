@@ -110,13 +110,24 @@ class PoiController extends Controller
     public function update(UpdatePoiRequest $request, PointOfInterest $poi): RedirectResponse
     {
         $payload = $request->validated();
+        $reactivating = $poi->trashed() && (bool) ($payload['active'] ?? false);
 
         DB::transaction(function () use ($payload, $poi): void {
-            $poi->fill($this->poiAttributes($payload))->save();
+            $poi->fill($this->poiAttributes($payload));
+
+            if ($poi->trashed() && (bool) ($payload['active'] ?? false)) {
+                // Reactivar un POI deshabilitado: quita el borrado lógico.
+                $poi->restore();
+            } else {
+                $poi->save();
+            }
+
             $this->syncPoiPayload($poi, $payload);
         });
 
-        Inertia::flash('toast', ['type' => 'info', 'message' => __('POI actualizado.')]);
+        Inertia::flash('toast', $reactivating
+            ? ['type' => 'success', 'message' => __('POI activado.')]
+            : ['type' => 'info', 'message' => __('POI actualizado.')]);
 
         return to_route('admin.pois.index');
     }
@@ -129,6 +140,21 @@ class PoiController extends Controller
         $poi->delete();
 
         Inertia::flash('toast', ['type' => 'error', 'message' => __('POI deshabilitado.')]);
+
+        return to_route('admin.pois.index');
+    }
+
+    public function restore(PointOfInterest $poi): RedirectResponse
+    {
+        $this->authorize('restore', $poi);
+
+        if ($poi->trashed()) {
+            $poi->restore();
+        }
+
+        $poi->forceFill(['active' => true])->save();
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('POI activado.')]);
 
         return to_route('admin.pois.index');
     }

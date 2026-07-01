@@ -180,7 +180,7 @@ export default function AdminPoisIndex({
                                         Editar
                                     </Link>
                                 </Button>
-                                {poi.active && (
+                                {poi.active ? (
                                     <Form
                                         {...PoiController.destroy.form(poi.id)}
                                         options={{ preserveScroll: true }}
@@ -192,6 +192,21 @@ export default function AdminPoisIndex({
                                             >
                                                 <Power data-icon="inline-start" />
                                                 Desactivar
+                                            </Button>
+                                        )}
+                                    </Form>
+                                ) : (
+                                    <Form
+                                        {...PoiController.restore.form(poi.id)}
+                                        options={{ preserveScroll: true }}
+                                    >
+                                        {({ processing }) => (
+                                            <Button
+                                                variant="secondary"
+                                                disabled={processing}
+                                            >
+                                                <Power data-icon="inline-start" />
+                                                Habilitar
                                             </Button>
                                         )}
                                     </Form>

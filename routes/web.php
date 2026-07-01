@@ -68,7 +68,8 @@ Route::middleware(['auth', 'verified', 'admin'])
 
         Route::post('routes/elevation-preview', RouteElevationController::class)->middleware('throttle:20,1')->name('routes.elevation-preview');
         Route::resource('routes', AdminRouteController::class)->except(['show']);
-        Route::resource('pois', AdminPoiController::class)->except(['show']);
+        Route::resource('pois', AdminPoiController::class)->except(['show'])->withTrashed(['edit', 'update']);
+        Route::patch('pois/{poi}/restore', [AdminPoiController::class, 'restore'])->withTrashed()->name('pois.restore');
         Route::resource('incidents', AdminIncidentController::class)->only(['index', 'update']);
         Route::resource('ratings', AdminRatingController::class)->only(['index', 'update']);
         Route::get('catalogs', [CatalogController::class, 'index'])->name('catalogs.index');
