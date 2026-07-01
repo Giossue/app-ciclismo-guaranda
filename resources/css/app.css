@@ -381,10 +381,8 @@
     }
 
     .ueb-page {
-        width: min(
-            calc(100% - (var(--page-pad-x) * 2)),
-            var(--page-max-tablet)
-        );
+        width: 100%;
+        max-width: var(--page-max-tablet);
         margin-inline: auto;
     }
 
@@ -630,7 +628,7 @@
 
     .ueb-chat-shell {
         display: flex;
-        height: calc(100dvh - var(--bottom-nav-height) - var(--safe-bottom));
+        flex: 1 1 0%;
         min-height: 0;
         flex-direction: column;
         overflow: hidden;
