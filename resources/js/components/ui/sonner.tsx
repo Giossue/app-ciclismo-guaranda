@@ -14,10 +14,11 @@ function Toaster({ ...props }: ToasterProps) {
         <Sonner
             theme={appearance}
             className="toaster group"
-            position="bottom-center"
+            position="top-center"
             richColors
             closeButton
-            offset="calc(var(--bottom-nav-height) + var(--safe-bottom) + 0.75rem)"
+            offset="calc(env(safe-area-inset-top, 0px) + 3.75rem)"
+            mobileOffset="calc(env(safe-area-inset-top, 0px) + 3.5rem)"
             toastOptions={{
                 classNames: {
                     toast: 'rounded-2xl border-border bg-popover text-popover-foreground shadow-[0_18px_55px_color-mix(in_oklch,var(--foreground)_18%,transparent)]',
@@ -32,10 +33,18 @@ function Toaster({ ...props }: ToasterProps) {
                     '--normal-bg': 'var(--popover)',
                     '--normal-text': 'var(--popover-foreground)',
                     '--normal-border': 'var(--border)',
-                    '--success-bg': 'var(--success)',
-                    '--success-text': 'var(--success-foreground)',
-                    '--error-bg': 'var(--destructive)',
-                    '--error-text': 'var(--destructive-foreground)',
+                    // Crear / confirmar: verde
+                    '--success-bg': '#16a34a',
+                    '--success-border': '#15803d',
+                    '--success-text': '#ffffff',
+                    // Editar: azul / celeste
+                    '--info-bg': '#0284c7',
+                    '--info-border': '#0369a1',
+                    '--info-text': '#ffffff',
+                    // Eliminar / error: rojo
+                    '--error-bg': '#dc2626',
+                    '--error-border': '#b91c1c',
+                    '--error-text': '#ffffff',
                     '--warning-bg': 'var(--warning)',
                     '--warning-text': 'var(--warning-foreground)',
                 } as React.CSSProperties

@@ -83,7 +83,7 @@ class RouteRatingController extends Controller
 
         $this->storeMedia($request, $rating);
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Valoración actualizada y enviada a moderación.')]);
+        Inertia::flash('toast', ['type' => 'info', 'message' => __('Valoración actualizada y enviada a moderación.')]);
 
         return back();
     }
@@ -94,7 +94,7 @@ class RouteRatingController extends Controller
 
         $rating->delete();
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Valoración eliminada.')]);
+        Inertia::flash('toast', ['type' => 'error', 'message' => __('Valoración eliminada.')]);
 
         return back();
     }

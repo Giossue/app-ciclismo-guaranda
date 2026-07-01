@@ -42,7 +42,7 @@ class UserController extends Controller
 
         $user->save();
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Usuario actualizado.')]);
+        Inertia::flash('toast', ['type' => 'info', 'message' => __('Usuario actualizado.')]);
 
         return to_route('admin.users.index');
     }
@@ -54,7 +54,7 @@ class UserController extends Controller
         $user->forceFill(['active' => false])->save();
         $user->delete();
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Usuario deshabilitado.')]);
+        Inertia::flash('toast', ['type' => 'error', 'message' => __('Usuario deshabilitado.')]);
 
         return to_route('admin.users.index');
     }
