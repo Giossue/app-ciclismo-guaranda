@@ -6,6 +6,7 @@ import {
     Database,
     Download,
     ImageIcon,
+    LocateFixed,
     Heart,
     HeartOff,
     MapPinned,
@@ -20,6 +21,12 @@ import {
 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
+import {
+    CircleMarker,
+    MapContainer,
+    TileLayer,
+    useMapEvents,
+} from 'react-leaflet';
 import FavoriteRouteController from '@/actions/App/Http/Controllers/Cyclist/FavoriteRouteController';
 import IncidentController from '@/actions/App/Http/Controllers/Cyclist/IncidentController';
 import OfflineRouteController from '@/actions/App/Http/Controllers/Cyclist/OfflineRouteController';
@@ -81,7 +88,7 @@ type Props = {
 };
 
 const textareaClass =
-    'min-h-24 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-xs outline-none transition-[color,box-shadow] placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20';
+    'min-h-24 w-full rounded-2xl border border-input bg-card px-4 py-3 text-sm shadow-xs outline-none transition-[color,box-shadow] placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/35 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20';
 
 export default function RoutesShow({
     route,
@@ -94,7 +101,7 @@ export default function RoutesShow({
             <Head title={route.name} />
 
             <div className="flex flex-col gap-6">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div className="flex flex-col gap-4 rounded-[2rem] border border-primary/10 bg-gradient-to-br from-primary/10 via-card to-secondary/45 p-5 shadow-sm shadow-primary/10 sm:flex-row sm:items-start sm:justify-between">
                     <Heading
                         title={route.name}
                         description={`${route.start_name} → ${route.end_name}`}
@@ -119,7 +126,7 @@ export default function RoutesShow({
 
                 <RouteHero route={route} />
 
-                <Card>
+                <Card className="overflow-hidden border-primary/10 bg-card/95">
                     <CardHeader>
                         <div className="flex flex-wrap gap-2">
                             {route.category && (
@@ -146,6 +153,7 @@ export default function RoutesShow({
                         <RouteMap
                             routes={[route]}
                             selectedSlug={route.slug}
+                            mode="detail"
                             className="[&_.leaflet-container]:h-[360px] md:[&_.leaflet-container]:h-[500px]"
                         />
                     </CardContent>
@@ -158,7 +166,7 @@ export default function RoutesShow({
                 <OfflinePanel route={route} incidentTypes={incidentTypes} />
 
                 <section className="grid gap-4 lg:grid-cols-3">
-                    <Card className="lg:col-span-2">
+                    <Card className="border-primary/10 bg-card/95 lg:col-span-2">
                         <CardHeader>
                             <CardTitle>Detalle</CardTitle>
                             <CardDescription>
@@ -223,7 +231,7 @@ export default function RoutesShow({
                         </CardContent>
                     </Card>
 
-                    <Card>
+                    <Card className="border-primary/10 bg-card/95">
                         <CardHeader>
                             <CardTitle>POIs de la ruta</CardTitle>
                             <CardDescription>
@@ -248,10 +256,10 @@ export default function RoutesShow({
 
                 <IncidentReportForm route={route} types={incidentTypes} />
 
-                <PoiSuggestionForm categories={poiCategories} />
+                <PoiSuggestionForm route={route} categories={poiCategories} />
 
                 {route.incidents.length > 0 && (
-                    <Card>
+                    <Card className="border-primary/10 bg-card/95">
                         <CardHeader>
                             <CardTitle>Incidencias activas</CardTitle>
                             <CardDescription>
@@ -263,7 +271,7 @@ export default function RoutesShow({
                             {route.incidents.map((incident) => (
                                 <div
                                     key={incident.id}
-                                    className="flex flex-col gap-1 rounded-xl border p-3"
+                                    className="flex flex-col gap-1 rounded-2xl border border-primary/10 bg-card p-3 shadow-sm shadow-primary/5"
                                 >
                                     <div className="flex flex-wrap gap-2">
                                         {incident.type && (
@@ -294,8 +302,8 @@ export default function RoutesShow({
 function RouteHero({ route }: { route: CyclingRouteMapItem }) {
     if (!route.main_image_path) {
         return (
-            <Card className="overflow-hidden">
-                <div className="flex min-h-40 items-center justify-center bg-gradient-to-br from-primary/15 via-muted to-card text-muted-foreground">
+            <Card className="overflow-hidden border-primary/10 bg-card/95">
+                <div className="flex min-h-40 items-center justify-center bg-gradient-to-br from-primary/20 via-secondary/45 to-card text-muted-foreground">
                     <div className="flex flex-col items-center gap-2 text-center">
                         <ImageIcon className="size-8" />
                         <span className="text-sm font-medium">
@@ -308,14 +316,14 @@ function RouteHero({ route }: { route: CyclingRouteMapItem }) {
     }
 
     return (
-        <Card className="overflow-hidden">
+        <Card className="overflow-hidden border-primary/10 bg-card/95">
             <div className="relative min-h-56 md:min-h-72">
                 <img
                     src={mediaUrl(route.main_image_path)}
                     alt={route.name}
                     className="absolute inset-0 size-full object-cover"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent" />
                 <div className="absolute inset-x-0 bottom-0 flex flex-col gap-2 p-5 text-white">
                     <Badge className="w-fit bg-white/20 text-white backdrop-blur">
                         Portada de ruta
@@ -340,6 +348,9 @@ function TrackPanel({
     const isInProgress = activeTrack?.status?.name === 'en curso';
     const isPaused = activeTrack?.status?.name === 'pausado';
     const isPostingPoint = useRef(false);
+    const [startMessage, setStartMessage] = useState<string | null>(null);
+    const [isStarting, setIsStarting] = useState(false);
+    const startThresholdMeters = 150;
 
     const capturePoint = useCallback(() => {
         if (!activeTrack || !isInProgress || !navigator.geolocation) {
@@ -383,6 +394,65 @@ function TrackPanel({
         );
     }, [activeTrack, isInProgress]);
 
+    const startTrack = useCallback(() => {
+        setStartMessage(null);
+
+        if (!navigator.geolocation) {
+            setStartMessage(
+                'Tu dispositivo no soporta geolocalización. No se puede iniciar el recorrido sin ubicación.',
+            );
+
+            return;
+        }
+
+        setIsStarting(true);
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const distance = distanceMeters(
+                    position.coords.latitude,
+                    position.coords.longitude,
+                    route.start_latitude,
+                    route.start_longitude,
+                );
+
+                if (distance > startThresholdMeters) {
+                    setStartMessage(
+                        `Debes acercarte al punto de partida para iniciar. Distancia aproximada: ${Math.round(distance)} m.`,
+                    );
+                    setIsStarting(false);
+
+                    return;
+                }
+
+                router.post(
+                    TrackController.store.url(route.slug),
+                    {
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude,
+                        accuracy_m: position.coords.accuracy,
+                    },
+                    {
+                        preserveScroll: true,
+                        onError: (errors) => {
+                            setStartMessage(
+                                errors.route ??
+                                    'No se pudo iniciar el recorrido con tu ubicación actual.',
+                            );
+                        },
+                        onFinish: () => setIsStarting(false),
+                    },
+                );
+            },
+            () => {
+                setStartMessage(
+                    'Activa el permiso de ubicación precisa para iniciar el recorrido desde el punto de partida.',
+                );
+                setIsStarting(false);
+            },
+            { enableHighAccuracy: true, maximumAge: 15_000, timeout: 15_000 },
+        );
+    }, [route.slug, route.start_latitude, route.start_longitude]);
+
     useEffect(() => {
         if (!isInProgress || !activeTrack) {
             return;
@@ -394,16 +464,15 @@ function TrackPanel({
     }, [activeTrack, capturePoint, isInProgress]);
 
     return (
-        <Card>
+        <Card className="border-primary/10 bg-card/95">
             <CardHeader>
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div className="flex flex-col gap-2">
                         <CardTitle>Recorrido GPS</CardTitle>
                         <CardDescription>
-                            Registra puntos GPS cada 60 segundos mientras el
-                            recorrido esté en curso. En Android real deberá
-                            validarse el permiso de ubicación y comportamiento
-                            con pantalla bloqueada.
+                            Para iniciar debes estar cerca del punto de partida.
+                            Durante el recorrido se registran puntos GPS cada 60
+                            segundos.
                         </CardDescription>
                     </div>
                     {activeTrack?.status && (
@@ -414,6 +483,14 @@ function TrackPanel({
                 </div>
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
+                {startMessage && (
+                    <Alert>
+                        <MapPinned />
+                        <AlertTitle>Acércate al inicio de la ruta</AlertTitle>
+                        <AlertDescription>{startMessage}</AlertDescription>
+                    </Alert>
+                )}
+
                 {activeTrack ? (
                     <>
                         <div className="grid gap-3 text-sm text-muted-foreground sm:grid-cols-4">
@@ -509,23 +586,22 @@ function TrackPanel({
                 ) : (
                     <div className="flex flex-col gap-3">
                         <p className="text-sm text-muted-foreground">
-                            No tienes un recorrido activo para esta ruta. Al
-                            iniciar, acepta el permiso de ubicación precisa para
-                            registrar puntos GPS.
+                            El sistema comprobará tu ubicación antes de iniciar.
+                            Si estás lejos del inicio, solo verás el aviso para
+                            acercarte; no se dibuja ninguna línea recta hasta el
+                            punto de partida.
                         </p>
-                        <Form
-                            {...TrackController.store.form(route.slug)}
-                            options={{ preserveScroll: true }}
-                        >
-                            {({ processing, errors }) => (
-                                <div className="flex flex-col gap-2">
-                                    <Button disabled={processing}>
-                                        Iniciar recorrido
-                                    </Button>
-                                    <InputError message={errors.route} />
-                                </div>
-                            )}
-                        </Form>
+                        <div className="flex flex-col gap-2">
+                            <Button
+                                type="button"
+                                disabled={isStarting}
+                                onClick={startTrack}
+                            >
+                                {isStarting
+                                    ? 'Verificando ubicación...'
+                                    : 'Iniciar recorrido'}
+                            </Button>
+                        </div>
                     </div>
                 )}
             </CardContent>
@@ -533,9 +609,31 @@ function TrackPanel({
     );
 }
 
+function distanceMeters(
+    fromLatitude: number,
+    fromLongitude: number,
+    toLatitude: number,
+    toLongitude: number,
+): number {
+    const earthRadiusMeters = 6371000;
+    const latitudeDelta = degreesToRadians(toLatitude - fromLatitude);
+    const longitudeDelta = degreesToRadians(toLongitude - fromLongitude);
+    const fromLat = degreesToRadians(fromLatitude);
+    const toLat = degreesToRadians(toLatitude);
+    const a =
+        Math.sin(latitudeDelta / 2) ** 2 +
+        Math.cos(fromLat) * Math.cos(toLat) * Math.sin(longitudeDelta / 2) ** 2;
+
+    return earthRadiusMeters * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function degreesToRadians(value: number): number {
+    return (value * Math.PI) / 180;
+}
+
 function Metric({ label, value }: { label: string; value: string }) {
     return (
-        <div className="rounded-xl border p-3">
+        <div className="rounded-2xl border border-primary/10 bg-secondary/20 p-3">
             <span className="text-xs tracking-wide text-muted-foreground uppercase">
                 {label}
             </span>
@@ -551,7 +649,7 @@ function FavoriteRatingPanel({ route }: { route: CyclingRouteMapItem }) {
         : RouteRatingController.store.form(route.slug);
 
     return (
-        <Card>
+        <Card className="border-primary/10 bg-card/95">
             <CardHeader>
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div className="flex flex-col gap-2">
@@ -609,7 +707,7 @@ function FavoriteRatingPanel({ route }: { route: CyclingRouteMapItem }) {
                         </Form>
                     )}
 
-                    <div className="rounded-xl border p-3 text-sm text-muted-foreground">
+                    <div className="rounded-2xl border border-primary/10 bg-secondary/20 p-3 text-sm text-muted-foreground">
                         <p>
                             Recorridos válidos para valorar:{' '}
                             <strong className="text-foreground">
@@ -629,7 +727,7 @@ function FavoriteRatingPanel({ route }: { route: CyclingRouteMapItem }) {
                             {...ratingAction}
                             options={{ preserveScroll: true }}
                             encType="multipart/form-data"
-                            className="grid gap-3 rounded-xl border bg-muted/30 p-3"
+                            className="grid gap-3 rounded-2xl border border-primary/10 bg-secondary/25 p-3"
                         >
                             {({ processing, errors }) => (
                                 <>
@@ -786,7 +884,7 @@ function FavoriteRatingPanel({ route }: { route: CyclingRouteMapItem }) {
                         {route.approved_ratings.map((rating) => (
                             <div
                                 key={rating.id}
-                                className="rounded-xl border p-3"
+                                className="rounded-2xl border border-primary/10 bg-card p-3 shadow-sm shadow-primary/5"
                             >
                                 <div className="flex flex-wrap items-center gap-2">
                                     <Badge variant="secondary">
@@ -1080,7 +1178,7 @@ function OfflinePanel({
         downloadedVersion !== null && downloadedVersion < route.route_version;
 
     return (
-        <Card>
+        <Card className="border-primary/10 bg-card/95">
             <CardHeader>
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div className="flex flex-col gap-2">
@@ -1175,7 +1273,10 @@ function OfflinePanel({
                 <Separator />
 
                 <div className="grid gap-4 lg:grid-cols-2">
-                    <form onSubmit={enqueueIncident} className="grid gap-3">
+                    <form
+                        onSubmit={enqueueIncident}
+                        className="grid gap-3 rounded-2xl border border-primary/10 bg-secondary/15 p-4"
+                    >
                         <div>
                             <h3 className="font-medium">Incidencia offline</h3>
                             <p className="text-sm text-muted-foreground">
@@ -1244,7 +1345,7 @@ function OfflinePanel({
                         </Button>
                     </form>
 
-                    <div className="flex flex-col gap-3 rounded-xl border p-4">
+                    <div className="flex flex-col gap-3 rounded-2xl border border-primary/10 bg-secondary/15 p-4">
                         <div>
                             <h3 className="font-medium">Recorrido offline</h3>
                             <p className="text-sm text-muted-foreground">
@@ -1291,7 +1392,7 @@ function PoiCard({ poi }: { poi: RoutePoi }) {
     const image = poi.images?.[0];
 
     return (
-        <div className="flex flex-col gap-3 overflow-hidden rounded-xl border">
+        <div className="flex flex-col gap-3 overflow-hidden rounded-[1.5rem] border border-primary/10 bg-card shadow-sm shadow-primary/10">
             {image && (
                 <img
                     src={mediaUrl(image.image_path)}
@@ -1360,7 +1461,7 @@ function PoiReportForm({ poiId }: { poiId: number }) {
         <Form
             {...PoiReportController.store.form(poiId)}
             options={{ preserveScroll: true }}
-            className="grid gap-2 rounded-lg bg-muted/40 p-3"
+            className="grid gap-2 rounded-2xl bg-secondary/25 p-3"
         >
             {({ processing, errors }) => (
                 <>
@@ -1405,14 +1506,43 @@ function PoiReportForm({ poiId }: { poiId: number }) {
     );
 }
 
-function PoiSuggestionForm({ categories }: { categories: CatalogOption[] }) {
+function PoiSuggestionForm({
+    route,
+    categories,
+}: {
+    route: CyclingRouteMapItem;
+    categories: CatalogOption[];
+}) {
+    const [selectedPoint, setSelectedPoint] = useState<{
+        latitude: number;
+        longitude: number;
+    } | null>(null);
+    const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
+    const selectedCategoryName =
+        categories
+            .find((category) => String(category.id) === selectedCategoryId)
+            ?.name.toLocaleLowerCase() ?? '';
+
+    const useCurrentLocation = () => {
+        if (!navigator.geolocation) {
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition((position) => {
+            setSelectedPoint({
+                latitude: Number(position.coords.latitude.toFixed(7)),
+                longitude: Number(position.coords.longitude.toFixed(7)),
+            });
+        });
+    };
+
     return (
-        <Card>
+        <Card className="border-primary/10 bg-card/95">
             <CardHeader>
                 <CardTitle>Sugerir un punto de interés</CardTitle>
                 <CardDescription>
-                    Si encontraste un lugar útil para ciclistas, envíalo para
-                    revisión administrativa.
+                    Selecciona el punto en el mapa o usa tu ubicación actual. No
+                    necesitas escribir coordenadas manualmente.
                 </CardDescription>
             </CardHeader>
             <CardContent>
@@ -1423,11 +1553,26 @@ function PoiSuggestionForm({ categories }: { categories: CatalogOption[] }) {
                 >
                     {({ processing, errors }) => (
                         <>
+                            <input
+                                type="hidden"
+                                name="latitude"
+                                value={selectedPoint?.latitude ?? ''}
+                            />
+                            <input
+                                type="hidden"
+                                name="longitude"
+                                value={selectedPoint?.longitude ?? ''}
+                            />
+
                             <div className="grid gap-2">
                                 <Label htmlFor="poi_category_id">
                                     Categoría sugerida
                                 </Label>
-                                <Select name="poi_category_id">
+                                <Select
+                                    name="poi_category_id"
+                                    value={selectedCategoryId}
+                                    onValueChange={setSelectedCategoryId}
+                                >
                                     <SelectTrigger
                                         id="poi_category_id"
                                         className="w-full"
@@ -1459,9 +1604,54 @@ function PoiSuggestionForm({ categories }: { categories: CatalogOption[] }) {
                                     id="suggestion_name"
                                     name="name"
                                     required
+                                    placeholder="Ej. Tienda comunitaria"
                                     aria-invalid={Boolean(errors.name)}
                                 />
                                 <InputError message={errors.name} />
+                            </div>
+
+                            <div className="grid gap-2 md:col-span-2">
+                                <Label>Ubicación del POI</Label>
+                                <div className="overflow-hidden rounded-[1.5rem] border border-primary/10 shadow-sm shadow-primary/10">
+                                    <MapContainer
+                                        center={[
+                                            selectedPoint?.latitude ??
+                                                route.start_latitude,
+                                            selectedPoint?.longitude ??
+                                                route.start_longitude,
+                                        ]}
+                                        zoom={14}
+                                        scrollWheelZoom={false}
+                                        className="h-72 w-full"
+                                    >
+                                        <TileLayer
+                                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                        />
+                                        <SuggestionLocationPicker
+                                            selectedPoint={selectedPoint}
+                                            onSelect={setSelectedPoint}
+                                        />
+                                    </MapContainer>
+                                </div>
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={useCurrentLocation}
+                                    >
+                                        <LocateFixed data-icon="inline-start" />
+                                        Usar mi ubicación
+                                    </Button>
+                                    <span className="text-sm text-muted-foreground">
+                                        {selectedPoint
+                                            ? `${selectedPoint.latitude.toFixed(5)}, ${selectedPoint.longitude.toFixed(5)}`
+                                            : 'Toca el mapa para marcar el punto'}
+                                    </span>
+                                </div>
+                                <InputError message={errors.latitude} />
+                                <InputError message={errors.longitude} />
                             </div>
 
                             <div className="grid gap-2 md:col-span-2">
@@ -1472,42 +1662,16 @@ function PoiSuggestionForm({ categories }: { categories: CatalogOption[] }) {
                                     id="suggestion_description"
                                     name="description"
                                     className={textareaClass}
-                                    placeholder="Referencia, servicio, por qué es útil para la ruta"
+                                    placeholder={poiSuggestionPlaceholder(
+                                        selectedCategoryName,
+                                    )}
                                     aria-invalid={Boolean(errors.description)}
                                 />
                                 <InputError message={errors.description} />
                             </div>
 
-                            <div className="grid gap-2">
-                                <Label htmlFor="suggestion_latitude">
-                                    Latitud opcional
-                                </Label>
-                                <Input
-                                    id="suggestion_latitude"
-                                    name="latitude"
-                                    type="number"
-                                    step="any"
-                                    aria-invalid={Boolean(errors.latitude)}
-                                />
-                                <InputError message={errors.latitude} />
-                            </div>
-
-                            <div className="grid gap-2">
-                                <Label htmlFor="suggestion_longitude">
-                                    Longitud opcional
-                                </Label>
-                                <Input
-                                    id="suggestion_longitude"
-                                    name="longitude"
-                                    type="number"
-                                    step="any"
-                                    aria-invalid={Boolean(errors.longitude)}
-                                />
-                                <InputError message={errors.longitude} />
-                            </div>
-
                             <div className="md:col-span-2">
-                                <Button disabled={processing}>
+                                <Button disabled={processing || !selectedPoint}>
                                     Enviar sugerencia
                                 </Button>
                             </div>
@@ -1517,6 +1681,68 @@ function PoiSuggestionForm({ categories }: { categories: CatalogOption[] }) {
             </CardContent>
         </Card>
     );
+}
+
+function SuggestionLocationPicker({
+    selectedPoint,
+    onSelect,
+}: {
+    selectedPoint: { latitude: number; longitude: number } | null;
+    onSelect: (point: { latitude: number; longitude: number }) => void;
+}) {
+    useMapEvents({
+        click(event) {
+            onSelect({
+                latitude: Number(event.latlng.lat.toFixed(7)),
+                longitude: Number(event.latlng.lng.toFixed(7)),
+            });
+        },
+    });
+
+    if (!selectedPoint) {
+        return null;
+    }
+
+    return (
+        <CircleMarker
+            center={[selectedPoint.latitude, selectedPoint.longitude]}
+            pathOptions={{
+                color: '#0f766e',
+                fillColor: '#14b8a6',
+                fillOpacity: 0.9,
+                opacity: 1,
+            }}
+            radius={8}
+        />
+    );
+}
+
+function poiSuggestionPlaceholder(category: string): string {
+    if (category === 'comida') {
+        return 'Tipo de comida, horario aproximado, plato recomendado o referencia útil';
+    }
+
+    if (category === 'taller') {
+        return 'Servicio que ofrece, repuestos disponibles o teléfono de emergencia';
+    }
+
+    if (category === 'hospedaje') {
+        return 'Tipo de hospedaje, precio aproximado, referencia o si recibe bicicletas';
+    }
+
+    if (category === 'salud') {
+        return 'Tipo de atención, horario o referencia para llegar';
+    }
+
+    if (category === 'tienda') {
+        return 'Qué vende: hidratación, snacks, repuestos u otros servicios';
+    }
+
+    if (category === 'mirador') {
+        return 'Qué se observa, mejor referencia de llegada o cuidado necesario';
+    }
+
+    return 'Referencia, servicio, por qué es útil para la ruta';
 }
 
 function IncidentReportForm({
@@ -1547,7 +1773,7 @@ function IncidentReportForm({
     };
 
     return (
-        <Card>
+        <Card className="border-primary/10 bg-card/95">
             <CardHeader>
                 <CardTitle>Reportar incidencia</CardTitle>
                 <CardDescription>

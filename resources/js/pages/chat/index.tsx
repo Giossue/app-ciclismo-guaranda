@@ -36,6 +36,7 @@ import {
     getNetworkStatus,
     watchNetworkStatus,
 } from '@/lib/native/capacitor';
+import { cn } from '@/lib/utils';
 
 type ChatMessage = {
     id: number;
@@ -71,16 +72,18 @@ type Props = {
     webhookConfigured: boolean;
     conversations: ConversationSummary[];
     activeConversation: ChatConversation | null;
+    latestMessages: ChatMessage[];
     routes: RouteContextOption[];
 };
 
 const textareaClass =
-    'min-h-28 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-xs outline-none transition-[color,box-shadow] placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20';
+    'min-h-28 w-full rounded-2xl border border-input bg-card px-4 py-3 text-sm shadow-xs outline-none transition-[color,box-shadow] placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/35 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20';
 
 export default function ChatIndex({
     webhookConfigured,
     conversations,
     activeConversation,
+    latestMessages,
     routes,
 }: Props) {
     const [isOnline, setIsOnline] = useState(
@@ -100,7 +103,7 @@ export default function ChatIndex({
             <Head title="Asistente IA" />
 
             <div className="flex flex-col gap-6">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div className="flex flex-col gap-4 rounded-[2rem] border border-primary/10 bg-gradient-to-br from-primary/10 via-card to-secondary/45 p-5 shadow-sm shadow-primary/10 sm:flex-row sm:items-start sm:justify-between">
                     <Heading
                         title="Asistente IA"
                         description="Consulta recomendaciones de rutas, POIs, dificultad, clima o preparación. El agente vive en n8n y solo funciona online."
@@ -137,11 +140,12 @@ export default function ChatIndex({
                 )}
 
                 <section className="grid gap-4 lg:grid-cols-[320px_1fr]">
-                    <Card>
+                    <Card className="border-primary/10 bg-card/95">
                         <CardHeader>
                             <CardTitle>Historial</CardTitle>
                             <CardDescription>
-                                Conversaciones guardadas en tu cuenta.
+                                El historial persistente lo administra n8n
+                                mediante el nodo de agente/memoria.
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="flex flex-col gap-2">
@@ -150,12 +154,12 @@ export default function ChatIndex({
                                     key={conversation.id}
                                     href={`/chat?conversation=${conversation.id}`}
                                     prefetch
-                                    className={`rounded-xl border p-3 text-sm transition-colors hover:bg-muted ${
+                                    className={cn(
+                                        'rounded-2xl border border-primary/10 bg-card p-3 text-sm transition-colors hover:bg-accent/70',
                                         activeConversation?.id ===
-                                        conversation.id
-                                            ? 'bg-muted'
-                                            : ''
-                                    }`}
+                                            conversation.id &&
+                                            'bg-secondary text-secondary-foreground shadow-sm shadow-primary/10',
+                                    )}
                                 >
                                     <div className="flex items-center justify-between gap-2">
                                         <strong>
@@ -176,16 +180,16 @@ export default function ChatIndex({
 
                             {conversations.length === 0 && (
                                 <p className="text-sm text-muted-foreground">
-                                    Aún no tienes conversaciones con el
-                                    asistente.
+                                    Laravel no guarda conversaciones nuevas; n8n
+                                    se encarga de la memoria externa.
                                 </p>
                             )}
                         </CardContent>
                     </Card>
 
-                    <Card>
+                    <Card className="overflow-hidden border-primary/10 bg-card/95">
                         <CardHeader>
-                            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                            <div className="flex flex-col gap-4 rounded-[2rem] border border-primary/10 bg-gradient-to-br from-primary/10 via-card to-secondary/45 p-5 shadow-sm shadow-primary/10 sm:flex-row sm:items-start sm:justify-between">
                                 <div className="flex flex-col gap-2">
                                     <Badge
                                         variant="secondary"
@@ -199,9 +203,8 @@ export default function ChatIndex({
                                             'Nueva conversación'}
                                     </CardTitle>
                                     <CardDescription>
-                                        El servidor Laravel actúa como proxy
-                                        para proteger el webhook y minimizar
-                                        datos.
+                                        Laravel solo actúa como proxy seguro; la
+                                        memoria y persistencia viven en n8n.
                                     </CardDescription>
                                 </div>
                                 {activeConversation && (
@@ -226,17 +229,15 @@ export default function ChatIndex({
                         </CardHeader>
 
                         <CardContent className="flex flex-col gap-4">
-                            <div className="flex max-h-[420px] min-h-64 flex-col gap-3 overflow-y-auto rounded-xl border bg-muted/20 p-3">
-                                {activeConversation?.messages.map((message) => (
+                            <div className="flex max-h-[420px] min-h-64 flex-col gap-3 overflow-y-auto rounded-[1.75rem] border border-primary/10 bg-gradient-to-b from-secondary/30 to-background/70 p-3">
+                                {latestMessages.map((message) => (
                                     <MessageBubble
-                                        key={message.id}
+                                        key={`${message.role}-${message.id}`}
                                         message={message}
                                     />
                                 ))}
 
-                                {(!activeConversation ||
-                                    activeConversation.messages.length ===
-                                        0) && (
+                                {latestMessages.length === 0 && (
                                     <div className="flex h-full flex-col items-center justify-center gap-2 text-center text-muted-foreground">
                                         <MessageSquareText />
                                         <p>
@@ -255,14 +256,6 @@ export default function ChatIndex({
                             >
                                 {({ processing, errors }) => (
                                     <>
-                                        {activeConversation && (
-                                            <input
-                                                type="hidden"
-                                                name="conversation_id"
-                                                value={activeConversation.id}
-                                            />
-                                        )}
-
                                         <div className="grid gap-2">
                                             <Label htmlFor="route_id">
                                                 Ruta de contexto opcional
@@ -350,13 +343,14 @@ function MessageBubble({ message }: { message: ChatMessage }) {
     const isUser = message.role === 'user';
 
     return (
-        <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
+        <div className={cn('flex', isUser ? 'justify-end' : 'justify-start')}>
             <div
-                className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm ${
+                className={cn(
+                    'max-w-[85%] rounded-[1.35rem] px-4 py-3 text-sm shadow-sm',
                     isUser
-                        ? 'bg-primary text-primary-foreground'
-                        : 'border bg-background'
-                }`}
+                        ? 'rounded-br-md bg-primary text-primary-foreground shadow-primary/20'
+                        : 'rounded-bl-md border border-primary/10 bg-card',
+                )}
             >
                 <div className="mb-1 flex items-center gap-2 text-xs opacity-80">
                     <span>{isUser ? 'Tú' : 'Asistente'}</span>

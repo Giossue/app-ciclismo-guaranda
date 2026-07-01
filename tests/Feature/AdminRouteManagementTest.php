@@ -9,6 +9,7 @@ use App\Models\TransportMode;
 use App\Models\User;
 use Database\Seeders\CatalogSeeder;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 
 beforeEach(function () {
@@ -83,6 +84,40 @@ test('cyclist can not access route administration', function () {
     $this->actingAs($cyclist)
         ->post(route('admin.routes.store'), routePayload())
         ->assertForbidden();
+});
+
+
+test('administrator can calculate route elevation preview with opentopodata', function () {
+    config([
+        'guaranda.elevation.opentopodata.base_url' => 'https://opentopo.test',
+        'guaranda.elevation.opentopodata.dataset' => 'srtm90m',
+    ]);
+
+    Http::fake([
+        'https://opentopo.test/*' => Http::response([
+            'status' => 'OK',
+            'results' => [
+                ['dataset' => 'srtm90m', 'elevation' => 10, 'location' => ['lat' => -1.4, 'lng' => -79.016]],
+                ['dataset' => 'srtm90m', 'elevation' => 15, 'location' => ['lat' => -1.405, 'lng' => -79.02]],
+                ['dataset' => 'srtm90m', 'elevation' => 8, 'location' => ['lat' => -1.41, 'lng' => -79.026]],
+            ],
+        ], 200),
+    ]);
+
+    $admin = User::factory()->administrator()->create();
+    $payload = routePayload();
+
+    $this->actingAs($admin)
+        ->postJson(route('admin.routes.elevation-preview'), [
+            'geojson' => json_decode($payload['geojson'], true, flags: JSON_THROW_ON_ERROR),
+        ])
+        ->assertOk()
+        ->assertJson([
+            'positive_elevation_m' => 5,
+            'negative_elevation_m' => 7,
+            'sample_count' => 3,
+            'dataset' => 'srtm90m',
+        ]);
 });
 
 test('administrator can create a complete route', function () {

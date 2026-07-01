@@ -23,6 +23,7 @@ import {
     SheetTitle,
     SheetTrigger,
 } from '@/components/ui/sheet';
+import { UserInfo } from '@/components/user-info';
 import { UserMenuContent } from '@/components/user-menu-content';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { useInitials } from '@/hooks/use-initials';
@@ -38,8 +39,7 @@ type PageProps = {
     auth: Auth;
 };
 
-const activeItemStyles =
-    'text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100';
+const activeItemStyles = 'bg-secondary text-secondary-foreground';
 
 export function AppHeader({ breadcrumbs = [] }: Props) {
     const { auth } = usePage<PageProps>().props;
@@ -47,10 +47,13 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
     const { isCurrentUrl, whenCurrentUrl } = useCurrentUrl();
     const navItems = mainNavItems(auth);
     const startPath = homePath(auth);
+    const userFullName = auth.user
+        ? [auth.user.name, auth.user.last_name].filter(Boolean).join(' ')
+        : '';
 
     return (
         <>
-            <div className="border-b border-sidebar-border/80">
+            <div className="border-b border-sidebar-border/70 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/65">
                 <div className="mx-auto flex h-16 items-center px-4 md:max-w-7xl">
                     <div className="lg:hidden">
                         <Sheet>
@@ -58,30 +61,40 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="mr-2 h-[34px] w-[34px]"
+                                    className="mr-2 size-9"
                                 >
-                                    <Menu className="h-5 w-5" />
+                                    <Menu className="size-5" />
                                 </Button>
                             </SheetTrigger>
                             <SheetContent
                                 side="left"
-                                className="flex h-full w-64 flex-col items-stretch justify-between bg-sidebar"
+                                className="flex h-full w-72 flex-col items-stretch justify-between bg-sidebar"
                             >
                                 <SheetTitle className="sr-only">
                                     Menú de navegación
                                 </SheetTitle>
                                 <SheetHeader className="flex justify-start text-left">
-                                    <AppLogoIcon className="h-6 w-6 fill-current text-black dark:text-white" />
+                                    <AppLogoIcon className="size-6 fill-current text-sidebar-foreground" />
                                 </SheetHeader>
+                                {auth.user && (
+                                    <div className="mx-4 rounded-2xl border border-primary/10 bg-card p-3 shadow-sm shadow-primary/10">
+                                        <p className="mb-2 text-xs font-medium text-muted-foreground">
+                                            Bienvenido/a
+                                        </p>
+                                        <div className="flex items-center gap-2">
+                                            <UserInfo user={auth.user} />
+                                        </div>
+                                    </div>
+                                )}
                                 <div className="flex h-full flex-1 flex-col gap-4 p-4 text-sm">
                                     {navItems.map((item) => (
                                         <Link
                                             key={item.title}
                                             href={item.href}
-                                            className="flex items-center gap-2 font-medium"
+                                            className="flex items-center gap-2 rounded-2xl px-3 py-2 font-semibold transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                                         >
                                             {item.icon && (
-                                                <item.icon className="h-5 w-5" />
+                                                <item.icon className="size-5" />
                                             )}
                                             <span>{item.title}</span>
                                         </Link>
@@ -115,16 +128,16 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                                     item.href,
                                                     activeItemStyles,
                                                 ),
-                                                'h-9 cursor-pointer px-3',
+                                                'h-9 cursor-pointer rounded-full px-3',
                                             )}
                                         >
                                             {item.icon && (
-                                                <item.icon className="mr-2 h-4 w-4" />
+                                                <item.icon className="mr-2 size-4" />
                                             )}
                                             {item.title}
                                         </Link>
                                         {isCurrentUrl(item.href) && (
-                                            <div className="absolute bottom-0 left-0 h-0.5 w-full translate-y-px bg-black dark:bg-white" />
+                                            <div className="absolute right-3 bottom-0 left-3 h-0.5 translate-y-px rounded-full bg-primary" />
                                         )}
                                     </NavigationMenuItem>
                                 ))}
@@ -132,7 +145,15 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                         </NavigationMenu>
                     </div>
 
-                    <div className="ml-auto flex items-center gap-2">
+                    <div className="ml-auto flex items-center gap-3">
+                        {auth.user && (
+                            <p className="hidden text-sm text-muted-foreground sm:block">
+                                Hola,{' '}
+                                <span className="font-medium text-foreground">
+                                    {userFullName}
+                                </span>
+                            </p>
+                        )}
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button
@@ -142,10 +163,10 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                     <Avatar className="size-8 overflow-hidden rounded-full">
                                         <AvatarImage
                                             src={auth.user?.avatar}
-                                            alt={auth.user?.name}
+                                            alt={userFullName}
                                         />
-                                        <AvatarFallback className="rounded-lg bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white">
-                                            {getInitials(auth.user?.name ?? '')}
+                                        <AvatarFallback className="rounded-full bg-secondary text-secondary-foreground">
+                                            {getInitials(userFullName)}
                                         </AvatarFallback>
                                     </Avatar>
                                 </Button>
@@ -161,7 +182,7 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
             </div>
             {breadcrumbs.length > 1 && (
                 <div className="flex w-full border-b border-sidebar-border/70">
-                    <div className="mx-auto flex h-12 w-full items-center justify-start px-4 text-neutral-500 md:max-w-7xl">
+                    <div className="mx-auto flex h-12 w-full items-center justify-start px-4 text-muted-foreground md:max-w-7xl">
                         <Breadcrumbs breadcrumbs={breadcrumbs} />
                     </div>
                 </div>

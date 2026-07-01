@@ -10,6 +10,8 @@ use Illuminate\Validation\Validator;
 
 class StoreTrackRequest extends FormRequest
 {
+    private const START_DISTANCE_THRESHOLD_METERS = 150;
+
     public function authorize(): bool
     {
         return $this->user()?->can('create', Track::class) ?? false;
@@ -20,7 +22,11 @@ class StoreTrackRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [];
+        return [
+            'latitude' => ['required', 'numeric', 'between:-90,90'],
+            'longitude' => ['required', 'numeric', 'between:-180,180'],
+            'accuracy_m' => ['nullable', 'numeric', 'min:0'],
+        ];
     }
 
     public function withValidator(Validator $validator): void
@@ -45,6 +51,36 @@ class StoreTrackRequest extends FormRequest
             if ($hasActiveTrack) {
                 $validator->errors()->add('route', 'Ya tienes un recorrido activo o pausado para esta ruta.');
             }
+
+            if ($this->filled(['latitude', 'longitude'])) {
+                $distanceMeters = $this->distanceMeters(
+                    (float) $this->input('latitude'),
+                    (float) $this->input('longitude'),
+                    (float) $route->start_latitude,
+                    (float) $route->start_longitude,
+                );
+
+                if ($distanceMeters > self::START_DISTANCE_THRESHOLD_METERS) {
+                    $validator->errors()->add(
+                        'route',
+                        'Debes acercarte al punto de partida para iniciar el recorrido. Distancia aproximada: '.round($distanceMeters).' m.',
+                    );
+                }
+            }
         });
+    }
+
+    private function distanceMeters(float $fromLatitude, float $fromLongitude, float $toLatitude, float $toLongitude): float
+    {
+        $earthRadiusMeters = 6371000;
+        $latitudeDelta = deg2rad($toLatitude - $fromLatitude);
+        $longitudeDelta = deg2rad($toLongitude - $fromLongitude);
+        $fromLatitude = deg2rad($fromLatitude);
+        $toLatitude = deg2rad($toLatitude);
+
+        $a = sin($latitudeDelta / 2) ** 2
+            + cos($fromLatitude) * cos($toLatitude) * sin($longitudeDelta / 2) ** 2;
+
+        return $earthRadiusMeters * 2 * atan2(sqrt($a), sqrt(1 - $a));
     }
 }

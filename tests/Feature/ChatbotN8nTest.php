@@ -1,7 +1,6 @@
 <?php
 
 use App\Models\AiConversation;
-use App\Models\AiMessage;
 use App\Models\CyclingRoute;
 use App\Models\RouteCategory;
 use App\Models\RouteDifficulty;
@@ -83,7 +82,7 @@ test('chat page renders without exposing configured webhook url', function () {
             ->has('conversations', 0));
 });
 
-test('chat stores conversation and assistant response from n8n', function () {
+test('chat proxies message to n8n without storing local conversation or messages', function () {
     config(['guaranda.n8n.webhook_url' => 'https://n8n.example/webhook/secret-token']);
 
     Http::fake([
@@ -98,33 +97,22 @@ test('chat stores conversation and assistant response from n8n', function () {
             'message' => '¿Qué debo llevar para esta ruta?',
             'route_id' => $route->id,
         ])
-        ->assertRedirect();
+        ->assertRedirect(route('chat.index'))
+        ->assertSessionHas('chat_exchange');
 
-    $conversation = AiConversation::query()->where('user_id', $cyclist->id)->firstOrFail();
+    expect(AiConversation::query()->count())->toBe(0);
+    $this->assertDatabaseCount('mensajes_ia', 0);
 
-    expect(AiMessage::query()->where('ai_conversation_id', $conversation->id)->count())->toBe(2);
-
-    $this->assertDatabaseHas('mensajes_ia', [
-        'ai_conversation_id' => $conversation->id,
-        'role' => 'user',
-        'message' => '¿Qué debo llevar para esta ruta?',
-    ]);
-
-    $this->assertDatabaseHas('mensajes_ia', [
-        'ai_conversation_id' => $conversation->id,
-        'role' => 'assistant',
-        'provider' => 'n8n',
-        'message' => 'Respuesta IA para Guaranda Go.',
-    ]);
-
-    Http::assertSent(function (Request $request) use ($route): bool {
+    Http::assertSent(function (Request $request) use ($route, $cyclist): bool {
         $payload = $request->data();
 
         return $request->url() === 'https://n8n.example/webhook/secret-token'
+            && Arr::get($payload, 'session_id') === 'guaranda-go-user-'.$cyclist->id
             && Arr::get($payload, 'message') === '¿Qué debo llevar para esta ruta?'
             && Arr::get($payload, 'context.app') === 'Guaranda Go'
             && Arr::get($payload, 'context.route.id') === $route->id
             && Arr::get($payload, 'context.privacy.no_email_sent') === true
+            && Arr::get($payload, 'context.privacy.conversation_storage_external') === true
             && ! Arr::has($payload, 'context.user.email')
             && ! Arr::has($payload, 'context.user.name');
     });
@@ -141,11 +129,11 @@ test('chat requires configured webhook before storing messages', function () {
         ])
         ->assertSessionHasErrors('message');
 
-    expect(AiConversation::query()->count())->toBe(0)
-        ->and(AiMessage::query()->count())->toBe(0);
+    expect(AiConversation::query()->count())->toBe(0);
+    $this->assertDatabaseCount('mensajes_ia', 0);
 });
 
-test('chat stores generic assistant error when webhook fails', function () {
+test('chat returns transient assistant error when webhook fails without local storage', function () {
     config(['guaranda.n8n.webhook_url' => 'https://n8n.example/webhook/secret-token']);
 
     Http::fake([
@@ -158,20 +146,11 @@ test('chat stores generic assistant error when webhook fails', function () {
         ->post(route('chat.messages.store'), [
             'message' => '¿Está disponible el asistente?',
         ])
-        ->assertRedirect();
+        ->assertRedirect(route('chat.index'))
+        ->assertSessionHas('chat_exchange');
 
-    $conversation = AiConversation::query()->where('user_id', $cyclist->id)->firstOrFail();
-    $assistantMessage = AiMessage::query()
-        ->where('ai_conversation_id', $conversation->id)
-        ->where('role', 'assistant')
-        ->firstOrFail();
-
-    expect($assistantMessage->message)
-        ->toContain('No pude consultar el asistente externo')
-        ->toContain('El asistente externo no está disponible')
-        ->not->toContain('HTTP 500')
-        ->and($assistantMessage->metadata['error'])->toBeTrue()
-        ->and($assistantMessage->metadata['detail'])->toContain('HTTP 500');
+    expect(AiConversation::query()->count())->toBe(0);
+    $this->assertDatabaseCount('mensajes_ia', 0);
 });
 
 test('user can hide only own chat conversation', function () {

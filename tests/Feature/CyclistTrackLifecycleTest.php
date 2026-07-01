@@ -70,7 +70,11 @@ function createRouteForTrackLifecycle(string $statusName = 'activa', float $dist
 function startTrackForUser(User $user, CyclingRoute $route): Track
 {
     test()->actingAs($user)
-        ->post(route('tracks.store', $route))
+        ->post(route('tracks.store', $route), [
+            'latitude' => $route->start_latitude,
+            'longitude' => $route->start_longitude,
+            'accuracy_m' => 5,
+        ])
         ->assertSessionHasNoErrors()
         ->assertRedirect(route('routes.show', $route->slug));
 
@@ -104,12 +108,36 @@ test('cyclist can not start track for inactive route or duplicate active track',
     startTrackForUser($cyclist, $activeRoute);
 
     $this->actingAs($cyclist)
-        ->post(route('tracks.store', $activeRoute))
+        ->post(route('tracks.store', $activeRoute), [
+            'latitude' => $activeRoute->start_latitude,
+            'longitude' => $activeRoute->start_longitude,
+            'accuracy_m' => 5,
+        ])
         ->assertSessionHasErrors('route');
 
     $this->actingAs($cyclist)
-        ->post(route('tracks.store', $inactiveRoute))
+        ->post(route('tracks.store', $inactiveRoute), [
+            'latitude' => $inactiveRoute->start_latitude,
+            'longitude' => $inactiveRoute->start_longitude,
+            'accuracy_m' => 5,
+        ])
         ->assertSessionHasErrors('route');
+});
+
+
+test('cyclist can not start a track far from the route start', function () {
+    $cyclist = User::factory()->cyclist()->create();
+    $route = createRouteForTrackLifecycle();
+
+    $this->actingAs($cyclist)
+        ->post(route('tracks.store', $route), [
+            'latitude' => 1,
+            'longitude' => 1,
+            'accuracy_m' => 5,
+        ])
+        ->assertSessionHasErrors('route');
+
+    expect(Track::query()->where('user_id', $cyclist->id)->where('route_id', $route->id)->exists())->toBeFalse();
 });
 
 test('cyclist can add gps points and metrics are recalculated', function () {
@@ -141,7 +169,7 @@ test('cyclist can add gps points and metrics are recalculated', function () {
 
     $track->refresh();
 
-    expect($track->gpsPoints()->count())->toBe(2)
+    expect($track->gpsPoints()->count())->toBe(3)
         ->and((float) $track->distance_traveled_km)->toBeGreaterThan(9.9)
         ->and((float) $track->completion_percentage)->toBeGreaterThan(90.0)
         ->and((float) $track->summary['elevation_gain_m'])->toBe(30.0);

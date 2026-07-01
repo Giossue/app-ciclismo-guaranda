@@ -1,6 +1,6 @@
 import { Form, Link } from '@inertiajs/react';
-import { ImageIcon, MapPin } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { ImageIcon, MapPin, Mountain } from 'lucide-react';
+import { useCallback, useMemo, useState } from 'react';
 import RouteController from '@/actions/App/Http/Controllers/Admin/RouteController';
 import RouteGeometryEditor from '@/components/admin/routes/route-geometry-editor';
 import InputError from '@/components/input-error';
@@ -132,12 +132,28 @@ export default function RouteForm({
         ? RouteController.update.form(route.id)
         : RouteController.store.form();
     const [distanceKm, setDistanceKm] = useState(route?.distance_km ?? '');
+    const [routeGeojson, setRouteGeojson] = useState(
+        route?.geojson ?? defaultGeojson ?? '',
+    );
+    const [positiveElevation, setPositiveElevation] = useState(
+        route?.positive_elevation_m ?? '',
+    );
+    const [negativeElevation, setNegativeElevation] = useState(
+        route?.negative_elevation_m ?? '',
+    );
+    const [elevationMessage, setElevationMessage] = useState<string | null>(
+        null,
+    );
+    const [isCalculatingElevation, setIsCalculatingElevation] = useState(false);
     const [selectedExperience, setSelectedExperience] = useState<string[]>(() =>
         defaultExperienceSelection(route?.required_experience),
     );
     const [selectedPoiIds, setSelectedPoiIds] = useState<string[]>(() =>
         (route?.poi_ids ?? []).map(String),
     );
+    const [additionalImagePreviews, setAdditionalImagePreviews] = useState<
+        { name: string; url: string }[]
+    >([]);
     const requiredExperience = useMemo(
         () => selectedExperience.join('\n'),
         [selectedExperience],
@@ -160,6 +176,71 @@ export default function RouteForm({
                 : current.filter((item) => item !== value),
         );
     };
+
+    const previewAdditionalImages = (files: FileList | null) => {
+        setAdditionalImagePreviews(
+            Array.from(files ?? []).map((file) => ({
+                name: file.name,
+                url: URL.createObjectURL(file),
+            })),
+        );
+    };
+
+    const calculateElevation = useCallback(async () => {
+        setElevationMessage(null);
+
+        if (!routeGeojson) {
+            setElevationMessage(
+                'Dibuja el recorrido antes de calcular desnivel.',
+            );
+
+            return;
+        }
+
+        setIsCalculatingElevation(true);
+
+        try {
+            const response = await fetch('/admin/routes/elevation-preview', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json',
+                    ...(csrfToken()
+                        ? { 'X-CSRF-TOKEN': csrfToken() as string }
+                        : {}),
+                },
+                body: JSON.stringify({ geojson: JSON.parse(routeGeojson) }),
+            });
+
+            const json = (await response.json()) as {
+                positive_elevation_m?: number;
+                negative_elevation_m?: number;
+                sample_count?: number;
+                dataset?: string;
+                message?: string;
+            };
+
+            if (!response.ok) {
+                throw new Error(
+                    json.message ?? 'No se pudo calcular el desnivel.',
+                );
+            }
+
+            setPositiveElevation(String(json.positive_elevation_m ?? 0));
+            setNegativeElevation(String(json.negative_elevation_m ?? 0));
+            setElevationMessage(
+                `Desnivel calculado con OpenTopoData${json.dataset ? ` (${json.dataset})` : ''}${json.sample_count ? ` usando ${json.sample_count} puntos` : ''}.`,
+            );
+        } catch (error) {
+            setElevationMessage(
+                error instanceof Error
+                    ? error.message
+                    : 'No se pudo calcular el desnivel.',
+            );
+        } finally {
+            setIsCalculatingElevation(false);
+        }
+    }, [routeGeojson]);
 
     return (
         <Form
@@ -356,6 +437,7 @@ export default function RouteForm({
                                 endLongitude={route?.end_longitude}
                                 errors={errors}
                                 onDistanceChange={setDistanceKm}
+                                onGeojsonChange={setRouteGeojson}
                             />
                         </CardContent>
                     </Card>
@@ -415,7 +497,8 @@ export default function RouteForm({
                                 id="positive_elevation_m"
                                 name="positive_elevation_m"
                                 label="Desnivel positivo (m)"
-                                defaultValue={route?.positive_elevation_m}
+                                value={positiveElevation}
+                                onChange={setPositiveElevation}
                                 error={errors.positive_elevation_m}
                                 step="0.01"
                                 min="0"
@@ -426,12 +509,45 @@ export default function RouteForm({
                                 id="negative_elevation_m"
                                 name="negative_elevation_m"
                                 label="Desnivel negativo (m)"
-                                defaultValue={route?.negative_elevation_m}
+                                value={negativeElevation}
+                                onChange={setNegativeElevation}
                                 error={errors.negative_elevation_m}
                                 step="0.01"
                                 min="0"
                                 placeholder="Ej. 210.25"
                             />
+
+                            <div className="flex flex-col gap-2 rounded-2xl border border-primary/10 bg-secondary/20 p-4 sm:col-span-2">
+                                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                                    <div className="flex items-start gap-2 text-sm text-muted-foreground">
+                                        <Mountain className="mt-0.5 size-4 shrink-0" />
+                                        <span>
+                                            Usa OpenTopoData para calcular el
+                                            desnivel desde el trazado. Puedes
+                                            ajustar los valores manualmente si
+                                            tienes medición oficial.
+                                        </span>
+                                    </div>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={calculateElevation}
+                                        disabled={
+                                            isCalculatingElevation ||
+                                            !routeGeojson
+                                        }
+                                    >
+                                        {isCalculatingElevation
+                                            ? 'Calculando...'
+                                            : 'Calcular desnivel'}
+                                    </Button>
+                                </div>
+                                {elevationMessage && (
+                                    <p className="text-sm text-muted-foreground">
+                                        {elevationMessage}
+                                    </p>
+                                )}
+                            </div>
 
                             <div className="grid gap-3 sm:col-span-2">
                                 <Label htmlFor="main_image">
@@ -487,6 +603,11 @@ export default function RouteForm({
                                     type="file"
                                     accept="image/*"
                                     multiple
+                                    onChange={(event) =>
+                                        previewAdditionalImages(
+                                            event.currentTarget.files,
+                                        )
+                                    }
                                     aria-invalid={Boolean(
                                         errors.additional_images,
                                     )}
@@ -495,6 +616,27 @@ export default function RouteForm({
                                     Puedes seleccionar varias fotos del
                                     trayecto. Límite: 5 MB por archivo.
                                 </p>
+                                {additionalImagePreviews.length > 0 && (
+                                    <div className="flex gap-3 overflow-x-auto rounded-2xl border bg-muted/20 p-3">
+                                        {additionalImagePreviews.map(
+                                            (image) => (
+                                                <figure
+                                                    key={`${image.name}-${image.url}`}
+                                                    className="min-w-40 overflow-hidden rounded-xl border bg-card"
+                                                >
+                                                    <img
+                                                        src={image.url}
+                                                        alt={image.name}
+                                                        className="h-28 w-full object-cover"
+                                                    />
+                                                    <figcaption className="truncate p-2 text-xs text-muted-foreground">
+                                                        {image.name}
+                                                    </figcaption>
+                                                </figure>
+                                            ),
+                                        )}
+                                    </div>
+                                )}
                                 <InputError
                                     message={errors.additional_images}
                                 />
@@ -830,4 +972,11 @@ function defaultExperienceSelection(current?: string | null): string[] {
     return selected.length > 0
         ? selected
         : ['Requiere experiencia media y bicicleta en buen estado.'];
+}
+
+function csrfToken(): string | null {
+    return (
+        document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')
+            ?.content ?? null
+    );
 }

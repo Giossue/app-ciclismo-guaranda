@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests\Cyclist;
 
-use App\Models\AiConversation;
 use App\Models\CyclingRoute;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -30,7 +29,6 @@ class StoreChatMessageRequest extends FormRequest
     {
         return [
             'message' => ['required', 'string', 'min:2', 'max:2000'],
-            'conversation_id' => ['nullable', 'integer', Rule::exists(AiConversation::class, 'id')->where('user_id', $this->user()?->id)],
             'route_id' => ['nullable', 'integer', Rule::exists(CyclingRoute::class, 'id')],
         ];
     }

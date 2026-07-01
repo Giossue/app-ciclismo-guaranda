@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\IncidentController as AdminIncidentController;
 use App\Http\Controllers\Admin\PoiController as AdminPoiController;
 use App\Http\Controllers\Admin\RatingController as AdminRatingController;
 use App\Http\Controllers\Admin\RouteController as AdminRouteController;
+use App\Http\Controllers\Admin\RouteElevationController;
 use App\Http\Controllers\Admin\StatisticsController;
 use App\Http\Controllers\Admin\SystemSettingsController;
 use App\Http\Controllers\Admin\UserController;
@@ -61,6 +62,7 @@ Route::middleware(['auth', 'verified', 'admin'])
         Route::redirect('/', '/admin/dashboard')->name('index');
         Route::get('dashboard', DashboardController::class)->name('dashboard');
 
+        Route::post('routes/elevation-preview', RouteElevationController::class)->middleware('throttle:20,1')->name('routes.elevation-preview');
         Route::resource('routes', AdminRouteController::class)->except(['show']);
         Route::resource('pois', AdminPoiController::class)->except(['show']);
         Route::resource('incidents', AdminIncidentController::class)->only(['index', 'update']);

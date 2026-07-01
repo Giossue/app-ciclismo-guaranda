@@ -6,12 +6,13 @@ import 'leaflet-control-geocoder';
 
 import type { LineString } from 'geojson';
 import L from 'leaflet';
-import { LocateFixed, MapPinned, RouteIcon } from 'lucide-react';
+import { Layers, LocateFixed, MapPinned, RouteIcon } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
-import { MapContainer, TileLayer, useMap } from 'react-leaflet';
+import { CircleMarker, MapContainer, TileLayer, useMap } from 'react-leaflet';
 import InputError from '@/components/input-error';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 
@@ -23,6 +24,7 @@ type Props = {
     endLongitude?: string | number | null;
     errors: Partial<Record<string, string>>;
     onDistanceChange: (distanceKm: string) => void;
+    onGeojsonChange?: (geojson: string) => void;
 };
 
 type GeometryState = {
@@ -47,6 +49,19 @@ type DrawCreatedEvent = L.LeafletEvent & {
 };
 
 const defaultCenter: [number, number] = [-1.5926, -79.0009];
+type MapLayer = 'standard' | 'satellite';
+const standardLayer = {
+    label: 'Mapa',
+    attribution:
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+};
+const satelliteLayer = {
+    label: 'Satélite',
+    attribution:
+        'Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community',
+    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+};
 const emptyGeometry: GeometryState = {
     geojson: '',
     startLatitude: '',
@@ -65,6 +80,7 @@ export default function RouteGeometryEditor({
     endLongitude,
     errors,
     onDistanceChange,
+    onGeojsonChange,
 }: Props) {
     const initialLine = useMemo(
         () => parseLineString(initialGeojson),
@@ -84,12 +100,20 @@ export default function RouteGeometryEditor({
     const [geometry, setGeometry] = useState<GeometryState>(() =>
         initialLatLngs ? geometryFromLatLngs(initialLatLngs) : emptyGeometry,
     );
+    const [mapLayer, setMapLayer] = useState<MapLayer>('standard');
+    const [locationRequest, setLocationRequest] = useState(0);
+    const activeLayer =
+        mapLayer === 'satellite' ? satelliteLayer : standardLayer;
 
     useEffect(() => {
         if (geometry.distanceKm !== '') {
             onDistanceChange(geometry.distanceKm);
         }
     }, [geometry.distanceKm, onDistanceChange]);
+
+    useEffect(() => {
+        onGeojsonChange?.(geometry.geojson);
+    }, [geometry.geojson, onGeojsonChange]);
 
     const center = initialLatLngs?.[0] ?? defaultCenter;
 
@@ -108,6 +132,31 @@ export default function RouteGeometryEditor({
                 </Alert>
             </div>
 
+            <div className="flex flex-wrap gap-2">
+                <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setLocationRequest((value) => value + 1)}
+                >
+                    <LocateFixed data-icon="inline-start" />
+                    Usar mi ubicación
+                </Button>
+                <Button
+                    type="button"
+                    variant={mapLayer === 'satellite' ? 'secondary' : 'outline'}
+                    size="sm"
+                    onClick={() =>
+                        setMapLayer((current) =>
+                            current === 'standard' ? 'satellite' : 'standard',
+                        )
+                    }
+                >
+                    <Layers data-icon="inline-start" />
+                    {activeLayer.label}
+                </Button>
+            </div>
+
             <div className="overflow-hidden rounded-2xl border bg-card shadow-sm">
                 <MapContainer
                     center={center}
@@ -116,13 +165,15 @@ export default function RouteGeometryEditor({
                     className="h-[440px] w-full"
                 >
                     <TileLayer
-                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        key={mapLayer}
+                        attribution={activeLayer.attribution}
+                        url={activeLayer.url}
                     />
                     <DrawToolbar
                         initialLatLngs={initialLatLngs}
                         onChange={setGeometry}
                     />
+                    <AdminLocationMarker requestToken={locationRequest} />
                 </MapContainer>
             </div>
 
@@ -175,14 +226,14 @@ export default function RouteGeometryEditor({
 
             <div className="flex flex-wrap gap-2">
                 <Badge
-                    variant={
-                        geometry.pointsCount >= 2 ? 'secondary' : 'outline'
-                    }
+                    variant={geometry.pointsCount > 2 ? 'secondary' : 'outline'}
                 >
                     <MapPinned data-icon="inline-start" />
-                    {geometry.pointsCount >= 2
+                    {geometry.pointsCount > 2
                         ? `${geometry.pointsCount} puntos del recorrido`
-                        : 'Dibuja mínimo 2 puntos'}
+                        : geometry.pointsCount === 2
+                          ? 'Solo inicio/final: agrega puntos de la vía'
+                          : 'Dibuja mínimo 2 puntos'}
                 </Badge>
                 <Badge variant="outline">
                     <LocateFixed data-icon="inline-start" />
@@ -218,7 +269,7 @@ function DrawToolbar({
 
         if (initialLatLngs && initialLatLngs.length >= 2) {
             const existingLine = L.polyline(initialLatLngs, {
-                color: 'var(--primary)',
+                color: '#f97316',
                 weight: 6,
             });
             editableLayers.addLayer(existingLine);
@@ -233,7 +284,7 @@ function DrawToolbar({
             draw: {
                 polyline: {
                     shapeOptions: {
-                        color: 'var(--primary)',
+                        color: '#f97316',
                         weight: 6,
                     },
                 },
@@ -311,6 +362,47 @@ function DrawToolbar({
     }, [initialLatLngs, map, onChange]);
 
     return null;
+}
+
+function AdminLocationMarker({ requestToken }: { requestToken: number }) {
+    const map = useMap();
+    const [location, setLocation] = useState<[number, number] | null>(null);
+
+    useEffect(() => {
+        if (requestToken === 0 || !navigator.geolocation) {
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const point: [number, number] = [
+                    position.coords.latitude,
+                    position.coords.longitude,
+                ];
+                setLocation(point);
+                map.flyTo(point, 16);
+            },
+            () => undefined,
+            { enableHighAccuracy: true, maximumAge: 30_000, timeout: 12_000 },
+        );
+    }, [map, requestToken]);
+
+    if (!location) {
+        return null;
+    }
+
+    return (
+        <CircleMarker
+            center={location}
+            pathOptions={{
+                color: '#7c3aed',
+                fillColor: '#a78bfa',
+                fillOpacity: 0.9,
+                opacity: 1,
+            }}
+            radius={8}
+        />
+    );
 }
 
 function firstPolyline(layers: L.FeatureGroup): L.Polyline | null {

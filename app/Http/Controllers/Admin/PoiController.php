@@ -178,7 +178,7 @@ class PoiController extends Controller
 
         $this->syncPostgisPoint($poi);
         $this->syncHours($poi, $payload['hours_text'] ?? null);
-        $this->syncImages($poi, $payload['images_text'] ?? null);
+        $this->syncImages($poi, $payload['images_text'] ?? null, $payload['images'] ?? []);
         $this->syncRoutes($poi, $payload['route_links_text'] ?? null);
         $this->syncCategoryDetails($poi, $payload);
     }
@@ -211,11 +211,15 @@ class PoiController extends Controller
         }
     }
 
-    private function syncImages(PointOfInterest $poi, mixed $imagesText): void
+    /**
+     * @param  array<int, mixed>  $uploadedImages
+     */
+    private function syncImages(PointOfInterest $poi, mixed $imagesText, array $uploadedImages = []): void
     {
         $poi->images()->delete();
+        $sortOrder = 0;
 
-        foreach ($this->splitLines($imagesText) as $index => $line) {
+        foreach ($this->splitLines($imagesText) as $line) {
             [$path, $description] = array_pad(explode('|', $line, 2), 2, null);
 
             if (trim($path) === '') {
@@ -225,8 +229,22 @@ class PoiController extends Controller
             $poi->images()->create([
                 'image_path' => trim($path),
                 'description' => $description === null || trim($description) === '' ? null : trim($description),
-                'sort_order' => $index,
+                'sort_order' => $sortOrder,
             ]);
+            $sortOrder++;
+        }
+
+        foreach ($uploadedImages as $image) {
+            if (! $image instanceof \Illuminate\Http\UploadedFile) {
+                continue;
+            }
+
+            $poi->images()->create([
+                'image_path' => $image->store('pois', 'public'),
+                'description' => null,
+                'sort_order' => $sortOrder,
+            ]);
+            $sortOrder++;
         }
     }
 

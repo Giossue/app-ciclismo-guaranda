@@ -39,7 +39,7 @@ export default function MenuIndex() {
                     description="Todos los módulos de Guaranda Go."
                 />
 
-                <section className="rounded-2xl border bg-card p-3 shadow-sm">
+                <section className="rounded-[1.75rem] border border-primary/10 bg-gradient-to-br from-primary/10 via-card to-secondary/50 p-4 shadow-sm shadow-primary/10">
                     <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
                         Sesión activa
                     </p>
@@ -59,7 +59,7 @@ export default function MenuIndex() {
                     <Link
                         href={edit()}
                         prefetch
-                        className="flex min-h-20 items-center gap-3 rounded-2xl border bg-card p-3 shadow-sm transition-transform active:scale-[0.98]"
+                        className="flex min-h-20 items-center gap-3 rounded-[1.5rem] border border-primary/10 bg-card p-3 shadow-sm shadow-primary/10 transition-transform hover:bg-accent/60 active:scale-[0.98]"
                     >
                         <UserRound className="size-6 shrink-0" />
                         <span className="min-w-0">
@@ -77,7 +77,7 @@ export default function MenuIndex() {
                     href={logout()}
                     method="post"
                     as="button"
-                    className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-red-600 px-4 text-sm font-semibold text-white shadow-sm shadow-red-900/20 transition-transform hover:bg-red-700 active:scale-[0.99]"
+                    className="flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-destructive px-4 text-sm font-semibold text-destructive-foreground shadow-sm transition-transform hover:opacity-90 active:scale-[0.99]"
                 >
                     <LogOut className="size-5" />
                     Cerrar sesión
@@ -95,8 +95,8 @@ function MenuCard({ item }: { item: NavItem }) {
             href={item.href}
             prefetch
             className={cn(
-                'flex min-h-20 items-center gap-3 rounded-2xl border bg-card p-3 shadow-sm transition-transform active:scale-[0.98]',
-                'hover:border-primary/40 hover:bg-primary/5',
+                'flex min-h-20 items-center gap-3 rounded-[1.5rem] border border-primary/10 bg-card p-3 shadow-sm shadow-primary/10 transition-transform active:scale-[0.98]',
+                'hover:border-primary/30 hover:bg-accent/70',
             )}
         >
             {Icon && <Icon className="size-6 shrink-0" />}

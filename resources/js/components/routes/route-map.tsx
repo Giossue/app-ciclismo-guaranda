@@ -1,12 +1,16 @@
 import 'leaflet/dist/leaflet.css';
 
 import { Link } from '@inertiajs/react';
-import type { FeatureCollection, LineString } from 'geojson';
 import L from 'leaflet';
 import {
+    Layers,
     LocateFixed,
+    MapPin,
     Navigation,
     RadioTower,
+    RouteIcon,
+    ShieldAlert,
+    Store,
     Wifi,
     WifiOff,
 } from 'lucide-react';
@@ -15,7 +19,6 @@ import {
     CircleMarker,
     GeoJSON,
     MapContainer,
-    Polyline,
     Popup,
     TileLayer,
     useMap,
@@ -31,6 +34,7 @@ type Props = {
     routes: CyclingRouteMapItem[];
     selectedSlug?: string;
     className?: string;
+    mode?: 'overview' | 'detail';
 };
 
 type UserLocation = {
@@ -40,50 +44,96 @@ type UserLocation = {
 };
 
 type GpsStatus = 'idle' | 'requesting' | 'granted' | 'denied' | 'unsupported';
+type MapLayer = 'standard' | 'satellite';
+type OverlayFilters = {
+    tracks: boolean;
+    endpoints: boolean;
+    pois: boolean;
+    incidents: boolean;
+};
 
 const defaultCenter: [number, number] = [-1.5926, -79.0009];
+const standardLayer = {
+    label: 'Mapa',
+    attribution:
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+};
+const satelliteLayer = {
+    label: 'Satélite',
+    attribution:
+        'Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community',
+    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+};
 const routePathOptions = {
-    color: 'var(--primary)',
-    fillColor: 'var(--primary)',
-    opacity: 0.9,
+    color: '#f97316',
+    fillColor: '#f97316',
+    opacity: 0.98,
     weight: 5,
 };
-const secondaryPathOptions = {
-    color: 'var(--chart-2)',
-    fillColor: 'var(--chart-2)',
-    fillOpacity: 0.85,
+const routeHaloPathOptions = {
+    color: '#111827',
+    fillColor: '#111827',
+    opacity: 0.85,
+    weight: 9,
+};
+const startPathOptions = {
+    color: '#0f766e',
+    fillColor: '#14b8a6',
+    fillOpacity: 0.9,
+    opacity: 1,
+};
+const endPathOptions = {
+    color: '#ea580c',
+    fillColor: '#fb923c',
+    fillOpacity: 0.9,
+    opacity: 1,
+};
+const poiPathOptions = {
+    color: '#0369a1',
+    fillColor: '#38bdf8',
+    fillOpacity: 0.9,
     opacity: 1,
 };
 const incidentPathOptions = {
     color: 'var(--destructive)',
     fillColor: 'var(--destructive)',
-    fillOpacity: 0.85,
+    fillOpacity: 0.9,
     opacity: 1,
 };
 const userPathOptions = {
-    color: 'var(--chart-1)',
-    fillColor: 'var(--chart-1)',
-    fillOpacity: 0.85,
+    color: '#7c3aed',
+    fillColor: '#a78bfa',
+    fillOpacity: 0.9,
     opacity: 1,
 };
-const connectorPathOptions = {
-    color: 'var(--chart-1)',
-    opacity: 0.8,
-    weight: 4,
-    dashArray: '8 8',
-};
 
-export default function RouteMap({ routes, selectedSlug, className }: Props) {
+export default function RouteMap({
+    routes,
+    selectedSlug,
+    className,
+    mode = 'detail',
+}: Props) {
     const [isOnline, setIsOnline] = useState(() =>
         typeof navigator === 'undefined' ? true : navigator.onLine,
     );
     const [gpsStatus, setGpsStatus] = useState<GpsStatus>('idle');
     const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
+    const [mapLayer, setMapLayer] = useState<MapLayer>('standard');
+    const [filters, setFilters] = useState<OverlayFilters>(() => ({
+        tracks: mode === 'detail',
+        endpoints: true,
+        pois: true,
+        incidents: true,
+    }));
     const center = useMemo(() => mapCenter(routes), [routes]);
     const navigationRoute = useMemo(
         () => selectedRoute(routes, selectedSlug),
         [routes, selectedSlug],
     );
+    const activeLayer =
+        mapLayer === 'satellite' ? satelliteLayer : standardLayer;
+    const showOverviewFilters = mode === 'overview';
 
     useEffect(() => {
         const handleOnline = () => setIsOnline(true);
@@ -124,9 +174,13 @@ export default function RouteMap({ routes, selectedSlug, className }: Props) {
         );
     };
 
+    const toggleFilter = (filter: keyof OverlayFilters) => {
+        setFilters((current) => ({ ...current, [filter]: !current[filter] }));
+    };
+
     return (
         <div className="flex flex-col gap-3">
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2 rounded-[1.5rem] border border-primary/10 bg-card/80 p-2 shadow-sm shadow-primary/10 backdrop-blur">
                 <Badge variant={isOnline ? 'secondary' : 'destructive'}>
                     {isOnline ? (
                         <Wifi data-icon="inline-start" />
@@ -151,7 +205,7 @@ export default function RouteMap({ routes, selectedSlug, className }: Props) {
                     <LocateFixed data-icon="inline-start" />
                     Ubicación actual
                 </Button>
-                {userLocation && navigationRoute && (
+                {mode === 'detail' && userLocation && navigationRoute && (
                     <Button type="button" variant="outline" size="sm" asChild>
                         <a
                             href={navigationUrl(userLocation, navigationRoute)}
@@ -159,11 +213,53 @@ export default function RouteMap({ routes, selectedSlug, className }: Props) {
                             rel="noreferrer"
                         >
                             <Navigation data-icon="inline-start" />
-                            Ir al inicio
+                            Abrir navegación externa
                         </a>
                     </Button>
                 )}
+                <Button
+                    type="button"
+                    variant={mapLayer === 'satellite' ? 'secondary' : 'outline'}
+                    size="sm"
+                    onClick={() =>
+                        setMapLayer((current) =>
+                            current === 'standard' ? 'satellite' : 'standard',
+                        )
+                    }
+                >
+                    <Layers data-icon="inline-start" />
+                    {activeLayer.label}
+                </Button>
             </div>
+
+            {showOverviewFilters && (
+                <div className="flex flex-wrap gap-2">
+                    <FilterButton
+                        active={filters.endpoints}
+                        onClick={() => toggleFilter('endpoints')}
+                        label="Inicios/finales"
+                        icon={MapPin}
+                    />
+                    <FilterButton
+                        active={filters.pois}
+                        onClick={() => toggleFilter('pois')}
+                        label="POIs"
+                        icon={Store}
+                    />
+                    <FilterButton
+                        active={filters.incidents}
+                        onClick={() => toggleFilter('incidents')}
+                        label="Incidencias"
+                        icon={ShieldAlert}
+                    />
+                    <FilterButton
+                        active={filters.tracks}
+                        onClick={() => toggleFilter('tracks')}
+                        label="Trazados"
+                        icon={RouteIcon}
+                    />
+                </div>
+            )}
 
             {(gpsStatus === 'denied' || gpsStatus === 'unsupported') && (
                 <Alert>
@@ -179,7 +275,7 @@ export default function RouteMap({ routes, selectedSlug, className }: Props) {
 
             <div
                 className={cn(
-                    'relative isolate z-0 overflow-hidden rounded-2xl border bg-card shadow-sm',
+                    'relative isolate z-0 overflow-hidden rounded-[2rem] border border-primary/10 bg-card shadow-lg shadow-primary/10',
                     className,
                 )}
             >
@@ -190,11 +286,12 @@ export default function RouteMap({ routes, selectedSlug, className }: Props) {
                     className="relative z-0 h-[420px] w-full md:h-[520px]"
                 >
                     <TileLayer
-                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        key={mapLayer}
+                        attribution={activeLayer.attribution}
+                        url={activeLayer.url}
                     />
 
-                    <FitRouteBounds routes={routes} />
+                    <FitRouteBounds routes={routes} filters={filters} />
                     <FlyToUserLocation location={userLocation} />
 
                     {routes.map((route) => (
@@ -202,43 +299,9 @@ export default function RouteMap({ routes, selectedSlug, className }: Props) {
                             key={`${route.slug}-${route.route_version}`}
                             route={route}
                             selected={selectedSlug === route.slug}
+                            filters={filters}
                         />
                     ))}
-
-                    {userLocation && navigationRoute && (
-                        <Polyline
-                            positions={[
-                                [userLocation.latitude, userLocation.longitude],
-                                [
-                                    navigationRoute.start_latitude,
-                                    navigationRoute.start_longitude,
-                                ],
-                            ]}
-                            pathOptions={connectorPathOptions}
-                        >
-                            <Popup>
-                                <div className="flex flex-col gap-2 text-sm">
-                                    <strong>Conexión hacia el inicio</strong>
-                                    <span>
-                                        Línea referencial desde tu ubicación al
-                                        punto inicial. Para navegación real abre
-                                        el mapa externo.
-                                    </span>
-                                    <a
-                                        href={navigationUrl(
-                                            userLocation,
-                                            navigationRoute,
-                                        )}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        className="font-medium text-primary underline-offset-4 hover:underline"
-                                    >
-                                        Abrir navegación
-                                    </a>
-                                </div>
-                            </Popup>
-                        </Polyline>
-                    )}
 
                     {userLocation && (
                         <CircleMarker
@@ -266,84 +329,127 @@ export default function RouteMap({ routes, selectedSlug, className }: Props) {
     );
 }
 
+function FilterButton({
+    active,
+    onClick,
+    label,
+    icon: Icon,
+}: {
+    active: boolean;
+    onClick: () => void;
+    label: string;
+    icon: typeof RouteIcon;
+}) {
+    return (
+        <Button
+            type="button"
+            size="sm"
+            variant={active ? 'secondary' : 'outline'}
+            onClick={onClick}
+        >
+            <Icon data-icon="inline-start" />
+            {label}
+        </Button>
+    );
+}
+
 function RouteLayers({
     route,
     selected,
+    filters,
 }: {
     route: CyclingRouteMapItem;
     selected: boolean;
+    filters: OverlayFilters;
 }) {
     return (
         <>
-            {route.geojson && (
-                <GeoJSON
-                    data={route.geojson}
-                    pathOptions={{
-                        ...routePathOptions,
-                        weight: selected ? 7 : 5,
-                    }}
-                >
-                    <Popup>
-                        <RoutePopup route={route} />
-                    </Popup>
-                </GeoJSON>
+            {filters.tracks && route.geojson && (
+                <>
+                    <GeoJSON
+                        data={route.geojson}
+                        pathOptions={{
+                            ...routeHaloPathOptions,
+                            weight: selected ? 11 : 9,
+                        }}
+                    />
+                    <GeoJSON
+                        data={route.geojson}
+                        pathOptions={{
+                            ...routePathOptions,
+                            weight: selected ? 7 : 5,
+                        }}
+                    >
+                        <Popup>
+                            <RoutePopup route={route} />
+                        </Popup>
+                    </GeoJSON>
+                </>
             )}
 
-            <CircleMarker
-                center={[route.start_latitude, route.start_longitude]}
-                pathOptions={secondaryPathOptions}
-                radius={selected ? 8 : 7}
-            >
-                <Popup>
-                    <div className="flex flex-col gap-1 text-sm">
-                        <strong>Inicio: {route.start_name}</strong>
-                        <span>{route.name}</span>
-                    </div>
-                </Popup>
-            </CircleMarker>
+            {filters.endpoints && (
+                <>
+                    <CircleMarker
+                        center={[route.start_latitude, route.start_longitude]}
+                        pathOptions={startPathOptions}
+                        radius={selected ? 8 : 7}
+                    >
+                        <Popup>
+                            <div className="flex flex-col gap-1 text-sm">
+                                <strong>Inicio: {route.start_name}</strong>
+                                <span>{route.name}</span>
+                            </div>
+                        </Popup>
+                    </CircleMarker>
 
-            <CircleMarker
-                center={[route.end_latitude, route.end_longitude]}
-                pathOptions={routePathOptions}
-                radius={selected ? 8 : 7}
-            >
-                <Popup>
-                    <div className="flex flex-col gap-1 text-sm">
-                        <strong>Final: {route.end_name}</strong>
-                        <span>{route.name}</span>
-                    </div>
-                </Popup>
-            </CircleMarker>
+                    <CircleMarker
+                        center={[route.end_latitude, route.end_longitude]}
+                        pathOptions={endPathOptions}
+                        radius={selected ? 8 : 7}
+                    >
+                        <Popup>
+                            <div className="flex flex-col gap-1 text-sm">
+                                <strong>Final: {route.end_name}</strong>
+                                <span>{route.name}</span>
+                            </div>
+                        </Popup>
+                    </CircleMarker>
+                </>
+            )}
 
-            {route.points_of_interest.map((poi) => (
-                <CircleMarker
-                    key={`poi-${route.id}-${poi.id}`}
-                    center={[poi.latitude, poi.longitude]}
-                    pathOptions={secondaryPathOptions}
-                    radius={6}
-                >
-                    <Popup>
-                        <PoiPopup poi={poi} />
-                    </Popup>
-                </CircleMarker>
-            ))}
+            {filters.pois &&
+                route.points_of_interest.map((poi) => (
+                    <CircleMarker
+                        key={`poi-${route.id}-${poi.id}`}
+                        center={[poi.latitude, poi.longitude]}
+                        pathOptions={poiPathOptions}
+                        radius={6}
+                    >
+                        <Popup>
+                            <PoiPopup poi={poi} />
+                        </Popup>
+                    </CircleMarker>
+                ))}
 
-            {route.incidents.map((incident) => (
-                <CircleMarker
-                    key={`incident-${route.id}-${incident.id}`}
-                    center={[incident.latitude, incident.longitude]}
-                    pathOptions={incidentPathOptions}
-                    radius={7}
-                >
-                    <Popup>
-                        <div className="flex flex-col gap-1 text-sm">
-                            <strong>{incident.title}</strong>
-                            {incident.type && <span>{incident.type.name}</span>}
-                            <span>{incident.description}</span>
-                        </div>
-                    </Popup>
-                </CircleMarker>
-            ))}
+            {filters.incidents &&
+                route.incidents.map((incident) => (
+                    <CircleMarker
+                        key={`incident-${route.id}-${incident.id}`}
+                        center={[incident.latitude, incident.longitude]}
+                        pathOptions={incidentPathOptions}
+                        radius={7}
+                    >
+                        <Popup>
+                            <div className="flex flex-col gap-1 text-sm">
+                                <strong>{incident.title}</strong>
+                                {incident.type && (
+                                    <span>{incident.type.name}</span>
+                                )}
+                                <span>{incident.description}</span>
+                            </div>
+                        </Popup>
+                    </CircleMarker>
+                ))}
         </>
     );
 }
@@ -355,7 +461,7 @@ function RoutePopup({ route }: { route: CyclingRouteMapItem }) {
                 <img
                     src={mediaUrl(route.main_image_path)}
                     alt={route.name}
-                    className="h-24 w-full rounded-lg object-cover"
+                    className="h-24 w-full rounded-xl object-cover"
                 />
             )}
             <strong>{route.name}</strong>
@@ -387,7 +493,7 @@ function PoiPopup({ poi }: { poi: RoutePoi }) {
                 <img
                     src={mediaUrl(image.image_path)}
                     alt={image.description ?? poi.name}
-                    className="h-24 w-full rounded-lg object-cover"
+                    className="h-24 w-full rounded-xl object-cover"
                 />
             )}
             <strong>{poi.name}</strong>
@@ -402,31 +508,53 @@ function PoiPopup({ poi }: { poi: RoutePoi }) {
     );
 }
 
-function FitRouteBounds({ routes }: { routes: CyclingRouteMapItem[] }) {
+function FitRouteBounds({
+    routes,
+    filters,
+}: {
+    routes: CyclingRouteMapItem[];
+    filters: OverlayFilters;
+}) {
     const map = useMap();
 
     useEffect(() => {
-        const features: FeatureCollection<LineString> = {
-            type: 'FeatureCollection',
-            features: routes
-                .filter((route) => route.geojson !== null)
-                .map((route) => ({
-                    type: 'Feature',
-                    properties: { name: route.name },
-                    geometry: route.geojson as LineString,
-                })),
-        };
+        const points: L.LatLngExpression[] = [];
 
-        if (features.features.length === 0) {
+        routes.forEach((route) => {
+            if (filters.tracks && route.geojson) {
+                route.geojson.coordinates.forEach(([longitude, latitude]) => {
+                    points.push([latitude, longitude]);
+                });
+            }
+
+            if (filters.endpoints) {
+                points.push([route.start_latitude, route.start_longitude]);
+                points.push([route.end_latitude, route.end_longitude]);
+            }
+
+            if (filters.pois) {
+                route.points_of_interest.forEach((poi) => {
+                    points.push([poi.latitude, poi.longitude]);
+                });
+            }
+
+            if (filters.incidents) {
+                route.incidents.forEach((incident) => {
+                    points.push([incident.latitude, incident.longitude]);
+                });
+            }
+        });
+
+        if (points.length === 0) {
             return;
         }
 
-        const bounds = L.geoJSON(features).getBounds();
+        const bounds = L.latLngBounds(points);
 
         if (bounds.isValid()) {
             map.fitBounds(bounds, { padding: [24, 24], maxZoom: 15 });
         }
-    }, [map, routes]);
+    }, [filters, map, routes]);
 
     return null;
 }

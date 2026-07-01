@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Cyclist;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Cyclist\StoreChatMessageRequest;
 use App\Models\AiConversation;
-use App\Models\AiMessage;
 use App\Models\CyclingRoute;
 use App\Models\Incident;
 use App\Models\PoiHour;
@@ -28,36 +27,11 @@ class ChatController extends Controller
 {
     public function index(Request $request): Response
     {
-        $user = $request->user();
-        abort_unless($user instanceof User, 403);
-
-        $conversationId = $request->integer('conversation');
-        $startNew = $request->boolean('new');
-        $activeConversation = $startNew ? null : ($conversationId > 0
-            ? AiConversation::query()
-                ->with('messages')
-                ->where('user_id', $user->id)
-                ->find($conversationId)
-            : AiConversation::query()
-                ->with('messages')
-                ->where('user_id', $user->id)
-                ->latest('last_activity_at')
-                ->latest('id')
-                ->first());
-
         return Inertia::render('chat/index', [
             'webhookConfigured' => $this->webhookUrl() !== null,
-            'conversations' => AiConversation::query()
-                ->withCount('messages')
-                ->where('user_id', $user->id)
-                ->latest('last_activity_at')
-                ->latest('id')
-                ->limit(20)
-                ->get()
-                ->map(fn (AiConversation $conversation): array => $this->serializeConversationSummary($conversation))
-                ->values()
-                ->all(),
-            'activeConversation' => $activeConversation === null ? null : $this->serializeConversation($activeConversation),
+            'conversations' => [],
+            'activeConversation' => null,
+            'latestMessages' => session('chat_exchange.messages', []),
             'routes' => CyclingRoute::query()
                 ->with(['difficulty:id,name', 'category:id,name'])
                 ->whereHas('status', fn ($query) => $query->where('name', 'activa'))
@@ -104,29 +78,18 @@ class ChatController extends Controller
             ])->find((int) $payload['route_id'])
             : null;
 
-        $conversation = $this->conversationFor($payload, $user->id, $route);
         $message = trim((string) $payload['message']);
-
-        $userMessage = $conversation->messages()->create([
-            'role' => 'user',
-            'message' => $message,
-            'metadata' => ['route_id' => $route?->id],
-            'sent_at' => now(),
-        ]);
-
-        $context = $this->buildContext($conversation, $user, $route);
-        $conversation->forceFill([
-            'context' => $context,
-            'last_activity_at' => now(),
-        ])->save();
+        $context = $this->buildContext($user, $route);
+        $sessionId = 'guaranda-go-user-'.$user->id;
 
         try {
             $response = Http::acceptJson()
                 ->asJson()
                 ->timeout($this->timeoutSeconds())
                 ->post($webhookUrl, [
-                    'conversation_id' => $conversation->id,
-                    'message_id' => $userMessage->id,
+                    'session_id' => $sessionId,
+                    'user_id' => $user->id,
+                    'route_id' => $route?->id,
                     'message' => $message,
                     'context' => $context,
                 ]);
@@ -137,35 +100,24 @@ class ChatController extends Controller
 
             $json = $response->json();
             $assistantText = $this->extractAssistantText($json);
-
-            $conversation->messages()->create([
-                'role' => 'assistant',
-                'message' => $assistantText,
-                'provider' => 'n8n',
-                'metadata' => [
-                    'response' => $json,
-                    'status' => $response->status(),
-                ],
-                'sent_at' => now(),
-            ]);
-
-            $conversation->forceFill(['last_activity_at' => now()])->save();
             Inertia::flash('toast', ['type' => 'success', 'message' => __('Respuesta del asistente recibida.')]);
+
+            return to_route('chat.index')->with('chat_exchange', [
+                'messages' => $this->exchangeMessages($message, $assistantText, 'n8n'),
+            ]);
         } catch (ConnectionException $exception) {
-            $this->storeAssistantError(
-                $conversation,
+            return $this->assistantErrorResponse(
+                $message,
                 'No se pudo conectar con n8n. Revisa tu conexión e inténtalo de nuevo.',
                 $exception,
             );
         } catch (Throwable $exception) {
-            $this->storeAssistantError(
-                $conversation,
+            return $this->assistantErrorResponse(
+                $message,
                 'El asistente externo no está disponible en este momento. Inténtalo nuevamente más tarde.',
                 $exception,
             );
         }
-
-        return to_route('chat.index', ['conversation' => $conversation->id]);
     }
 
     public function destroy(Request $request, AiConversation $conversation): RedirectResponse
@@ -173,55 +125,16 @@ class ChatController extends Controller
         abort_unless($conversation->user_id === $request->user()?->id, 403);
 
         $conversation->delete();
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Conversación ocultada.')]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Conversación local ocultada.')]);
 
         return to_route('chat.index');
     }
 
     /**
-     * @param  array<string, mixed>  $payload
-     */
-    private function conversationFor(array $payload, int $userId, ?CyclingRoute $route): AiConversation
-    {
-        if (isset($payload['conversation_id'])) {
-            /** @var AiConversation $conversation */
-            $conversation = AiConversation::query()
-                ->where('user_id', $userId)
-                ->findOrFail((int) $payload['conversation_id']);
-
-            return $conversation;
-        }
-
-        /** @var AiConversation $conversation */
-        $conversation = AiConversation::query()->create([
-            'user_id' => $userId,
-            'title' => $route === null ? 'Consulta general' : 'Consulta sobre '.$route->name,
-            'context' => [],
-            'started_at' => now(),
-            'last_activity_at' => now(),
-        ]);
-
-        return $conversation;
-    }
-
-    /**
      * @return array<string, mixed>
      */
-    private function buildContext(AiConversation $conversation, User $user, ?CyclingRoute $route): array
+    private function buildContext(User $user, ?CyclingRoute $route): array
     {
-        $recentMessages = $conversation->messages()
-            ->latest('sent_at')
-            ->latest('id')
-            ->limit(6)
-            ->get()
-            ->reverse()
-            ->map(fn (AiMessage $message): array => [
-                'role' => $message->role,
-                'message' => Str::limit($message->message, 500),
-            ])
-            ->values()
-            ->all();
-
         $user->loadMissing('role:id,name');
 
         return [
@@ -230,13 +143,14 @@ class ChatController extends Controller
             'privacy' => [
                 'personal_data_minimized' => true,
                 'no_email_sent' => true,
+                'conversation_storage_external' => true,
             ],
             'user' => [
+                'id' => $user->id,
                 'age' => $user->birth_date?->age,
                 'role' => $user->role?->name,
             ],
             'route' => $route === null ? null : $this->routeContext($route),
-            'recent_messages' => $recentMessages,
             'offline_available' => false,
         ];
     }
@@ -313,82 +227,51 @@ class ChatController extends Controller
         return 'Recibí una respuesta de n8n, pero no contiene un campo de texto reconocible.';
     }
 
-    private function storeAssistantError(AiConversation $conversation, string $userMessage, ?Throwable $exception = null): void
+    private function assistantErrorResponse(string $message, string $userMessage, ?Throwable $exception = null): RedirectResponse
     {
         if ($exception !== null) {
             Log::warning('n8n chatbot request failed', [
-                'conversation_id' => $conversation->id,
+                'user_id' => request()->user()?->id,
                 'exception' => $exception::class,
                 'message' => $exception->getMessage(),
             ]);
         }
 
-        $conversation->messages()->create([
-            'role' => 'assistant',
-            'message' => 'No pude consultar el asistente externo: '.$userMessage,
-            'provider' => 'n8n',
-            'metadata' => [
-                'error' => true,
-                'detail' => $exception?->getMessage() ?? $userMessage,
-            ],
-            'sent_at' => now(),
-        ]);
-
-        $conversation->forceFill(['last_activity_at' => now()])->save();
         Inertia::flash('toast', ['type' => 'error', 'message' => __('Servicio del asistente no disponible.')]);
+
+        return to_route('chat.index')->with('chat_exchange', [
+            'messages' => $this->exchangeMessages(
+                $message,
+                'No pude consultar el asistente externo: '.$userMessage,
+                'n8n',
+            ),
+        ]);
     }
 
     /**
-     * @return array<string, mixed>
+     * @return list<array{id: int, role: string, message: string, provider: string|null, sent_at: string, metadata: array<string, mixed>}>
      */
-    private function serializeConversation(AiConversation $conversation): array
+    private function exchangeMessages(string $userMessage, string $assistantMessage, ?string $provider): array
     {
-        $conversation->loadMissing('messages');
+        $now = now()->format(DATE_ATOM);
 
         return [
-            'id' => $conversation->id,
-            'title' => $conversation->title,
-            'started_at' => $this->formatDateValue($conversation->getAttribute('started_at')),
-            'last_activity_at' => $this->formatDateValue($conversation->getAttribute('last_activity_at')),
-            'messages' => $conversation->messages
-                ->map(fn (AiMessage $message): array => $this->serializeMessage($message))
-                ->values()
-                ->all(),
-        ];
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function serializeConversationSummary(AiConversation $conversation): array
-    {
-        $lastMessage = $conversation->messages()
-            ->latest('sent_at')
-            ->latest('id')
-            ->first();
-
-        return [
-            'id' => $conversation->id,
-            'title' => $conversation->title,
-            'started_at' => $this->formatDateValue($conversation->getAttribute('started_at')),
-            'last_activity_at' => $this->formatDateValue($conversation->getAttribute('last_activity_at')),
-            'messages_count' => (int) $conversation->getAttribute('messages_count'),
-            'last_message' => $lastMessage === null ? null : Str::limit($lastMessage->message, 120),
-        ];
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function serializeMessage(AiMessage $message): array
-    {
-        return [
-            'id' => $message->id,
-            'role' => $message->role,
-            'message' => $message->message,
-            'provider' => $message->provider,
-            'metadata' => $message->metadata,
-            'sent_at' => $this->formatDateValue($message->getAttribute('sent_at')),
+            [
+                'id' => 1,
+                'role' => 'user',
+                'message' => $userMessage,
+                'provider' => null,
+                'sent_at' => $now,
+                'metadata' => [],
+            ],
+            [
+                'id' => 2,
+                'role' => 'assistant',
+                'message' => $assistantMessage,
+                'provider' => $provider,
+                'sent_at' => $now,
+                'metadata' => ['transient' => true],
+            ],
         ];
     }
 
@@ -412,19 +295,6 @@ class ChatController extends Controller
 
         if (is_string($value) && $value !== '') {
             return substr($value, 0, 5);
-        }
-
-        return null;
-    }
-
-    private function formatDateValue(mixed $value): ?string
-    {
-        if ($value instanceof DateTimeInterface) {
-            return $value->format(DATE_ATOM);
-        }
-
-        if (is_string($value) && $value !== '') {
-            return $value;
         }
 
         return null;

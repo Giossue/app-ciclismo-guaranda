@@ -54,6 +54,8 @@ trait ValidatesPoiPayload
             'active' => ['boolean'],
             'hours_text' => ['nullable', 'string', 'max:10000'],
             'images_text' => ['nullable', 'string', 'max:10000'],
+            'images' => ['nullable', 'array', 'max:8'],
+            'images.*' => ['image', 'max:5120'],
             'route_links_text' => ['nullable', 'string', 'max:10000'],
             'cuisine_type_id' => ['nullable', 'integer', Rule::exists(CuisineType::class, 'id')],
             'price_range_id' => ['nullable', 'integer', Rule::exists(PriceRange::class, 'id')],

@@ -10,6 +10,7 @@ use App\Models\IncidentType;
 use App\Models\PoiCategory;
 use App\Models\PoiHour;
 use App\Models\PointOfInterest;
+use App\Models\RouteCategory;
 use App\Models\RouteRating;
 use App\Models\RouteView;
 use App\Models\Track;
@@ -24,13 +25,18 @@ class RouteController extends Controller
 {
     public function index(): Response
     {
+        $selectedCategory = request()->integer('category') ?: null;
         $routes = $this->activeRouteQuery()
+            ->when($selectedCategory !== null, fn ($query) => $query->where('route_category_id', $selectedCategory))
             ->latest('id')
             ->paginate(12)
+            ->withQueryString()
             ->through(fn ($route): array => $this->serializeRoute($route, false));
 
         return Inertia::render('routes/index', [
             'routes' => $routes,
+            'categories' => RouteCategory::query()->orderBy('id')->get(['id', 'name']),
+            'selectedCategory' => $selectedCategory,
         ]);
     }
 

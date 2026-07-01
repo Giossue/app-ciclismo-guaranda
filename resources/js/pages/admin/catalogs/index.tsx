@@ -1,5 +1,6 @@
 import { Form, Head } from '@inertiajs/react';
 import { Database, Plus, Save } from 'lucide-react';
+import { useState } from 'react';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
 import { Badge } from '@/components/ui/badge';
@@ -13,6 +14,14 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 
 const textareaClass =
     'min-h-20 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-xs outline-none transition-[color,box-shadow] placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20';
@@ -43,6 +52,12 @@ export default function AdminCatalogsIndex({ catalogs }: Props) {
         (total, catalog) => total + catalog.records.length,
         0,
     );
+    const [selectedCatalogSlug, setSelectedCatalogSlug] = useState(
+        catalogs[0]?.slug ?? '',
+    );
+    const visibleCatalogs = catalogs.filter(
+        (catalog) => catalog.slug === selectedCatalogSlug,
+    );
 
     return (
         <>
@@ -65,8 +80,40 @@ export default function AdminCatalogsIndex({ catalogs }: Props) {
                     </div>
                 </div>
 
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Seleccionar catálogo</CardTitle>
+                        <CardDescription>
+                            Elige una sección para evitar recorrer todos los
+                            catálogos en una sola pantalla.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <Select
+                            value={selectedCatalogSlug}
+                            onValueChange={setSelectedCatalogSlug}
+                        >
+                            <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Selecciona un catálogo" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectGroup>
+                                    {catalogs.map((catalog) => (
+                                        <SelectItem
+                                            key={catalog.slug}
+                                            value={catalog.slug}
+                                        >
+                                            {catalog.title}
+                                        </SelectItem>
+                                    ))}
+                                </SelectGroup>
+                            </SelectContent>
+                        </Select>
+                    </CardContent>
+                </Card>
+
                 <section className="grid gap-4">
-                    {catalogs.map((catalog) => (
+                    {visibleCatalogs.map((catalog) => (
                         <Card key={catalog.slug}>
                             <CardHeader>
                                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">

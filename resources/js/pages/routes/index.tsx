@@ -20,19 +20,29 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { mediaUrl } from '@/lib/media';
-import type { CyclingRouteMapItem, PaginatedRoutes } from '@/types';
+import type {
+    CatalogOption,
+    CyclingRouteMapItem,
+    PaginatedRoutes,
+} from '@/types';
 
 type Props = {
     routes: PaginatedRoutes;
+    categories: CatalogOption[];
+    selectedCategory: number | null;
 };
 
-export default function RoutesIndex({ routes }: Props) {
+export default function RoutesIndex({
+    routes,
+    categories,
+    selectedCategory,
+}: Props) {
     return (
         <>
             <Head title="Rutas" />
 
-            <div className="flex flex-col gap-6">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="flex flex-col gap-5">
+                <div className="flex flex-col gap-4 rounded-[2rem] border border-primary/10 bg-gradient-to-br from-primary/10 via-card to-secondary/45 p-5 shadow-sm shadow-primary/10 sm:flex-row sm:items-start sm:justify-between">
                     <Heading
                         title="Rutas disponibles"
                         description="Explora rutas activas en mapa para planificar tu próximo recorrido en Bolívar"
@@ -44,7 +54,51 @@ export default function RoutesIndex({ routes }: Props) {
                     </Button>
                 </div>
 
-                <Card>
+                <Card className="border-primary/10 bg-card/90">
+                    <CardHeader>
+                        <CardTitle>Filtrar por categoría</CardTitle>
+                        <CardDescription>
+                            Muestra solo las rutas de una categoría para navegar
+                            con menos ruido visual.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="flex flex-wrap gap-2">
+                        <Button
+                            variant={
+                                selectedCategory === null
+                                    ? 'secondary'
+                                    : 'outline'
+                            }
+                            size="sm"
+                            asChild
+                        >
+                            <Link href="/routes" prefetch>
+                                Todas
+                            </Link>
+                        </Button>
+                        {categories.map((category) => (
+                            <Button
+                                key={category.id}
+                                variant={
+                                    selectedCategory === category.id
+                                        ? 'secondary'
+                                        : 'outline'
+                                }
+                                size="sm"
+                                asChild
+                            >
+                                <Link
+                                    href={`/routes?category=${category.id}`}
+                                    prefetch
+                                >
+                                    {category.name}
+                                </Link>
+                            </Button>
+                        ))}
+                    </CardContent>
+                </Card>
+
+                <Card className="overflow-hidden border-primary/10 bg-card/95">
                     <CardHeader>
                         <div className="flex flex-col gap-2">
                             <Badge variant="secondary" className="w-fit">
@@ -53,20 +107,23 @@ export default function RoutesIndex({ routes }: Props) {
                             </Badge>
                             <CardTitle>Mapa cicloturístico</CardTitle>
                             <CardDescription>
-                                Visualiza trazados, inicio, final, POIs
-                                vinculados, incidencias en revisión y tu
-                                ubicación si concedes permiso GPS.
+                                Visualiza inicios, finales, POIs e incidencias.
+                                Usa los filtros para activar trazados o capas
+                                sin depender de tu ubicación.
                             </CardDescription>
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <RouteMap routes={routes.data} />
+                        <RouteMap routes={routes.data} mode="overview" />
                     </CardContent>
                 </Card>
 
                 <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                     {routes.data.map((route) => (
-                        <Card key={route.id} className="overflow-hidden">
+                        <Card
+                            key={route.id}
+                            className="group overflow-hidden border-primary/10 transition-[transform,box-shadow] hover:-translate-y-0.5 hover:shadow-xl hover:shadow-primary/15"
+                        >
                             <RouteCover route={route} />
                             <CardHeader>
                                 <div className="flex flex-col gap-2">
@@ -110,7 +167,9 @@ export default function RoutesIndex({ routes }: Props) {
                                             </Badge>
                                         )}
                                     </div>
-                                    <CardTitle>{route.name}</CardTitle>
+                                    <CardTitle className="text-xl leading-tight">
+                                        {route.name}
+                                    </CardTitle>
                                     <CardDescription>
                                         {route.description}
                                     </CardDescription>
@@ -187,13 +246,13 @@ export default function RoutesIndex({ routes }: Props) {
 function RouteCover({ route }: { route: CyclingRouteMapItem }) {
     if (route.main_image_path) {
         return (
-            <div className="relative h-48 overflow-hidden bg-muted">
+            <div className="relative h-48 overflow-hidden bg-muted sm:h-52">
                 <img
                     src={mediaUrl(route.main_image_path)}
                     alt={route.name}
-                    className="size-full object-cover transition-transform duration-500 hover:scale-105"
+                    className="size-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/65 to-transparent p-4 text-white">
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent p-4 text-white">
                     <p className="text-xs font-medium tracking-wide uppercase opacity-90">
                         Ruta oficial
                     </p>
@@ -203,7 +262,7 @@ function RouteCover({ route }: { route: CyclingRouteMapItem }) {
     }
 
     return (
-        <div className="flex h-48 items-center justify-center bg-gradient-to-br from-primary/15 via-muted to-card text-muted-foreground">
+        <div className="flex h-48 items-center justify-center bg-gradient-to-br from-primary/20 via-secondary/45 to-card text-muted-foreground sm:h-52">
             <div className="flex flex-col items-center gap-2 text-center">
                 <ImageIcon className="size-8" />
                 <span className="text-sm font-medium">Sin portada</span>

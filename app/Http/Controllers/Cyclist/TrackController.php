@@ -22,8 +22,10 @@ class TrackController extends Controller
 {
     public function store(StoreTrackRequest $request, CyclingRoute $route): RedirectResponse
     {
+        $payload = $request->validated();
         $inProgress = TrackStatus::query()->where('name', 'en curso')->firstOrFail();
 
+        /** @var Track $track */
         $track = Track::query()->create([
             'user_id' => $request->user()?->id,
             'route_id' => $route->id,
@@ -35,6 +37,17 @@ class TrackController extends Controller
             'is_valid' => false,
             'summary' => $this->calculateSummaryData($route, collect()),
         ]);
+
+        /** @var TrackGpsPoint $point */
+        $point = $track->gpsPoints()->create([
+            'latitude' => $payload['latitude'],
+            'longitude' => $payload['longitude'],
+            'accuracy_m' => $payload['accuracy_m'] ?? null,
+            'recorded_at' => now(),
+        ]);
+
+        $this->syncPostgisPoint($point);
+        $this->refreshMetrics($track);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Recorrido iniciado.')]);
 

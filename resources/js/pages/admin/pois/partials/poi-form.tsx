@@ -1,4 +1,5 @@
 import { Form, Link } from '@inertiajs/react';
+import { useMemo, useState } from 'react';
 import PoiController from '@/actions/App/Http/Controllers/Admin/PoiController';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
@@ -22,6 +23,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
 import type { CatalogOption } from '@/types';
 
 type PoiFormData = {
@@ -96,9 +98,72 @@ export default function PoiForm({
     const formAction = isEdit
         ? PoiController.update.form(poi.id)
         : PoiController.store.form();
+    const [selectedCategoryId, setSelectedCategoryId] = useState(
+        poi?.poi_category_id == null ? '' : String(poi.poi_category_id),
+    );
+    const [imagePreviews, setImagePreviews] = useState<
+        { name: string; url: string }[]
+    >([]);
+    const [routeAssociations, setRouteAssociations] = useState<
+        RouteAssociation[]
+    >(() => parseRouteAssociations(poi?.route_links_text));
+    const routeLinksText = useMemo(
+        () => serializeRouteAssociations(routeAssociations),
+        [routeAssociations],
+    );
+    const selectedCategoryName =
+        categories
+            .find((category) => String(category.id) === selectedCategoryId)
+            ?.name.toLocaleLowerCase() ?? '';
+
+    const previewImages = (files: FileList | null) => {
+        setImagePreviews(
+            Array.from(files ?? []).map((file) => ({
+                name: file.name,
+                url: URL.createObjectURL(file),
+            })),
+        );
+    };
+
+    const toggleRouteAssociation = (routeId: number, checked: boolean) => {
+        setRouteAssociations((current) => {
+            if (!checked) {
+                return current.filter((item) => item.routeId !== routeId);
+            }
+
+            if (current.some((item) => item.routeId === routeId)) {
+                return current;
+            }
+
+            return [
+                ...current,
+                {
+                    routeId,
+                    required: false,
+                    distance: '',
+                    observation: '',
+                },
+            ];
+        });
+    };
+
+    const updateRouteAssociation = (
+        routeId: number,
+        values: Partial<Omit<RouteAssociation, 'routeId'>>,
+    ) => {
+        setRouteAssociations((current) =>
+            current.map((item) =>
+                item.routeId === routeId ? { ...item, ...values } : item,
+            ),
+        );
+    };
 
     return (
-        <Form {...formAction} options={{ preserveScroll: true }}>
+        <Form
+            {...formAction}
+            options={{ preserveScroll: true }}
+            encType="multipart/form-data"
+        >
             {({ processing, errors }) => (
                 <div className="flex flex-col gap-5">
                     <Card>
@@ -118,6 +183,7 @@ export default function PoiForm({
                                 options={categories}
                                 defaultValue={poi?.poi_category_id}
                                 error={errors.poi_category_id}
+                                onValueChange={setSelectedCategoryId}
                             />
 
                             <div className="grid gap-2">
@@ -126,6 +192,7 @@ export default function PoiForm({
                                     id="name"
                                     name="name"
                                     defaultValue={poi?.name ?? ''}
+                                    placeholder="Ej. Mirador de la Cruz"
                                     required
                                     aria-invalid={Boolean(errors.name)}
                                 />
@@ -139,6 +206,7 @@ export default function PoiForm({
                                     name="description"
                                     defaultValue={poi?.description ?? ''}
                                     className={textareaClass}
+                                    placeholder="Qué encontrará el ciclista en este lugar"
                                     aria-invalid={Boolean(errors.description)}
                                 />
                                 <InputError message={errors.description} />
@@ -153,6 +221,7 @@ export default function PoiForm({
                                     name="observations"
                                     defaultValue={poi?.observations ?? ''}
                                     className={textareaClass}
+                                    placeholder="Referencia, acceso, seguridad, temporada"
                                     aria-invalid={Boolean(errors.observations)}
                                 />
                                 <InputError message={errors.observations} />
@@ -182,6 +251,7 @@ export default function PoiForm({
                                     id="address"
                                     name="address"
                                     defaultValue={poi?.address ?? ''}
+                                    placeholder="Ej. A 200 m del parque central"
                                     aria-invalid={Boolean(errors.address)}
                                 />
                                 <InputError message={errors.address} />
@@ -193,6 +263,7 @@ export default function PoiForm({
                                     id="phone"
                                     name="phone"
                                     defaultValue={poi?.phone ?? ''}
+                                    placeholder="Ej. 0999999999"
                                     aria-invalid={Boolean(errors.phone)}
                                 />
                                 <InputError message={errors.phone} />
@@ -217,24 +288,13 @@ export default function PoiForm({
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="grid gap-4 md:grid-cols-3">
-                            <div className="grid gap-2 md:col-span-3">
-                                <Label>Rutas disponibles</Label>
-                                <div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
-                                    {routes.map((route) => (
-                                        <span key={route.id}>
-                                            {route.id}: {route.name}
-                                        </span>
-                                    ))}
-                                </div>
-                            </div>
-
-                            <TextAreaField
-                                id="route_links_text"
-                                name="route_links_text"
-                                label="Asociación POI-ruta"
-                                defaultValue={poi?.route_links_text}
+                            <RouteAssociationsField
+                                routes={routes}
+                                associations={routeAssociations}
+                                routeLinksText={routeLinksText}
                                 error={errors.route_links_text}
-                                placeholder="1|1|4.5|Parada obligatoria"
+                                onToggle={toggleRouteAssociation}
+                                onUpdate={updateRouteAssociation}
                             />
 
                             <TextAreaField
@@ -246,10 +306,51 @@ export default function PoiForm({
                                 placeholder="1|08:00|18:00|Lunes"
                             />
 
+                            <div className="grid gap-2">
+                                <Label htmlFor="images">Subir imágenes</Label>
+                                <Input
+                                    id="images"
+                                    name="images[]"
+                                    type="file"
+                                    accept="image/*"
+                                    multiple
+                                    onChange={(event) =>
+                                        previewImages(event.currentTarget.files)
+                                    }
+                                    aria-invalid={Boolean(errors.images)}
+                                />
+                                <p className="text-xs text-muted-foreground">
+                                    Puedes subir fotos del POI. También se
+                                    conservan las rutas internas existentes si
+                                    aparecen abajo.
+                                </p>
+                                <InputError message={errors.images} />
+                                <InputError message={errors['images.0']} />
+                                {imagePreviews.length > 0 && (
+                                    <div className="flex gap-3 overflow-x-auto rounded-xl border bg-muted/20 p-3">
+                                        {imagePreviews.map((image) => (
+                                            <figure
+                                                key={`${image.name}-${image.url}`}
+                                                className="min-w-36 overflow-hidden rounded-lg border bg-card"
+                                            >
+                                                <img
+                                                    src={image.url}
+                                                    alt={image.name}
+                                                    className="h-24 w-full object-cover"
+                                                />
+                                                <figcaption className="truncate p-2 text-xs text-muted-foreground">
+                                                    {image.name}
+                                                </figcaption>
+                                            </figure>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+
                             <TextAreaField
                                 id="images_text"
                                 name="images_text"
-                                label="Imágenes"
+                                label="Imágenes existentes o rutas internas"
                                 defaultValue={poi?.images_text}
                                 error={errors.images_text}
                                 placeholder="pois/mirador.jpg|Vista principal"
@@ -261,12 +362,19 @@ export default function PoiForm({
                         <CardHeader>
                             <CardTitle>Detalles por categoría</CardTitle>
                             <CardDescription>
-                                Completa solo los campos que correspondan a la
-                                categoría seleccionada.
+                                Selecciona una categoría para ver solo los
+                                detalles que corresponden a ese tipo de punto de
+                                interés.
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="grid gap-6">
-                            <section className="grid gap-4 md:grid-cols-2">
+                            <section
+                                className={
+                                    selectedCategoryName === 'comida'
+                                        ? 'grid gap-4 md:grid-cols-2'
+                                        : 'hidden'
+                                }
+                            >
                                 <h2 className="font-medium md:col-span-2">
                                     Comida
                                 </h2>
@@ -334,7 +442,13 @@ export default function PoiForm({
 
                             <Separator />
 
-                            <section className="grid gap-4 md:grid-cols-2">
+                            <section
+                                className={
+                                    selectedCategoryName === 'tienda'
+                                        ? 'grid gap-4 md:grid-cols-2'
+                                        : 'hidden'
+                                }
+                            >
                                 <h2 className="font-medium md:col-span-2">
                                     Tienda y pagos
                                 </h2>
@@ -381,7 +495,13 @@ export default function PoiForm({
 
                             <Separator />
 
-                            <section className="grid gap-4 md:grid-cols-2">
+                            <section
+                                className={
+                                    selectedCategoryName === 'hospedaje'
+                                        ? 'grid gap-4 md:grid-cols-2'
+                                        : 'hidden'
+                                }
+                            >
                                 <h2 className="font-medium md:col-span-2">
                                     Hospedaje
                                 </h2>
@@ -423,7 +543,13 @@ export default function PoiForm({
 
                             <Separator />
 
-                            <section className="grid gap-4 md:grid-cols-2">
+                            <section
+                                className={
+                                    selectedCategoryName === 'taller'
+                                        ? 'grid gap-4 md:grid-cols-2'
+                                        : 'hidden'
+                                }
+                            >
                                 <h2 className="font-medium md:col-span-2">
                                     Taller
                                 </h2>
@@ -484,7 +610,13 @@ export default function PoiForm({
 
                             <Separator />
 
-                            <section className="grid gap-4 md:grid-cols-2">
+                            <section
+                                className={
+                                    selectedCategoryName === 'salud'
+                                        ? 'grid gap-4 md:grid-cols-2'
+                                        : 'hidden'
+                                }
+                            >
                                 <h2 className="font-medium md:col-span-2">
                                     Salud
                                 </h2>
@@ -534,6 +666,178 @@ export default function PoiForm({
     );
 }
 
+type RouteAssociation = {
+    routeId: number;
+    required: boolean;
+    distance: string;
+    observation: string;
+};
+
+function parseRouteAssociations(value?: string | null): RouteAssociation[] {
+    if (!value) {
+        return [];
+    }
+
+    return value
+        .split(/\r?\n/u)
+        .map((line) => line.trim())
+        .filter(Boolean)
+        .map((line) => {
+            const [routeId, required, distance, observation] = line.split('|');
+
+            return {
+                routeId: Number(routeId),
+                required: ['1', 'si', 'sí'].includes(required ?? ''),
+                distance: distance ?? '',
+                observation: observation ?? '',
+            };
+        })
+        .filter((item) => Number.isFinite(item.routeId));
+}
+
+function serializeRouteAssociations(associations: RouteAssociation[]): string {
+    return associations
+        .map((item) =>
+            [
+                item.routeId,
+                item.required ? '1' : '0',
+                item.distance,
+                item.observation,
+            ].join('|'),
+        )
+        .join('\n');
+}
+
+function RouteAssociationsField({
+    routes,
+    associations,
+    routeLinksText,
+    error,
+    onToggle,
+    onUpdate,
+}: {
+    routes: CatalogOption[];
+    associations: RouteAssociation[];
+    routeLinksText: string;
+    error?: string;
+    onToggle: (routeId: number, checked: boolean) => void;
+    onUpdate: (
+        routeId: number,
+        values: Partial<Omit<RouteAssociation, 'routeId'>>,
+    ) => void;
+}) {
+    return (
+        <div className="grid gap-3 md:col-span-3">
+            <input
+                type="hidden"
+                name="route_links_text"
+                value={routeLinksText}
+            />
+            <div className="grid gap-1">
+                <Label>Rutas asociadas</Label>
+                <p className="text-sm text-muted-foreground">
+                    Selecciona rutas y completa km/observación sin escribir IDs.
+                </p>
+            </div>
+            <div className="grid gap-3 md:grid-cols-2">
+                {routes.map((route) => {
+                    const association = associations.find(
+                        (item) => item.routeId === route.id,
+                    );
+                    const checked = association !== undefined;
+
+                    return (
+                        <div
+                            key={route.id}
+                            className={cn(
+                                'grid gap-3 rounded-2xl border p-3 transition-colors',
+                                checked
+                                    ? 'border-primary bg-primary/5'
+                                    : 'bg-card',
+                            )}
+                        >
+                            <label className="flex items-start gap-3">
+                                <Checkbox
+                                    checked={checked}
+                                    onCheckedChange={(value) =>
+                                        onToggle(route.id, value === true)
+                                    }
+                                />
+                                <span className="grid gap-1">
+                                    <span className="text-sm font-semibold">
+                                        {route.name}
+                                    </span>
+                                    <span className="text-xs text-muted-foreground">
+                                        Ruta #{route.id}
+                                    </span>
+                                </span>
+                            </label>
+
+                            {association && (
+                                <div className="grid gap-3 sm:grid-cols-2">
+                                    <CheckboxField
+                                        id={`route_required_${route.id}`}
+                                        name={`route_required_${route.id}`}
+                                        label="Obligatorio"
+                                        defaultChecked={association.required}
+                                        onCheckedChange={(checked) =>
+                                            onUpdate(route.id, {
+                                                required: checked,
+                                            })
+                                        }
+                                    />
+                                    <div className="grid gap-2">
+                                        <Label
+                                            htmlFor={`route_distance_${route.id}`}
+                                        >
+                                            Km desde inicio
+                                        </Label>
+                                        <Input
+                                            id={`route_distance_${route.id}`}
+                                            type="number"
+                                            min="0"
+                                            step="0.001"
+                                            value={association.distance}
+                                            onChange={(event) =>
+                                                onUpdate(route.id, {
+                                                    distance:
+                                                        event.currentTarget
+                                                            .value,
+                                                })
+                                            }
+                                            placeholder="Ej. 4.5"
+                                        />
+                                    </div>
+                                    <div className="grid gap-2 sm:col-span-2">
+                                        <Label
+                                            htmlFor={`route_observation_${route.id}`}
+                                        >
+                                            Observación en ruta
+                                        </Label>
+                                        <Input
+                                            id={`route_observation_${route.id}`}
+                                            value={association.observation}
+                                            onChange={(event) =>
+                                                onUpdate(route.id, {
+                                                    observation:
+                                                        event.currentTarget
+                                                            .value,
+                                                })
+                                            }
+                                            placeholder="Ej. Parada obligatoria"
+                                        />
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    );
+                })}
+            </div>
+            <InputError message={error} />
+        </div>
+    );
+}
+
 type CatalogSelectProps = {
     id: string;
     name: string;
@@ -543,6 +847,7 @@ type CatalogSelectProps = {
     defaultValue?: number | null;
     error?: string;
     required?: boolean;
+    onValueChange?: (value: string) => void;
 };
 
 function CatalogSelect({
@@ -554,6 +859,7 @@ function CatalogSelect({
     defaultValue,
     error,
     required = true,
+    onValueChange,
 }: CatalogSelectProps) {
     return (
         <div className="grid gap-2">
@@ -564,6 +870,7 @@ function CatalogSelect({
                     defaultValue == null ? undefined : String(defaultValue)
                 }
                 required={required}
+                onValueChange={onValueChange}
             >
                 <SelectTrigger
                     id={id}
@@ -665,11 +972,13 @@ function CheckboxField({
     name,
     label,
     defaultChecked,
+    onCheckedChange,
 }: {
     id: string;
     name: string;
     label: string;
     defaultChecked: boolean;
+    onCheckedChange?: (checked: boolean) => void;
 }) {
     return (
         <div className="flex items-center gap-2">
@@ -678,6 +987,7 @@ function CheckboxField({
                 name={name}
                 value="1"
                 defaultChecked={defaultChecked}
+                onCheckedChange={(value) => onCheckedChange?.(value === true)}
             />
             <Label htmlFor={id}>{label}</Label>
         </div>
