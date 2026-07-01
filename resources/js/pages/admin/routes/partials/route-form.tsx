@@ -3,6 +3,7 @@ import { ImageIcon, MapPin, Mountain, Plus, Trash2 } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 import RouteController from '@/actions/App/Http/Controllers/Admin/RouteController';
 import RouteGeometryEditor from '@/components/admin/routes/route-geometry-editor';
+import ImageFileInput from '@/components/image-file-input';
 import InputError from '@/components/input-error';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -164,9 +165,7 @@ export default function RouteForm({
     );
     const [newPois, setNewPois] = useState<NewRoutePoi[]>([]);
     const [activePoiKey, setActivePoiKey] = useState<string | null>(null);
-    const [additionalImagePreviews, setAdditionalImagePreviews] = useState<
-        { name: string; url: string }[]
-    >([]);
+    const [isCompressing, setIsCompressing] = useState(false);
     const requiredExperience = useMemo(
         () => selectedExperience.join('\n'),
         [selectedExperience],
@@ -234,15 +233,6 @@ export default function RouteForm({
             ),
         );
         setActivePoiKey(null);
-    };
-
-    const previewAdditionalImages = (files: FileList | null) => {
-        setAdditionalImagePreviews(
-            Array.from(files ?? []).map((file) => ({
-                name: file.name,
-                url: URL.createObjectURL(file),
-            })),
-        );
     };
 
     const calculateElevation = useCallback(async () => {
@@ -633,23 +623,23 @@ export default function RouteForm({
                                         />
                                     </div>
                                 )}
-                                <Input
+                                <ImageFileInput
                                     id="main_image"
                                     name="main_image"
-                                    type="file"
-                                    accept="image/*"
                                     required={
                                         !isEdit && !route?.main_image_path
                                     }
-                                    aria-invalid={Boolean(
+                                    invalid={Boolean(
                                         errors.main_image ??
                                         errors.main_image_path,
                                     )}
+                                    onProcessingChange={setIsCompressing}
                                 />
                                 <p className="text-xs text-muted-foreground">
-                                    Formatos de imagen. Límite: 5 MB. En
-                                    edición, sube otra imagen solo si quieres
-                                    reemplazar la portada.
+                                    Formatos de imagen. Si supera 5 MB se
+                                    optimiza automáticamente. En edición, sube
+                                    otra imagen solo si quieres reemplazar la
+                                    portada.
                                 </p>
                                 <InputError message={errors.main_image} />
                                 <InputError message={errors.main_image_path} />
@@ -659,46 +649,19 @@ export default function RouteForm({
                                 <Label htmlFor="additional_images">
                                     Imágenes adicionales
                                 </Label>
-                                <Input
+                                <ImageFileInput
                                     id="additional_images"
                                     name="additional_images[]"
-                                    type="file"
-                                    accept="image/*"
                                     multiple
-                                    onChange={(event) =>
-                                        previewAdditionalImages(
-                                            event.currentTarget.files,
-                                        )
-                                    }
-                                    aria-invalid={Boolean(
-                                        errors.additional_images,
-                                    )}
+                                    maxFiles={8}
+                                    invalid={Boolean(errors.additional_images)}
+                                    onProcessingChange={setIsCompressing}
                                 />
                                 <p className="text-xs text-muted-foreground">
-                                    Puedes seleccionar varias fotos del
-                                    trayecto. Límite: 5 MB por archivo.
+                                    Puedes seleccionar varias fotos del trayecto
+                                    (hasta 8). Cada una se optimiza a 5 MB o
+                                    menos automáticamente.
                                 </p>
-                                {additionalImagePreviews.length > 0 && (
-                                    <div className="flex gap-3 overflow-x-auto rounded-2xl border bg-muted/20 p-3">
-                                        {additionalImagePreviews.map(
-                                            (image) => (
-                                                <figure
-                                                    key={`${image.name}-${image.url}`}
-                                                    className="min-w-40 overflow-hidden rounded-xl border bg-card"
-                                                >
-                                                    <img
-                                                        src={image.url}
-                                                        alt={image.name}
-                                                        className="h-28 w-full object-cover"
-                                                    />
-                                                    <figcaption className="truncate p-2 text-xs text-muted-foreground">
-                                                        {image.name}
-                                                    </figcaption>
-                                                </figure>
-                                            ),
-                                        )}
-                                    </div>
-                                )}
                                 <InputError
                                     message={errors.additional_images}
                                 />
@@ -1137,7 +1100,11 @@ export default function RouteForm({
                                     </Link>
                                 </Button>
                                 <Button
-                                    disabled={processing || !requiredExperience}
+                                    disabled={
+                                        processing ||
+                                        isCompressing ||
+                                        !requiredExperience
+                                    }
                                 >
                                     {isEdit ? 'Guardar cambios' : 'Crear ruta'}
                                 </Button>

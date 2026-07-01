@@ -48,6 +48,12 @@ RUN { \
         echo 'opcache.memory_consumption=256'; \
     } > /usr/local/etc/php/conf.d/opcache.ini \
     && { \
+        echo 'upload_max_filesize = 25M'; \
+        echo 'post_max_size = 90M'; \
+        echo 'max_file_uploads = 25'; \
+        echo 'memory_limit = 256M'; \
+    } > /usr/local/etc/php/conf.d/uploads.ini \
+    && { \
         echo 'clear_env = no'; \
         echo 'catch_workers_output = yes'; \
     } >> /usr/local/etc/php-fpm.d/www.conf

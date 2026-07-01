@@ -1,6 +1,7 @@
 import { Form, Link } from '@inertiajs/react';
 import { useMemo, useState } from 'react';
 import PoiController from '@/actions/App/Http/Controllers/Admin/PoiController';
+import ImageFileInput from '@/components/image-file-input';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import {
@@ -101,9 +102,7 @@ export default function PoiForm({
     const [selectedCategoryId, setSelectedCategoryId] = useState(
         poi?.poi_category_id == null ? '' : String(poi.poi_category_id),
     );
-    const [imagePreviews, setImagePreviews] = useState<
-        { name: string; url: string }[]
-    >([]);
+    const [isCompressing, setIsCompressing] = useState(false);
     const [routeAssociations, setRouteAssociations] = useState<
         RouteAssociation[]
     >(() => parseRouteAssociations(poi?.route_links_text));
@@ -115,15 +114,6 @@ export default function PoiForm({
         categories
             .find((category) => String(category.id) === selectedCategoryId)
             ?.name.toLocaleLowerCase() ?? '';
-
-    const previewImages = (files: FileList | null) => {
-        setImagePreviews(
-            Array.from(files ?? []).map((file) => ({
-                name: file.name,
-                url: URL.createObjectURL(file),
-            })),
-        );
-    };
 
     const toggleRouteAssociation = (routeId: number, checked: boolean) => {
         setRouteAssociations((current) => {
@@ -308,43 +298,22 @@ export default function PoiForm({
 
                             <div className="grid gap-2">
                                 <Label htmlFor="images">Subir imágenes</Label>
-                                <Input
+                                <ImageFileInput
                                     id="images"
                                     name="images[]"
-                                    type="file"
-                                    accept="image/*"
                                     multiple
-                                    onChange={(event) =>
-                                        previewImages(event.currentTarget.files)
-                                    }
-                                    aria-invalid={Boolean(errors.images)}
+                                    maxFiles={8}
+                                    invalid={Boolean(errors.images)}
+                                    onProcessingChange={setIsCompressing}
                                 />
                                 <p className="text-xs text-muted-foreground">
-                                    Puedes subir fotos del POI. También se
-                                    conservan las rutas internas existentes si
-                                    aparecen abajo.
+                                    Puedes subir varias fotos del POI (hasta 8).
+                                    Cada una se optimiza a 5 MB o menos
+                                    automáticamente. También se conservan las
+                                    rutas internas existentes si aparecen abajo.
                                 </p>
                                 <InputError message={errors.images} />
                                 <InputError message={errors['images.0']} />
-                                {imagePreviews.length > 0 && (
-                                    <div className="flex gap-3 overflow-x-auto rounded-xl border bg-muted/20 p-3">
-                                        {imagePreviews.map((image) => (
-                                            <figure
-                                                key={`${image.name}-${image.url}`}
-                                                className="min-w-36 overflow-hidden rounded-2xl border bg-card"
-                                            >
-                                                <img
-                                                    src={image.url}
-                                                    alt={image.name}
-                                                    className="h-24 w-full object-cover"
-                                                />
-                                                <figcaption className="truncate p-2 text-xs text-muted-foreground">
-                                                    {image.name}
-                                                </figcaption>
-                                            </figure>
-                                        ))}
-                                    </div>
-                                )}
                             </div>
 
                             <TextAreaField
@@ -655,7 +624,7 @@ export default function PoiForm({
                                     Cancelar
                                 </Link>
                             </Button>
-                            <Button disabled={processing}>
+                            <Button disabled={processing || isCompressing}>
                                 {isEdit ? 'Guardar cambios' : 'Crear POI'}
                             </Button>
                         </CardFooter>

@@ -32,6 +32,7 @@ import PoiSuggestionController from '@/actions/App/Http/Controllers/Cyclist/PoiS
 import RouteRatingController from '@/actions/App/Http/Controllers/Cyclist/RouteRatingController';
 import TrackController from '@/actions/App/Http/Controllers/Cyclist/TrackController';
 import Heading from '@/components/heading';
+import ImageFileInput from '@/components/image-file-input';
 import InputError from '@/components/input-error';
 import { MobileTabs } from '@/components/mobile-tabs';
 import RouteMap from '@/components/routes/route-map';
@@ -684,6 +685,7 @@ function Metric({ label, value }: { label: string; value: string }) {
 
 function FavoriteRatingPanel({ route }: { route: CyclingRouteMapItem }) {
     const userRating = route.user_interaction.rating;
+    const [isCompressing, setIsCompressing] = useState(false);
     const ratingAction = userRating
         ? RouteRatingController.update.form(userRating.id)
         : RouteRatingController.store.form(route.slug);
@@ -840,18 +842,22 @@ function FavoriteRatingPanel({ route }: { route: CyclingRouteMapItem }) {
                                         <Label htmlFor="rating_media">
                                             Fotos o videos de tu experiencia
                                         </Label>
-                                        <Input
+                                        <ImageFileInput
                                             id="rating_media"
                                             name="media[]"
-                                            type="file"
                                             accept="image/*,video/mp4,video/quicktime,video/webm"
                                             multiple
-                                            aria-invalid={Boolean(errors.media)}
+                                            maxFiles={4}
+                                            invalid={Boolean(errors.media)}
+                                            onProcessingChange={
+                                                setIsCompressing
+                                            }
                                         />
                                         <p className="text-xs text-muted-foreground">
-                                            Hasta 4 archivos. Formatos:
-                                            imágenes, MP4, MOV o WebM. Límite:
-                                            20 MB por archivo.
+                                            Hasta 4 archivos. Las fotos se
+                                            optimizan a 5 MB o menos; los videos
+                                            (MP4, MOV o WebM) admiten hasta 20
+                                            MB.
                                         </p>
                                         <InputError message={errors.media} />
                                         <InputError
@@ -874,7 +880,11 @@ function FavoriteRatingPanel({ route }: { route: CyclingRouteMapItem }) {
                                     )}
 
                                     <div className="flex flex-wrap gap-2">
-                                        <Button disabled={processing}>
+                                        <Button
+                                            disabled={
+                                                processing || isCompressing
+                                            }
+                                        >
                                             <Send data-icon="inline-start" />
                                             {userRating
                                                 ? 'Actualizar valoración'
@@ -1789,6 +1799,7 @@ function IncidentReportForm({
 }) {
     const latitudeRef = useRef<HTMLInputElement>(null);
     const longitudeRef = useRef<HTMLInputElement>(null);
+    const [isCompressing, setIsCompressing] = useState(false);
 
     const fillCurrentLocation = () => {
         if (!navigator.geolocation) {
@@ -1923,15 +1934,18 @@ function IncidentReportForm({
 
                             <div className="grid gap-2 md:col-span-2">
                                 <Label htmlFor="incident_photo">
-                                    Foto opcional, máximo 5 MB
+                                    Foto opcional
                                 </Label>
-                                <Input
+                                <ImageFileInput
                                     id="incident_photo"
                                     name="photo"
-                                    type="file"
-                                    accept="image/*"
-                                    aria-invalid={Boolean(errors.photo)}
+                                    invalid={Boolean(errors.photo)}
+                                    onProcessingChange={setIsCompressing}
                                 />
+                                <p className="text-xs text-muted-foreground">
+                                    Si la foto supera 5 MB se optimiza
+                                    automáticamente antes de enviarla.
+                                </p>
                                 <InputError message={errors.photo} />
                             </div>
 
@@ -1943,7 +1957,7 @@ function IncidentReportForm({
                                 >
                                     Usar mi ubicación GPS
                                 </Button>
-                                <Button disabled={processing}>
+                                <Button disabled={processing || isCompressing}>
                                     Enviar incidencia
                                 </Button>
                             </div>
