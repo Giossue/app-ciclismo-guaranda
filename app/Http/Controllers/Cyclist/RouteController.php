@@ -56,6 +56,7 @@ class RouteController extends Controller
             'category:id,name',
             'difficulty:id,name',
             'geometry',
+            'images',
             'metrics.transportMode:id,name',
             'recommendations',
             'observations',
@@ -129,6 +130,18 @@ class RouteController extends Controller
             'end_longitude' => (float) $route->end_longitude,
             'road_type' => $route->road_type,
             'main_image_path' => $route->main_image_path,
+            'gallery' => $route->relationLoaded('images')
+                ? $route->images
+                    ->sortByDesc('is_main')
+                    ->map(fn ($image): array => [
+                        'id' => $image->id,
+                        'image_path' => $image->image_path,
+                        'description' => $image->description,
+                        'is_main' => (bool) $image->is_main,
+                    ])
+                    ->values()
+                    ->all()
+                : [],
             'route_version' => $route->route_version,
             'geojson' => $route->geometry?->geojson,
             'category' => $route->category === null ? null : ['id' => $route->category->id, 'name' => $route->category->name],

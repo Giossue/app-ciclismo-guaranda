@@ -21,6 +21,13 @@ export type RoutePoiImage = {
     description: string | null;
 };
 
+export type RouteGalleryImage = {
+    id: number;
+    image_path: string;
+    description: string | null;
+    is_main: boolean;
+};
+
 export type RoutePoi = {
     id: number;
     name: string;
@@ -104,6 +111,7 @@ export type CyclingRouteMapItem = {
     end_longitude: number;
     road_type: string | null;
     main_image_path: string | null;
+    gallery: RouteGalleryImage[];
     route_version: number;
     geojson: RouteGeoJson | null;
     category: CatalogOption | null;

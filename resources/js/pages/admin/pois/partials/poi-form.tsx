@@ -277,7 +277,7 @@ export default function PoiForm({
                                 . Horarios: <code>día|abre|cierra|nota</code>.
                             </CardDescription>
                         </CardHeader>
-                        <CardContent className="grid gap-4 md:grid-cols-3">
+                        <CardContent className="grid gap-5">
                             <RouteAssociationsField
                                 routes={routes}
                                 associations={routeAssociations}
@@ -297,7 +297,7 @@ export default function PoiForm({
                             />
 
                             <div className="grid gap-2">
-                                <Label htmlFor="images">Subir imágenes</Label>
+                                <Label htmlFor="images">Imágenes del POI</Label>
                                 <ImageFileInput
                                     id="images"
                                     name="images[]"
@@ -307,10 +307,9 @@ export default function PoiForm({
                                     onProcessingChange={setIsCompressing}
                                 />
                                 <p className="text-xs text-muted-foreground">
-                                    Puedes subir varias fotos del POI (hasta 8).
-                                    Cada una se optimiza a 5 MB o menos
-                                    automáticamente. También se conservan las
-                                    rutas internas existentes si aparecen abajo.
+                                    Puedes seleccionar varias fotos del POI
+                                    (hasta 8). Cada una se optimiza a 5 MB o
+                                    menos automáticamente.
                                 </p>
                                 <InputError message={errors.images} />
                                 <InputError message={errors['images.0']} />
@@ -319,7 +318,7 @@ export default function PoiForm({
                             <TextAreaField
                                 id="images_text"
                                 name="images_text"
-                                label="Imágenes existentes o rutas internas"
+                                label="Imágenes ya existentes o rutas internas"
                                 defaultValue={poi?.images_text}
                                 error={errors.images_text}
                                 placeholder="pois/mirador.jpg|Vista principal"

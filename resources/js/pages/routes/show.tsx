@@ -33,7 +33,8 @@ import RouteRatingController from '@/actions/App/Http/Controllers/Cyclist/RouteR
 import TrackController from '@/actions/App/Http/Controllers/Cyclist/TrackController';
 import Heading from '@/components/heading';
 import ImageFileInput from '@/components/image-file-input';
-import ImageWithFallback from '@/components/image-with-fallback';
+import ImageGallery from '@/components/image-gallery';
+import type { GalleryImage } from '@/components/image-gallery';
 import InputError from '@/components/input-error';
 import { MobileTabs } from '@/components/mobile-tabs';
 import RouteMap from '@/components/routes/route-map';
@@ -356,20 +357,24 @@ function RouteHero({ route }: { route: CyclingRouteMapItem }) {
         </div>
     );
 
+    const images: GalleryImage[] =
+        route.gallery.length > 0
+            ? route.gallery.map((image) => ({
+                  src: mediaUrl(image.image_path),
+                  alt: route.name,
+                  description: image.description,
+              }))
+            : route.main_image_path
+              ? [{ src: mediaUrl(route.main_image_path), alt: route.name }]
+              : [];
+
     return (
         <Card className="overflow-hidden">
-            {route.main_image_path ? (
-                <div className="relative min-h-44 md:min-h-64">
-                    <ImageWithFallback
-                        src={mediaUrl(route.main_image_path)}
-                        alt={route.name}
-                        className="absolute inset-0 size-full object-cover"
-                        fallback={placeholder}
-                    />
-                </div>
-            ) : (
-                placeholder
-            )}
+            <ImageGallery
+                images={images}
+                slideClassName="h-44 md:h-64"
+                fallback={placeholder}
+            />
         </Card>
     );
 }
@@ -1432,21 +1437,16 @@ function formatStorageEstimate(estimate: StorageEstimate | null): string {
 }
 
 function PoiCard({ poi }: { poi: RoutePoi }) {
-    const image = poi.images?.[0];
+    const images: GalleryImage[] = (poi.images ?? []).map((image) => ({
+        src: mediaUrl(image.image_path),
+        alt: image.description ?? poi.name,
+        description: image.description,
+    }));
 
     return (
         <div className="flex flex-col gap-3 overflow-hidden rounded-2xl border bg-card">
-            {image && (
-                <ImageWithFallback
-                    src={mediaUrl(image.image_path)}
-                    alt={image.description ?? poi.name}
-                    className="h-32 w-full object-cover"
-                    fallback={
-                        <div className="flex h-32 w-full items-center justify-center bg-muted text-muted-foreground">
-                            <ImageIcon className="size-7" />
-                        </div>
-                    }
-                />
+            {images.length > 0 && (
+                <ImageGallery images={images} slideClassName="h-40" />
             )}
             <div className="flex flex-col gap-1 p-3">
                 <div className="flex flex-wrap items-center gap-2">
