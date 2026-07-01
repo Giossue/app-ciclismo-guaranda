@@ -422,7 +422,8 @@
     }
 
     .ueb-admin-page {
-        width: min(calc(100% - (var(--page-pad-x) * 2)), var(--page-max-admin));
+        width: 100%;
+        max-width: var(--page-max-admin);
         margin-inline: auto;
     }
 
