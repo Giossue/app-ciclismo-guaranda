@@ -734,7 +734,31 @@
         font-size: var(--fs-sm);
         line-height: 1.45;
         font-weight: 600;
-        word-break: break-word;
+        overflow-wrap: anywhere;
+        word-break: normal;
+    }
+
+    .ueb-message-markdown {
+        display: grid;
+        gap: 10px;
+    }
+
+    .ueb-message-markdown p {
+        margin: 0;
+    }
+
+    .ueb-message-markdown strong {
+        font-weight: 900;
+    }
+
+    .ueb-message-markdown ul {
+        margin: 0;
+        padding-left: 1.15rem;
+    }
+
+    .ueb-message-markdown li {
+        margin: 2px 0;
+        padding-left: 0.1rem;
     }
 
     .ueb-message-row.bot .ueb-message-bubble {

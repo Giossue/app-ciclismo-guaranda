@@ -5,9 +5,11 @@ import {
     MessageSquareText,
     Plus,
     Send,
+    Trash2,
     WifiOff,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import type { FormEvent, ReactNode } from 'react';
 import ChatController from '@/actions/App/Http/Controllers/Cyclist/ChatController';
 import InputError from '@/components/input-error';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -112,6 +114,23 @@ export default function ChatIndex({
                                     'Pregunta sobre rutas y puntos útiles'}
                             </p>
                         </div>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            asChild
+                            className="h-9 shrink-0 rounded-xl px-3"
+                        >
+                            <Link href="/chat?new=1" replace prefetch>
+                                <Plus className="size-4" />
+                                <span>Nueva</span>
+                            </Link>
+                        </Button>
+                        {activeConversation && (
+                            <DeleteConversationForm
+                                conversation={activeConversation}
+                                compact
+                            />
+                        )}
                         <HistorySheet
                             conversations={conversations}
                             activeConversation={activeConversation}
@@ -284,7 +303,8 @@ function HistorySheet({
                 <SheetHeader className="border-b p-4 pr-10">
                     <SheetTitle>Historial</SheetTitle>
                     <SheetDescription>
-                        Continúa una consulta anterior o empieza una nueva.
+                        Continúa una consulta anterior, oculta una conversación
+                        o empieza una nueva.
                     </SheetDescription>
                 </SheetHeader>
 
@@ -298,33 +318,40 @@ function HistorySheet({
 
                     <div className="flex flex-col gap-2">
                         {conversations.map((conversation) => (
-                            <Link
+                            <div
                                 key={conversation.id}
-                                href={`/chat?conversation=${conversation.id}`}
-                                replace
-                                prefetch
                                 className={cn(
-                                    'rounded-2xl border bg-card p-3 text-sm transition-colors hover:bg-accent/70',
+                                    'flex items-start gap-2 rounded-2xl border bg-card p-2 text-sm transition-colors hover:bg-accent/70',
                                     activeConversation?.id ===
                                         conversation.id &&
                                         'border-primary bg-secondary text-secondary-foreground',
                                 )}
                             >
-                                <div className="flex items-start justify-between gap-2">
-                                    <strong className="line-clamp-1">
-                                        {conversation.title ??
-                                            `Consulta ${conversation.id}`}
-                                    </strong>
-                                    <span className="text-xs text-muted-foreground">
-                                        {conversation.messages_count}
-                                    </span>
-                                </div>
-                                {conversation.last_message && (
-                                    <p className="mt-1 line-clamp-2 text-muted-foreground">
-                                        {conversation.last_message}
-                                    </p>
-                                )}
-                            </Link>
+                                <Link
+                                    href={`/chat?conversation=${conversation.id}`}
+                                    replace
+                                    prefetch
+                                    className="min-w-0 flex-1 rounded-xl p-1"
+                                >
+                                    <div className="flex items-start justify-between gap-2">
+                                        <strong className="line-clamp-1">
+                                            {conversation.title ??
+                                                `Consulta ${conversation.id}`}
+                                        </strong>
+                                        <span className="text-xs text-muted-foreground">
+                                            {conversation.messages_count}
+                                        </span>
+                                    </div>
+                                    {conversation.last_message && (
+                                        <p className="mt-1 line-clamp-2 text-muted-foreground">
+                                            {conversation.last_message}
+                                        </p>
+                                    )}
+                                </Link>
+                                <DeleteConversationForm
+                                    conversation={conversation}
+                                />
+                            </div>
                         ))}
 
                         {conversations.length === 0 && (
@@ -339,6 +366,50 @@ function HistorySheet({
     );
 }
 
+function DeleteConversationForm({
+    conversation,
+    compact = false,
+}: {
+    conversation: Pick<ChatConversation, 'id' | 'title'>;
+    compact?: boolean;
+}) {
+    const title = conversation.title ?? `Consulta ${conversation.id}`;
+
+    return (
+        <Form
+            {...ChatController.destroy.form(conversation.id)}
+            options={{ preserveScroll: true }}
+            onSubmit={(event: FormEvent<HTMLFormElement>) => {
+                if (
+                    !window.confirm(
+                        `¿Ocultar "${title}" de tu historial? La conversación seguirá existiendo en la base para auditoría.`,
+                    )
+                ) {
+                    event.preventDefault();
+                }
+            }}
+        >
+            {({ processing }) => (
+                <Button
+                    type="submit"
+                    variant={compact ? 'outline' : 'ghost'}
+                    size="icon"
+                    className={cn(
+                        compact
+                            ? 'size-9 shrink-0 rounded-xl text-destructive hover:border-destructive hover:text-destructive'
+                            : 'size-9 shrink-0 rounded-xl text-destructive hover:bg-destructive/10 hover:text-destructive',
+                    )}
+                    disabled={processing}
+                    aria-label={`Ocultar ${title}`}
+                    title="Ocultar de mi historial"
+                >
+                    <Trash2 className="size-4" />
+                </Button>
+            )}
+        </Form>
+    );
+}
+
 function MessageBubble({ message }: { message: ChatMessage }) {
     const isUser = message.role === 'user';
 
@@ -349,7 +420,7 @@ function MessageBubble({ message }: { message: ChatMessage }) {
             </div>
             <div className="flex flex-col gap-1">
                 <div className="ueb-message-bubble">
-                    <p className="whitespace-pre-wrap">{message.message}</p>
+                    <MarkdownMessage>{message.message}</MarkdownMessage>
                 </div>
                 {message.sent_at && (
                     <span className="px-1 font-bold text-[var(--fs-xs)] text-[var(--text-muted)]">
@@ -359,4 +430,125 @@ function MessageBubble({ message }: { message: ChatMessage }) {
             </div>
         </div>
     );
+}
+
+function MarkdownMessage({ children }: { children: string }) {
+    const blocks = parseMarkdownBlocks(children);
+
+    return (
+        <div className="ueb-message-markdown">
+            {blocks.map((block, index) => {
+                if (block.type === 'list') {
+                    return (
+                        <ul key={index}>
+                            {block.items.map((item, itemIndex) => (
+                                <li key={itemIndex}>
+                                    {renderInlineMarkdown(item)}
+                                </li>
+                            ))}
+                        </ul>
+                    );
+                }
+
+                return <p key={index}>{renderParagraph(block.lines)}</p>;
+            })}
+        </div>
+    );
+}
+
+type MarkdownBlock =
+    | {
+          type: 'paragraph';
+          lines: string[];
+      }
+    | {
+          type: 'list';
+          items: string[];
+      };
+
+function parseMarkdownBlocks(markdown: string): MarkdownBlock[] {
+    const blocks: MarkdownBlock[] = [];
+    const paragraphLines: string[] = [];
+    const listItems: string[] = [];
+
+    const flushParagraph = () => {
+        if (paragraphLines.length > 0) {
+            blocks.push({ type: 'paragraph', lines: [...paragraphLines] });
+            paragraphLines.length = 0;
+        }
+    };
+
+    const flushList = () => {
+        if (listItems.length > 0) {
+            blocks.push({ type: 'list', items: [...listItems] });
+            listItems.length = 0;
+        }
+    };
+
+    markdown
+        .replace(/\r\n/g, '\n')
+        .split('\n')
+        .forEach((rawLine) => {
+            const line = rawLine.trimEnd();
+
+            if (line.trim() === '') {
+                flushParagraph();
+                flushList();
+
+                return;
+            }
+
+            const bullet = line.match(/^\s*(?:[-*•]|\d+\.)\s+(.+)$/);
+
+            if (bullet?.[1]) {
+                flushParagraph();
+                listItems.push(bullet[1]);
+
+                return;
+            }
+
+            flushList();
+            paragraphLines.push(line.trimStart());
+        });
+
+    flushParagraph();
+    flushList();
+
+    return blocks.length > 0 ? blocks : [{ type: 'paragraph', lines: [''] }];
+}
+
+function renderParagraph(lines: string[]): ReactNode[] {
+    return lines.flatMap((line, index) => {
+        const nodes = renderInlineMarkdown(line);
+
+        if (index === lines.length - 1) {
+            return nodes;
+        }
+
+        return [...nodes, <br key={`br-${index}`} />];
+    });
+}
+
+function renderInlineMarkdown(text: string): ReactNode[] {
+    const nodes: ReactNode[] = [];
+    const strongPattern = /\*\*([^*]+)\*\*/g;
+    let lastIndex = 0;
+    let match: RegExpExecArray | null;
+
+    while ((match = strongPattern.exec(text)) !== null) {
+        if (match.index > lastIndex) {
+            nodes.push(text.slice(lastIndex, match.index));
+        }
+
+        nodes.push(
+            <strong key={`${match.index}-${match[1]}`}>{match[1]}</strong>,
+        );
+        lastIndex = strongPattern.lastIndex;
+    }
+
+    if (lastIndex < text.length) {
+        nodes.push(text.slice(lastIndex));
+    }
+
+    return nodes.length > 0 ? nodes : [text];
 }
