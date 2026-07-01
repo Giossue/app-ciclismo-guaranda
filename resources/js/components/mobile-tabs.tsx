@@ -34,9 +34,9 @@ export function MobileTabs({
 
     return (
         <section className={cn('flex min-h-0 flex-col gap-3', className)}>
-            <div className="-mx-4 overflow-x-auto border-y bg-card px-4 py-2 md:mx-0 md:rounded-lg md:border">
-                <div className="flex w-max min-w-full gap-2">
-                    {items.map((item) => {
+            <div className="overflow-x-auto py-1">
+                <div className="mx-auto flex w-max max-w-full overflow-hidden rounded-lg border bg-card">
+                    {items.map((item, index) => {
                         const active = item.value === activeItem.value;
 
                         return (
@@ -45,26 +45,14 @@ export function MobileTabs({
                                 type="button"
                                 onClick={() => setActiveValue(item.value)}
                                 className={cn(
-                                    'flex min-h-10 items-center justify-center gap-1 rounded-md border px-3 text-sm font-semibold whitespace-nowrap transition-colors',
+                                    'min-h-10 min-w-24 px-4 text-sm font-medium whitespace-nowrap transition-colors',
+                                    index > 0 && 'border-l',
                                     active
-                                        ? 'border-primary bg-primary text-primary-foreground'
-                                        : 'border-transparent bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground',
+                                        ? 'bg-foreground text-background'
+                                        : 'bg-card text-foreground hover:bg-muted',
                                 )}
                             >
                                 {item.label}
-                                {item.badge !== null &&
-                                    item.badge !== undefined && (
-                                        <span
-                                            className={cn(
-                                                'rounded-sm px-1.5 py-0.5 text-[10px]',
-                                                active
-                                                    ? 'bg-primary-foreground/20 text-primary-foreground'
-                                                    : 'bg-card text-foreground',
-                                            )}
-                                        >
-                                            {item.badge}
-                                        </span>
-                                    )}
                             </button>
                         );
                     })}
