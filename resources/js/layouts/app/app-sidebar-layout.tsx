@@ -17,7 +17,7 @@ export default function AppSidebarLayout({
                 className="overflow-x-hidden overflow-y-auto"
             >
                 <AppSidebarHeader breadcrumbs={breadcrumbs} />
-                <main className="safe-bottom-pad ueb-admin-page flex w-full flex-1 flex-col gap-[var(--page-gap)] px-0 py-[var(--page-pad-y)] md:px-0">
+                <main className="safe-bottom-pad ueb-admin-page flex flex-1 flex-col gap-[var(--page-gap)] px-0 pt-[var(--page-pad-y)] md:pb-[var(--page-pad-y)]">
                     {children}
                 </main>
                 <AppMobileNav />
