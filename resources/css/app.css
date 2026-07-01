@@ -188,7 +188,8 @@
         min-height: 100vh;
         min-height: 100svh;
         min-height: 100dvh;
-        overflow: hidden;
+        overflow-x: hidden;
+        overflow-y: auto;
         background-color: var(--bg-color);
         color: var(--text-color);
         font-family: var(--font-sans);
