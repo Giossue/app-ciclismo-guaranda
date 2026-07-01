@@ -1,5 +1,5 @@
 import { Head, Link, usePage } from '@inertiajs/react';
-import { Bell, LogOut, Palette, ShieldCheck, UserRound } from 'lucide-react';
+import { LogOut, Palette, ShieldCheck, UserRound } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { logout } from '@/routes';
 import type { Auth } from '@/types';
@@ -44,26 +44,14 @@ export default function MenuIndex() {
             <Head title="Menú" />
 
             <div className="ueb-page flex flex-col gap-5 md:w-full">
-                {/* Welcoming Header & Notifications Button */}
-                <div className="flex items-center justify-between border-b border-[var(--input-border)]/40 py-2">
-                    <div className="flex flex-col gap-0.5">
-                        <span className="text-[10px] font-black tracking-widest text-[var(--text-secondary)] uppercase">
-                            Hola, {auth?.user?.name ?? 'Ciclista'}
-                        </span>
-                        <h1 className="text-2xl font-black tracking-tight text-[var(--text-color)]">
-                            Menú
-                        </h1>
-                    </div>
-
-                    {/* Notification Bell Icon */}
-                    <button
-                        type="button"
-                        className="relative flex size-11 items-center justify-center rounded-2xl border border-[var(--input-border)] bg-[var(--input-bg)] text-[var(--text-color)] transition-all duration-200 hover:border-[#b2f000]/20 hover:bg-[var(--input-border)] hover:text-[#b2f000] active:scale-95"
-                        aria-label="Notificaciones"
-                    >
-                        <Bell className="size-5" />
-                        <span className="absolute top-3.5 right-3.5 size-2 rounded-full bg-[#b2f000] shadow-[0_0_8px_#b2f000]" />
-                    </button>
+                {/* Welcoming Header */}
+                <div className="flex flex-col gap-0.5 border-b border-[var(--input-border)]/40 py-2">
+                    <span className="text-[10px] font-black tracking-widest text-[var(--text-secondary)] uppercase">
+                        Hola, {auth?.user?.name ?? 'Ciclista'}
+                    </span>
+                    <h1 className="text-2xl font-black tracking-tight text-[var(--text-color)]">
+                        Menú
+                    </h1>
                 </div>
 
                 {/* Active Session Info */}

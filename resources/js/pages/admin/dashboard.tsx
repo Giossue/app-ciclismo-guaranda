@@ -27,28 +27,23 @@ export default function AdminDashboard({ metrics }: Props) {
             <Head title="Resumen" />
 
             <div className="flex flex-col gap-5">
-                <section className="grid grid-cols-2 gap-3">
+                <section className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
                     {metricItems.map(([key, metric]) => (
-                        <Card key={key}>
-                            <CardHeader className="gap-3">
-                                <div className="flex items-start justify-between gap-2">
-                                    <CardDescription>
-                                        {metric.label}
-                                    </CardDescription>
-                                    <Badge
-                                        variant="outline"
-                                        className="shrink-0"
-                                    >
-                                        <Activity data-icon="inline-start" />
-                                        Activo
-                                    </Badge>
-                                </div>
+                        <Card key={key} className="min-w-0">
+                            <CardHeader className="gap-2">
+                                <Badge variant="outline" className="w-fit">
+                                    <Activity data-icon="inline-start" />
+                                    Activo
+                                </Badge>
+                                <CardDescription className="break-words">
+                                    {metric.label}
+                                </CardDescription>
                                 <CardTitle className="text-3xl">
                                     {metric.value.toLocaleString()}
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <p className="text-sm text-muted-foreground">
+                                <p className="text-sm break-words text-muted-foreground">
                                     {metric.description}
                                 </p>
                             </CardContent>
