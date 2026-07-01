@@ -47,7 +47,7 @@ export default function Welcome() {
                     </section>
 
                     <section className="ueb-auth-card">
-                        <div className="flex rounded-2xl bg-[var(--tab-bg)] p-1">
+                        <div className="flex rounded-2xl border border-[var(--input-border)] bg-[var(--input-bg)] p-1">
                             {auth.user ? (
                                 <Button className="flex-1" asChild>
                                     <Link href={homePath(auth)}>Entrar</Link>
@@ -58,7 +58,7 @@ export default function Welcome() {
                                         <Link href={login()}>Ingresar</Link>
                                     </Button>
                                     <Button
-                                        className="flex-1"
+                                        className="flex-1 text-[var(--text-secondary)] hover:bg-[var(--panel-soft)] hover:text-[var(--text-color)]"
                                         asChild
                                         variant="ghost"
                                     >
@@ -68,21 +68,21 @@ export default function Welcome() {
                             )}
                         </div>
 
-                        <div className="featured-card relative flex min-h-[220px] flex-col justify-between overflow-hidden rounded-3xl bg-[linear-gradient(135deg,#4fad00_0%,#1a5c00_100%)] p-5 text-white shadow-[0_8px_16px_rgb(79_173_0_/_0.16)]">
+                        <div className="featured-card relative flex min-h-[220px] flex-col justify-between overflow-hidden rounded-3xl border border-[#b2f000]/20 bg-gradient-to-br from-[#1a380a] to-[#0f1f06] p-5 text-white shadow-[0_8px_20px_var(--shadow-color)]">
                             <div className="relative z-10 flex gap-2">
-                                <span className="rounded-xl bg-[#ffd500] px-2.5 py-1.5 font-black text-[var(--fs-xs)] text-black uppercase">
+                                <span className="rounded-xl bg-[#b2f000] px-2.5 py-1.5 font-black text-[#050605] text-[var(--fs-xs)] uppercase shadow-sm">
                                     Android
                                 </span>
-                                <span className="rounded-xl border border-white/30 bg-white/20 px-2.5 py-1.5 font-black text-[var(--fs-xs)] text-white uppercase backdrop-blur">
+                                <span className="rounded-xl border border-white/20 bg-white/10 px-2.5 py-1.5 font-black text-[var(--fs-xs)] text-white uppercase backdrop-blur-sm">
                                     Mobile first
                                 </span>
                             </div>
                             <MountainLines />
                             <div className="relative z-10">
-                                <h2 className="mb-2 leading-tight font-black tracking-[-0.04em] text-[var(--fs-xl)]">
+                                <h2 className="mb-2 leading-tight font-black tracking-[-0.04em] text-[var(--fs-xl)] text-white">
                                     Rutas cicloturísticas reales
                                 </h2>
-                                <div className="flex flex-wrap gap-3 font-bold text-[var(--fs-xs)] opacity-95">
+                                <div className="flex flex-wrap gap-3 font-bold text-[#b2f000] text-[var(--fs-xs)] opacity-95">
                                     <span className="inline-flex items-center gap-1">
                                         <MapPinned className="size-4" /> Mapas
                                     </span>
@@ -112,12 +112,21 @@ export default function Welcome() {
                         </div>
 
                         <div className="grid gap-2">
-                            <Button asChild size="lg">
+                            <Button
+                                asChild
+                                size="lg"
+                                className="h-12 w-full rounded-2xl bg-[#b2f000] text-xs font-black tracking-wider text-[#050605] uppercase shadow-md transition-all duration-200 hover:bg-[#9ad000] active:scale-95"
+                            >
                                 <Link href={startHref}>
                                     {auth.user ? 'Ir al panel' : 'Comenzar'}
                                 </Link>
                             </Button>
-                            <Button asChild size="lg" variant="outline">
+                            <Button
+                                asChild
+                                size="lg"
+                                variant="outline"
+                                className="h-12 w-full rounded-2xl border-[var(--input-border)] bg-[var(--input-bg)] text-xs font-black tracking-wider text-[var(--text-color)] uppercase shadow-sm transition-all duration-200 hover:bg-[var(--input-border)] hover:text-[var(--text-color)] active:scale-95"
+                            >
                                 <Link href={auth.user ? '/routes' : login()}>
                                     Ver rutas
                                 </Link>
@@ -140,12 +149,14 @@ function Feature({
     value: string;
 }) {
     return (
-        <div className="rounded-2xl border border-input bg-background p-3">
-            <Icon className="mb-3 size-5 text-primary" />
-            <p className="font-bold text-[var(--fs-xs)] text-muted-foreground">
+        <div className="rounded-2xl border border-[var(--input-border)] bg-[var(--bg-card-color)] p-3 shadow-sm transition-all duration-200 hover:-translate-y-0.5">
+            <Icon className="mb-3 size-5 text-[var(--brand-accent)]" />
+            <p className="font-bold text-[var(--fs-xs)] text-[var(--text-secondary)]">
                 {label}
             </p>
-            <p className="text-sm font-black tracking-[-0.02em]">{value}</p>
+            <p className="text-sm font-black tracking-[-0.02em] text-[var(--text-color)]">
+                {value}
+            </p>
         </div>
     );
 }

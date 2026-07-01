@@ -74,8 +74,7 @@
     --color-sidebar-ring: var(--sidebar-ring);
 }
 
-:root,
-.dark {
+:root {
     --fs-xs: 0.6875rem;
     --fs-sm: 0.8125rem;
     --fs-md: 0.9375rem;
@@ -92,8 +91,84 @@
     --page-gap: 18px;
     --card-radius: 22px;
     --safe-bottom: env(safe-area-inset-bottom, 0px);
-    --bottom-nav-height: 72px;
+    --bottom-nav-height: 58px;
 
+    /* Light Mode Colors */
+    --bg-color: #f8f9fa;
+    --bg-card-color: #ffffff;
+    --text-color: #1a1a1a;
+    --text-secondary: #6c757d;
+    --text-muted: #adb5bd;
+    --input-bg: #ffffff;
+    --input-border: #dee2e6;
+    --input-text: #1a1a1a;
+    --input-placeholder: #adb5bd;
+    --primary-color: #b2f000;
+    --primary-hover: #9ad000;
+    --primary-text: #050605;
+    --tab-bg: #e9ecef;
+    --tab-active-bg: #b2f000;
+    --tab-active-text: #050605;
+    --tab-inactive-text: #495057;
+    --avatar-bg: #b2f000;
+    --avatar-text: #050605;
+    --filter-btn-bg: #b2f000;
+    --filter-btn-text: #050605;
+    --chip-bg: #e9ecef;
+    --chip-border: #dee2e6;
+    --chip-text: #495057;
+    --chip-active-bg: #b2f000;
+    --chip-active-text: #050605;
+    --panel-soft: #f4f6f8;
+    --shadow-color: rgb(0 0 0 / 0.05);
+    --glow-color: rgb(178 240 0 / 0.1);
+    --danger: #ff4a4a;
+    --featured-card-text: #1a1a1a;
+    --brand-accent: #2b540e;
+
+    --background: var(--bg-color);
+    --foreground: var(--text-color);
+    --card: var(--bg-card-color);
+    --card-foreground: var(--text-color);
+    --popover: var(--bg-card-color);
+    --popover-foreground: var(--text-color);
+    --primary: var(--primary-color);
+    --primary-foreground: var(--primary-text);
+    --secondary: var(--input-bg);
+    --secondary-foreground: var(--text-color);
+    --muted: var(--input-bg);
+    --muted-foreground: var(--text-secondary);
+    --accent: var(--panel-soft);
+    --accent-foreground: var(--text-color);
+    --destructive: var(--danger);
+    --destructive-foreground: #ffffff;
+    --warning: #ff9800;
+    --warning-foreground: #050605;
+    --success: #00c853;
+    --success-foreground: #050605;
+    --info: #72d645;
+    --info-foreground: #050605;
+    --border: var(--input-border);
+    --input: var(--input-border);
+    --ring: var(--primary-color);
+    --chart-1: var(--primary-color);
+    --chart-2: #72d645;
+    --chart-3: #ff9800;
+    --chart-4: #00c853;
+    --chart-5: #ff6b6b;
+    --radius: 1.25rem;
+    --sidebar: var(--bg-card-color);
+    --sidebar-foreground: var(--text-color);
+    --sidebar-primary: var(--primary-color);
+    --sidebar-primary-foreground: var(--primary-text);
+    --sidebar-accent: var(--input-bg);
+    --sidebar-accent-foreground: var(--text-color);
+    --sidebar-border: var(--input-border);
+    --sidebar-ring: var(--primary-color);
+}
+
+.dark {
+    /* Dark Mode Colors */
     --bg-color: #0d0f0d;
     --bg-card-color: #151815;
     --text-color: #ffffff;
@@ -124,46 +199,7 @@
     --glow-color: rgb(178 240 0 / 0.2);
     --danger: #ff6b6b;
     --featured-card-text: #ffffff;
-
-    --background: var(--bg-color);
-    --foreground: var(--text-color);
-    --card: var(--bg-card-color);
-    --card-foreground: var(--text-color);
-    --popover: var(--bg-card-color);
-    --popover-foreground: var(--text-color);
-    --primary: var(--primary-color);
-    --primary-foreground: var(--primary-text);
-    --secondary: var(--input-bg);
-    --secondary-foreground: var(--text-color);
-    --muted: var(--input-bg);
-    --muted-foreground: var(--text-secondary);
-    --accent: var(--panel-soft);
-    --accent-foreground: var(--text-color);
-    --destructive: var(--danger);
-    --destructive-foreground: #050605;
-    --warning: #ff9800;
-    --warning-foreground: #050605;
-    --success: #00c853;
-    --success-foreground: #050605;
-    --info: #72d645;
-    --info-foreground: #050605;
-    --border: var(--input-border);
-    --input: var(--input-border);
-    --ring: var(--primary-color);
-    --chart-1: var(--primary-color);
-    --chart-2: #72d645;
-    --chart-3: #ff9800;
-    --chart-4: #00c853;
-    --chart-5: #ff6b6b;
-    --radius: 1.25rem;
-    --sidebar: var(--bg-card-color);
-    --sidebar-foreground: var(--text-color);
-    --sidebar-primary: var(--primary-color);
-    --sidebar-primary-foreground: var(--primary-text);
-    --sidebar-accent: var(--input-bg);
-    --sidebar-accent-foreground: var(--text-color);
-    --sidebar-border: var(--input-border);
-    --sidebar-ring: var(--primary-color);
+    --brand-accent: #b2f000;
 }
 
 @media (max-width: 560px) {
@@ -195,7 +231,6 @@
         font-family: var(--font-sans);
         font-size: var(--fs-md);
         line-height: var(--lh-body);
-        color-scheme: dark;
     }
 
     body {
