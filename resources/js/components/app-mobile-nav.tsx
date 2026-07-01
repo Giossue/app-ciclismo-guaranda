@@ -36,7 +36,7 @@ export function AppMobileNav() {
                             prefetch
                             aria-current={active ? 'page' : undefined}
                             className={cn(
-                                'flex min-w-0 flex-1 touch-manipulation flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 leading-none font-bold text-[var(--fs-xs)] transition-[color,transform] active:scale-[0.96]',
+                                'flex min-w-0 flex-1 touch-manipulation flex-col items-center justify-center gap-0.5 rounded-xl px-1 py-1 text-[10px] leading-none font-bold transition-[color,transform] active:scale-[0.96]',
                                 active
                                     ? 'text-primary'
                                     : 'text-[var(--text-muted)] hover:text-foreground',
@@ -44,7 +44,7 @@ export function AppMobileNav() {
                         >
                             <span className="relative">
                                 {Icon && (
-                                    <Icon className="size-5 transition-transform" />
+                                    <Icon className="size-[18px] transition-transform" />
                                 )}
                                 {item.href === '/notifications' &&
                                     unreadCount > 0 && (
@@ -67,13 +67,13 @@ export function AppMobileNav() {
                     prefetch
                     aria-current={isCurrentUrl('/menu') ? 'page' : undefined}
                     className={cn(
-                        'flex min-w-0 flex-1 touch-manipulation flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 leading-none font-bold text-[var(--fs-xs)] transition-[color,transform] active:scale-[0.96]',
+                        'flex min-w-0 flex-1 touch-manipulation flex-col items-center justify-center gap-0.5 rounded-xl px-1 py-1 text-[10px] leading-none font-bold transition-[color,transform] active:scale-[0.96]',
                         isCurrentUrl('/menu')
                             ? 'text-primary'
                             : 'text-[var(--text-muted)] hover:text-foreground',
                     )}
                 >
-                    <Menu className="size-5" />
+                    <Menu className="size-[18px]" />
                     Más
                 </Link>
             </div>

@@ -1,7 +1,7 @@
 import { Form, Head, Link, usePage } from '@inertiajs/react';
+import { ArrowLeft } from 'lucide-react';
 import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
 import DeleteUser from '@/components/delete-user';
-import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -42,27 +42,46 @@ export default function Profile({
         <>
             <Head title="Configuración de perfil" />
 
-            <h1 className="sr-only">Configuración de perfil</h1>
+            <div className="ueb-page flex flex-col gap-5 md:w-full">
+                {/* Header with back button */}
+                <div className="flex items-center gap-3 border-b border-[var(--input-border)]/40 py-3">
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        asChild
+                        className="size-11 rounded-2xl border border-[var(--input-border)] bg-[var(--input-bg)] text-[var(--text-secondary)] transition-all duration-200 hover:bg-[var(--input-border)] hover:text-[var(--text-color)]"
+                    >
+                        <Link href="/menu" replace>
+                            <ArrowLeft className="size-5" />
+                        </Link>
+                    </Button>
+                    <div className="flex flex-col">
+                        <h1 className="text-base leading-none font-black text-[var(--text-color)]">
+                            Perfil
+                        </h1>
+                        <p className="mt-1 text-[11px] text-[var(--text-secondary)]">
+                            Actualiza tus datos personales y correo electrónico
+                        </p>
+                    </div>
+                </div>
 
-            <div className="flex flex-col gap-6">
-                <Heading
-                    variant="small"
-                    title="Perfil"
-                    description="Actualiza tus datos personales y correo electrónico"
-                />
-
+                {/* Form fields */}
                 <Form
                     {...ProfileController.update.form()}
                     options={{
                         preserveScroll: true,
                     }}
-                    className="flex flex-col gap-6"
+                    className="flex flex-col gap-5"
                 >
                     {({ processing, errors }) => (
                         <>
-                            <div className="grid gap-2">
-                                <Label htmlFor="name">Nombre</Label>
-
+                            <div className="grid gap-1.5">
+                                <Label
+                                    htmlFor="name"
+                                    className="pl-0.5 text-xs font-bold text-[var(--text-secondary)]"
+                                >
+                                    Nombre
+                                </Label>
                                 <Input
                                     id="name"
                                     defaultValue={user.name}
@@ -71,14 +90,18 @@ export default function Profile({
                                     autoComplete="given-name"
                                     placeholder="Nombre"
                                     aria-invalid={Boolean(errors.name)}
+                                    className="h-12 rounded-2xl border-[var(--input-border)] bg-[var(--input-bg)] px-4 text-[var(--text-color)] transition-all duration-200 placeholder:text-[var(--text-muted)] focus-visible:border-[#b2f000] focus-visible:ring-4 focus-visible:ring-[#b2f000]/10"
                                 />
-
                                 <InputError message={errors.name} />
                             </div>
 
-                            <div className="grid gap-2">
-                                <Label htmlFor="last_name">Apellido</Label>
-
+                            <div className="grid gap-1.5">
+                                <Label
+                                    htmlFor="last_name"
+                                    className="pl-0.5 text-xs font-bold text-[var(--text-secondary)]"
+                                >
+                                    Apellido
+                                </Label>
                                 <Input
                                     id="last_name"
                                     defaultValue={user.last_name ?? ''}
@@ -87,13 +110,18 @@ export default function Profile({
                                     autoComplete="family-name"
                                     placeholder="Apellido"
                                     aria-invalid={Boolean(errors.last_name)}
+                                    className="h-12 rounded-2xl border-[var(--input-border)] bg-[var(--input-bg)] px-4 text-[var(--text-color)] transition-all duration-200 placeholder:text-[var(--text-muted)] focus-visible:border-[#b2f000] focus-visible:ring-4 focus-visible:ring-[#b2f000]/10"
                                 />
-
                                 <InputError message={errors.last_name} />
                             </div>
 
-                            <div className="grid gap-2">
-                                <Label htmlFor="gender_id">Género</Label>
+                            <div className="grid gap-1.5">
+                                <Label
+                                    htmlFor="gender_id"
+                                    className="pl-0.5 text-xs font-bold text-[var(--text-secondary)]"
+                                >
+                                    Género
+                                </Label>
                                 <Select
                                     name="gender_id"
                                     defaultValue={
@@ -105,12 +133,12 @@ export default function Profile({
                                 >
                                     <SelectTrigger
                                         id="gender_id"
-                                        className="w-full"
+                                        className="h-12 w-full rounded-2xl border-[var(--input-border)] bg-[var(--input-bg)] text-[var(--text-color)] focus:border-[#b2f000] focus:ring-[#b2f000]/10"
                                         aria-invalid={Boolean(errors.gender_id)}
                                     >
                                         <SelectValue placeholder="Selecciona tu género" />
                                     </SelectTrigger>
-                                    <SelectContent>
+                                    <SelectContent className="border-[var(--input-border)] bg-[var(--bg-card-color)] text-[var(--text-color)]">
                                         <SelectGroup>
                                             {genders.map((gender) => (
                                                 <SelectItem
@@ -123,15 +151,16 @@ export default function Profile({
                                         </SelectGroup>
                                     </SelectContent>
                                 </Select>
-
                                 <InputError message={errors.gender_id} />
                             </div>
 
-                            <div className="grid gap-2">
-                                <Label htmlFor="birth_date">
+                            <div className="grid gap-1.5">
+                                <Label
+                                    htmlFor="birth_date"
+                                    className="pl-0.5 text-xs font-bold text-[var(--text-secondary)]"
+                                >
                                     Fecha de nacimiento
                                 </Label>
-
                                 <Input
                                     id="birth_date"
                                     type="date"
@@ -140,16 +169,18 @@ export default function Profile({
                                     required
                                     autoComplete="bday"
                                     aria-invalid={Boolean(errors.birth_date)}
+                                    className="h-12 rounded-2xl border-[var(--input-border)] bg-[var(--input-bg)] px-4 text-[var(--text-color)] transition-all duration-200 placeholder:text-[var(--text-muted)] focus-visible:border-[#b2f000] focus-visible:ring-4 focus-visible:ring-[#b2f000]/10"
                                 />
-
                                 <InputError message={errors.birth_date} />
                             </div>
 
-                            <div className="grid gap-2">
-                                <Label htmlFor="email">
+                            <div className="grid gap-1.5">
+                                <Label
+                                    htmlFor="email"
+                                    className="pl-0.5 text-xs font-bold text-[var(--text-secondary)]"
+                                >
                                     Correo electrónico
                                 </Label>
-
                                 <Input
                                     id="email"
                                     type="email"
@@ -159,21 +190,21 @@ export default function Profile({
                                     autoComplete="username"
                                     placeholder="Correo electrónico"
                                     aria-invalid={Boolean(errors.email)}
+                                    className="h-12 rounded-2xl border-[var(--input-border)] bg-[var(--input-bg)] px-4 text-[var(--text-color)] transition-all duration-200 placeholder:text-[var(--text-muted)] focus-visible:border-[#b2f000] focus-visible:ring-4 focus-visible:ring-[#b2f000]/10"
                                 />
-
                                 <InputError message={errors.email} />
                             </div>
 
                             {mustVerifyEmail &&
                                 user.email_verified_at === null && (
-                                    <div>
-                                        <p className="text-sm text-muted-foreground">
+                                    <div className="rounded-2xl border border-yellow-500/20 bg-yellow-500/10 p-4 text-xs text-yellow-400">
+                                        <p>
                                             Tu correo electrónico no está
                                             verificado.{' '}
                                             <Link
                                                 href={send()}
                                                 as="button"
-                                                className="text-foreground underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current! dark:decoration-neutral-500"
+                                                className="underline decoration-yellow-500/50 transition-colors duration-200 hover:text-white"
                                             >
                                                 Haz clic aquí para reenviar el
                                                 correo de verificación.
@@ -182,7 +213,7 @@ export default function Profile({
 
                                         {status ===
                                             'verification-link-sent' && (
-                                            <div className="mt-2 text-sm font-medium text-primary">
+                                            <div className="mt-2 font-bold text-[#b2f000]">
                                                 Se envió un nuevo enlace de
                                                 verificación a tu correo.
                                             </div>
@@ -190,20 +221,22 @@ export default function Profile({
                                     </div>
                                 )}
 
-                            <div className="flex items-center gap-4">
-                                <Button
-                                    disabled={processing}
-                                    data-test="update-profile-button"
-                                >
-                                    Guardar
-                                </Button>
-                            </div>
+                            <Button
+                                disabled={processing}
+                                data-test="update-profile-button"
+                                className="mt-2 flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[#b2f000] text-xs font-black tracking-wider text-[#050605] uppercase shadow-md transition-all duration-300 hover:bg-[#9ad000] hover:shadow-[0_8px_20px_rgba(178,240,0,0.15)] active:scale-[0.99]"
+                            >
+                                Guardar cambios
+                            </Button>
                         </>
                     )}
                 </Form>
-            </div>
 
-            <DeleteUser />
+                {/* Account Deactivation section */}
+                <div className="border-t border-[var(--input-border)]/40 pt-4">
+                    <DeleteUser />
+                </div>
+            </div>
         </>
     );
 }

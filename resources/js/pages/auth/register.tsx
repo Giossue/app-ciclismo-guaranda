@@ -1,9 +1,17 @@
-import { Form, Head } from '@inertiajs/react';
-import { CheckCircle2, ShieldAlert, XCircle } from 'lucide-react';
+import { Form, Head, Link } from '@inertiajs/react';
+import {
+    ArrowRight,
+    Calendar,
+    CheckCircle2,
+    Lock,
+    Mail,
+    ShieldAlert,
+    User,
+    XCircle,
+} from 'lucide-react';
 import { useMemo, useState } from 'react';
 import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
-import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -41,167 +49,255 @@ export default function Register({ genders, passwordRules }: Props) {
                 {...store.form()}
                 resetOnSuccess={['password', 'password_confirmation']}
                 disableWhileProcessing
-                className="flex flex-col gap-6"
+                className="flex flex-col gap-5"
             >
                 {({ processing, errors }) => (
                     <>
-                        <div className="grid gap-6">
-                            <div className="grid gap-2">
-                                <Label htmlFor="name">Nombre</Label>
-                                <Input
-                                    id="name"
-                                    type="text"
-                                    required
-                                    autoFocus
-                                    tabIndex={1}
-                                    autoComplete="given-name"
-                                    name="name"
-                                    placeholder="Nombre"
-                                    aria-invalid={Boolean(errors.name)}
-                                />
-                                <InputError message={errors.name} />
-                            </div>
+                        <div className="grid gap-4">
+                            {/* Nombre & Apellido Row */}
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                {/* Nombre */}
+                                <div className="grid gap-1">
+                                    <Label htmlFor="name" className="sr-only">
+                                        Nombre
+                                    </Label>
+                                    <div className="relative flex items-center">
+                                        <User className="pointer-events-none absolute left-4 z-10 size-5 text-[#8e958e]" />
+                                        <Input
+                                            id="name"
+                                            type="text"
+                                            required
+                                            autoFocus
+                                            tabIndex={1}
+                                            autoComplete="given-name"
+                                            name="name"
+                                            placeholder="Nombre"
+                                            aria-invalid={Boolean(errors.name)}
+                                            className="h-13 rounded-2xl border-[#2c302c] bg-[#1c1f1c] pl-12 text-white transition-all duration-200 placeholder:text-[#5e645e] focus-visible:border-[#b2f000] focus-visible:ring-4 focus-visible:ring-[#b2f000]/10"
+                                        />
+                                    </div>
+                                    <InputError message={errors.name} />
+                                </div>
 
-                            <div className="grid gap-2">
-                                <Label htmlFor="last_name">Apellido</Label>
-                                <Input
-                                    id="last_name"
-                                    type="text"
-                                    required
-                                    tabIndex={2}
-                                    autoComplete="family-name"
-                                    name="last_name"
-                                    placeholder="Apellido"
-                                    aria-invalid={Boolean(errors.last_name)}
-                                />
-                                <InputError message={errors.last_name} />
-                            </div>
-
-                            <div className="grid gap-2">
-                                <Label htmlFor="gender_id">Género</Label>
-                                <Select name="gender_id" required>
-                                    <SelectTrigger
-                                        id="gender_id"
-                                        className="w-full"
-                                        tabIndex={3}
-                                        aria-invalid={Boolean(errors.gender_id)}
+                                {/* Apellido */}
+                                <div className="grid gap-1">
+                                    <Label
+                                        htmlFor="last_name"
+                                        className="sr-only"
                                     >
-                                        <SelectValue placeholder="Selecciona tu género" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectGroup>
-                                            {genders.map((gender) => (
-                                                <SelectItem
-                                                    key={gender.id}
-                                                    value={String(gender.id)}
-                                                >
-                                                    {gender.name}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectGroup>
-                                    </SelectContent>
-                                </Select>
-                                <InputError message={errors.gender_id} />
+                                        Apellido
+                                    </Label>
+                                    <div className="relative flex items-center">
+                                        <User className="pointer-events-none absolute left-4 z-10 size-5 text-[#8e958e]" />
+                                        <Input
+                                            id="last_name"
+                                            type="text"
+                                            required
+                                            tabIndex={2}
+                                            autoComplete="family-name"
+                                            name="last_name"
+                                            placeholder="Apellido"
+                                            aria-invalid={Boolean(
+                                                errors.last_name,
+                                            )}
+                                            className="h-13 rounded-2xl border-[#2c302c] bg-[#1c1f1c] pl-12 text-white transition-all duration-200 placeholder:text-[#5e645e] focus-visible:border-[#b2f000] focus-visible:ring-4 focus-visible:ring-[#b2f000]/10"
+                                        />
+                                    </div>
+                                    <InputError message={errors.last_name} />
+                                </div>
                             </div>
 
-                            <div className="grid gap-2">
-                                <Label htmlFor="birth_date">
-                                    Fecha de nacimiento
-                                </Label>
-                                <Input
-                                    id="birth_date"
-                                    type="date"
-                                    required
-                                    tabIndex={4}
-                                    autoComplete="bday"
-                                    name="birth_date"
-                                    aria-invalid={Boolean(errors.birth_date)}
-                                />
-                                <InputError message={errors.birth_date} />
+                            {/* Género & Fecha Nacimiento Row */}
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                {/* Género */}
+                                <div className="grid gap-1">
+                                    <Label
+                                        htmlFor="gender_id"
+                                        className="sr-only"
+                                    >
+                                        Género
+                                    </Label>
+                                    <div className="relative flex items-center">
+                                        <User className="pointer-events-none absolute left-4 z-10 size-5 text-[#8e958e]" />
+                                        <Select name="gender_id" required>
+                                            <SelectTrigger
+                                                id="gender_id"
+                                                className="h-13 w-full rounded-2xl border-[#2c302c] bg-[#1c1f1c] pl-12 text-left font-normal text-white focus:border-[#b2f000] focus:ring-[#b2f000]/10"
+                                                tabIndex={3}
+                                                aria-invalid={Boolean(
+                                                    errors.gender_id,
+                                                )}
+                                            >
+                                                <SelectValue placeholder="Género" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectGroup>
+                                                    {genders.map((gender) => (
+                                                        <SelectItem
+                                                            key={gender.id}
+                                                            value={String(
+                                                                gender.id,
+                                                            )}
+                                                        >
+                                                            {gender.name}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectGroup>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <InputError message={errors.gender_id} />
+                                </div>
+
+                                {/* Fecha de nacimiento */}
+                                <div className="grid gap-1">
+                                    <Label
+                                        htmlFor="birth_date"
+                                        className="sr-only"
+                                    >
+                                        Fecha de nacimiento
+                                    </Label>
+                                    <div className="relative flex items-center">
+                                        <Calendar className="pointer-events-none absolute left-4 z-10 size-5 text-[#8e958e]" />
+                                        <Input
+                                            id="birth_date"
+                                            type="date"
+                                            required
+                                            tabIndex={4}
+                                            autoComplete="bday"
+                                            name="birth_date"
+                                            aria-invalid={Boolean(
+                                                errors.birth_date,
+                                            )}
+                                            className="h-13 rounded-2xl border-[#2c302c] bg-[#1c1f1c] pl-12 text-white transition-all duration-200 placeholder:text-[#5e645e] focus-visible:border-[#b2f000] focus-visible:ring-4 focus-visible:ring-[#b2f000]/10"
+                                        />
+                                    </div>
+                                    <InputError message={errors.birth_date} />
+                                </div>
                             </div>
 
-                            <div className="grid gap-2">
-                                <Label htmlFor="email">
+                            {/* Correo electrónico */}
+                            <div className="grid gap-1">
+                                <Label htmlFor="email" className="sr-only">
                                     Correo electrónico
                                 </Label>
-                                <Input
-                                    id="email"
-                                    type="email"
-                                    required
-                                    tabIndex={5}
-                                    autoComplete="email"
-                                    name="email"
-                                    placeholder="correo@ejemplo.com"
-                                    aria-invalid={Boolean(errors.email)}
-                                />
+                                <div className="relative flex items-center">
+                                    <Mail className="pointer-events-none absolute left-4 z-10 size-5 text-[#8e958e]" />
+                                    <Input
+                                        id="email"
+                                        type="email"
+                                        required
+                                        tabIndex={5}
+                                        autoComplete="email"
+                                        name="email"
+                                        placeholder="Correo electrónico"
+                                        aria-invalid={Boolean(errors.email)}
+                                        className="h-13 rounded-2xl border-[#2c302c] bg-[#1c1f1c] pl-12 text-white transition-all duration-200 placeholder:text-[#5e645e] focus-visible:border-[#b2f000] focus-visible:ring-4 focus-visible:ring-[#b2f000]/10"
+                                    />
+                                </div>
                                 <InputError message={errors.email} />
                             </div>
 
-                            <div className="grid gap-2">
-                                <Label htmlFor="password">Contraseña</Label>
-                                <PasswordInput
-                                    id="password"
-                                    required
-                                    tabIndex={6}
-                                    autoComplete="new-password"
-                                    name="password"
-                                    placeholder="Contraseña segura"
-                                    passwordrules={passwordRules}
-                                    value={password}
-                                    onChange={(event) =>
-                                        setPassword(event.currentTarget.value)
-                                    }
-                                    aria-invalid={Boolean(errors.password)}
-                                />
-                                <InputError message={errors.password} />
-                            </div>
+                            {/* Contraseña & Confirmación Row */}
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                {/* Contraseña */}
+                                <div className="grid gap-1">
+                                    <Label
+                                        htmlFor="password"
+                                        className="sr-only"
+                                    >
+                                        Contraseña
+                                    </Label>
+                                    <div className="relative flex items-center">
+                                        <Lock className="pointer-events-none absolute left-4 z-10 size-5 text-[#8e958e]" />
+                                        <PasswordInput
+                                            id="password"
+                                            required
+                                            tabIndex={6}
+                                            autoComplete="new-password"
+                                            name="password"
+                                            placeholder="Contraseña"
+                                            passwordrules={passwordRules}
+                                            value={password}
+                                            onChange={(event) =>
+                                                setPassword(
+                                                    event.currentTarget.value,
+                                                )
+                                            }
+                                            aria-invalid={Boolean(
+                                                errors.password,
+                                            )}
+                                            className="h-13 w-full rounded-2xl border-[#2c302c] bg-[#1c1f1c] pl-12 text-white transition-all duration-200 placeholder:text-[#5e645e] focus-visible:border-[#b2f000] focus-visible:ring-4 focus-visible:ring-[#b2f000]/10"
+                                        />
+                                    </div>
+                                    <InputError message={errors.password} />
+                                </div>
 
-                            <div className="grid gap-2">
-                                <Label htmlFor="password_confirmation">
-                                    Confirmar contraseña
-                                </Label>
-                                <PasswordInput
-                                    id="password_confirmation"
-                                    required
-                                    tabIndex={7}
-                                    autoComplete="new-password"
-                                    name="password_confirmation"
-                                    placeholder="Confirmar contraseña"
-                                    passwordrules={passwordRules}
-                                    value={passwordConfirmation}
-                                    onChange={(event) =>
-                                        setPasswordConfirmation(
-                                            event.currentTarget.value,
-                                        )
-                                    }
-                                    aria-invalid={Boolean(
-                                        errors.password_confirmation,
-                                    )}
-                                />
-                                <InputError
-                                    message={errors.password_confirmation}
-                                />
+                                {/* Confirmar contraseña */}
+                                <div className="grid gap-1">
+                                    <Label
+                                        htmlFor="password_confirmation"
+                                        className="sr-only"
+                                    >
+                                        Confirmar contraseña
+                                    </Label>
+                                    <div className="relative flex items-center">
+                                        <Lock className="pointer-events-none absolute left-4 z-10 size-5 text-[#8e958e]" />
+                                        <PasswordInput
+                                            id="password_confirmation"
+                                            required
+                                            tabIndex={7}
+                                            autoComplete="new-password"
+                                            name="password_confirmation"
+                                            placeholder="Confirmar"
+                                            passwordrules={passwordRules}
+                                            value={passwordConfirmation}
+                                            onChange={(event) =>
+                                                setPasswordConfirmation(
+                                                    event.currentTarget.value,
+                                                )
+                                            }
+                                            aria-invalid={Boolean(
+                                                errors.password_confirmation,
+                                            )}
+                                            className="h-13 w-full rounded-2xl border-[#2c302c] bg-[#1c1f1c] pl-12 text-white transition-all duration-200 placeholder:text-[#5e645e] focus-visible:border-[#b2f000] focus-visible:ring-4 focus-visible:ring-[#b2f000]/10"
+                                        />
+                                    </div>
+                                    <InputError
+                                        message={errors.password_confirmation}
+                                    />
+                                </div>
                             </div>
 
                             <PasswordChecklist checks={passwordChecks} />
 
                             <Button
                                 type="submit"
-                                className="mt-2 w-full"
+                                className="mt-1 flex h-13 w-full items-center justify-center gap-2 rounded-2xl bg-[#b2f000] text-sm font-black tracking-wider text-[#050605] uppercase shadow-md transition-all duration-300 hover:-translate-y-[1px] hover:bg-[#9ad000] hover:shadow-[0_8px_20px_rgba(178,240,0,0.15)] active:translate-y-0 active:scale-[0.99]"
                                 tabIndex={8}
                                 data-test="register-user-button"
                                 disabled={!passwordIsReady || processing}
                             >
-                                {processing && <Spinner />}
-                                Crear cuenta
+                                {processing ? (
+                                    <Spinner className="text-[#050605]" />
+                                ) : (
+                                    <>
+                                        <span>Crear cuenta</span>
+                                        <ArrowRight className="size-4.5" />
+                                    </>
+                                )}
                             </Button>
                         </div>
 
-                        <div className="text-center text-sm text-muted-foreground">
+                        <div className="mt-1 text-center text-sm text-muted-foreground">
                             ¿Ya tienes una cuenta?{' '}
-                            <TextLink href={login()} tabIndex={9}>
+                            <Link
+                                href={login()}
+                                className="font-sans text-xs font-bold tracking-widest text-[#b2f000] uppercase underline underline-offset-4 transition-colors duration-150 hover:text-[#9ad000]"
+                                tabIndex={9}
+                            >
                                 Inicia sesión
-                            </TextLink>
+                            </Link>
                         </div>
                     </>
                 )}
@@ -245,31 +341,31 @@ function buildPasswordChecks(
 
 function PasswordChecklist({ checks }: { checks: PasswordCheck[] }) {
     return (
-        <div className="grid gap-3 rounded-2xl border bg-muted/30 p-4">
-            <div className="flex items-start gap-2 text-sm">
-                <ShieldAlert className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
-                <p className="text-muted-foreground">
+        <div className="grid gap-3 rounded-2xl border border-[#2c302c] bg-[#1c1f1c] p-4">
+            <div className="flex items-start gap-2 text-xs text-[#8e958e]">
+                <ShieldAlert className="mt-0.5 size-4 shrink-0 text-[#b2f000]" />
+                <p>
                     Valida tu contraseña antes de enviar. La revisión contra
                     contraseñas filtradas se confirma en el servidor al crear la
                     cuenta.
                 </p>
             </div>
-            <ul className="grid gap-2">
+            <ul className="grid gap-1.5">
                 {checks.map((check) => (
                     <li
                         key={check.label}
-                        className="flex items-center gap-2 text-sm"
+                        className="flex items-center gap-2 text-xs"
                     >
                         {check.valid ? (
-                            <CheckCircle2 className="size-4 text-success" />
+                            <CheckCircle2 className="size-4 text-[#b2f000]" />
                         ) : (
-                            <XCircle className="size-4 text-muted-foreground" />
+                            <XCircle className="size-4 text-[#5e645e]" />
                         )}
                         <span
                             className={
                                 check.valid
-                                    ? 'font-medium text-foreground'
-                                    : 'text-muted-foreground'
+                                    ? 'font-bold text-white'
+                                    : 'text-[#5e645e]'
                             }
                         >
                             {check.label}
