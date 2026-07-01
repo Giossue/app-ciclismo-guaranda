@@ -12,6 +12,10 @@ return [
         'timeout_seconds' => (int) env('GUARANDA_GO_N8N_TIMEOUT_SECONDS', 20),
     ],
 
+    'agent' => [
+        'tool_token' => env('GUARANDA_GO_AGENT_TOOL_TOKEN'),
+    ],
+
     'elevation' => [
         'provider' => env('GUARANDA_GO_ELEVATION_PROVIDER', 'opentopodata'),
         'opentopodata' => [
