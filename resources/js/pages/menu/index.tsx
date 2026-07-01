@@ -44,16 +44,6 @@ export default function MenuIndex() {
             <Head title="Menú" />
 
             <div className="ueb-page flex flex-col gap-5 md:w-full">
-                {/* Welcoming Header */}
-                <div className="flex flex-col gap-0.5 border-b border-[var(--input-border)]/40 py-2">
-                    <span className="text-[10px] font-black tracking-widest text-[var(--text-secondary)] uppercase">
-                        Hola, {auth?.user?.name ?? 'Ciclista'}
-                    </span>
-                    <h1 className="text-2xl font-black tracking-tight text-[var(--text-color)]">
-                        Menú
-                    </h1>
-                </div>
-
                 {/* Active Session Info */}
                 <section className="flex flex-col gap-0.5 rounded-2xl border border-[var(--input-border)] bg-[var(--bg-card-color)] p-4">
                     <p className="text-[10px] font-black tracking-wider text-[var(--text-secondary)] uppercase">

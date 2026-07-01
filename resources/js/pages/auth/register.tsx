@@ -62,7 +62,7 @@ export default function Register({ genders, passwordRules }: Props) {
                                         Nombre
                                     </Label>
                                     <div className="relative flex items-center">
-                                        <User className="pointer-events-none absolute left-4 z-10 size-5 text-[#8e958e]" />
+                                        <User className="pointer-events-none absolute left-4 z-10 size-5 text-muted-foreground" />
                                         <Input
                                             id="name"
                                             type="text"
@@ -73,7 +73,7 @@ export default function Register({ genders, passwordRules }: Props) {
                                             name="name"
                                             placeholder="Nombre"
                                             aria-invalid={Boolean(errors.name)}
-                                            className="h-13 rounded-2xl border-[#2c302c] bg-[#1c1f1c] pl-12 text-white transition-all duration-200 placeholder:text-[#5e645e] focus-visible:border-[#b2f000] focus-visible:ring-4 focus-visible:ring-[#b2f000]/10"
+                                            className="h-13 pl-12"
                                         />
                                     </div>
                                     <InputError message={errors.name} />
@@ -88,7 +88,7 @@ export default function Register({ genders, passwordRules }: Props) {
                                         Apellido
                                     </Label>
                                     <div className="relative flex items-center">
-                                        <User className="pointer-events-none absolute left-4 z-10 size-5 text-[#8e958e]" />
+                                        <User className="pointer-events-none absolute left-4 z-10 size-5 text-muted-foreground" />
                                         <Input
                                             id="last_name"
                                             type="text"
@@ -100,7 +100,7 @@ export default function Register({ genders, passwordRules }: Props) {
                                             aria-invalid={Boolean(
                                                 errors.last_name,
                                             )}
-                                            className="h-13 rounded-2xl border-[#2c302c] bg-[#1c1f1c] pl-12 text-white transition-all duration-200 placeholder:text-[#5e645e] focus-visible:border-[#b2f000] focus-visible:ring-4 focus-visible:ring-[#b2f000]/10"
+                                            className="h-13 pl-12"
                                         />
                                     </div>
                                     <InputError message={errors.last_name} />
@@ -118,11 +118,11 @@ export default function Register({ genders, passwordRules }: Props) {
                                         Género
                                     </Label>
                                     <div className="relative flex items-center">
-                                        <User className="pointer-events-none absolute left-4 z-10 size-5 text-[#8e958e]" />
+                                        <User className="pointer-events-none absolute left-4 z-10 size-5 text-muted-foreground" />
                                         <Select name="gender_id" required>
                                             <SelectTrigger
                                                 id="gender_id"
-                                                className="h-13 w-full rounded-2xl border-[#2c302c] bg-[#1c1f1c] pl-12 text-left font-normal text-white focus:border-[#b2f000] focus:ring-[#b2f000]/10"
+                                                className="h-13 w-full pl-12 text-left font-normal"
                                                 tabIndex={3}
                                                 aria-invalid={Boolean(
                                                     errors.gender_id,
@@ -158,7 +158,7 @@ export default function Register({ genders, passwordRules }: Props) {
                                         Fecha de nacimiento
                                     </Label>
                                     <div className="relative flex items-center">
-                                        <Calendar className="pointer-events-none absolute left-4 z-10 size-5 text-[#8e958e]" />
+                                        <Calendar className="pointer-events-none absolute left-4 z-10 size-5 text-muted-foreground" />
                                         <Input
                                             id="birth_date"
                                             type="date"
@@ -169,7 +169,7 @@ export default function Register({ genders, passwordRules }: Props) {
                                             aria-invalid={Boolean(
                                                 errors.birth_date,
                                             )}
-                                            className="h-13 rounded-2xl border-[#2c302c] bg-[#1c1f1c] pl-12 text-white transition-all duration-200 placeholder:text-[#5e645e] focus-visible:border-[#b2f000] focus-visible:ring-4 focus-visible:ring-[#b2f000]/10"
+                                            className="h-13 pl-12"
                                         />
                                     </div>
                                     <InputError message={errors.birth_date} />
@@ -182,7 +182,7 @@ export default function Register({ genders, passwordRules }: Props) {
                                     Correo electrónico
                                 </Label>
                                 <div className="relative flex items-center">
-                                    <Mail className="pointer-events-none absolute left-4 z-10 size-5 text-[#8e958e]" />
+                                    <Mail className="pointer-events-none absolute left-4 z-10 size-5 text-muted-foreground" />
                                     <Input
                                         id="email"
                                         type="email"
@@ -192,7 +192,7 @@ export default function Register({ genders, passwordRules }: Props) {
                                         name="email"
                                         placeholder="Correo electrónico"
                                         aria-invalid={Boolean(errors.email)}
-                                        className="h-13 rounded-2xl border-[#2c302c] bg-[#1c1f1c] pl-12 text-white transition-all duration-200 placeholder:text-[#5e645e] focus-visible:border-[#b2f000] focus-visible:ring-4 focus-visible:ring-[#b2f000]/10"
+                                        className="h-13 pl-12"
                                     />
                                 </div>
                                 <InputError message={errors.email} />
@@ -209,7 +209,7 @@ export default function Register({ genders, passwordRules }: Props) {
                                         Contraseña
                                     </Label>
                                     <div className="relative flex items-center">
-                                        <Lock className="pointer-events-none absolute left-4 z-10 size-5 text-[#8e958e]" />
+                                        <Lock className="pointer-events-none absolute left-4 z-10 size-5 text-muted-foreground" />
                                         <PasswordInput
                                             id="password"
                                             required
@@ -227,7 +227,7 @@ export default function Register({ genders, passwordRules }: Props) {
                                             aria-invalid={Boolean(
                                                 errors.password,
                                             )}
-                                            className="h-13 w-full rounded-2xl border-[#2c302c] bg-[#1c1f1c] pl-12 text-white transition-all duration-200 placeholder:text-[#5e645e] focus-visible:border-[#b2f000] focus-visible:ring-4 focus-visible:ring-[#b2f000]/10"
+                                            className="h-13 pl-12"
                                         />
                                     </div>
                                     <InputError message={errors.password} />
@@ -242,7 +242,7 @@ export default function Register({ genders, passwordRules }: Props) {
                                         Confirmar contraseña
                                     </Label>
                                     <div className="relative flex items-center">
-                                        <Lock className="pointer-events-none absolute left-4 z-10 size-5 text-[#8e958e]" />
+                                        <Lock className="pointer-events-none absolute left-4 z-10 size-5 text-muted-foreground" />
                                         <PasswordInput
                                             id="password_confirmation"
                                             required
@@ -260,7 +260,7 @@ export default function Register({ genders, passwordRules }: Props) {
                                             aria-invalid={Boolean(
                                                 errors.password_confirmation,
                                             )}
-                                            className="h-13 w-full rounded-2xl border-[#2c302c] bg-[#1c1f1c] pl-12 text-white transition-all duration-200 placeholder:text-[#5e645e] focus-visible:border-[#b2f000] focus-visible:ring-4 focus-visible:ring-[#b2f000]/10"
+                                            className="h-13 pl-12"
                                         />
                                     </div>
                                     <InputError
@@ -273,13 +273,13 @@ export default function Register({ genders, passwordRules }: Props) {
 
                             <Button
                                 type="submit"
-                                className="mt-1 flex h-13 w-full items-center justify-center gap-2 rounded-2xl bg-[#b2f000] text-sm font-black tracking-wider text-[#050605] uppercase shadow-md transition-all duration-300 hover:-translate-y-[1px] hover:bg-[#9ad000] hover:shadow-[0_8px_20px_rgba(178,240,0,0.15)] active:translate-y-0 active:scale-[0.99]"
+                                className="mt-1 flex h-13 w-full items-center justify-center gap-2 rounded-2xl bg-primary text-sm font-black tracking-wider text-primary-foreground uppercase shadow-md transition-all duration-300 hover:-translate-y-[1px] hover:bg-[var(--primary-hover)] hover:shadow-[0_8px_20px_var(--glow-color)] active:translate-y-0 active:scale-[0.99]"
                                 tabIndex={8}
                                 data-test="register-user-button"
                                 disabled={!passwordIsReady || processing}
                             >
                                 {processing ? (
-                                    <Spinner className="text-[#050605]" />
+                                    <Spinner className="text-primary-foreground" />
                                 ) : (
                                     <>
                                         <span>Crear cuenta</span>
@@ -293,7 +293,7 @@ export default function Register({ genders, passwordRules }: Props) {
                             ¿Ya tienes una cuenta?{' '}
                             <Link
                                 href={login()}
-                                className="font-sans text-xs font-bold tracking-widest text-[#b2f000] uppercase underline underline-offset-4 transition-colors duration-150 hover:text-[#9ad000]"
+                                className="font-sans text-xs font-bold tracking-widest text-primary uppercase underline underline-offset-4 transition-colors duration-150 hover:text-[var(--primary-hover)]"
                                 tabIndex={9}
                             >
                                 Inicia sesión
@@ -341,9 +341,9 @@ function buildPasswordChecks(
 
 function PasswordChecklist({ checks }: { checks: PasswordCheck[] }) {
     return (
-        <div className="grid gap-3 rounded-2xl border border-[#2c302c] bg-[#1c1f1c] p-4">
-            <div className="flex items-start gap-2 text-xs text-[#8e958e]">
-                <ShieldAlert className="mt-0.5 size-4 shrink-0 text-[#b2f000]" />
+        <div className="grid gap-3 rounded-2xl border border-border bg-muted/40 p-4">
+            <div className="flex items-start gap-2 text-xs text-muted-foreground">
+                <ShieldAlert className="mt-0.5 size-4 shrink-0 text-primary" />
                 <p>
                     Valida tu contraseña antes de enviar. La revisión contra
                     contraseñas filtradas se confirma en el servidor al crear la
@@ -357,15 +357,15 @@ function PasswordChecklist({ checks }: { checks: PasswordCheck[] }) {
                         className="flex items-center gap-2 text-xs"
                     >
                         {check.valid ? (
-                            <CheckCircle2 className="size-4 text-[#b2f000]" />
+                            <CheckCircle2 className="size-4 text-primary" />
                         ) : (
-                            <XCircle className="size-4 text-[#5e645e]" />
+                            <XCircle className="size-4 text-muted-foreground" />
                         )}
                         <span
                             className={
                                 check.valid
-                                    ? 'font-bold text-white'
-                                    : 'text-[#5e645e]'
+                                    ? 'font-bold text-foreground'
+                                    : 'text-muted-foreground'
                             }
                         >
                             {check.label}

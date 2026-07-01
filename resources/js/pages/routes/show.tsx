@@ -1,6 +1,7 @@
 import { Form, Head, Link, router } from '@inertiajs/react';
 import {
     AlertTriangle,
+    ArrowLeft,
     Database,
     Download,
     ImageIcon,
@@ -31,7 +32,6 @@ import PoiReportController from '@/actions/App/Http/Controllers/Cyclist/PoiRepor
 import PoiSuggestionController from '@/actions/App/Http/Controllers/Cyclist/PoiSuggestionController';
 import RouteRatingController from '@/actions/App/Http/Controllers/Cyclist/RouteRatingController';
 import TrackController from '@/actions/App/Http/Controllers/Cyclist/TrackController';
-import Heading from '@/components/heading';
 import ImageFileInput from '@/components/image-file-input';
 import ImageGallery from '@/components/image-gallery';
 import type { GalleryImage } from '@/components/image-gallery';
@@ -102,39 +102,7 @@ export default function RoutesShow({
             <Head title={route.name} />
 
             <div className="flex flex-col gap-4">
-                <div className="flex flex-col gap-3 rounded-2xl border bg-card p-4 sm:flex-row sm:items-start sm:justify-between">
-                    <div className="flex flex-col gap-3">
-                        <Heading
-                            title={route.name}
-                            description={`${route.start_name} → ${route.end_name}`}
-                        />
-                        <div className="flex flex-wrap gap-2">
-                            {route.category && (
-                                <Badge variant="outline">
-                                    {route.category.name}
-                                </Badge>
-                            )}
-                            {route.difficulty && (
-                                <Badge variant="secondary">
-                                    {route.difficulty.name}
-                                </Badge>
-                            )}
-                            {route.incidents.length > 0 && (
-                                <Badge variant="destructive">
-                                    {route.incidents.length} alerta
-                                    {route.incidents.length === 1 ? '' : 's'}
-                                </Badge>
-                            )}
-                        </div>
-                    </div>
-                    <Button variant="outline" asChild>
-                        <Link href="/routes" prefetch>
-                            Volver
-                        </Link>
-                    </Button>
-                </div>
-
-                <RouteHero route={route} />
+                <RouteHeader route={route} />
 
                 <MobileTabs
                     defaultValue="map"
@@ -347,9 +315,9 @@ function IncidentsPanel({ route }: { route: CyclingRouteMapItem }) {
     );
 }
 
-function RouteHero({ route }: { route: CyclingRouteMapItem }) {
+function RouteHeader({ route }: { route: CyclingRouteMapItem }) {
     const placeholder = (
-        <div className="flex min-h-44 items-center justify-center border-b bg-muted text-muted-foreground md:min-h-64">
+        <div className="flex min-h-52 items-center justify-center bg-muted text-muted-foreground md:min-h-72">
             <div className="flex flex-col items-center gap-2 text-center">
                 <ImageIcon className="size-8" />
                 <span className="text-sm font-medium">Ruta sin portada</span>
@@ -370,11 +338,48 @@ function RouteHero({ route }: { route: CyclingRouteMapItem }) {
 
     return (
         <Card className="overflow-hidden">
-            <ImageGallery
-                images={images}
-                slideClassName="h-44 md:h-64"
-                fallback={placeholder}
-            />
+            <div className="relative">
+                <ImageGallery
+                    images={images}
+                    slideClassName="h-52 md:h-72"
+                    fallback={placeholder}
+                />
+                <Button
+                    asChild
+                    size="icon"
+                    variant="secondary"
+                    className="absolute top-3 left-3 z-[5] size-9 rounded-full border border-border/60 bg-background/85 shadow-sm backdrop-blur-sm hover:bg-background"
+                >
+                    <Link href="/routes" prefetch aria-label="Volver a rutas">
+                        <ArrowLeft className="size-5" />
+                    </Link>
+                </Button>
+            </div>
+
+            <div className="flex flex-col gap-2 p-4">
+                <h1 className="text-xl font-black tracking-tight text-foreground">
+                    {route.name}
+                </h1>
+                <p className="text-sm font-semibold text-muted-foreground">
+                    {route.start_name} → {route.end_name}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                    {route.category && (
+                        <Badge variant="outline">{route.category.name}</Badge>
+                    )}
+                    {route.difficulty && (
+                        <Badge variant="secondary">
+                            {route.difficulty.name}
+                        </Badge>
+                    )}
+                    {route.incidents.length > 0 && (
+                        <Badge variant="destructive">
+                            {route.incidents.length} alerta
+                            {route.incidents.length === 1 ? '' : 's'}
+                        </Badge>
+                    )}
+                </div>
+            </div>
         </Card>
     );
 }

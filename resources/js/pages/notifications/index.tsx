@@ -1,6 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
 import { Bell, CheckCheck, Circle, Inbox, MailOpen } from 'lucide-react';
-import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -51,11 +50,11 @@ export default function NotificationsIndex({
 
             <div className="flex flex-col gap-4">
                 <section className="rounded-2xl border bg-card p-4">
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                        <Heading
-                            title="Notificaciones"
-                            description="Avisos importantes de incidencias, valoraciones y actividad de tu cuenta."
-                        />
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <p className="text-sm text-muted-foreground">
+                            Avisos de incidencias, valoraciones y actividad de
+                            tu cuenta.
+                        </p>
                         <Badge variant={unreadCount > 0 ? 'default' : 'muted'}>
                             <Bell data-icon="inline-start" />
                             {unreadCount} sin leer
