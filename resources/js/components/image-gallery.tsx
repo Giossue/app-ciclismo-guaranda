@@ -12,7 +12,7 @@ export type GalleryImage = {
 
 type Props = {
     images: GalleryImage[];
-    /** 'slides': una imagen ancha a la vez. 'thumbnails': miniaturas cuadradas en bucle. */
+    /** 'slides': una imagen ancha a la vez. 'thumbnails': miniaturas cuadradas deslizables. */
     variant?: 'slides' | 'thumbnails';
     /** Alto/clases de cada diapositiva del modo 'slides'. */
     slideClassName?: string;
@@ -29,7 +29,8 @@ const thumbFallback = (
 );
 
 // Galería de imágenes con visor a pantalla completa. En modo 'thumbnails' las
-// fotos se muestran como cuadrados que se desplazan en bucle hacia la derecha.
+// fotos se muestran como cuadrados en una fila deslizable (sin movimiento
+// automático).
 export default function ImageGallery({
     images,
     variant = 'slides',
@@ -200,42 +201,18 @@ export default function ImageGallery({
     }
 
     function renderThumbnails() {
-        // Bucle automático solo cuando hay suficientes fotos para desplazar.
-        const loop = count >= 3;
-
-        if (!loop) {
-            return (
-                <div
-                    className={cn(
-                        'flex [scrollbar-width:none] gap-3 overflow-x-auto [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden',
-                        className,
-                    )}
-                >
-                    {images.map((image, index) => (
-                        <div key={`${image.src}-${index}`}>
-                            {renderThumbnail(image, index)}
-                        </div>
-                    ))}
-                </div>
-            );
-        }
-
         return (
-            <div className={cn('overflow-hidden', className)}>
-                <div
-                    className="gallery-marquee flex w-max"
-                    style={{ animationDuration: `${Math.max(count * 4, 16)}s` }}
-                >
-                    {[...images, ...images].map((image, index) => (
-                        <div
-                            key={`${image.src}-${index}`}
-                            className="mr-3"
-                            aria-hidden={index >= count}
-                        >
-                            {renderThumbnail(image, index % count)}
-                        </div>
-                    ))}
-                </div>
+            <div
+                className={cn(
+                    'flex [scrollbar-width:none] gap-3 overflow-x-auto [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden',
+                    className,
+                )}
+            >
+                {images.map((image, index) => (
+                    <div key={`${image.src}-${index}`}>
+                        {renderThumbnail(image, index)}
+                    </div>
+                ))}
             </div>
         );
     }

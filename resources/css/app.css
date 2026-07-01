@@ -840,29 +840,4 @@
             transform: translateY(0);
         }
     }
-
-    @keyframes galleryMarquee {
-        from {
-            transform: translateX(0);
-        }
-        to {
-            transform: translateX(-50%);
-        }
-    }
-
-    .gallery-marquee {
-        animation: galleryMarquee linear infinite;
-        will-change: transform;
-    }
-
-    .gallery-marquee:hover,
-    .gallery-marquee:focus-within {
-        animation-play-state: paused;
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-        .gallery-marquee {
-            animation: none;
-        }
-    }
 }
