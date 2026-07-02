@@ -5,7 +5,6 @@ import {
     CheckCircle2,
     Lock,
     Mail,
-    ShieldAlert,
     User,
     XCircle,
 } from 'lucide-react';
@@ -24,6 +23,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
+import { cn } from '@/lib/utils';
 import { login } from '@/routes';
 import { store } from '@/routes/register';
 import type { CatalogOption } from '@/types';
@@ -36,6 +36,7 @@ type Props = {
 export default function Register({ genders, passwordRules }: Props) {
     const [password, setPassword] = useState('');
     const [passwordConfirmation, setPasswordConfirmation] = useState('');
+    const [birthDate, setBirthDate] = useState('');
     const passwordChecks = useMemo(
         () => buildPasswordChecks(password, passwordConfirmation),
         [password, passwordConfirmation],
@@ -166,11 +167,28 @@ export default function Register({ genders, passwordRules }: Props) {
                                             tabIndex={4}
                                             autoComplete="bday"
                                             name="birth_date"
+                                            placeholder="Fecha de nacimiento"
+                                            aria-label="Fecha de nacimiento"
+                                            value={birthDate}
+                                            onChange={(event) =>
+                                                setBirthDate(
+                                                    event.currentTarget.value,
+                                                )
+                                            }
                                             aria-invalid={Boolean(
                                                 errors.birth_date,
                                             )}
-                                            className="h-13 pl-12"
+                                            className={cn(
+                                                'h-13 pl-12',
+                                                !birthDate &&
+                                                    '[&::-webkit-datetime-edit]:text-transparent',
+                                            )}
                                         />
+                                        {!birthDate && (
+                                            <span className="pointer-events-none absolute left-12 text-sm text-muted-foreground">
+                                                Fecha de nacimiento
+                                            </span>
+                                        )}
                                     </div>
                                     <InputError message={errors.birth_date} />
                                 </div>
@@ -317,8 +335,8 @@ function buildPasswordChecks(
 ): PasswordCheck[] {
     return [
         {
-            label: 'Mínimo 12 caracteres',
-            valid: password.length >= 12,
+            label: 'Mínimo 8 caracteres',
+            valid: password.length >= 8,
         },
         {
             label: 'Incluye mayúsculas y minúsculas',
@@ -342,14 +360,6 @@ function buildPasswordChecks(
 function PasswordChecklist({ checks }: { checks: PasswordCheck[] }) {
     return (
         <div className="grid gap-3 rounded-2xl border border-border bg-muted/40 p-4">
-            <div className="flex items-start gap-2 text-xs text-muted-foreground">
-                <ShieldAlert className="mt-0.5 size-4 shrink-0 text-primary" />
-                <p>
-                    Valida tu contraseña antes de enviar. La revisión contra
-                    contraseñas filtradas se confirma en el servidor al crear la
-                    cuenta.
-                </p>
-            </div>
             <ul className="grid gap-1.5">
                 {checks.map((check) => (
                     <li

@@ -55,6 +55,23 @@ test('registration requires complete profile fields', function () {
     $this->assertGuest();
 });
 
+test('registration rejects passwords shorter than eight characters', function () {
+    $gender = Gender::query()->firstOrFail();
+
+    $response = $this->post(route('register.store'), [
+        'name' => 'Test',
+        'last_name' => 'User',
+        'gender_id' => $gender->id,
+        'birth_date' => now()->subYears(20)->toDateString(),
+        'email' => 'short-password@example.com',
+        'password' => 'pass123',
+        'password_confirmation' => 'pass123',
+    ]);
+
+    $response->assertSessionHasErrors('password');
+    $this->assertGuest();
+});
+
 test('registration rejects unsupported gender catalog values', function () {
     $unsupportedGender = Gender::query()->create(['name' => 'otro']);
 

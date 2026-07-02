@@ -1,13 +1,6 @@
 import { Head, Link, usePage } from '@inertiajs/react';
 import type { LucideIcon } from 'lucide-react';
-import {
-    Bike,
-    Bot,
-    Compass,
-    MapPinned,
-    ShieldCheck,
-    WifiOff,
-} from 'lucide-react';
+import { Bot, Compass, WifiOff } from 'lucide-react';
 import AppLogoIcon from '@/components/app-logo-icon';
 import { Button } from '@/components/ui/button';
 import { homePath } from '@/lib/navigation';
@@ -20,7 +13,6 @@ type PageProps = {
 
 export default function Welcome() {
     const { auth } = usePage<PageProps>().props;
-    const startHref = auth.user ? homePath(auth) : login();
 
     return (
         <>
@@ -68,35 +60,6 @@ export default function Welcome() {
                             )}
                         </div>
 
-                        <div className="featured-card relative flex min-h-[220px] flex-col justify-between overflow-hidden rounded-3xl border border-[#b2f000]/20 bg-gradient-to-br from-[#1a380a] to-[#0f1f06] p-5 text-white shadow-[0_8px_20px_var(--shadow-color)]">
-                            <div className="relative z-10 flex gap-2">
-                                <span className="rounded-xl bg-[#b2f000] px-2.5 py-1.5 font-black text-[#050605] text-[var(--fs-xs)] uppercase shadow-sm">
-                                    Android
-                                </span>
-                                <span className="rounded-xl border border-white/20 bg-white/10 px-2.5 py-1.5 font-black text-[var(--fs-xs)] text-white uppercase backdrop-blur-sm">
-                                    Mobile first
-                                </span>
-                            </div>
-                            <MountainLines />
-                            <div className="relative z-10">
-                                <h2 className="mb-2 leading-tight font-black tracking-[-0.04em] text-[var(--fs-xl)] text-white">
-                                    Rutas cicloturísticas reales
-                                </h2>
-                                <div className="flex flex-wrap gap-3 font-bold text-[#b2f000] text-[var(--fs-xs)] opacity-95">
-                                    <span className="inline-flex items-center gap-1">
-                                        <MapPinned className="size-4" /> Mapas
-                                    </span>
-                                    <span className="inline-flex items-center gap-1">
-                                        <Bike className="size-4" /> GPS
-                                    </span>
-                                    <span className="inline-flex items-center gap-1">
-                                        <ShieldCheck className="size-4" />{' '}
-                                        Alertas
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-
                         <div className="grid grid-cols-3 gap-2">
                             <Feature
                                 icon={Compass}
@@ -108,30 +71,22 @@ export default function Welcome() {
                                 label="Offline"
                                 value="Paquetes"
                             />
-                            <Feature icon={Bot} label="IA guía" value="n8n" />
+                            <Feature
+                                icon={Bot}
+                                label="IA guía"
+                                value="Agente"
+                            />
                         </div>
 
-                        <div className="grid gap-2">
-                            <Button
-                                asChild
-                                size="lg"
-                                className="h-12 w-full rounded-2xl bg-[#b2f000] text-xs font-black tracking-wider text-[#050605] uppercase shadow-md transition-all duration-200 hover:bg-[#9ad000] active:scale-95"
-                            >
-                                <Link href={startHref}>
-                                    {auth.user ? 'Ir al panel' : 'Comenzar'}
-                                </Link>
-                            </Button>
-                            <Button
-                                asChild
-                                size="lg"
-                                variant="outline"
-                                className="h-12 w-full rounded-2xl border-[var(--input-border)] bg-[var(--input-bg)] text-xs font-black tracking-wider text-[var(--text-color)] uppercase shadow-sm transition-all duration-200 hover:bg-[var(--input-border)] hover:text-[var(--text-color)] active:scale-95"
-                            >
-                                <Link href={auth.user ? '/routes' : login()}>
-                                    Ver rutas
-                                </Link>
-                            </Button>
-                        </div>
+                        <Button
+                            asChild
+                            size="lg"
+                            className="h-12 w-full rounded-2xl bg-[#b2f000] text-xs font-black tracking-wider text-[#050605] uppercase shadow-md transition-all duration-200 hover:bg-[#9ad000] active:scale-95"
+                        >
+                            <Link href={auth.user ? homePath(auth) : login()}>
+                                {auth.user ? 'Ir al panel' : 'Comenzar'}
+                            </Link>
+                        </Button>
                     </section>
                 </div>
             </main>
@@ -181,26 +136,6 @@ function MountainScene() {
             <path
                 d="M0 182L68 138L132 162L206 112L286 174L350 144L430 176V200H0V182Z"
                 fill="rgb(178 240 0 / 0.24)"
-            />
-        </svg>
-    );
-}
-
-function MountainLines() {
-    return (
-        <svg
-            className="absolute inset-x-0 bottom-0 z-0 h-24 w-full opacity-80"
-            viewBox="0 0 360 100"
-            preserveAspectRatio="none"
-            aria-hidden="true"
-        >
-            <path
-                d="M0 70L58 30L108 62L174 16L246 68L306 42L360 70V100H0V70Z"
-                fill="rgb(123 225 59 / 0.35)"
-            />
-            <path
-                d="M0 82L72 50L132 76L198 38L274 82L330 58L360 78V100H0V82Z"
-                fill="rgb(78 175 35 / 0.52)"
             />
         </svg>
     );

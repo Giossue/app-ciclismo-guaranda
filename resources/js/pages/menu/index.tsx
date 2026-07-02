@@ -40,6 +40,9 @@ const accountItems: AccountItem[] = [
 export default function MenuIndex() {
     const { auth } = usePage<PageProps>().props;
     const moduleItems = mobileMoreNavItems(auth);
+    const fullName = [auth.user?.name, auth.user?.last_name]
+        .filter(Boolean)
+        .join(' ');
 
     return (
         <>
@@ -52,7 +55,7 @@ export default function MenuIndex() {
                         Sesión activa
                     </p>
                     <p className="mt-1 text-base font-black text-[var(--text-color)]">
-                        {auth.user?.name}
+                        {fullName || auth.user?.name}
                     </p>
                     <p className="text-xs text-[var(--text-secondary)]">
                         {auth.user?.email}
