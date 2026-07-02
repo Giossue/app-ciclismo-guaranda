@@ -143,7 +143,7 @@ class ChatController extends Controller
 
             $json = $response->json();
             $assistantText = $this->extractAssistantText($json);
-            $conversation = $this->persistExchange($user, $conversation, $message, $assistantText, $context, $json);
+            $conversation = $this->persistExchange($user, $conversation, $message, $assistantText, $context, $json, $sessionId);
 
             return to_route('chat.index', ['conversation' => $conversation->id]);
         } catch (ConnectionException $exception) {
@@ -287,7 +287,7 @@ class ChatController extends Controller
     /**
      * @param  array<string, mixed>  $context
      */
-    private function persistExchange(User $user, ?AiConversation $conversation, string $userMessage, string $assistantMessage, array $context, mixed $rawResponse): AiConversation
+    private function persistExchange(User $user, ?AiConversation $conversation, string $userMessage, string $assistantMessage, array $context, mixed $rawResponse, string $sessionId): AiConversation
     {
         $now = now();
 
@@ -295,18 +295,21 @@ class ChatController extends Controller
             $conversation = AiConversation::query()->create([
                 'user_id' => $user->id,
                 'title' => Str::limit($userMessage, 80),
+                'session_id' => $sessionId,
                 'context' => $context,
                 'started_at' => $now,
                 'last_activity_at' => $now,
             ]);
         } else {
             $conversation->forceFill([
+                'session_id' => $sessionId,
                 'context' => $context,
                 'last_activity_at' => $now,
             ])->save();
         }
 
         $conversation->messages()->create([
+            'session_id' => $sessionId,
             'role' => 'user',
             'message' => $userMessage,
             'provider' => null,
@@ -315,6 +318,7 @@ class ChatController extends Controller
         ]);
 
         $conversation->messages()->create([
+            'session_id' => $sessionId,
             'role' => 'assistant',
             'message' => $assistantMessage,
             'provider' => 'n8n',

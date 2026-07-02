@@ -39,26 +39,33 @@ export default function Welcome() {
                     </section>
 
                     <section className="ueb-auth-card">
-                        <div className="flex rounded-2xl border border-[var(--input-border)] bg-[var(--input-bg)] p-1">
-                            {auth.user ? (
-                                <Button className="flex-1" asChild>
-                                    <Link href={homePath(auth)}>Entrar</Link>
+                        {auth.user ? (
+                            <Button
+                                asChild
+                                size="lg"
+                                className="h-12 w-full rounded-2xl bg-[#b2f000] text-xs font-black tracking-wider text-[#050605] uppercase shadow-md transition-all duration-200 hover:bg-[#9ad000] active:scale-95"
+                            >
+                                <Link href={homePath(auth)}>Entrar</Link>
+                            </Button>
+                        ) : (
+                            <div className="grid grid-cols-2 gap-3">
+                                <Button
+                                    asChild
+                                    size="lg"
+                                    className="h-12 rounded-2xl bg-[#b2f000] text-xs font-black tracking-wider text-[#050605] uppercase shadow-md transition-all duration-200 hover:bg-[#9ad000] active:scale-95"
+                                >
+                                    <Link href={login()}>Ingresar</Link>
                                 </Button>
-                            ) : (
-                                <>
-                                    <Button className="flex-1" asChild>
-                                        <Link href={login()}>Ingresar</Link>
-                                    </Button>
-                                    <Button
-                                        className="flex-1 text-[var(--text-secondary)] hover:bg-[var(--panel-soft)] hover:text-[var(--text-color)]"
-                                        asChild
-                                        variant="ghost"
-                                    >
-                                        <Link href={register()}>Registro</Link>
-                                    </Button>
-                                </>
-                            )}
-                        </div>
+                                <Button
+                                    asChild
+                                    size="lg"
+                                    variant="outline"
+                                    className="h-12 rounded-2xl border-[var(--input-border)] bg-[var(--bg-card-color)] text-xs font-black tracking-wider text-[var(--text-color)] uppercase shadow-sm transition-all duration-200 hover:bg-[var(--panel-soft)] active:scale-95"
+                                >
+                                    <Link href={register()}>Registro</Link>
+                                </Button>
+                            </div>
+                        )}
 
                         <div className="grid grid-cols-3 gap-2">
                             <Feature
@@ -104,7 +111,7 @@ function Feature({
     value: string;
 }) {
     return (
-        <div className="rounded-2xl border border-[var(--input-border)] bg-[var(--bg-card-color)] p-3 shadow-sm transition-all duration-200 hover:-translate-y-0.5">
+        <div className="flex min-h-[104px] flex-col items-center justify-center rounded-2xl border border-[var(--input-border)] bg-[var(--bg-card-color)] p-3 text-center shadow-sm transition-all duration-200 hover:-translate-y-0.5">
             <Icon className="mb-3 size-5 text-[var(--brand-accent)]" />
             <p className="font-bold text-[var(--fs-xs)] text-[var(--text-secondary)]">
                 {label}

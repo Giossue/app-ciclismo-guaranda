@@ -179,7 +179,7 @@ export default function Register({ genders, passwordRules }: Props) {
                                                 errors.birth_date,
                                             )}
                                             className={cn(
-                                                'h-13 pl-12',
+                                                'h-13 bg-[var(--bg-card-color)] pl-12 [color-scheme:light] dark:[color-scheme:dark]',
                                                 !birthDate &&
                                                     '[&::-webkit-datetime-edit]:text-transparent',
                                             )}
