@@ -6,10 +6,12 @@ import {
     MapPin,
     Plus,
     Send,
+    Square,
     Trash2,
+    Volume2,
     WifiOff,
 } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
 import ChatController from '@/actions/App/Http/Controllers/Cyclist/ChatController';
 import InputError from '@/components/input-error';
@@ -39,6 +41,11 @@ import {
     getRememberedAppLocation,
     watchNetworkStatus,
 } from '@/lib/native/capacitor';
+import {
+    isSpeechSupported,
+    speakText,
+    stopSpeaking,
+} from '@/lib/native/speech';
 import { cn } from '@/lib/utils';
 import type { Auth } from '@/types';
 
@@ -114,6 +121,8 @@ export default function ChatIndex({
     const messagesRef = useRef<HTMLDivElement>(null);
     const messageRef = useRef<HTMLTextAreaElement>(null);
     const [agentIsLoading, setAgentIsLoading] = useState(false);
+    const [speakingId, setSpeakingId] = useState<number | null>(null);
+    const speechSupported = useMemo(() => isSpeechSupported(), []);
     const { auth } = usePage<{ auth: Auth }>().props;
     const userInitial = firstUserInitial(auth.user?.name);
 
@@ -122,6 +131,40 @@ export default function ChatIndex({
 
         return watchNetworkStatus((status) => setIsOnline(status.connected));
     }, []);
+
+    useEffect(() => {
+        return () => {
+            void stopSpeaking();
+        };
+    }, []);
+
+    const toggleSpeak = useCallback(
+        async (id: number, rawMessage: string) => {
+            if (speakingId === id) {
+                await stopSpeaking();
+                setSpeakingId(null);
+
+                return;
+            }
+
+            const text = speakableText(rawMessage);
+
+            if (text === '') {
+                return;
+            }
+
+            setSpeakingId(id);
+
+            try {
+                await speakText(text);
+            } catch {
+                // Playback was interrupted or the engine failed; ignore.
+            } finally {
+                setSpeakingId((current) => (current === id ? null : current));
+            }
+        },
+        [speakingId],
+    );
 
     useEffect(() => {
         const element = messagesRef.current;
@@ -212,6 +255,9 @@ export default function ChatIndex({
                             key={`${message.role}-${message.id}`}
                             message={message}
                             userInitial={userInitial}
+                            speechSupported={speechSupported}
+                            isSpeaking={speakingId === message.id}
+                            onToggleSpeak={toggleSpeak}
                         />
                     ))}
 
@@ -536,7 +582,6 @@ function DeleteConversationForm({
     );
 }
 
-
 function AgentLoadingBubble() {
     return (
         <div className="ueb-message-row bot">
@@ -544,7 +589,10 @@ function AgentLoadingBubble() {
                 <Bot className="size-4" />
             </div>
             <div className="ueb-message-bubble">
-                <div className="flex items-center gap-1.5" aria-label="El agente está escribiendo">
+                <div
+                    className="flex items-center gap-1.5"
+                    aria-label="El agente está escribiendo"
+                >
                     <span className="size-1.5 animate-bounce rounded-full bg-muted-foreground [animation-delay:-0.2s]" />
                     <span className="size-1.5 animate-bounce rounded-full bg-muted-foreground [animation-delay:-0.1s]" />
                     <span className="size-1.5 animate-bounce rounded-full bg-muted-foreground" />
@@ -557,11 +605,18 @@ function AgentLoadingBubble() {
 function MessageBubble({
     message,
     userInitial,
+    speechSupported,
+    isSpeaking,
+    onToggleSpeak,
 }: {
     message: ChatMessage;
     userInitial: string;
+    speechSupported: boolean;
+    isSpeaking: boolean;
+    onToggleSpeak: (id: number, rawMessage: string) => void;
 }) {
     const isUser = message.role === 'user';
+    const canSpeak = !isUser && speechSupported;
 
     return (
         <div className={cn('ueb-message-row', isUser ? 'user' : 'bot')}>
@@ -572,17 +627,57 @@ function MessageBubble({
                 <div className="ueb-message-bubble">
                     <MarkdownMessage>{message.message}</MarkdownMessage>
                 </div>
-                {message.sent_at && (
-                    <span className="px-1 text-[0.625rem] leading-none font-black tracking-wide text-[var(--text-muted)]">
-                        {new Date(message.sent_at).toLocaleTimeString('es-EC', {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                        })}
-                    </span>
-                )}
+                <div className="flex items-center gap-2 px-1">
+                    {message.sent_at && (
+                        <span className="text-[0.625rem] leading-none font-black tracking-wide text-[var(--text-muted)]">
+                            {new Date(message.sent_at).toLocaleTimeString(
+                                'es-EC',
+                                {
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                },
+                            )}
+                        </span>
+                    )}
+                    {canSpeak && (
+                        <button
+                            type="button"
+                            onClick={() =>
+                                onToggleSpeak(message.id, message.message)
+                            }
+                            className={cn(
+                                'inline-flex size-6 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground',
+                                isSpeaking && 'text-primary',
+                            )}
+                            aria-label={
+                                isSpeaking
+                                    ? 'Detener lectura'
+                                    : 'Escuchar mensaje'
+                            }
+                            title={isSpeaking ? 'Detener' : 'Escuchar'}
+                        >
+                            {isSpeaking ? (
+                                <Square className="size-3 fill-current" />
+                            ) : (
+                                <Volume2 className="size-3.5" />
+                            )}
+                        </button>
+                    )}
+                </div>
             </div>
         </div>
     );
+}
+
+function speakableText(raw: string): string {
+    return raw
+        .replace(/\r\n/g, '\n')
+        .replace(/\*\*([^*]+)\*\*/g, '$1')
+        .replace(/^\s*(?:[-*•]|\d+\.)\s+/gm, '')
+        .replace(/[\p{Extended_Pictographic}\u{1F1E6}-\u{1F1FF}]/gu, '')
+        .replace(/[\uFE00-\uFE0F]|\u200D/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
 }
 
 function MarkdownMessage({ children }: { children: string }) {
