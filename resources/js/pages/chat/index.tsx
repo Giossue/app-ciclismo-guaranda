@@ -1,4 +1,4 @@
-import { Form, Head, Link } from '@inertiajs/react';
+import { Form, Head, Link, usePage } from '@inertiajs/react';
 import {
     Bot,
     History,
@@ -41,6 +41,7 @@ import {
     watchNetworkStatus,
 } from '@/lib/native/capacitor';
 import { cn } from '@/lib/utils';
+import type { Auth } from '@/types';
 
 type ChatMessage = {
     id: number;
@@ -112,6 +113,8 @@ export default function ChatIndex({
         return chatLocationFromSnapshot(rememberedLocation);
     });
     const messagesRef = useRef<HTMLDivElement>(null);
+    const { auth } = usePage<{ auth: Auth }>().props;
+    const userInitial = firstUserInitial(auth.user?.name);
 
     useEffect(() => {
         void getNetworkStatus().then((status) => setIsOnline(status.connected));
@@ -206,6 +209,7 @@ export default function ChatIndex({
                         <MessageBubble
                             key={`${message.role}-${message.id}`}
                             message={message}
+                            userInitial={userInitial}
                         />
                     ))}
 
@@ -383,6 +387,12 @@ function chatLocationFromSnapshot(location: {
     };
 }
 
+function firstUserInitial(name: string | null | undefined): string {
+    const initial = name?.trim().charAt(0).toLocaleUpperCase('es-EC');
+
+    return initial && initial.length > 0 ? initial : 'U';
+}
+
 function HistorySheet({
     conversations,
     activeConversation,
@@ -489,7 +499,7 @@ function DeleteConversationForm({
             onSubmit={(event: FormEvent<HTMLFormElement>) => {
                 if (
                     !window.confirm(
-                        `¿Ocultar "${title}" de tu historial? La conversación seguirá existiendo en la base para auditoría.`,
+                        `¿Ocultar "${title}" de tu historial? Se conservará un registro interno por seguridad.`,
                     )
                 ) {
                     event.preventDefault();
@@ -517,13 +527,19 @@ function DeleteConversationForm({
     );
 }
 
-function MessageBubble({ message }: { message: ChatMessage }) {
+function MessageBubble({
+    message,
+    userInitial,
+}: {
+    message: ChatMessage;
+    userInitial: string;
+}) {
     const isUser = message.role === 'user';
 
     return (
         <div className={cn('ueb-message-row', isUser ? 'user' : 'bot')}>
             <div className={cn('ueb-message-avatar', isUser ? 'user' : 'bot')}>
-                {isUser ? 'Tú'.slice(0, 1) : <Bot className="size-4" />}
+                {isUser ? userInitial : <Bot className="size-4" />}
             </div>
             <div className="flex flex-col gap-1">
                 <div className="ueb-message-bubble">

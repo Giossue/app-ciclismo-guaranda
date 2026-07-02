@@ -144,7 +144,6 @@ class ChatController extends Controller
             $json = $response->json();
             $assistantText = $this->extractAssistantText($json);
             $conversation = $this->persistExchange($user, $conversation, $message, $assistantText, $context, $json);
-            Inertia::flash('toast', ['type' => 'success', 'message' => __('Respuesta del asistente recibida.')]);
 
             return to_route('chat.index', ['conversation' => $conversation->id]);
         } catch (ConnectionException $exception) {
