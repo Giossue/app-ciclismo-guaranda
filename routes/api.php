@@ -7,9 +7,11 @@ Route::middleware('agent.tool')
     ->prefix('agent')
     ->name('agent.')
     ->group(function (): void {
+        Route::post('routes', [AgentToolController::class, 'routes'])->name('routes');
         Route::post('routes/search', [AgentToolController::class, 'searchRoutes'])->name('routes.search');
         Route::get('routes/{route}', [AgentToolController::class, 'showRoute'])->name('routes.show');
         Route::get('routes/{route}/alerts', [AgentToolController::class, 'routeAlerts'])->name('routes.alerts');
+        Route::post('pois', [AgentToolController::class, 'pois'])->name('pois');
         Route::post('pois/search', [AgentToolController::class, 'searchPois'])->name('pois.search');
         Route::post('navigation/progress', [AgentToolController::class, 'routeProgress'])->name('navigation.progress');
     });

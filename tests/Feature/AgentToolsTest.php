@@ -187,6 +187,45 @@ test('agent route search falls back to available routes when generic query has n
         ->assertJsonMissing(['title' => 'Ruta agente 2']);
 });
 
+test('agent consolidated routes endpoint returns full route details for recommendations', function () {
+    [$route, $poi] = createRouteForAgentTools();
+    createRouteForAgentTools('inactiva');
+
+    $this->postJson(route('agent.routes'), [
+        'intent' => 'recommend',
+        'location' => [
+            'latitude' => -1.401,
+            'longitude' => -79.017,
+        ],
+        'max_results' => 5,
+    ], agentHeaders())
+        ->assertOk()
+        ->assertJsonPath('mode', 'recommend')
+        ->assertJsonPath('selected_route', null)
+        ->assertJsonPath('routes.0.id', $route->id)
+        ->assertJsonPath('routes.0.pois.0.id', $poi->id)
+        ->assertJsonPath('routes.0.alerts.0.title', 'Piedras en la vía')
+        ->assertJsonPath('routes.0.metric.distance_km', 9.75)
+        ->assertJsonPath('summary.has_location', true)
+        ->assertJsonPath('summary.sorted_by', 'distance')
+        ->assertJsonMissing(['title' => 'Alerta no visible']);
+});
+
+test('agent consolidated routes endpoint returns selected route detail', function () {
+    [$route, $poi] = createRouteForAgentTools();
+
+    $this->postJson(route('agent.routes'), [
+        'intent' => 'detail',
+        'route_slug' => $route->slug,
+    ], agentHeaders())
+        ->assertOk()
+        ->assertJsonPath('mode', 'detail')
+        ->assertJsonPath('selected_route.id', $route->id)
+        ->assertJsonPath('selected_route.pois.0.id', $poi->id)
+        ->assertJsonPath('routes', [])
+        ->assertJsonPath('summary.sorted_by', 'selected_route');
+});
+
 test('agent can get route detail with pois and visible alerts only', function () {
     [$route, $poi] = createRouteForAgentTools();
 
@@ -217,6 +256,26 @@ test('agent can search active pois near a location and hide inactive pois', func
         ->assertJsonPath('pois.0.details.store.sells_hydration', true)
         ->assertJsonPath('pois.0.route_context.distance_from_start_km', 4.5)
         ->assertJsonMissing(['title' => 'Tienda agente '.((int) substr($poi->name, -1) + 1)]);
+});
+
+test('agent consolidated pois endpoint returns summary', function () {
+    [$route, $poi] = createRouteForAgentTools();
+    createRouteForAgentTools('activa', false);
+
+    $this->postJson(route('agent.pois'), [
+        'location' => [
+            'latitude' => -1.4051,
+            'longitude' => -79.0211,
+        ],
+        'route_id' => $route->id,
+        'category' => 'tienda',
+        'max_results' => 5,
+    ], agentHeaders())
+        ->assertOk()
+        ->assertJsonPath('pois.0.id', $poi->id)
+        ->assertJsonPath('summary.total', 1)
+        ->assertJsonPath('summary.has_location', true)
+        ->assertJsonPath('summary.route_filtered', true);
 });
 
 test('agent can calculate progress on route geometry', function () {

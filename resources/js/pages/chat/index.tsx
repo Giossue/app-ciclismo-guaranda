@@ -219,9 +219,7 @@ export default function ChatIndex({
 
                     {latestMessages.length === 0 && !agentIsLoading && (
                         <div className="m-auto flex max-w-64 flex-col items-center gap-3 text-center text-muted-foreground">
-                            <div className="grid size-12 place-items-center rounded-xl border bg-card">
-                                <Bot className="size-6" />
-                            </div>
+                            <Bot className="size-8 text-muted-foreground" />
                             <div className="flex flex-col gap-1">
                                 <p className="text-sm font-black text-foreground">
                                     Empieza una consulta
@@ -483,7 +481,7 @@ function HistorySheet({
                         ))}
 
                         {conversations.length === 0 && (
-                            <p className="rounded-2xl border bg-muted/30 p-3 text-sm text-muted-foreground">
+                            <p className="px-1 py-2 text-sm text-muted-foreground">
                                 Aún no hay consultas guardadas.
                             </p>
                         )}

@@ -18,6 +18,95 @@ use Illuminate\Support\Str;
 
 class AgentToolController extends Controller
 {
+    public function routes(Request $request): JsonResponse
+    {
+        $payload = $request->validate([
+            'intent' => ['nullable', 'string', 'in:list,recommend,detail,alerts,search'],
+            'route_id' => ['nullable', 'integer'],
+            'route_slug' => ['nullable', 'string', 'max:160'],
+            'latitude' => ['nullable', 'numeric', 'between:-90,90', 'required_with:longitude'],
+            'longitude' => ['nullable', 'numeric', 'between:-180,180', 'required_with:latitude'],
+            'location' => ['nullable', 'array'],
+            'location.latitude' => ['nullable', 'numeric', 'between:-90,90', 'required_with:location.longitude'],
+            'location.longitude' => ['nullable', 'numeric', 'between:-180,180', 'required_with:location.latitude'],
+            'max_results' => ['nullable', 'integer', 'min:1', 'max:10'],
+            'difficulty' => ['nullable', 'string', 'max:80'],
+            'category' => ['nullable', 'string', 'max:80'],
+            'query' => ['nullable', 'string', 'max:120'],
+        ]);
+
+        [$latitude, $longitude] = $this->coordinatesFromPayload($payload);
+        $route = $this->routeFromPayload($payload);
+        $intent = $payload['intent'] ?? null;
+
+        if ($route !== null) {
+            $distanceMeters = $latitude !== null && $longitude !== null
+                ? $this->distanceFromUserToRouteMeters($route, $latitude, $longitude)
+                : null;
+
+            return response()->json([
+                'mode' => $intent === 'alerts' ? 'alerts' : 'detail',
+                'selected_route' => $this->serializeRouteDetail($route, $distanceMeters),
+                'routes' => [],
+                'summary' => [
+                    'total' => 1,
+                    'has_location' => $latitude !== null && $longitude !== null,
+                    'sorted_by' => 'selected_route',
+                ],
+            ]);
+        }
+
+        $limit = (int) ($payload['max_results'] ?? 5);
+        $routes = $this->searchRouteDetails($payload, $latitude, $longitude, $limit);
+
+        if ($routes === [] && isset($payload['query'])) {
+            $fallbackPayload = $payload;
+            unset($fallbackPayload['query']);
+
+            $routes = $this->searchRouteDetails($fallbackPayload, $latitude, $longitude, $limit);
+        }
+
+        return response()->json([
+            'mode' => $intent ?? (isset($payload['query']) ? 'search' : 'list'),
+            'selected_route' => null,
+            'routes' => $routes,
+            'summary' => [
+                'total' => count($routes),
+                'has_location' => $latitude !== null && $longitude !== null,
+                'sorted_by' => $latitude !== null && $longitude !== null ? 'distance' : 'default',
+            ],
+        ]);
+    }
+
+    public function pois(Request $request): JsonResponse
+    {
+        $payload = $request->validate([
+            'latitude' => ['nullable', 'numeric', 'between:-90,90', 'required_with:longitude'],
+            'longitude' => ['nullable', 'numeric', 'between:-180,180', 'required_with:latitude'],
+            'location' => ['nullable', 'array'],
+            'location.latitude' => ['nullable', 'numeric', 'between:-90,90', 'required_with:location.longitude'],
+            'location.longitude' => ['nullable', 'numeric', 'between:-180,180', 'required_with:location.latitude'],
+            'route_id' => ['nullable', 'integer'],
+            'route_slug' => ['nullable', 'string', 'max:160'],
+            'category' => ['nullable', 'string', 'max:80'],
+            'query' => ['nullable', 'string', 'max:120'],
+            'max_results' => ['nullable', 'integer', 'min:1', 'max:10'],
+        ]);
+
+        [$latitude, $longitude] = $this->coordinatesFromPayload($payload);
+        $route = $this->routeFromPayload($payload);
+        $pois = $this->searchPoiCards($payload, $latitude, $longitude, (int) ($payload['max_results'] ?? 5), $route);
+
+        return response()->json([
+            'pois' => $pois,
+            'summary' => [
+                'total' => count($pois),
+                'has_location' => $latitude !== null && $longitude !== null,
+                'route_filtered' => $route !== null,
+            ],
+        ]);
+    }
+
     public function searchRoutes(Request $request): JsonResponse
     {
         $payload = $request->validate([
@@ -70,54 +159,11 @@ class AgentToolController extends Controller
             'max_results' => ['nullable', 'integer', 'min:1', 'max:10'],
         ]);
 
-        $latitude = $this->optionalFloat($payload, 'latitude');
-        $longitude = $this->optionalFloat($payload, 'longitude');
-        $limit = (int) ($payload['max_results'] ?? 5);
+        [$latitude, $longitude] = $this->coordinatesFromPayload($payload);
         $route = $this->routeFromPayload($payload);
 
-        $pois = PointOfInterest::query()
-            ->with([
-                'category:id,name',
-                'hours',
-                'images',
-                'foodDetail',
-                'lodgingDetail',
-                'storeDetail',
-                'workshopDetail',
-                'healthDetail',
-            ])
-            ->where('active', true)
-            ->when($route !== null, fn (Builder $query) => $query->whereHas('routes', fn (Builder $routeQuery) => $routeQuery->whereKey($route->id)))
-            ->when(isset($payload['category']), fn (Builder $query) => $query->whereHas('category', fn (Builder $categoryQuery) => $categoryQuery->where('name', 'like', '%'.$payload['category'].'%')))
-            ->when(isset($payload['query']), fn (Builder $query) => $query->where(function (Builder $textQuery) use ($payload): void {
-                $textQuery->where('name', 'like', '%'.$payload['query'].'%')
-                    ->orWhere('description', 'like', '%'.$payload['query'].'%')
-                    ->orWhere('observations', 'like', '%'.$payload['query'].'%')
-                    ->orWhere('address', 'like', '%'.$payload['query'].'%');
-            }))
-            ->get()
-            ->map(function (PointOfInterest $poi) use ($latitude, $longitude, $route): array {
-                $distanceMeters = $latitude !== null && $longitude !== null
-                    ? $this->haversineMeters($latitude, $longitude, (float) $poi->latitude, (float) $poi->longitude)
-                    : null;
-
-                return [
-                    ...$this->serializePoiCard($poi, $distanceMeters, $route),
-                    '_sort_distance_m' => $distanceMeters,
-                ];
-            })
-            ->sortBy(fn (array $poi): float|int => $poi['_sort_distance_m'] ?? $poi['id'])
-            ->take($limit)
-            ->map(function (array $poi): array {
-                unset($poi['_sort_distance_m']);
-
-                return $poi;
-            })
-            ->values()
-            ->all();
-
         return response()->json([
-            'pois' => $pois,
+            'pois' => $this->searchPoiCards($payload, $latitude, $longitude, (int) ($payload['max_results'] ?? 5), $route),
         ]);
     }
 
@@ -213,6 +259,43 @@ class AgentToolController extends Controller
                 }
             })
             ->first();
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     * @return array<int, array<string, mixed>>
+     */
+    private function searchRouteDetails(array $payload, ?float $latitude, ?float $longitude, int $limit): array
+    {
+        return $this->activeRoutesQuery()
+            ->when(isset($payload['difficulty']), fn (Builder $query) => $query->whereHas('difficulty', fn (Builder $difficultyQuery) => $difficultyQuery->where('name', 'like', '%'.$payload['difficulty'].'%')))
+            ->when(isset($payload['category']), fn (Builder $query) => $query->whereHas('category', fn (Builder $categoryQuery) => $categoryQuery->where('name', 'like', '%'.$payload['category'].'%')))
+            ->when(isset($payload['query']), fn (Builder $query) => $query->where(function (Builder $textQuery) use ($payload): void {
+                $textQuery->where('name', 'like', '%'.$payload['query'].'%')
+                    ->orWhere('description', 'like', '%'.$payload['query'].'%')
+                    ->orWhere('start_name', 'like', '%'.$payload['query'].'%')
+                    ->orWhere('end_name', 'like', '%'.$payload['query'].'%');
+            }))
+            ->get()
+            ->map(function (CyclingRoute $route) use ($latitude, $longitude): array {
+                $distanceMeters = $latitude !== null && $longitude !== null
+                    ? $this->distanceFromUserToRouteMeters($route, $latitude, $longitude)
+                    : null;
+
+                return [
+                    ...$this->serializeRouteDetail($route, $distanceMeters),
+                    '_sort_distance_m' => $distanceMeters,
+                ];
+            })
+            ->sortBy(fn (array $route): float|int => $route['_sort_distance_m'] ?? $route['id'])
+            ->take($limit)
+            ->map(function (array $route): array {
+                unset($route['_sort_distance_m']);
+
+                return $route;
+            })
+            ->values()
+            ->all();
     }
 
     /**
@@ -315,9 +398,9 @@ class AgentToolController extends Controller
     /**
      * @return array<string, mixed>
      */
-    private function serializeRouteDetail(CyclingRoute $route): array
+    private function serializeRouteDetail(CyclingRoute $route, ?float $distanceMeters = null): array
     {
-        $card = $this->serializeRouteCard($route, null);
+        $card = $this->serializeRouteCard($route, $distanceMeters);
         $latestMetric = $route->metrics->sortByDesc('route_version')->first();
 
         return [
@@ -395,6 +478,54 @@ class AgentToolController extends Controller
         ];
     }
 
+    /**
+     * @param  array<string, mixed>  $payload
+     * @return array<int, array<string, mixed>>
+     */
+    private function searchPoiCards(array $payload, ?float $latitude, ?float $longitude, int $limit, ?CyclingRoute $route): array
+    {
+        return PointOfInterest::query()
+            ->with([
+                'category:id,name',
+                'hours',
+                'images',
+                'foodDetail',
+                'lodgingDetail',
+                'storeDetail',
+                'workshopDetail',
+                'healthDetail',
+            ])
+            ->where('active', true)
+            ->when($route !== null, fn (Builder $query) => $query->whereHas('routes', fn (Builder $routeQuery) => $routeQuery->whereKey($route->id)))
+            ->when(isset($payload['category']), fn (Builder $query) => $query->whereHas('category', fn (Builder $categoryQuery) => $categoryQuery->where('name', 'like', '%'.$payload['category'].'%')))
+            ->when(isset($payload['query']), fn (Builder $query) => $query->where(function (Builder $textQuery) use ($payload): void {
+                $textQuery->where('name', 'like', '%'.$payload['query'].'%')
+                    ->orWhere('description', 'like', '%'.$payload['query'].'%')
+                    ->orWhere('observations', 'like', '%'.$payload['query'].'%')
+                    ->orWhere('address', 'like', '%'.$payload['query'].'%');
+            }))
+            ->get()
+            ->map(function (PointOfInterest $poi) use ($latitude, $longitude, $route): array {
+                $distanceMeters = $latitude !== null && $longitude !== null
+                    ? $this->haversineMeters($latitude, $longitude, (float) $poi->latitude, (float) $poi->longitude)
+                    : null;
+
+                return [
+                    ...$this->serializePoiCard($poi, $distanceMeters, $route),
+                    '_sort_distance_m' => $distanceMeters,
+                ];
+            })
+            ->sortBy(fn (array $poi): float|int => $poi['_sort_distance_m'] ?? $poi['id'])
+            ->take($limit)
+            ->map(function (array $poi): array {
+                unset($poi['_sort_distance_m']);
+
+                return $poi;
+            })
+            ->values()
+            ->all();
+    }
+
     private function poiPivotForRoute(PointOfInterest $poi, CyclingRoute $route): ?Pivot
     {
         $loadedRoutePoi = $route->pointsOfInterest->firstWhere('id', $poi->id);
@@ -465,6 +596,27 @@ class AgentToolController extends Controller
         }
 
         return URL::to(Storage::url($path));
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     * @return array{0: float|null, 1: float|null}
+     */
+    private function coordinatesFromPayload(array $payload): array
+    {
+        $location = $payload['location'] ?? null;
+
+        if (is_array($location)) {
+            return [
+                $this->optionalFloat($location, 'latitude'),
+                $this->optionalFloat($location, 'longitude'),
+            ];
+        }
+
+        return [
+            $this->optionalFloat($payload, 'latitude'),
+            $this->optionalFloat($payload, 'longitude'),
+        ];
     }
 
     /**
