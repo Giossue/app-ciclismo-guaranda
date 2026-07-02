@@ -218,13 +218,41 @@ class ChatController extends Controller
             'session_id' => $sessionId,
             'message' => $message,
             'route_id' => $route?->id,
-            'route' => $context['route'] ?? null,
+            'route' => $context['route'] ?? $this->emptyRouteContext(),
             'location' => $location ?? [
                 'latitude' => null,
                 'longitude' => null,
                 'accuracy_m' => null,
                 'recorded_at' => null,
             ],
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function emptyRouteContext(): array
+    {
+        return [
+            'id' => null,
+            'name' => null,
+            'slug' => null,
+            'difficulty' => null,
+            'category' => null,
+            'description' => null,
+            'start' => null,
+            'end' => null,
+            'metric' => [
+                'distance_km' => null,
+                'estimated_time_minutes' => null,
+                'positive_elevation_m' => null,
+                'negative_elevation_m' => null,
+                'transport_mode' => null,
+            ],
+            'recommendations' => null,
+            'observations' => null,
+            'pois' => null,
+            'active_incidents' => null,
         ];
     }
 

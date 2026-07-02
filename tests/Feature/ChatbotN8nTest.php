@@ -134,6 +134,41 @@ test('chat proxies message to n8n and stores exchange after response', function 
     });
 });
 
+test('chat sends fixed payload shape without selected route or location', function () {
+    config(['guaranda.n8n.webhook_url' => 'https://n8n.example/webhook/secret-token']);
+
+    Http::fake([
+        'https://n8n.example/*' => Http::response(['reply' => 'Hola, soy el asistente.'], 200),
+    ]);
+
+    $cyclist = User::factory()->cyclist()->create();
+
+    $this->actingAs($cyclist)
+        ->post(route('chat.messages.store'), [
+            'message' => 'hola',
+        ])
+        ->assertRedirect();
+
+    Http::assertSent(function (Request $request) use ($cyclist): bool {
+        $payload = $request->data();
+
+        return Arr::get($payload, 'session_id') === 'guaranda-go-user-'.$cyclist->id
+            && Arr::get($payload, 'message') === 'hola'
+            && Arr::exists($payload, 'route_id')
+            && Arr::exists($payload, 'route')
+            && Arr::exists($payload, 'location')
+            && Arr::get($payload, 'route_id') === null
+            && Arr::get($payload, 'route.id') === null
+            && Arr::get($payload, 'route.name') === null
+            && Arr::get($payload, 'route.metric.distance_km') === null
+            && Arr::get($payload, 'route.recommendations') === null
+            && Arr::get($payload, 'location.latitude') === null
+            && Arr::get($payload, 'location.longitude') === null
+            && Arr::get($payload, 'location.accuracy_m') === null
+            && Arr::get($payload, 'location.recorded_at') === null;
+    });
+});
+
 test('chat requires configured webhook before storing messages', function () {
     config(['guaranda.n8n.webhook_url' => null]);
 
