@@ -96,6 +96,12 @@ test('chat proxies message to n8n and stores exchange after response', function 
         ->post(route('chat.messages.store'), [
             'message' => '¿Qué debo llevar para esta ruta?',
             'route_id' => $route->id,
+            'location' => [
+                'latitude' => -1.5926,
+                'longitude' => -79.0009,
+                'accuracy_m' => 25,
+                'recorded_at' => '2026-07-01T16:45:00.000Z',
+            ],
         ])
         ->assertRedirect();
 
@@ -112,10 +118,14 @@ test('chat proxies message to n8n and stores exchange after response', function 
         return $request->url() === 'https://n8n.example/webhook/secret-token'
             && Arr::get($payload, 'session_id') === 'guaranda-go-user-'.$cyclist->id
             && Arr::get($payload, 'message') === '¿Qué debo llevar para esta ruta?'
+            && Arr::get($payload, 'location.latitude') === -1.5926
+            && Arr::get($payload, 'location.longitude') === -79.0009
+            && Arr::get($payload, 'location.accuracy_m') === 25.0
             && Arr::get($payload, 'context.app') === 'Guaranda Go'
             && Arr::get($payload, 'context.route.id') === $route->id
             && Arr::get($payload, 'context.privacy.no_email_sent') === true
             && Arr::get($payload, 'context.privacy.conversation_storage_external') === true
+            && ! Arr::has($payload, 'context.location')
             && ! Arr::has($payload, 'context.user.email')
             && ! Arr::has($payload, 'context.user.name');
     });

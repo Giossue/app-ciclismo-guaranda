@@ -2,6 +2,8 @@ import { Form, Head, Link } from '@inertiajs/react';
 import {
     Bot,
     History,
+    LoaderCircle,
+    MapPin,
     MessageSquareText,
     Plus,
     Send,
@@ -33,6 +35,7 @@ import {
 } from '@/components/ui/sheet';
 import {
     browserNetworkStatus,
+    getCurrentAppPosition,
     getNetworkStatus,
     watchNetworkStatus,
 } from '@/lib/native/capacitor';
@@ -68,6 +71,18 @@ type RouteContextOption = {
     category: string | null;
 };
 
+type ChatLocationState =
+    | { status: 'idle' }
+    | { status: 'loading' }
+    | {
+          status: 'ready';
+          latitude: string;
+          longitude: string;
+          accuracyM: string;
+          recordedAt: string;
+      }
+    | { status: 'error'; message: string };
+
 type Props = {
     webhookConfigured: boolean;
     conversations: ConversationSummary[];
@@ -86,6 +101,9 @@ export default function ChatIndex({
     const [isOnline, setIsOnline] = useState(
         () => browserNetworkStatus().connected,
     );
+    const [location, setLocation] = useState<ChatLocationState>({
+        status: 'idle',
+    });
 
     useEffect(() => {
         void getNetworkStatus().then((status) => setIsOnline(status.connected));
@@ -94,6 +112,34 @@ export default function ChatIndex({
     }, []);
 
     const canSend = webhookConfigured && isOnline;
+
+    const requestLocation = async () => {
+        setLocation({ status: 'loading' });
+
+        try {
+            const position = await getCurrentAppPosition();
+            const latitude = position.coords.latitude.toFixed(7);
+            const longitude = position.coords.longitude.toFixed(7);
+            const accuracy = position.coords.accuracy;
+
+            setLocation({
+                status: 'ready',
+                latitude,
+                longitude,
+                accuracyM:
+                    typeof accuracy === 'number' && Number.isFinite(accuracy)
+                        ? Math.round(accuracy).toString()
+                        : '',
+                recordedAt: new Date(position.timestamp).toISOString(),
+            });
+        } catch {
+            setLocation({
+                status: 'error',
+                message:
+                    'No se pudo activar la ubicación. Puedes seguir en modo limitado.',
+            });
+        }
+    };
 
     return (
         <>
@@ -214,6 +260,31 @@ export default function ChatIndex({
                                 />
                             )}
 
+                            {location.status === 'ready' && (
+                                <>
+                                    <input
+                                        type="hidden"
+                                        name="location[latitude]"
+                                        value={location.latitude}
+                                    />
+                                    <input
+                                        type="hidden"
+                                        name="location[longitude]"
+                                        value={location.longitude}
+                                    />
+                                    <input
+                                        type="hidden"
+                                        name="location[accuracy_m]"
+                                        value={location.accuracyM}
+                                    />
+                                    <input
+                                        type="hidden"
+                                        name="location[recorded_at]"
+                                        value={location.recordedAt}
+                                    />
+                                </>
+                            )}
+
                             <div className="grid gap-1">
                                 <Label htmlFor="route_id" className="sr-only">
                                     Ruta opcional
@@ -243,6 +314,41 @@ export default function ChatIndex({
                                     </SelectContent>
                                 </Select>
                                 <InputError message={errors.route_id} />
+                            </div>
+
+                            <div className="flex flex-col gap-1 rounded-xl border bg-card px-3 py-2 text-xs text-muted-foreground">
+                                <div className="flex items-center justify-between gap-2">
+                                    <span>
+                                        {location.status === 'ready'
+                                            ? 'Ubicación activa para recomendaciones cercanas.'
+                                            : 'Modo limitado: sin rutas cercanas precisas.'}
+                                    </span>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        className="h-8 shrink-0 rounded-xl px-2 text-xs"
+                                        onClick={requestLocation}
+                                        disabled={
+                                            processing ||
+                                            location.status === 'loading'
+                                        }
+                                    >
+                                        {location.status === 'loading' ? (
+                                            <LoaderCircle className="size-3.5 animate-spin" />
+                                        ) : (
+                                            <MapPin className="size-3.5" />
+                                        )}
+                                        {location.status === 'ready'
+                                            ? 'Actualizar'
+                                            : 'Activar'}
+                                    </Button>
+                                </div>
+                                {location.status === 'error' && (
+                                    <span className="font-semibold text-warning">
+                                        {location.message}
+                                    </span>
+                                )}
                             </div>
 
                             <div className="ueb-chat-input-area">

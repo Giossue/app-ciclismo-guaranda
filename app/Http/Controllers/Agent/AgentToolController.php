@@ -15,7 +15,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
 
 class AgentToolController extends Controller
 {
@@ -34,35 +33,14 @@ class AgentToolController extends Controller
         $longitude = $this->optionalFloat($payload, 'longitude');
         $limit = (int) ($payload['max_results'] ?? 5);
 
-        $routes = $this->activeRoutesQuery()
-            ->when(isset($payload['difficulty']), fn (Builder $query) => $query->whereHas('difficulty', fn (Builder $difficultyQuery) => $difficultyQuery->where('name', 'like', '%'.$payload['difficulty'].'%')))
-            ->when(isset($payload['category']), fn (Builder $query) => $query->whereHas('category', fn (Builder $categoryQuery) => $categoryQuery->where('name', 'like', '%'.$payload['category'].'%')))
-            ->when(isset($payload['query']), fn (Builder $query) => $query->where(function (Builder $textQuery) use ($payload): void {
-                $textQuery->where('name', 'like', '%'.$payload['query'].'%')
-                    ->orWhere('description', 'like', '%'.$payload['query'].'%')
-                    ->orWhere('start_name', 'like', '%'.$payload['query'].'%')
-                    ->orWhere('end_name', 'like', '%'.$payload['query'].'%');
-            }))
-            ->get()
-            ->map(function (CyclingRoute $route) use ($latitude, $longitude): array {
-                $distanceMeters = $latitude !== null && $longitude !== null
-                    ? $this->distanceFromUserToRouteMeters($route, $latitude, $longitude)
-                    : null;
+        $routes = $this->searchRouteCards($payload, $latitude, $longitude, $limit);
 
-                return [
-                    ...$this->serializeRouteCard($route, $distanceMeters),
-                    '_sort_distance_m' => $distanceMeters,
-                ];
-            })
-            ->sortBy(fn (array $route): float|int => $route['_sort_distance_m'] ?? $route['id'])
-            ->take($limit)
-            ->map(function (array $route): array {
-                unset($route['_sort_distance_m']);
+        if ($routes === [] && isset($payload['query'])) {
+            $fallbackPayload = $payload;
+            unset($fallbackPayload['query']);
 
-                return $route;
-            })
-            ->values()
-            ->all();
+            $routes = $this->searchRouteCards($fallbackPayload, $latitude, $longitude, $limit);
+        }
 
         return response()->json([
             'routes' => $routes,
@@ -239,6 +217,43 @@ class AgentToolController extends Controller
 
     /**
      * @param  array<string, mixed>  $payload
+     * @return array<int, array<string, mixed>>
+     */
+    private function searchRouteCards(array $payload, ?float $latitude, ?float $longitude, int $limit): array
+    {
+        return $this->activeRoutesQuery()
+            ->when(isset($payload['difficulty']), fn (Builder $query) => $query->whereHas('difficulty', fn (Builder $difficultyQuery) => $difficultyQuery->where('name', 'like', '%'.$payload['difficulty'].'%')))
+            ->when(isset($payload['category']), fn (Builder $query) => $query->whereHas('category', fn (Builder $categoryQuery) => $categoryQuery->where('name', 'like', '%'.$payload['category'].'%')))
+            ->when(isset($payload['query']), fn (Builder $query) => $query->where(function (Builder $textQuery) use ($payload): void {
+                $textQuery->where('name', 'like', '%'.$payload['query'].'%')
+                    ->orWhere('description', 'like', '%'.$payload['query'].'%')
+                    ->orWhere('start_name', 'like', '%'.$payload['query'].'%')
+                    ->orWhere('end_name', 'like', '%'.$payload['query'].'%');
+            }))
+            ->get()
+            ->map(function (CyclingRoute $route) use ($latitude, $longitude): array {
+                $distanceMeters = $latitude !== null && $longitude !== null
+                    ? $this->distanceFromUserToRouteMeters($route, $latitude, $longitude)
+                    : null;
+
+                return [
+                    ...$this->serializeRouteCard($route, $distanceMeters),
+                    '_sort_distance_m' => $distanceMeters,
+                ];
+            })
+            ->sortBy(fn (array $route): float|int => $route['_sort_distance_m'] ?? $route['id'])
+            ->take($limit)
+            ->map(function (array $route): array {
+                unset($route['_sort_distance_m']);
+
+                return $route;
+            })
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
      */
     private function routeFromPayload(array $payload): ?CyclingRoute
     {
@@ -264,6 +279,9 @@ class AgentToolController extends Controller
             $route->difficulty?->name,
         ]));
 
+        $recommendations = $route->recommendations->pluck('text')->take(6)->values()->all();
+        $observations = $route->observations->pluck('text')->take(6)->values()->all();
+
         return [
             'type' => 'route',
             'id' => $route->id,
@@ -276,6 +294,8 @@ class AgentToolController extends Controller
             'image_url' => $this->publicImageUrl($route->main_image_path),
             'meta' => $meta,
             'distance_from_user_km' => $distanceMeters === null ? null : round($distanceMeters / 1000, 2),
+            'recommendations' => $recommendations,
+            'observations' => $observations,
             'route' => [
                 'slug' => $route->slug,
                 'start' => $route->start_name,
@@ -286,6 +306,8 @@ class AgentToolController extends Controller
                     'positive_elevation_m' => (float) $latestMetric->positive_elevation_m,
                     'negative_elevation_m' => (float) $latestMetric->negative_elevation_m,
                 ],
+                'recommendations' => $recommendations,
+                'observations' => $observations,
             ],
         ];
     }

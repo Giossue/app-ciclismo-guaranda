@@ -22,6 +22,7 @@ use App\Models\WorkshopSpecialty;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
@@ -235,7 +236,7 @@ class PoiController extends Controller
         }
 
         foreach ($uploadedImages as $image) {
-            if (! $image instanceof \Illuminate\Http\UploadedFile) {
+            if (! $image instanceof UploadedFile) {
                 continue;
             }
 

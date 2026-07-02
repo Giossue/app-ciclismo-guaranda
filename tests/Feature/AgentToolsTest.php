@@ -156,6 +156,8 @@ test('agent can search active routes near a location', function () {
         ->assertJsonPath('routes.0.id', $route->id)
         ->assertJsonPath('routes.0.type', 'route')
         ->assertJsonPath('routes.0.title', $route->name)
+        ->assertJsonPath('routes.0.observations.0', 'Tramo con viento lateral.')
+        ->assertJsonPath('routes.0.route.observations.0', 'Tramo con viento lateral.')
         ->assertJsonMissing(['title' => 'Ruta agente 2'])
         ->assertJsonStructure([
             'routes' => [[
@@ -167,6 +169,22 @@ test('agent can search active routes near a location', function () {
                 'route' => ['slug', 'start', 'end', 'metric'],
             ]],
         ]);
+});
+
+test('agent route search falls back to available routes when generic query has no matches', function () {
+    [$route] = createRouteForAgentTools();
+    createRouteForAgentTools('inactiva');
+
+    $this->postJson(route('agent.routes.search'), [
+        'query' => '¿Qué ruta me recomiendas para este fin de semana?',
+        'latitude' => null,
+        'longitude' => null,
+        'max_results' => 5,
+    ], agentHeaders())
+        ->assertOk()
+        ->assertJsonPath('routes.0.id', $route->id)
+        ->assertJsonPath('routes.0.distance_from_user_km', null)
+        ->assertJsonMissing(['title' => 'Ruta agente 2']);
 });
 
 test('agent can get route detail with pois and visible alerts only', function () {

@@ -119,6 +119,7 @@ class ChatController extends Controller
             : null;
 
         $message = trim((string) $payload['message']);
+        $location = $this->transientLocation($payload);
         $context = $this->buildContext($user, $route);
         $conversation = $this->requestedConversation($user, $payload);
         $sessionId = 'guaranda-go-user-'.$user->id;
@@ -132,6 +133,7 @@ class ChatController extends Controller
                     'user_id' => $user->id,
                     'route_id' => $route?->id,
                     'message' => $message,
+                    'location' => $location,
                     'context' => $context,
                 ]);
 
@@ -168,6 +170,34 @@ class ChatController extends Controller
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Conversación local ocultada.')]);
 
         return to_route('chat.index');
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     * @return array{latitude: float, longitude: float, accuracy_m?: float, recorded_at?: string}|null
+     */
+    private function transientLocation(array $payload): ?array
+    {
+        $location = $payload['location'] ?? null;
+
+        if (! is_array($location) || ! isset($location['latitude'], $location['longitude'])) {
+            return null;
+        }
+
+        $transientLocation = [
+            'latitude' => (float) $location['latitude'],
+            'longitude' => (float) $location['longitude'],
+        ];
+
+        if (isset($location['accuracy_m']) && $location['accuracy_m'] !== '') {
+            $transientLocation['accuracy_m'] = (float) $location['accuracy_m'];
+        }
+
+        if (isset($location['recorded_at']) && is_string($location['recorded_at']) && $location['recorded_at'] !== '') {
+            $transientLocation['recorded_at'] = $location['recorded_at'];
+        }
+
+        return $transientLocation;
     }
 
     /**

@@ -11,6 +11,15 @@ import { Network } from '@capacitor/network';
 import type { ConnectionStatus } from '@capacitor/network';
 import { router } from '@inertiajs/react';
 
+export type AppPosition = {
+    coords: {
+        latitude: number;
+        longitude: number;
+        accuracy: number | null;
+    };
+    timestamp: number;
+};
+
 type NetworkStatusCallback = (status: ConnectionStatus) => void;
 
 export function isNativeMobile(): boolean {
@@ -111,6 +120,39 @@ export async function getCurrentNativePosition(): Promise<Position> {
         enableHighAccuracy: true,
         timeout: 15000,
         maximumAge: 10000,
+    });
+}
+
+export async function getCurrentAppPosition(): Promise<AppPosition> {
+    if (hasNativePlugin('Geolocation')) {
+        try {
+            await Geolocation.requestPermissions({ permissions: ['location'] });
+        } catch {
+            // getCurrentPosition will surface the permission/location error.
+        }
+
+        return getCurrentNativePosition();
+    }
+
+    if (typeof navigator === 'undefined' || !navigator.geolocation) {
+        throw new Error('Geolocation unavailable');
+    }
+
+    return new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                resolve({
+                    coords: {
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude,
+                        accuracy: position.coords.accuracy,
+                    },
+                    timestamp: position.timestamp,
+                });
+            },
+            reject,
+            { enableHighAccuracy: true, maximumAge: 10000, timeout: 15000 },
+        );
     });
 }
 

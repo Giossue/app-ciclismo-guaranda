@@ -19,6 +19,17 @@ class StoreChatMessageRequest extends FormRequest
         if ($this->input('conversation_id') === '') {
             $this->merge(['conversation_id' => null]);
         }
+
+        $location = $this->input('location');
+
+        if (is_array($location)) {
+            $latitude = $location['latitude'] ?? null;
+            $longitude = $location['longitude'] ?? null;
+
+            if (($latitude === null || $latitude === '') && ($longitude === null || $longitude === '')) {
+                $this->merge(['location' => null]);
+            }
+        }
     }
 
     public function authorize(): bool
@@ -35,6 +46,11 @@ class StoreChatMessageRequest extends FormRequest
             'message' => ['required', 'string', 'min:2', 'max:2000'],
             'route_id' => ['nullable', 'integer', Rule::exists(CyclingRoute::class, 'id')],
             'conversation_id' => ['nullable', 'integer', Rule::exists('conversaciones_ia', 'id')],
+            'location' => ['nullable', 'array'],
+            'location.latitude' => ['nullable', 'numeric', 'between:-90,90', 'required_with:location.longitude'],
+            'location.longitude' => ['nullable', 'numeric', 'between:-180,180', 'required_with:location.latitude'],
+            'location.accuracy_m' => ['nullable', 'numeric', 'min:0', 'max:100000'],
+            'location.recorded_at' => ['nullable', 'date'],
         ];
     }
 
