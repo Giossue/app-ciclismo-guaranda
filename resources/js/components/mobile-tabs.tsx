@@ -34,8 +34,8 @@ export function MobileTabs({
 
     return (
         <section className={cn('flex min-h-0 flex-col gap-4', className)}>
-            <div className="sticky top-2 z-20 -mx-1 flex [scrollbar-width:none] justify-center overflow-x-auto px-1 py-1 [-ms-overflow-style:none] md:static md:z-auto [&::-webkit-scrollbar]:hidden">
-                <div className="flex w-max gap-1 rounded-2xl bg-[var(--tab-bg)] p-1 shadow-[0_2px_8px_var(--shadow-color)]">
+            <div className="sticky top-2 z-20 -mx-1 [scrollbar-width:none] overflow-x-auto px-1 py-1 [-ms-overflow-style:none] md:static md:z-auto [&::-webkit-scrollbar]:hidden">
+                <div className="flex w-max gap-2">
                     {items.map((item) => {
                         const active = item.value === activeItem.value;
 
@@ -45,9 +45,9 @@ export function MobileTabs({
                                 type="button"
                                 onClick={() => setActiveValue(item.value)}
                                 className={cn(
-                                    'flex min-h-10 touch-manipulation items-center justify-center gap-1.5 rounded-xl px-3.5 text-sm font-bold whitespace-nowrap transition-[background,color,transform,box-shadow] active:scale-[0.98]',
+                                    'flex min-h-10 touch-manipulation items-center justify-center gap-1.5 rounded-xl px-3.5 text-sm font-bold whitespace-nowrap transition-[background,color,transform] active:scale-[0.98]',
                                     active
-                                        ? 'bg-primary text-primary-foreground shadow-[0_4px_12px_var(--shadow-color)]'
+                                        ? 'bg-primary text-primary-foreground'
                                         : 'text-[var(--tab-inactive-text)] hover:text-foreground',
                                 )}
                             >

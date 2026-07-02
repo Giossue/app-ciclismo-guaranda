@@ -49,7 +49,7 @@ export default function NotificationsIndex({
             <Head title="Notificaciones" />
 
             <div className="flex flex-col gap-4">
-                <section className="rounded-2xl border bg-card p-4">
+                <section className="p-1">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <p className="text-sm text-muted-foreground">
                             Avisos de incidencias, valoraciones y actividad de
@@ -62,14 +62,14 @@ export default function NotificationsIndex({
                     </div>
 
                     <div className="mt-4 flex flex-col items-center gap-3">
-                        <div className="flex w-max gap-1 rounded-2xl bg-[var(--tab-bg)] p-1 shadow-[0_2px_8px_var(--shadow-color)]">
+                        <div className="flex w-max gap-2">
                             <Link
                                 href="/notifications"
                                 prefetch
                                 className={cn(
-                                    'flex min-h-10 touch-manipulation items-center justify-center rounded-xl px-3.5 text-sm font-bold whitespace-nowrap transition-[background,color,transform,box-shadow] active:scale-[0.98]',
+                                    'flex min-h-10 touch-manipulation items-center justify-center rounded-xl px-3.5 text-sm font-bold whitespace-nowrap transition-[background,color,transform] active:scale-[0.98]',
                                     !onlyUnread
-                                        ? 'bg-primary text-primary-foreground shadow-[0_4px_12px_var(--shadow-color)]'
+                                        ? 'bg-primary text-primary-foreground'
                                         : 'text-[var(--tab-inactive-text)] hover:text-foreground',
                                 )}
                             >
@@ -79,9 +79,9 @@ export default function NotificationsIndex({
                                 href="/notifications?unread=1"
                                 prefetch
                                 className={cn(
-                                    'flex min-h-10 touch-manipulation items-center justify-center rounded-xl px-3.5 text-sm font-bold whitespace-nowrap transition-[background,color,transform,box-shadow] active:scale-[0.98]',
+                                    'flex min-h-10 touch-manipulation items-center justify-center rounded-xl px-3.5 text-sm font-bold whitespace-nowrap transition-[background,color,transform] active:scale-[0.98]',
                                     onlyUnread
-                                        ? 'bg-primary text-primary-foreground shadow-[0_4px_12px_var(--shadow-color)]'
+                                        ? 'bg-primary text-primary-foreground'
                                         : 'text-[var(--tab-inactive-text)] hover:text-foreground',
                                 )}
                             >

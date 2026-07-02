@@ -112,6 +112,8 @@ export default function ChatIndex({
         return chatLocationFromSnapshot(rememberedLocation);
     });
     const messagesRef = useRef<HTMLDivElement>(null);
+    const messageRef = useRef<HTMLTextAreaElement>(null);
+    const [agentIsLoading, setAgentIsLoading] = useState(false);
     const { auth } = usePage<{ auth: Auth }>().props;
     const userInitial = firstUserInitial(auth.user?.name);
 
@@ -213,7 +215,9 @@ export default function ChatIndex({
                         />
                     ))}
 
-                    {latestMessages.length === 0 && (
+                    {agentIsLoading && <AgentLoadingBubble />}
+
+                    {latestMessages.length === 0 && !agentIsLoading && (
                         <div className="m-auto flex max-w-64 flex-col items-center gap-3 text-center text-muted-foreground">
                             <div className="grid size-12 place-items-center rounded-xl border bg-card">
                                 <Bot className="size-6" />
@@ -234,6 +238,15 @@ export default function ChatIndex({
                 <Form
                     {...ChatController.store.form()}
                     options={{ preserveScroll: true }}
+                    resetOnSuccess={['message']}
+                    onStart={() => {
+                        setAgentIsLoading(true);
+
+                        if (messageRef.current) {
+                            messageRef.current.value = '';
+                        }
+                    }}
+                    onFinish={() => setAgentIsLoading(false)}
                     className="ueb-chat-footer"
                 >
                     {({ processing, errors }) => (
@@ -340,6 +353,7 @@ export default function ChatIndex({
                             <div className="ueb-chat-input-area">
                                 <div className="ueb-chat-input-box">
                                     <textarea
+                                        ref={messageRef}
                                         id="message"
                                         name="message"
                                         required
@@ -527,6 +541,24 @@ function DeleteConversationForm({
     );
 }
 
+
+function AgentLoadingBubble() {
+    return (
+        <div className="ueb-message-row bot">
+            <div className="ueb-message-avatar bot">
+                <Bot className="size-4" />
+            </div>
+            <div className="ueb-message-bubble">
+                <div className="flex items-center gap-1.5" aria-label="El agente está escribiendo">
+                    <span className="size-1.5 animate-bounce rounded-full bg-muted-foreground [animation-delay:-0.2s]" />
+                    <span className="size-1.5 animate-bounce rounded-full bg-muted-foreground [animation-delay:-0.1s]" />
+                    <span className="size-1.5 animate-bounce rounded-full bg-muted-foreground" />
+                </div>
+            </div>
+        </div>
+    );
+}
+
 function MessageBubble({
     message,
     userInitial,
@@ -546,8 +578,11 @@ function MessageBubble({
                     <MarkdownMessage>{message.message}</MarkdownMessage>
                 </div>
                 {message.sent_at && (
-                    <span className="px-1 font-bold text-[var(--fs-xs)] text-[var(--text-muted)]">
-                        {new Date(message.sent_at).toLocaleTimeString()}
+                    <span className="px-1 text-[0.625rem] leading-none font-black tracking-wide text-[var(--text-muted)]">
+                        {new Date(message.sent_at).toLocaleTimeString('es-EC', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                        })}
                     </span>
                 )}
             </div>

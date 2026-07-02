@@ -121,13 +121,16 @@ test('chat proxies message to n8n and stores exchange after response', function 
             && Arr::get($payload, 'location.latitude') === -1.5926
             && Arr::get($payload, 'location.longitude') === -79.0009
             && Arr::get($payload, 'location.accuracy_m') === 25.0
-            && Arr::get($payload, 'context.app') === 'Guaranda Go'
-            && Arr::get($payload, 'context.route.id') === $route->id
-            && Arr::get($payload, 'context.privacy.no_email_sent') === true
-            && Arr::get($payload, 'context.privacy.conversation_storage_external') === true
-            && ! Arr::has($payload, 'context.location')
-            && ! Arr::has($payload, 'context.user.email')
-            && ! Arr::has($payload, 'context.user.name');
+            && Arr::exists($payload, 'route_id')
+            && Arr::exists($payload, 'route')
+            && Arr::exists($payload, 'location')
+            && Arr::get($payload, 'route.id') === $route->id
+            && Arr::get($payload, 'route.name') === $route->name
+            && ! Arr::has($payload, 'user_id')
+            && ! Arr::has($payload, 'context')
+            && ! Arr::has($payload, 'language')
+            && ! Arr::has($payload, 'privacy')
+            && ! Arr::has($payload, 'user');
     });
 });
 

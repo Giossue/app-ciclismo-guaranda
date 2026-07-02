@@ -40,15 +40,33 @@ const accountItems: AccountItem[] = [
 export default function MenuIndex() {
     const { auth } = usePage<PageProps>().props;
     const moduleItems = mobileMoreNavItems(auth);
+
+    const fullName = [auth.user?.name, auth.user?.last_name]
+        .filter(Boolean)
+        .join(' ');
+
     return (
         <>
             <Head title="Menú" />
 
             <div className="ueb-page flex flex-col gap-5 md:w-full">
+                {/* Active Session Info */}
+                <section className="flex flex-col gap-0.5 rounded-2xl border border-[var(--input-border)] bg-[var(--bg-card-color)] p-4">
+                    <p className="font-black tracking-wider text-[var(--fs-caption)] text-[var(--text-secondary)] uppercase">
+                        Sesión activa
+                    </p>
+                    <p className="mt-1 text-base font-black text-[var(--text-color)]">
+                        {fullName || auth.user?.name}
+                    </p>
+                    <p className="text-xs text-[var(--text-secondary)]">
+                        {auth.user?.email}
+                    </p>
+                </section>
+
                 {/* Navigation Modules */}
                 {moduleItems.length > 0 && (
                     <section className="flex flex-col gap-2">
-                        <p className="px-1 text-[var(--fs-caption)] font-black tracking-wider text-[var(--text-secondary)] uppercase">
+                        <p className="px-1 font-black tracking-wider text-[var(--fs-caption)] text-[var(--text-secondary)] uppercase">
                             Explorar
                         </p>
                         <div className="grid grid-cols-2 gap-3">
@@ -61,7 +79,7 @@ export default function MenuIndex() {
 
                 {/* Account Options */}
                 <section className="flex flex-col gap-2">
-                    <p className="px-1 text-[var(--fs-caption)] font-black tracking-wider text-[var(--text-secondary)] uppercase">
+                    <p className="px-1 font-black tracking-wider text-[var(--fs-caption)] text-[var(--text-secondary)] uppercase">
                         Cuenta
                     </p>
                     <div className="grid gap-3">

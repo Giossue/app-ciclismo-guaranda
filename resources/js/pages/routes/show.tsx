@@ -23,6 +23,7 @@ import {
     CircleMarker,
     MapContainer,
     TileLayer,
+    useMap,
     useMapEvents,
 } from 'react-leaflet';
 import FavoriteRouteController from '@/actions/App/Http/Controllers/Cyclist/FavoriteRouteController';
@@ -219,13 +220,13 @@ function RouteDetailPanel({ route }: { route: CyclingRouteMapItem }) {
                 <CardDescription>{route.description}</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
-                <div className="grid gap-2 text-sm text-muted-foreground sm:grid-cols-2">
-                    <div className="flex items-center gap-2 rounded-xl border bg-muted/30 p-2">
-                        <MapPinned />
+                <div className="grid gap-3 text-sm text-muted-foreground sm:grid-cols-2">
+                    <div className="flex items-center gap-2">
+                        <MapPinned className="size-5 shrink-0" />
                         <span>Inicio: {route.start_name}</span>
                     </div>
-                    <div className="flex items-center gap-2 rounded-xl border bg-muted/30 p-2">
-                        <MapPinned />
+                    <div className="flex items-center gap-2">
+                        <MapPinned className="size-5 shrink-0" />
                         <span>Final: {route.end_name}</span>
                     </div>
                     {route.metric && (
@@ -684,7 +685,7 @@ function degreesToRadians(value: number): number {
 
 function Metric({ label, value }: { label: string; value: string }) {
     return (
-        <div className="rounded-2xl border bg-muted/30 p-3">
+        <div className="flex flex-col gap-0.5">
             <span className="text-xs tracking-wide text-muted-foreground uppercase">
                 {label}
             </span>
@@ -1020,6 +1021,10 @@ function OfflinePanel({
         useState<StorageEstimate | null>(null);
     const [message, setMessage] = useState<string | null>(null);
     const [isBusy, setIsBusy] = useState(false);
+    const [offlineIncidentPoint, setOfflineIncidentPoint] = useState({
+        latitude: route.start_latitude,
+        longitude: route.start_longitude,
+    });
 
     const loadOfflineState = useCallback(async () => {
         const [record, items, estimate] = await Promise.all([
@@ -1180,6 +1185,10 @@ function OfflinePanel({
                 reported_at: new Date().toISOString(),
             });
             form.reset();
+            setOfflineIncidentPoint({
+                latitude: route.start_latitude,
+                longitude: route.start_longitude,
+            });
             setMessage('Alerta guardada en este dispositivo.');
             await loadOfflineState();
         } catch (error) {
@@ -1331,7 +1340,7 @@ function OfflinePanel({
                 <div className="grid gap-4 lg:grid-cols-2">
                     <form
                         onSubmit={enqueueIncident}
-                        className="grid gap-3 rounded-2xl border border-primary/10 bg-muted/30 p-4"
+                        className="grid gap-3 rounded-2xl border border-primary/10 bg-transparent p-4"
                     >
                         <div>
                             <h3 className="font-medium">Alerta sin conexión</h3>
@@ -1375,21 +1384,41 @@ function OfflinePanel({
                             className={textareaClass}
                             placeholder="Describe el problema"
                         />
-                        <div className="grid gap-3 sm:grid-cols-2">
-                            <Input
-                                name="latitude"
-                                type="number"
-                                step="any"
-                                required
-                                defaultValue={route.start_latitude}
-                            />
-                            <Input
-                                name="longitude"
-                                type="number"
-                                step="any"
-                                required
-                                defaultValue={route.start_longitude}
-                            />
+                        <input
+                            type="hidden"
+                            name="latitude"
+                            value={offlineIncidentPoint.latitude}
+                        />
+                        <input
+                            type="hidden"
+                            name="longitude"
+                            value={offlineIncidentPoint.longitude}
+                        />
+                        <div className="grid gap-2">
+                            <Label>Ubicación de la alerta</Label>
+                            <div className="overflow-hidden rounded-2xl border border-primary/10">
+                                <MapContainer
+                                    center={[
+                                        offlineIncidentPoint.latitude,
+                                        offlineIncidentPoint.longitude,
+                                    ]}
+                                    zoom={14}
+                                    scrollWheelZoom={false}
+                                    className="h-64 w-full"
+                                >
+                                    <TileLayer
+                                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                    />
+                                    <SuggestionLocationPicker
+                                        selectedPoint={offlineIncidentPoint}
+                                        onSelect={setOfflineIncidentPoint}
+                                    />
+                                </MapContainer>
+                            </div>
+                            <span className="text-sm text-muted-foreground">
+                                {`${offlineIncidentPoint.latitude.toFixed(5)}, ${offlineIncidentPoint.longitude.toFixed(5)}`}
+                            </span>
                         </div>
                         <Button
                             type="submit"
@@ -1400,7 +1429,7 @@ function OfflinePanel({
                         </Button>
                     </form>
 
-                    <div className="flex flex-col gap-3 rounded-2xl border border-primary/10 bg-muted/30 p-4">
+                    <div className="flex flex-col gap-3 rounded-2xl border border-primary/10 bg-transparent p-4">
                         <div>
                             <h3 className="font-medium">Recorrido offline</h3>
                             <p className="text-sm text-muted-foreground">
@@ -1749,6 +1778,18 @@ function SuggestionLocationPicker({
     selectedPoint: { latitude: number; longitude: number } | null;
     onSelect: (point: { latitude: number; longitude: number }) => void;
 }) {
+    const map = useMap();
+
+    useEffect(() => {
+        if (!selectedPoint) {
+            return;
+        }
+
+        map.setView([selectedPoint.latitude, selectedPoint.longitude], map.getZoom(), {
+            animate: false,
+        });
+    }, [map, selectedPoint]);
+
     useMapEvents({
         click(event) {
             onSelect({
@@ -1811,8 +1852,10 @@ function IncidentReportForm({
     route: CyclingRouteMapItem;
     types: CatalogOption[];
 }) {
-    const latitudeRef = useRef<HTMLInputElement>(null);
-    const longitudeRef = useRef<HTMLInputElement>(null);
+    const [incidentPoint, setIncidentPoint] = useState({
+        latitude: route.start_latitude,
+        longitude: route.start_longitude,
+    });
     const [isCompressing, setIsCompressing] = useState(false);
 
     const fillCurrentLocation = () => {
@@ -1821,14 +1864,10 @@ function IncidentReportForm({
         }
 
         navigator.geolocation.getCurrentPosition((position) => {
-            if (latitudeRef.current) {
-                latitudeRef.current.value = position.coords.latitude.toFixed(7);
-            }
-
-            if (longitudeRef.current) {
-                longitudeRef.current.value =
-                    position.coords.longitude.toFixed(7);
-            }
+            setIncidentPoint({
+                latitude: Number(position.coords.latitude.toFixed(7)),
+                longitude: Number(position.coords.longitude.toFixed(7)),
+            });
         });
     };
 
@@ -1854,6 +1893,16 @@ function IncidentReportForm({
                                 type="hidden"
                                 name="route_id"
                                 value={route.id}
+                            />
+                            <input
+                                type="hidden"
+                                name="latitude"
+                                value={incidentPoint.latitude}
+                            />
+                            <input
+                                type="hidden"
+                                name="longitude"
+                                value={incidentPoint.longitude}
                             />
                             <div className="grid gap-2">
                                 <Label htmlFor="incident_type_id">
@@ -1912,37 +1961,43 @@ function IncidentReportForm({
                                 <InputError message={errors.description} />
                             </div>
 
-                            <div className="grid gap-2">
-                                <Label htmlFor="incident_latitude">
-                                    Latitud
-                                </Label>
-                                <Input
-                                    ref={latitudeRef}
-                                    id="incident_latitude"
-                                    name="latitude"
-                                    type="number"
-                                    step="any"
-                                    defaultValue={route.start_latitude}
-                                    required
-                                    aria-invalid={Boolean(errors.latitude)}
-                                />
+                            <div className="grid gap-2 md:col-span-2">
+                                <Label>Ubicación de la incidencia</Label>
+                                <div className="overflow-hidden rounded-2xl border border-primary/10">
+                                    <MapContainer
+                                        center={[
+                                            incidentPoint.latitude,
+                                            incidentPoint.longitude,
+                                        ]}
+                                        zoom={14}
+                                        scrollWheelZoom={false}
+                                        className="h-64 w-full"
+                                    >
+                                        <TileLayer
+                                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                        />
+                                        <SuggestionLocationPicker
+                                            selectedPoint={incidentPoint}
+                                            onSelect={setIncidentPoint}
+                                        />
+                                    </MapContainer>
+                                </div>
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={fillCurrentLocation}
+                                    >
+                                        <LocateFixed data-icon="inline-start" />
+                                        Usar mi ubicación
+                                    </Button>
+                                    <span className="text-sm text-muted-foreground">
+                                        {`${incidentPoint.latitude.toFixed(5)}, ${incidentPoint.longitude.toFixed(5)}`}
+                                    </span>
+                                </div>
                                 <InputError message={errors.latitude} />
-                            </div>
-
-                            <div className="grid gap-2">
-                                <Label htmlFor="incident_longitude">
-                                    Longitud
-                                </Label>
-                                <Input
-                                    ref={longitudeRef}
-                                    id="incident_longitude"
-                                    name="longitude"
-                                    type="number"
-                                    step="any"
-                                    defaultValue={route.start_longitude}
-                                    required
-                                    aria-invalid={Boolean(errors.longitude)}
-                                />
                                 <InputError message={errors.longitude} />
                             </div>
 
@@ -1964,13 +2019,6 @@ function IncidentReportForm({
                             </div>
 
                             <div className="flex flex-wrap gap-2 md:col-span-2">
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={fillCurrentLocation}
-                                >
-                                    Usar mi ubicación GPS
-                                </Button>
                                 <Button disabled={processing || isCompressing}>
                                     Enviar incidencia
                                 </Button>
@@ -1986,7 +2034,7 @@ function IncidentReportForm({
 function InfoList({ title, items }: { title: string; items: string[] }) {
     return (
         <div className="flex flex-col gap-2">
-            <h2 className="font-medium">{title}</h2>
+            <h2 className="font-black text-foreground">{title}</h2>
             {items.length > 0 ? (
                 <ul className="flex list-disc flex-col gap-1 pl-5 text-sm text-muted-foreground">
                     {items.map((item) => (

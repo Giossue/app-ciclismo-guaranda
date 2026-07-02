@@ -1,4 +1,5 @@
 import { createInertiaApp } from '@inertiajs/react';
+import { GlobalLoadingIndicator } from '@/components/global-loading-indicator';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { initializeTheme } from '@/hooks/use-appearance';
@@ -33,13 +34,12 @@ createInertiaApp({
         return (
             <TooltipProvider delayDuration={0}>
                 {app}
+                <GlobalLoadingIndicator />
                 <Toaster />
             </TooltipProvider>
         );
     },
-    progress: {
-        color: '#b2f000',
-    },
+    progress: false,
 });
 
 initializeTheme();

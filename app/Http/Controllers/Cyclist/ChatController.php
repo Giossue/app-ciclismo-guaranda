@@ -120,22 +120,16 @@ class ChatController extends Controller
 
         $message = trim((string) $payload['message']);
         $location = $this->transientLocation($payload);
-        $context = $this->buildContext($user, $route);
+        $context = $this->buildContext($route);
         $conversation = $this->requestedConversation($user, $payload);
         $sessionId = 'guaranda-go-user-'.$user->id;
+        $webhookPayload = $this->buildWebhookPayload($sessionId, $message, $route, $context, $location);
 
         try {
             $response = Http::acceptJson()
                 ->asJson()
                 ->timeout($this->timeoutSeconds())
-                ->post($webhookUrl, [
-                    'session_id' => $sessionId,
-                    'user_id' => $user->id,
-                    'route_id' => $route?->id,
-                    'message' => $message,
-                    'location' => $location,
-                    'context' => $context,
-                ]);
+                ->post($webhookUrl, $webhookPayload);
 
             if ($response->failed()) {
                 throw new RuntimeException('n8n respondió con estado HTTP '.$response->status().'.');
@@ -143,7 +137,7 @@ class ChatController extends Controller
 
             $json = $response->json();
             $assistantText = $this->extractAssistantText($json);
-            $conversation = $this->persistExchange($user, $conversation, $message, $assistantText, $context, $json, $sessionId);
+            $conversation = $this->persistExchange($user, $conversation, $message, $assistantText, $context, $json);
 
             return to_route('chat.index', ['conversation' => $conversation->id]);
         } catch (ConnectionException $exception) {
@@ -202,25 +196,35 @@ class ChatController extends Controller
     /**
      * @return array<string, mixed>
      */
-    private function buildContext(User $user, ?CyclingRoute $route): array
+    private function buildContext(?CyclingRoute $route): array
     {
-        $user->loadMissing('role:id,name');
+        if ($route === null) {
+            return [];
+        }
 
         return [
-            'app' => 'Guaranda Go',
-            'language' => 'es',
-            'privacy' => [
-                'personal_data_minimized' => true,
-                'no_email_sent' => true,
-                'conversation_storage_external' => true,
+            'route' => $this->routeContext($route),
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $context
+     * @param  array{latitude: float, longitude: float, accuracy_m?: float, recorded_at?: string}|null  $location
+     * @return array<string, mixed>
+     */
+    private function buildWebhookPayload(string $sessionId, string $message, ?CyclingRoute $route, array $context, ?array $location): array
+    {
+        return [
+            'session_id' => $sessionId,
+            'message' => $message,
+            'route_id' => $route?->id,
+            'route' => $context['route'] ?? null,
+            'location' => $location ?? [
+                'latitude' => null,
+                'longitude' => null,
+                'accuracy_m' => null,
+                'recorded_at' => null,
             ],
-            'user' => [
-                'id' => $user->id,
-                'age' => $user->birth_date?->age,
-                'role' => $user->role?->name,
-            ],
-            'route' => $route === null ? null : $this->routeContext($route),
-            'offline_available' => false,
         ];
     }
 
@@ -287,7 +291,7 @@ class ChatController extends Controller
     /**
      * @param  array<string, mixed>  $context
      */
-    private function persistExchange(User $user, ?AiConversation $conversation, string $userMessage, string $assistantMessage, array $context, mixed $rawResponse, string $sessionId): AiConversation
+    private function persistExchange(User $user, ?AiConversation $conversation, string $userMessage, string $assistantMessage, array $context, mixed $rawResponse): AiConversation
     {
         $now = now();
 
@@ -295,21 +299,18 @@ class ChatController extends Controller
             $conversation = AiConversation::query()->create([
                 'user_id' => $user->id,
                 'title' => Str::limit($userMessage, 80),
-                'session_id' => $sessionId,
                 'context' => $context,
                 'started_at' => $now,
                 'last_activity_at' => $now,
             ]);
         } else {
             $conversation->forceFill([
-                'session_id' => $sessionId,
                 'context' => $context,
                 'last_activity_at' => $now,
             ])->save();
         }
 
         $conversation->messages()->create([
-            'session_id' => $sessionId,
             'role' => 'user',
             'message' => $userMessage,
             'provider' => null,
@@ -318,7 +319,6 @@ class ChatController extends Controller
         ]);
 
         $conversation->messages()->create([
-            'session_id' => $sessionId,
             'role' => 'assistant',
             'message' => $assistantMessage,
             'provider' => 'n8n',
