@@ -84,14 +84,14 @@ export default function RoutesIndex({
                 />
 
                 {routes.data.length === 0 && (
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>No hay rutas disponibles</CardTitle>
-                            <CardDescription>
-                                Vuelve a revisar más tarde.
-                            </CardDescription>
-                        </CardHeader>
-                    </Card>
+                    <div className="py-4">
+                        <h2 className="text-base font-black text-foreground">
+                            No hay rutas disponibles
+                        </h2>
+                        <p className="mt-1 text-sm text-muted-foreground">
+                            Vuelve a revisar más tarde.
+                        </p>
+                    </div>
                 )}
 
                 <div className="text-sm font-bold text-muted-foreground">
@@ -207,7 +207,7 @@ function FeaturedRouteCard({ route }: { route: CyclingRouteMapItem }) {
                     }
                 />
                 <div className="absolute inset-x-3 top-3 flex items-start justify-between gap-2">
-                    <span className="rounded-full bg-primary px-2.5 py-1 text-[10px] font-black tracking-wider text-primary-foreground uppercase shadow-sm">
+                    <span className="rounded-full bg-primary px-2.5 py-1 text-[var(--fs-caption)] font-black tracking-wider text-primary-foreground uppercase shadow-sm">
                         Más reciente
                     </span>
                     <RouteBadges route={route} />

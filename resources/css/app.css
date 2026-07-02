@@ -30,6 +30,23 @@
         'CicloSans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
         sans-serif;
 
+    --text-xs: var(--fs-caption);
+    --text-xs--line-height: 1.35;
+    --text-sm: var(--fs-body);
+    --text-sm--line-height: var(--lh-body);
+    --text-base: var(--fs-body);
+    --text-base--line-height: var(--lh-body);
+    --text-lg: var(--fs-emphasis);
+    --text-lg--line-height: 1.32;
+    --text-xl: var(--fs-title);
+    --text-xl--line-height: var(--lh-title);
+    --text-2xl: var(--fs-title);
+    --text-2xl--line-height: var(--lh-title);
+    --text-3xl: var(--fs-title);
+    --text-3xl--line-height: var(--lh-title);
+    --text-4xl: var(--fs-title);
+    --text-4xl--line-height: var(--lh-title);
+
     --radius-lg: var(--radius);
     --radius-md: calc(var(--radius) - 4px);
     --radius-sm: calc(var(--radius) - 8px);
@@ -75,13 +92,22 @@
 }
 
 :root {
-    --fs-xs: 0.6875rem;
-    --fs-sm: 0.8125rem;
-    --fs-md: 0.9375rem;
-    --fs-lg: 1.375rem;
-    --fs-xl: 2rem;
-    --lh-tight: 1.05;
-    --lh-title: 1.12;
+    /* Typography scale: 4 visible sizes max
+       Caption 12px, Body 14px, Emphasis 16px, Title 22px. */
+    --fs-caption: 0.75rem;
+    --fs-body: 0.875rem;
+    --fs-emphasis: 1rem;
+    --fs-title: 1.375rem;
+
+    /* Legacy aliases used by existing components. */
+    --fs-xs: var(--fs-caption);
+    --fs-sm: var(--fs-body);
+    --fs-md: var(--fs-body);
+    --fs-lg: var(--fs-emphasis);
+    --fs-xl: var(--fs-title);
+
+    --lh-tight: 1.1;
+    --lh-title: 1.16;
     --lh-body: 1.45;
     --page-max-mobile: 430px;
     --page-max-tablet: 760px;
@@ -204,8 +230,6 @@
 
 @media (max-width: 560px) {
     :root {
-        --fs-xl: 1.625rem;
-        --fs-lg: 1.25rem;
         --page-pad-x: 18px;
         --page-pad-y: 18px;
         --page-gap: 14px;
@@ -636,10 +660,10 @@
     .ueb-auth-banner h1 {
         margin: 0;
         color: var(--text-color);
-        font-size: var(--fs-xl);
-        line-height: 1.1;
-        font-weight: 500;
-        letter-spacing: -0.055em;
+        font-size: var(--fs-title);
+        line-height: var(--lh-title);
+        font-weight: 900;
+        letter-spacing: -0.035em;
     }
 
     .ueb-auth-banner p {

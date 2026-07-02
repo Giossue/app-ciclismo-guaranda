@@ -61,25 +61,34 @@ export default function NotificationsIndex({
                         </Badge>
                     </div>
 
-                    <div className="mt-4 flex flex-wrap gap-2">
-                        <Button
-                            variant={!onlyUnread ? 'default' : 'outline'}
-                            size="sm"
-                            asChild
-                        >
-                            <Link href="/notifications" prefetch>
+                    <div className="mt-4 flex flex-col items-center gap-3">
+                        <div className="flex w-max gap-1 rounded-2xl bg-[var(--tab-bg)] p-1 shadow-[0_2px_8px_var(--shadow-color)]">
+                            <Link
+                                href="/notifications"
+                                prefetch
+                                className={cn(
+                                    'flex min-h-10 touch-manipulation items-center justify-center rounded-xl px-3.5 text-sm font-bold whitespace-nowrap transition-[background,color,transform,box-shadow] active:scale-[0.98]',
+                                    !onlyUnread
+                                        ? 'bg-primary text-primary-foreground shadow-[0_4px_12px_var(--shadow-color)]'
+                                        : 'text-[var(--tab-inactive-text)] hover:text-foreground',
+                                )}
+                            >
                                 Todas
                             </Link>
-                        </Button>
-                        <Button
-                            variant={onlyUnread ? 'default' : 'outline'}
-                            size="sm"
-                            asChild
-                        >
-                            <Link href="/notifications?unread=1" prefetch>
+                            <Link
+                                href="/notifications?unread=1"
+                                prefetch
+                                className={cn(
+                                    'flex min-h-10 touch-manipulation items-center justify-center rounded-xl px-3.5 text-sm font-bold whitespace-nowrap transition-[background,color,transform,box-shadow] active:scale-[0.98]',
+                                    onlyUnread
+                                        ? 'bg-primary text-primary-foreground shadow-[0_4px_12px_var(--shadow-color)]'
+                                        : 'text-[var(--tab-inactive-text)] hover:text-foreground',
+                                )}
+                            >
                                 No leídas
                             </Link>
-                        </Button>
+                        </div>
+
                         {unreadCount > 0 && (
                             <Button variant="outline" size="sm" asChild>
                                 <Link
@@ -106,22 +115,19 @@ export default function NotificationsIndex({
                 </section>
 
                 {notifications.data.length === 0 && (
-                    <Card>
-                        <CardHeader className="items-center text-center">
-                            <div className="grid size-12 place-items-center rounded-2xl border bg-muted/30 text-muted-foreground">
-                                <Inbox className="size-6" />
-                            </div>
-                            <CardTitle>
-                                {onlyUnread
-                                    ? 'No tienes notificaciones sin leer'
-                                    : 'No tienes notificaciones'}
-                            </CardTitle>
-                            <CardDescription>
-                                Cuando exista actividad importante aparecerá
-                                aquí.
-                            </CardDescription>
-                        </CardHeader>
-                    </Card>
+                    <div className="flex flex-col items-center gap-2 py-6 text-center">
+                        <div className="grid size-12 place-items-center rounded-2xl border bg-muted/30 text-muted-foreground">
+                            <Inbox className="size-6" />
+                        </div>
+                        <h2 className="text-base font-black text-foreground">
+                            {onlyUnread
+                                ? 'No tienes notificaciones sin leer'
+                                : 'No tienes notificaciones'}
+                        </h2>
+                        <p className="text-sm text-muted-foreground">
+                            Cuando exista actividad importante aparecerá aquí.
+                        </p>
+                    </div>
                 )}
 
                 {notifications.total > 0 && (

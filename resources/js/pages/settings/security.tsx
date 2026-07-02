@@ -42,7 +42,7 @@ export default function Security(props: Props) {
                         <h1 className="text-base leading-none font-black text-[var(--text-color)]">
                             Seguridad
                         </h1>
-                        <p className="mt-1 text-[11px] text-[var(--text-secondary)]">
+                        <p className="mt-1 text-[var(--fs-caption)] text-[var(--text-secondary)]">
                             Administra tu contraseña, doble factor y accesos
                         </p>
                     </div>

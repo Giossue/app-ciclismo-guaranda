@@ -31,7 +31,7 @@ export function NotificationBellLink({ className }: Props) {
             >
                 <Bell className="size-5" />
                 {unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 grid min-w-5 place-items-center rounded-full border border-background bg-primary px-1 text-[10px] leading-5 font-black text-primary-foreground">
+                    <span className="absolute -top-1 -right-1 grid min-w-5 place-items-center rounded-full border border-background bg-primary px-1 text-[var(--fs-caption)] leading-5 font-black text-primary-foreground">
                         {unreadCount > 99 ? '99+' : unreadCount}
                     </span>
                 )}

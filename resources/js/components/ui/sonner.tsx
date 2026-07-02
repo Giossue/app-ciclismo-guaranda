@@ -15,7 +15,6 @@ function Toaster({ ...props }: ToasterProps) {
             theme={appearance}
             className="toaster group"
             position="top-center"
-            richColors
             closeButton
             offset="calc(env(safe-area-inset-top, 0px) + 3.75rem)"
             mobileOffset="calc(env(safe-area-inset-top, 0px) + 3.5rem)"
@@ -33,20 +32,18 @@ function Toaster({ ...props }: ToasterProps) {
                     '--normal-bg': 'var(--popover)',
                     '--normal-text': 'var(--popover-foreground)',
                     '--normal-border': 'var(--border)',
-                    // Crear / confirmar: verde
-                    '--success-bg': '#16a34a',
-                    '--success-border': '#15803d',
-                    '--success-text': '#ffffff',
-                    // Editar: azul / celeste
-                    '--info-bg': '#0284c7',
-                    '--info-border': '#0369a1',
-                    '--info-text': '#ffffff',
-                    // Eliminar / error: rojo
-                    '--error-bg': '#dc2626',
-                    '--error-border': '#b91c1c',
-                    '--error-text': '#ffffff',
-                    '--warning-bg': 'var(--warning)',
-                    '--warning-text': 'var(--warning-foreground)',
+                    '--success-bg': 'var(--popover)',
+                    '--success-border': 'var(--border)',
+                    '--success-text': 'var(--popover-foreground)',
+                    '--info-bg': 'var(--popover)',
+                    '--info-border': 'var(--border)',
+                    '--info-text': 'var(--popover-foreground)',
+                    '--error-bg': 'var(--popover)',
+                    '--error-border': 'var(--border)',
+                    '--error-text': 'var(--popover-foreground)',
+                    '--warning-bg': 'var(--popover)',
+                    '--warning-border': 'var(--border)',
+                    '--warning-text': 'var(--popover-foreground)',
                 } as React.CSSProperties
             }
             {...props}

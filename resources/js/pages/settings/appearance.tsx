@@ -26,7 +26,7 @@ export default function Appearance() {
                         <h1 className="text-base leading-none font-black text-[var(--text-color)]">
                             Apariencia
                         </h1>
-                        <p className="mt-1 text-[11px] text-[var(--text-secondary)]">
+                        <p className="mt-1 text-[var(--fs-caption)] text-[var(--text-secondary)]">
                             Personaliza el tema visual de Guaranda Go
                         </p>
                     </div>

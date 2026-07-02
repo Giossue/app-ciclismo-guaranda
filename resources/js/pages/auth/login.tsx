@@ -116,7 +116,7 @@ export default function Login({ status, canResetPassword }: Props) {
                             </Button>
 
                             {/* Social Login Separator */}
-                            <div className="flex items-center gap-3 py-1.5 text-[10px] font-black tracking-widest text-muted-foreground uppercase">
+                            <div className="flex items-center gap-3 py-1.5 text-[var(--fs-caption)] font-black tracking-widest text-muted-foreground uppercase">
                                 <div className="h-px flex-1 bg-border" />
                                 <span>O inicia sesión con</span>
                                 <div className="h-px flex-1 bg-border" />

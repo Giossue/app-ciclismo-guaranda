@@ -36,7 +36,7 @@ export function AppMobileNav() {
                             prefetch
                             aria-current={active ? 'page' : undefined}
                             className={cn(
-                                'flex min-w-0 flex-1 touch-manipulation flex-col items-center justify-center gap-0.5 rounded-xl px-1 py-1 text-[10px] leading-none font-bold transition-[color,transform] active:scale-[0.96]',
+                                'flex min-w-0 flex-1 touch-manipulation flex-col items-center justify-center gap-0.5 rounded-xl px-1 py-1 text-[var(--fs-caption)] leading-none font-bold transition-[color,transform] active:scale-[0.96]',
                                 active
                                     ? 'text-primary'
                                     : 'text-[var(--text-muted)] hover:text-foreground',
@@ -48,7 +48,7 @@ export function AppMobileNav() {
                                 )}
                                 {item.href === '/notifications' &&
                                     unreadCount > 0 && (
-                                        <span className="absolute -top-1.5 -right-2 grid min-w-4 place-items-center rounded-full bg-primary px-1 text-[9px] leading-4 font-black text-primary-foreground">
+                                        <span className="absolute -top-1.5 -right-2 grid min-w-4 place-items-center rounded-full bg-primary px-1 text-[var(--fs-caption)] leading-4 font-black text-primary-foreground">
                                             {unreadCount > 9
                                                 ? '9+'
                                                 : unreadCount}
@@ -67,7 +67,7 @@ export function AppMobileNav() {
                     prefetch
                     aria-current={isCurrentUrl('/menu') ? 'page' : undefined}
                     className={cn(
-                        'flex min-w-0 flex-1 touch-manipulation flex-col items-center justify-center gap-0.5 rounded-xl px-1 py-1 text-[10px] leading-none font-bold transition-[color,transform] active:scale-[0.96]',
+                        'flex min-w-0 flex-1 touch-manipulation flex-col items-center justify-center gap-0.5 rounded-xl px-1 py-1 text-[var(--fs-caption)] leading-none font-bold transition-[color,transform] active:scale-[0.96]',
                         isCurrentUrl('/menu')
                             ? 'text-primary'
                             : 'text-[var(--text-muted)] hover:text-foreground',

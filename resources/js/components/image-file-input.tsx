@@ -195,7 +195,7 @@ export default function ImageFileInput({
                                 <span className="truncate text-xs text-muted-foreground">
                                     {item.file.name}
                                 </span>
-                                <span className="text-[11px] font-semibold text-muted-foreground">
+                                <span className="text-[var(--fs-caption)] font-semibold text-muted-foreground">
                                     {formatBytes(item.file.size)}
                                 </span>
                             </figcaption>

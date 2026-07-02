@@ -36,7 +36,7 @@ export default function AuthClassicLayout({ children }: AuthLayoutProps) {
                                 Go
                             </span>
                         </h1>
-                        <p className="font-sans text-[10px] font-black tracking-[0.2em] text-[var(--text-secondary)] uppercase">
+                        <p className="font-sans text-[var(--fs-caption)] font-black tracking-[0.2em] text-[var(--text-secondary)] uppercase">
                             Rutas Cicloturísticas
                         </p>
                     </div>

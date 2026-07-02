@@ -59,7 +59,7 @@ export default function Profile({
                         <h1 className="text-base leading-none font-black text-[var(--text-color)]">
                             Perfil
                         </h1>
-                        <p className="mt-1 text-[11px] text-[var(--text-secondary)]">
+                        <p className="mt-1 text-[var(--fs-caption)] text-[var(--text-secondary)]">
                             Actualiza tus datos personales y correo electrónico
                         </p>
                     </div>

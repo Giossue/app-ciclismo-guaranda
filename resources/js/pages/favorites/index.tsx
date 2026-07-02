@@ -1,5 +1,5 @@
 import { Form, Head, Link, usePage } from '@inertiajs/react';
-import { Bell, Bike, Clock, HeartOff, MapPinned, Star } from 'lucide-react';
+import { Bike, Clock, HeartOff, MapPinned, Star } from 'lucide-react';
 import FavoriteRouteController from '@/actions/App/Http/Controllers/Cyclist/FavoriteRouteController';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -55,23 +55,13 @@ export default function FavoritesIndex({ favorites }: Props) {
                 {/* Welcoming Header & Notifications Button */}
                 <div className="flex items-center justify-between border-b border-[var(--input-border)]/40 py-2">
                     <div className="flex flex-col gap-0.5">
-                        <span className="text-[10px] font-black tracking-widest text-[var(--text-secondary)] uppercase">
+                        <span className="text-[var(--fs-caption)] font-black tracking-widest text-[var(--text-secondary)] uppercase">
                             Hola, {auth?.user?.name ?? 'Ciclista'}
                         </span>
                         <h1 className="text-2xl font-black tracking-tight text-[var(--text-color)]">
                             Favoritas
                         </h1>
                     </div>
-
-                    {/* Notification Bell Icon */}
-                    <button
-                        type="button"
-                        className="relative flex size-11 items-center justify-center rounded-2xl border border-[var(--input-border)] bg-[var(--input-bg)] text-[var(--text-color)] transition-all duration-200 hover:border-[#b2f000]/20 hover:bg-[var(--input-border)] hover:text-[#b2f000] active:scale-95"
-                        aria-label="Notificaciones"
-                    >
-                        <Bell className="size-5" />
-                        <span className="absolute top-3.5 right-3.5 size-2 rounded-full bg-[#b2f000] shadow-[0_0_8px_#b2f000]" />
-                    </button>
                 </div>
 
                 {/* Favorites List */}
@@ -84,17 +74,17 @@ export default function FavoritesIndex({ favorites }: Props) {
                             >
                                 <CardHeader className="gap-2">
                                     <div className="z-10 flex flex-wrap gap-1.5">
-                                        <Badge className="flex items-center gap-1 rounded-lg border border-[#b2f000]/20 bg-[#b2f000]/10 px-1.5 py-0.5 text-[9px] font-black tracking-wider text-[#b2f000] uppercase hover:bg-[#b2f000]/10">
+                                        <Badge className="flex items-center gap-1 rounded-lg border border-[#b2f000]/20 bg-[#b2f000]/10 px-1.5 py-0.5 text-[var(--fs-caption)] font-black tracking-wider text-[#b2f000] uppercase hover:bg-[#b2f000]/10">
                                             <Star className="size-2.5 fill-[#b2f000] text-[#b2f000]" />
                                             <span>Favorita</span>
                                         </Badge>
                                         {favorite.route.category && (
-                                            <Badge className="rounded-lg border border-[#b2f000]/10 bg-[#b2f000]/10 px-2 py-0.5 text-[9px] font-black tracking-wider text-[#b2f000] uppercase">
+                                            <Badge className="rounded-lg border border-[#b2f000]/10 bg-[#b2f000]/10 px-2 py-0.5 text-[var(--fs-caption)] font-black tracking-wider text-[#b2f000] uppercase">
                                                 {favorite.route.category.name}
                                             </Badge>
                                         )}
                                         {favorite.route.difficulty && (
-                                            <Badge className="rounded-lg border border-[#b2f000]/10 bg-[#b2f000]/10 px-2 py-0.5 text-[9px] font-black tracking-wider text-[#b2f000] uppercase">
+                                            <Badge className="rounded-lg border border-[#b2f000]/10 bg-[#b2f000]/10 px-2 py-0.5 text-[var(--fs-caption)] font-black tracking-wider text-[#b2f000] uppercase">
                                                 {favorite.route.difficulty.name}
                                             </Badge>
                                         )}
@@ -176,19 +166,17 @@ export default function FavoritesIndex({ favorites }: Props) {
 
                 {/* Empty State */}
                 {favorites.data.length === 0 && (
-                    <Card className="rounded-3xl border-dashed border-[var(--input-border)] bg-[var(--input-bg)]/50 px-6 py-12 text-center backdrop-blur-sm">
-                        <CardHeader className="flex flex-col items-center gap-2">
-                            <div className="mb-2 flex size-14 items-center justify-center rounded-2xl bg-[var(--input-border)]/50 text-[var(--text-secondary)]/60">
-                                <HeartOff className="size-7" />
-                            </div>
-                            <CardTitle className="text-base font-bold text-[var(--text-color)]">
-                                No tienes favoritas
-                            </CardTitle>
-                            <CardDescription className="mx-auto max-w-[240px] text-xs leading-relaxed text-[var(--text-secondary)]">
-                                Guarda una ruta para verla aquí.
-                            </CardDescription>
-                        </CardHeader>
-                    </Card>
+                    <div className="flex flex-col items-center gap-2 py-8 text-center">
+                        <div className="mb-2 flex size-14 items-center justify-center rounded-2xl bg-[var(--input-border)]/50 text-[var(--text-secondary)]/60">
+                            <HeartOff className="size-7" />
+                        </div>
+                        <h2 className="text-base font-bold text-[var(--text-color)]">
+                            No tienes favoritas
+                        </h2>
+                        <p className="mx-auto max-w-[240px] text-xs leading-relaxed text-[var(--text-secondary)]">
+                            Guarda una ruta para verla aquí.
+                        </p>
+                    </div>
                 )}
 
                 <div className="pl-1 text-xs font-bold text-[var(--text-secondary)]">

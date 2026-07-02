@@ -4,7 +4,6 @@ import {
     History,
     LoaderCircle,
     MapPin,
-    MessageSquareText,
     Plus,
     Send,
     Trash2,
@@ -154,9 +153,6 @@ export default function ChatIndex({
 
             <section className="ueb-page ueb-chat-shell md:w-full">
                 <header className="ueb-chat-header">
-                    <div className="ueb-chat-icon shrink-0">
-                        <Bot className="size-5" />
-                    </div>
                     <p className="min-w-0 flex-1 truncate text-sm font-semibold text-muted-foreground">
                         {activeConversation?.title ??
                             'Pregunta sobre rutas y puntos útiles'}
@@ -165,11 +161,15 @@ export default function ChatIndex({
                         variant="outline"
                         size="sm"
                         asChild
-                        className="h-9 shrink-0 rounded-xl px-3"
+                        className="size-9 shrink-0 rounded-xl p-0"
                     >
-                        <Link href="/chat?new=1" replace prefetch>
+                        <Link
+                            href="/chat?new=1"
+                            replace
+                            prefetch
+                            aria-label="Nueva consulta"
+                        >
                             <Plus className="size-4" />
-                            <span>Nueva</span>
                         </Link>
                     </Button>
                     {activeConversation && (
@@ -216,7 +216,7 @@ export default function ChatIndex({
                     {latestMessages.length === 0 && (
                         <div className="m-auto flex max-w-64 flex-col items-center gap-3 text-center text-muted-foreground">
                             <div className="grid size-12 place-items-center rounded-xl border bg-card">
-                                <MessageSquareText className="size-6" />
+                                <Bot className="size-6" />
                             </div>
                             <div className="flex flex-col gap-1">
                                 <p className="text-sm font-black text-foreground">
