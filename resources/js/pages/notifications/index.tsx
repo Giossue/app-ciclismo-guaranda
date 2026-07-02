@@ -1,5 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
-import { Bell, CheckCheck, Circle, Inbox, MailOpen } from 'lucide-react';
+import { Bell, CheckCheck, Circle, MailOpen } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -55,10 +55,6 @@ export default function NotificationsIndex({
                             Avisos de incidencias, valoraciones y actividad de
                             tu cuenta.
                         </p>
-                        <Badge variant={unreadCount > 0 ? 'default' : 'muted'}>
-                            <Bell data-icon="inline-start" />
-                            {unreadCount} sin leer
-                        </Badge>
                     </div>
 
                     <div className="mt-4 flex flex-col items-center gap-3">
@@ -116,9 +112,6 @@ export default function NotificationsIndex({
 
                 {notifications.data.length === 0 && (
                     <div className="flex flex-col items-center gap-2 py-6 text-center">
-                        <div className="grid size-12 place-items-center rounded-2xl border bg-muted/30 text-muted-foreground">
-                            <Inbox className="size-6" />
-                        </div>
                         <h2 className="text-base font-black text-foreground">
                             {onlyUnread
                                 ? 'No tienes notificaciones sin leer'

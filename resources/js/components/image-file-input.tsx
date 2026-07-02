@@ -154,7 +154,24 @@ export default function ImageFileInput({
                 disabled={processing}
                 onChange={handleChange}
                 aria-invalid={invalid}
+                className="sr-only"
             />
+            <button
+                type="button"
+                onClick={() => inputRef.current?.click()}
+                disabled={processing}
+                className={cn(
+                    'flex min-h-12 w-full items-center justify-between gap-3 rounded-2xl border border-input bg-card px-4 text-left text-sm font-black text-foreground disabled:opacity-50',
+                    invalid && 'border-destructive',
+                )}
+            >
+                <span>Seleccionar archivo</span>
+                <span className="min-w-0 truncate font-semibold text-muted-foreground">
+                    {items.length > 0
+                        ? items.map((item) => item.file.name).join(', ')
+                        : 'Ningún archivo seleccionado'}
+                </span>
+            </button>
 
             {processing && (
                 <p className="flex items-center gap-2 text-xs text-muted-foreground">

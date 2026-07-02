@@ -469,9 +469,6 @@ function HistorySheet({
                                             {conversation.title ??
                                                 `Consulta ${conversation.id}`}
                                         </strong>
-                                        <span className="text-xs text-muted-foreground">
-                                            {conversation.messages_count}
-                                        </span>
                                     </div>
                                     {conversation.last_message && (
                                         <p className="mt-1 line-clamp-2 text-muted-foreground">

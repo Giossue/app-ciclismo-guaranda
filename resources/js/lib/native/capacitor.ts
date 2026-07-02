@@ -45,13 +45,7 @@ export function setupNativeBackButton(): void {
         return;
     }
 
-    void CapacitorApp.addListener('backButton', ({ canGoBack }) => {
-        if (canGoBack && window.history.length > 1) {
-            window.history.back();
-
-            return;
-        }
-
+    void CapacitorApp.addListener('backButton', () => {
         const fallbackPath = window.location.pathname.startsWith('/admin')
             ? '/admin/dashboard'
             : '/routes';

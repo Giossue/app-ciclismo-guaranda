@@ -13,12 +13,14 @@ type MobileTabsProps = {
     items: MobileTabItem[];
     defaultValue?: string;
     className?: string;
+    align?: 'start' | 'center';
 };
 
 export function MobileTabs({
     items,
     defaultValue,
     className,
+    align = 'center',
 }: MobileTabsProps) {
     const firstValue = items[0]?.value ?? '';
     const initialValue = defaultValue ?? firstValue;
@@ -34,7 +36,12 @@ export function MobileTabs({
 
     return (
         <section className={cn('flex min-h-0 flex-col gap-4', className)}>
-            <div className="sticky top-2 z-20 -mx-1 [scrollbar-width:none] overflow-x-auto px-1 py-1 [-ms-overflow-style:none] md:static md:z-auto [&::-webkit-scrollbar]:hidden">
+            <div
+                className={cn(
+                    'sticky top-2 z-20 -mx-1 flex [scrollbar-width:none] overflow-x-auto px-1 py-1 [-ms-overflow-style:none] md:static md:z-auto [&::-webkit-scrollbar]:hidden',
+                    align === 'center' ? 'justify-center' : 'justify-start',
+                )}
+            >
                 <div className="flex w-max gap-2">
                     {items.map((item) => {
                         const active = item.value === activeItem.value;

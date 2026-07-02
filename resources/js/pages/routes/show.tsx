@@ -73,6 +73,7 @@ import type {
     OfflineRoutePackage,
     OfflineRouteRecord,
 } from '@/lib/offline/local-database';
+import { getNetworkStatus, watchNetworkStatus } from '@/lib/native/capacitor';
 import { syncPendingOfflineEvents } from '@/lib/offline/sync-client';
 import type {
     ActiveTrack,
@@ -107,6 +108,7 @@ export default function RoutesShow({
 
                 <MobileTabs
                     defaultValue="map"
+                    align="start"
                     items={[
                         {
                             value: 'map',
@@ -143,6 +145,10 @@ export default function RoutesShow({
                                             />
                                         </CardContent>
                                     </Card>
+                                    <TrackPanel
+                                        route={route}
+                                        activeTrack={activeTrack}
+                                    />
                                 </div>
                             ),
                         },
@@ -720,7 +726,7 @@ function FavoriteRatingPanel({ route }: { route: CyclingRouteMapItem }) {
                     </Badge>
                 </div>
             </CardHeader>
-            <CardContent className="grid gap-5 lg:grid-cols-[280px_1fr]">
+            <CardContent className="flex flex-col gap-4">
                 <div className="flex flex-col gap-3">
                     {route.user_interaction.is_favorite ? (
                         <Form
@@ -749,9 +755,8 @@ function FavoriteRatingPanel({ route }: { route: CyclingRouteMapItem }) {
                             {({ processing }) => (
                                 <Button
                                     type="submit"
-                                    variant="outline"
                                     disabled={processing}
-                                    className="w-full"
+                                    className="w-full bg-primary text-primary-foreground hover:bg-[var(--primary-hover)]"
                                 >
                                     <Heart data-icon="inline-start" />
                                     Guardar favorita
@@ -760,18 +765,13 @@ function FavoriteRatingPanel({ route }: { route: CyclingRouteMapItem }) {
                         </Form>
                     )}
 
-                    <div className="rounded-2xl border bg-muted/30 p-3 text-sm text-muted-foreground">
-                        <p>
-                            Recorridos válidos para valorar:{' '}
-                            <strong className="text-foreground">
-                                {route.user_interaction.valid_tracks_count}
-                            </strong>
-                        </p>
-                        <p>
-                            Solo cuentan recorridos finalizados con al menos 90%
-                            de avance.
-                        </p>
-                    </div>
+                    <p className="text-sm text-muted-foreground">
+                        Recorridos válidos para valorar:{' '}
+                        <strong className="text-foreground">
+                            {route.user_interaction.valid_tracks_count}
+                        </strong>
+                        . Solo cuentan recorridos finalizados con al menos 90% de avance.
+                    </p>
                 </div>
 
                 <div className="flex flex-col gap-4">
@@ -780,7 +780,7 @@ function FavoriteRatingPanel({ route }: { route: CyclingRouteMapItem }) {
                             {...ratingAction}
                             options={{ preserveScroll: true }}
                             encType="multipart/form-data"
-                            className="grid gap-3 rounded-2xl border border-primary/10 bg-muted/30 p-3"
+                            className="grid gap-3 rounded-2xl border border-primary/10 bg-transparent p-3"
                         >
                             {({ processing, errors }) => (
                                 <>
@@ -941,7 +941,7 @@ function FavoriteRatingPanel({ route }: { route: CyclingRouteMapItem }) {
                     <Separator />
 
                     <div className="flex flex-col gap-3">
-                        <h3 className="font-medium">Comentarios</h3>
+                        <h3 className="font-black text-foreground">Comentarios</h3>
                         {route.approved_ratings.map((rating) => (
                             <div
                                 key={rating.id}
@@ -1011,9 +1011,7 @@ function OfflinePanel({
     route: CyclingRouteMapItem;
     incidentTypes: CatalogOption[];
 }) {
-    const [isOnline, setIsOnline] = useState(() =>
-        typeof navigator === 'undefined' ? true : navigator.onLine,
-    );
+    const [isOnline, setIsOnline] = useState(true);
     const [downloadedRoute, setDownloadedRoute] =
         useState<OfflineRouteRecord | null>(null);
     const [queueCount, setQueueCount] = useState(0);
@@ -1025,6 +1023,12 @@ function OfflinePanel({
         latitude: route.start_latitude,
         longitude: route.start_longitude,
     });
+
+    useEffect(() => {
+        void getNetworkStatus().then((status) => setIsOnline(status.connected));
+
+        return watchNetworkStatus((status) => setIsOnline(status.connected));
+    }, []);
 
     const loadOfflineState = useCallback(async () => {
         const [record, items, estimate] = await Promise.all([
@@ -1338,6 +1342,12 @@ function OfflinePanel({
                 <Separator />
 
                 <div className="grid gap-4 lg:grid-cols-2">
+                    {isOnline ? (
+                        <div className="rounded-2xl border border-primary/10 p-4 text-sm text-muted-foreground">
+                            <h3 className="font-black text-foreground">Alertas sin conexión</h3>
+                            <p className="mt-1">Tienes conexión. Para reportar una incidencia usa el tab Reportar. Este formulario aparecerá cuando el dispositivo esté sin internet.</p>
+                        </div>
+                    ) : (
                     <form
                         onSubmit={enqueueIncident}
                         className="grid gap-3 rounded-2xl border border-primary/10 bg-transparent p-4"
@@ -1428,6 +1438,7 @@ function OfflinePanel({
                             Guardar alerta
                         </Button>
                     </form>
+                    )}
 
                     <div className="flex flex-col gap-3 rounded-2xl border border-primary/10 bg-transparent p-4">
                         <div>

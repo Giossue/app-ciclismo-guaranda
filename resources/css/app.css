@@ -11,7 +11,7 @@
     src: url('/assets/fonts/CicloSans-Regular.ttf') format('truetype');
     font-weight: 300 600;
     font-style: normal;
-    font-display: swap;
+    font-display: block;
 }
 
 @font-face {
@@ -19,7 +19,7 @@
     src: url('/assets/fonts/CicloSans-Bold.ttf') format('truetype');
     font-weight: 700 900;
     font-style: normal;
-    font-display: swap;
+    font-display: block;
 }
 
 @theme {
@@ -415,6 +415,13 @@
 
     .leaflet-popup-tip {
         background: var(--bg-card-color);
+    }
+
+    .leaflet-pane,
+    .leaflet-top,
+    .leaflet-bottom,
+    .leaflet-control {
+        z-index: 20 !important;
     }
 
     [data-slot='input'],

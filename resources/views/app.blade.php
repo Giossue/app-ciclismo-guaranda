@@ -33,6 +33,8 @@
         <link rel="icon" href="/favicon.svg" type="image/svg+xml">
         <link rel="icon" href="/favicon.ico" sizes="any">
         <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+        <link rel="preload" href="/assets/fonts/CicloSans-Regular.ttf" as="font" type="font/ttf" crossorigin>
+        <link rel="preload" href="/assets/fonts/CicloSans-Bold.ttf" as="font" type="font/ttf" crossorigin>
 
         @fonts
 
