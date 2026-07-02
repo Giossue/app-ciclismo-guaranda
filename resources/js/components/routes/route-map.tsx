@@ -28,6 +28,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { mediaUrl } from '@/lib/media';
+import { getCurrentAppLocation } from '@/lib/native/capacitor';
 import { cn } from '@/lib/utils';
 import type { ActiveTrack, CyclingRouteMapItem, RoutePoi } from '@/types';
 
@@ -157,29 +158,18 @@ export default function RouteMap({
     }, []);
 
     const requestLocation = () => {
-        if (!navigator.geolocation) {
-            setGpsStatus('unsupported');
-
-            return;
-        }
-
         setGpsStatus('requesting');
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
+
+        void getCurrentAppLocation()
+            .then((location) => {
                 setUserLocation({
-                    latitude: position.coords.latitude,
-                    longitude: position.coords.longitude,
-                    accuracy: position.coords.accuracy,
+                    latitude: location.latitude,
+                    longitude: location.longitude,
+                    accuracy: location.accuracyM ?? 0,
                 });
                 setGpsStatus('granted');
-            },
-            () => setGpsStatus('denied'),
-            {
-                enableHighAccuracy: true,
-                maximumAge: 30_000,
-                timeout: 12_000,
-            },
-        );
+            })
+            .catch(() => setGpsStatus('denied'));
     };
 
     const toggleFilter = (filter: keyof OverlayFilters) => {

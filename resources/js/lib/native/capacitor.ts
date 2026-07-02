@@ -20,7 +20,17 @@ export type AppPosition = {
     timestamp: number;
 };
 
+export type AppLocationSnapshot = {
+    latitude: number;
+    longitude: number;
+    accuracyM: number | null;
+    recordedAt: string;
+};
+
 type NetworkStatusCallback = (status: ConnectionStatus) => void;
+
+const rememberedLocationKey = 'guaranda-go:last-location';
+const rememberedLocationMaxAgeMs = 15 * 60 * 1000;
 
 export function isNativeMobile(): boolean {
     return Capacitor.isNativePlatform();
@@ -154,6 +164,77 @@ export async function getCurrentAppPosition(): Promise<AppPosition> {
             { enableHighAccuracy: true, maximumAge: 10000, timeout: 15000 },
         );
     });
+}
+
+export async function getCurrentAppLocation(): Promise<AppLocationSnapshot> {
+    return rememberAppPosition(await getCurrentAppPosition());
+}
+
+export function rememberAppPosition(
+    position: AppPosition,
+): AppLocationSnapshot {
+    const snapshot: AppLocationSnapshot = {
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude,
+        accuracyM: position.coords.accuracy,
+        recordedAt: new Date(position.timestamp).toISOString(),
+    };
+
+    if (typeof window !== 'undefined') {
+        window.sessionStorage.setItem(
+            rememberedLocationKey,
+            JSON.stringify(snapshot),
+        );
+    }
+
+    return snapshot;
+}
+
+export function getRememberedAppLocation(
+    maxAgeMs = rememberedLocationMaxAgeMs,
+): AppLocationSnapshot | null {
+    if (typeof window === 'undefined') {
+        return null;
+    }
+
+    const raw = window.sessionStorage.getItem(rememberedLocationKey);
+
+    if (!raw) {
+        return null;
+    }
+
+    try {
+        const snapshot = JSON.parse(raw) as Partial<AppLocationSnapshot>;
+        const recordedAt = snapshot.recordedAt
+            ? Date.parse(snapshot.recordedAt)
+            : Number.NaN;
+
+        if (
+            typeof snapshot.latitude !== 'number' ||
+            typeof snapshot.longitude !== 'number' ||
+            !Number.isFinite(recordedAt) ||
+            Date.now() - recordedAt > maxAgeMs
+        ) {
+            window.sessionStorage.removeItem(rememberedLocationKey);
+
+            return null;
+        }
+
+        return {
+            latitude: snapshot.latitude,
+            longitude: snapshot.longitude,
+            accuracyM:
+                typeof snapshot.accuracyM === 'number'
+                    ? snapshot.accuracyM
+                    : null,
+            recordedAt:
+                snapshot.recordedAt ?? new Date(recordedAt).toISOString(),
+        };
+    } catch {
+        window.sessionStorage.removeItem(rememberedLocationKey);
+
+        return null;
+    }
 }
 
 export async function takeIncidentPhoto(): Promise<Photo> {

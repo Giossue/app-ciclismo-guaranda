@@ -35,8 +35,9 @@ import {
 } from '@/components/ui/sheet';
 import {
     browserNetworkStatus,
-    getCurrentAppPosition,
+    getCurrentAppLocation,
     getNetworkStatus,
+    getRememberedAppLocation,
     watchNetworkStatus,
 } from '@/lib/native/capacitor';
 import { cn } from '@/lib/utils';
@@ -101,8 +102,14 @@ export default function ChatIndex({
     const [isOnline, setIsOnline] = useState(
         () => browserNetworkStatus().connected,
     );
-    const [location, setLocation] = useState<ChatLocationState>({
-        status: 'idle',
+    const [location, setLocation] = useState<ChatLocationState>(() => {
+        const rememberedLocation = getRememberedAppLocation();
+
+        if (!rememberedLocation) {
+            return { status: 'idle' };
+        }
+
+        return chatLocationFromSnapshot(rememberedLocation);
     });
 
     useEffect(() => {
@@ -117,21 +124,9 @@ export default function ChatIndex({
         setLocation({ status: 'loading' });
 
         try {
-            const position = await getCurrentAppPosition();
-            const latitude = position.coords.latitude.toFixed(7);
-            const longitude = position.coords.longitude.toFixed(7);
-            const accuracy = position.coords.accuracy;
-
-            setLocation({
-                status: 'ready',
-                latitude,
-                longitude,
-                accuracyM:
-                    typeof accuracy === 'number' && Number.isFinite(accuracy)
-                        ? Math.round(accuracy).toString()
-                        : '',
-                recordedAt: new Date(position.timestamp).toISOString(),
-            });
+            setLocation(
+                chatLocationFromSnapshot(await getCurrentAppLocation()),
+            );
         } catch {
             setLocation({
                 status: 'error',
@@ -380,6 +375,25 @@ export default function ChatIndex({
             </section>
         </>
     );
+}
+
+function chatLocationFromSnapshot(location: {
+    latitude: number;
+    longitude: number;
+    accuracyM: number | null;
+    recordedAt: string;
+}): ChatLocationState {
+    return {
+        status: 'ready',
+        latitude: location.latitude.toFixed(7),
+        longitude: location.longitude.toFixed(7),
+        accuracyM:
+            typeof location.accuracyM === 'number' &&
+            Number.isFinite(location.accuracyM)
+                ? Math.round(location.accuracyM).toString()
+                : '',
+        recordedAt: location.recordedAt,
+    };
 }
 
 function HistorySheet({
