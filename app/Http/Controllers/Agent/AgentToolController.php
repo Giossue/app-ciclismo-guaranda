@@ -66,7 +66,7 @@ class AgentToolController extends Controller
 
             return response()->json([
                 'mode' => $intent === 'alerts' ? 'alerts' : 'detail',
-                'selected_route' => $this->buildRouteContext($route, $distanceMeters),
+                'selected_route' => $this->buildRouteContext($route, $distanceMeters, $latitude, $longitude),
                 'routes' => [],
                 'pois' => [],
                 'summary' => [
@@ -209,7 +209,7 @@ class AgentToolController extends Controller
                     : null;
 
                 return [
-                    ...$this->buildRouteContext($route, $distanceMeters),
+                    ...$this->buildRouteContext($route, $distanceMeters, $latitude, $longitude),
                     '_sort_distance_m' => $distanceMeters,
                 ];
             })
@@ -241,7 +241,7 @@ class AgentToolController extends Controller
     /**
      * @return array<string, mixed>
      */
-    private function buildRouteContext(CyclingRoute $route, ?float $distanceMeters): array
+    private function buildRouteContext(CyclingRoute $route, ?float $distanceMeters, ?float $latitude = null, ?float $longitude = null): array
     {
         $latestMetric = $route->metrics->sortByDesc('route_version')->first();
         $ratingsSummary = $this->ratingsSummary($route);
@@ -280,7 +280,13 @@ class AgentToolController extends Controller
                 'total' => $ratingsSummary['total'],
             ],
             'reviews' => $ratingsSummary['reviews'],
-            'pois' => $route->pointsOfInterest->map(fn (PointOfInterest $poi): array => $this->buildPoiContext($poi, null, $route))->values()->all(),
+            'pois' => $route->pointsOfInterest->map(function (PointOfInterest $poi) use ($route, $latitude, $longitude): array {
+                $poiDistanceMeters = $latitude !== null && $longitude !== null
+                    ? $this->haversineMeters($latitude, $longitude, (float) $poi->latitude, (float) $poi->longitude)
+                    : null;
+
+                return $this->buildPoiContext($poi, $poiDistanceMeters, $route);
+            })->values()->all(),
             'alerts' => $route->incidents->map(fn (Incident $incident): array => $this->buildAlertContext($incident))->values()->all(),
         ];
     }

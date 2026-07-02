@@ -189,6 +189,7 @@ test('agent routes tool returns full details for recommendations without duplica
         ->assertJsonPath('routes.0.reviews.0.comment', 'Excelente ruta, muy bien señalizada.')
         ->assertJsonPath('routes.0.pois.0.id', $poi->id)
         ->assertJsonPath('routes.0.pois.0.observations', 'Solo acepta efectivo después de las 18:00.')
+        ->assertJsonPath('routes.0.pois.0.distance_from_user_km', fn ($value) => $value !== null)
         ->assertJsonPath('routes.0.alerts.0.title', 'Piedras en la vía')
         ->assertJsonPath('routes.0.metric.distance_km', 9.75)
         ->assertJsonPath('summary.has_location', true)
