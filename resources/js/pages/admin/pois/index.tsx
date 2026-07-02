@@ -197,18 +197,22 @@ export default function AdminPoisIndex({
                                     </Form>
                                 ) : (
                                     <Form
-                                        {...PoiController.restore.form(poi.id)}
+                                        action={`/admin/pois/${poi.id}/restore`}
+                                        method="post"
                                         options={{ preserveScroll: true }}
                                     >
-                                        {({ processing }) => (
-                                            <Button
-                                                variant="secondary"
-                                                disabled={processing}
-                                            >
-                                                <Power data-icon="inline-start" />
-                                                Habilitar
-                                            </Button>
-                                        )}
+                                        <input
+                                            type="hidden"
+                                            name="_method"
+                                            value="PATCH"
+                                        />
+                                        <Button
+                                            variant="secondary"
+                                            type="submit"
+                                        >
+                                            <Power data-icon="inline-start" />
+                                            Habilitar
+                                        </Button>
                                     </Form>
                                 )}
                             </CardFooter>
