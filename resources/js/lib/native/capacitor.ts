@@ -9,7 +9,6 @@ import type { Position } from '@capacitor/geolocation';
 import { LocalNotifications } from '@capacitor/local-notifications';
 import { Network } from '@capacitor/network';
 import type { ConnectionStatus } from '@capacitor/network';
-import { router } from '@inertiajs/react';
 
 export type AppPosition = {
     coords: {
@@ -45,17 +44,9 @@ export function setupNativeBackButton(): void {
         return;
     }
 
-    void CapacitorApp.addListener('backButton', () => {
-        const fallbackPath = window.location.pathname.startsWith('/admin')
-            ? '/admin/dashboard'
-            : '/routes';
-
-        if (window.location.pathname !== fallbackPath) {
-            router.visit(fallbackPath, {
-                replace: true,
-                preserveScroll: false,
-                preserveState: false,
-            });
+    void CapacitorApp.addListener('backButton', ({ canGoBack }) => {
+        if (canGoBack) {
+            window.history.back();
 
             return;
         }
