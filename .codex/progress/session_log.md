@@ -496,3 +496,8 @@
 - Se consultó el MCP de 21st.dev y se adaptó la referencia `Feature Bento` a la landing existente.
 - La página ahora usa composición hero + bento en escritorio y una sola columna en móvil, conservando el flujo Fortify, Wayfinder, tokens semánticos y sin añadir dependencias.
 - Se validó visualmente en 1440 px y 390 px, además de TypeScript, ESLint focalizado, Prettier, build y diff limpio.
+
+## 2026-08-27 — Auth adaptable en escritorio
+
+- Se hizo responsivo `AuthClassicLayout`: móvil permanece compacto y login/registro aprovechan el ancho disponible desde `lg`.
+- Registro usa una cuadrícula de dos columnas únicamente en escritorio para pares de datos relacionados; correo, checklist y acción conservan ancho completo para legibilidad y validación de Fortify.

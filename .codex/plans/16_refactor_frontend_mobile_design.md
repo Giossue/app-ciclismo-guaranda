@@ -360,3 +360,8 @@ Notas:
 
 - La landing deja de limitarse a un lienzo móvil: en escritorio compone un hero panorámico y una cuadrícula bento de rutas, modo sin conexión y guía ciclista; en móvil se apila conservando jerarquía y acciones táctiles completas.
 - Se tomó como referencia estructural el componente `Feature Bento` de 21st.dev y se adaptó a los tokens, rutas Wayfinder y restricciones visuales de Guaranda Go, sin incorporar sus gradientes, dependencias ni métricas ficticias.
+
+## Auth responsive para escritorio 2026-08-27
+
+- `AuthClassicLayout` conserva la columna compacta en móvil y amplía de forma controlada el contenedor a partir de `lg`.
+- Login mantiene una tarjeta estrecha y centrada en escritorio; registro usa dos columnas solo para pares de campos relacionados, preservando el orden natural de tabulación, las validaciones Fortify y una columna única en móvil.

@@ -50,21 +50,21 @@ export default function Register({ genders, passwordRules }: Props) {
         <>
             <Head title="Crear cuenta" />
 
-            <Card className="gap-6 py-6">
-                <CardHeader className="gap-2 text-center">
+            <Card className="w-full gap-6 py-6 lg:px-2">
+                <CardHeader className="gap-2 text-center lg:px-6">
                     <CardTitle>Crea tu cuenta</CardTitle>
                     <CardDescription>
                         Completa tus datos para comenzar a recorrer Guaranda.
                     </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="lg:px-6">
                     <Form
                         {...store.form()}
                         resetOnSuccess={['password', 'password_confirmation']}
                         disableWhileProcessing
                     >
                         {({ processing, errors }) => (
-                            <FieldGroup>
+                            <FieldGroup className="lg:grid lg:grid-cols-2 lg:gap-x-6 lg:gap-y-5">
                                 <Field data-invalid={Boolean(errors.name)}>
                                     <FieldLabel htmlFor="name">
                                         Nombre
@@ -145,7 +145,10 @@ export default function Register({ genders, passwordRules }: Props) {
                                     <InputError message={errors.birth_date} />
                                 </Field>
 
-                                <Field data-invalid={Boolean(errors.email)}>
+                                <Field
+                                    className="lg:col-span-2"
+                                    data-invalid={Boolean(errors.email)}
+                                >
                                     <FieldLabel htmlFor="email">
                                         Correo electrónico
                                     </FieldLabel>
@@ -211,9 +214,13 @@ export default function Register({ genders, passwordRules }: Props) {
                                     />
                                 </Field>
 
-                                <PasswordChecklist checks={passwordChecks} />
+                                <div className="lg:col-span-2">
+                                    <PasswordChecklist
+                                        checks={passwordChecks}
+                                    />
+                                </div>
 
-                                <Field>
+                                <Field className="lg:col-span-2 lg:mx-auto lg:max-w-sm">
                                     <Button
                                         type="submit"
                                         disabled={

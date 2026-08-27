@@ -32,7 +32,7 @@ export default function Login({ status, canResetPassword }: Props) {
         <>
             <Head title="Iniciar sesión" />
 
-            <Card className="gap-6 py-6">
+            <Card className="w-full gap-6 py-6 lg:max-w-md lg:self-center">
                 <CardHeader className="gap-2">
                     <CardTitle>Inicia sesión</CardTitle>
                     <CardDescription>

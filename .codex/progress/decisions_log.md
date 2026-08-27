@@ -164,6 +164,10 @@
 - Todos los radios no circulares se reducen aproximadamente 30 % mediante `resources/css/app.css`; el sistema mantiene una única escala global.
 - Los bloques `login-01` y `signup-03` de shadcn sirven como composición de referencia, pero no sobrescriben las primitives locales ni reemplazan los formularios Fortify. Se adaptan a los campos y rutas tipadas reales de Guaranda Go.
 
+## 2026-08-27 — Densidad responsive de autenticación
+
+- El shell de login/registro mantiene el diseño de una columna en móvil. Desde escritorio, login conserva una tarjeta de lectura cómoda y registro distribuye pares de campos en dos columnas para reducir su altura sin alterar el contrato Fortify ni el orden de teclado.
+
 ## 2026-08-27 — Autodespliegue directo en Dokploy
 
 - Dokploy realiza el despliegue por su detección nativa de `push`; el flujo habitual no depende de GitHub Actions como condición previa.
