@@ -26,7 +26,7 @@ export default function PasswordInput({
                 aria-label={
                     showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'
                 }
-                tabIndex={-1}
+                aria-pressed={showPassword}
             >
                 {showPassword ? (
                     <EyeOff className="size-4" />
