@@ -35,7 +35,7 @@ function FieldLabel({
     return (
         <Label
             data-slot="field-label"
-            className={cn('font-semibold', className)}
+            className={cn('font-medium', className)}
             {...props}
         />
     );

@@ -5,7 +5,7 @@ import { DatePicker } from '@/components/date-picker';
 import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import {
     Field,
     FieldDescription,
@@ -44,196 +44,229 @@ export default function Register({ genders, passwordRules }: Props) {
         <>
             <Head title="Crear cuenta" />
 
-            <Card className="w-full gap-6 py-6 lg:px-2">
-                <CardHeader className="gap-2 text-center lg:px-6">
-                    <CardTitle>Crea tu cuenta</CardTitle>
-                </CardHeader>
-                <CardContent className="lg:px-6">
-                    <Form
-                        {...store.form()}
-                        resetOnSuccess={['password', 'password_confirmation']}
-                        disableWhileProcessing
+            <div className="flex w-full flex-col items-center gap-5">
+                <header className="text-center">
+                    <h1
+                        id="register-title"
+                        className="font-display text-2xl leading-tight font-semibold tracking-[-0.03em] text-foreground sm:text-3xl"
                     >
-                        {({ processing, errors }) => (
-                            <FieldGroup className="lg:grid lg:grid-cols-2 lg:gap-x-6 lg:gap-y-5">
-                                <Field data-invalid={Boolean(errors.name)}>
-                                    <FieldLabel htmlFor="name">
-                                        Nombre
-                                    </FieldLabel>
-                                    <Input
-                                        id="name"
-                                        type="text"
-                                        name="name"
-                                        required
-                                        autoFocus
-                                        autoComplete="given-name"
-                                        aria-invalid={Boolean(errors.name)}
-                                    />
-                                    <InputError message={errors.name} />
-                                </Field>
+                        Crea tu cuenta
+                    </h1>
+                </header>
+                <Card
+                    aria-labelledby="register-title"
+                    className="w-full gap-6 py-6 lg:px-2"
+                >
+                    <CardContent className="lg:px-6">
+                        <Form
+                            {...store.form()}
+                            resetOnSuccess={[
+                                'password',
+                                'password_confirmation',
+                            ]}
+                            disableWhileProcessing
+                        >
+                            {({ processing, errors }) => (
+                                <FieldGroup className="lg:grid lg:grid-cols-2 lg:gap-x-6 lg:gap-y-5">
+                                    <Field data-invalid={Boolean(errors.name)}>
+                                        <FieldLabel htmlFor="name">
+                                            Nombre
+                                        </FieldLabel>
+                                        <Input
+                                            id="name"
+                                            type="text"
+                                            name="name"
+                                            required
+                                            autoFocus
+                                            autoComplete="given-name"
+                                            aria-invalid={Boolean(errors.name)}
+                                        />
+                                        <InputError message={errors.name} />
+                                    </Field>
 
-                                <Field data-invalid={Boolean(errors.last_name)}>
-                                    <FieldLabel htmlFor="last_name">
-                                        Apellido
-                                    </FieldLabel>
-                                    <Input
-                                        id="last_name"
-                                        type="text"
-                                        name="last_name"
-                                        required
-                                        autoComplete="family-name"
-                                        aria-invalid={Boolean(errors.last_name)}
-                                    />
-                                    <InputError message={errors.last_name} />
-                                </Field>
-
-                                <Field data-invalid={Boolean(errors.gender_id)}>
-                                    <FieldLabel htmlFor="gender_id">
-                                        Género
-                                    </FieldLabel>
-                                    <Select name="gender_id" required>
-                                        <SelectTrigger
-                                            id="gender_id"
+                                    <Field
+                                        data-invalid={Boolean(errors.last_name)}
+                                    >
+                                        <FieldLabel htmlFor="last_name">
+                                            Apellido
+                                        </FieldLabel>
+                                        <Input
+                                            id="last_name"
+                                            type="text"
+                                            name="last_name"
+                                            required
+                                            autoComplete="family-name"
                                             aria-invalid={Boolean(
-                                                errors.gender_id,
+                                                errors.last_name,
                                             )}
-                                        >
-                                            <SelectValue placeholder="Selecciona una opción" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectGroup>
-                                                {genders.map((gender) => (
-                                                    <SelectItem
-                                                        key={gender.id}
-                                                        value={String(
-                                                            gender.id,
-                                                        )}
-                                                    >
-                                                        {gender.name}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectGroup>
-                                        </SelectContent>
-                                    </Select>
-                                    <InputError message={errors.gender_id} />
-                                </Field>
+                                        />
+                                        <InputError
+                                            message={errors.last_name}
+                                        />
+                                    </Field>
 
-                                <Field
-                                    data-invalid={Boolean(errors.birth_date)}
-                                >
-                                    <FieldLabel htmlFor="birth_date">
-                                        Fecha de nacimiento
-                                    </FieldLabel>
-                                    <DatePicker
-                                        id="birth_date"
-                                        name="birth_date"
-                                        required
-                                        autoComplete="bday"
-                                        aria-invalid={Boolean(
+                                    <Field
+                                        data-invalid={Boolean(errors.gender_id)}
+                                    >
+                                        <FieldLabel htmlFor="gender_id">
+                                            Género
+                                        </FieldLabel>
+                                        <Select name="gender_id" required>
+                                            <SelectTrigger
+                                                id="gender_id"
+                                                aria-invalid={Boolean(
+                                                    errors.gender_id,
+                                                )}
+                                            >
+                                                <SelectValue placeholder="Selecciona una opción" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectGroup>
+                                                    {genders.map((gender) => (
+                                                        <SelectItem
+                                                            key={gender.id}
+                                                            value={String(
+                                                                gender.id,
+                                                            )}
+                                                        >
+                                                            {gender.name}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectGroup>
+                                            </SelectContent>
+                                        </Select>
+                                        <InputError
+                                            message={errors.gender_id}
+                                        />
+                                    </Field>
+
+                                    <Field
+                                        data-invalid={Boolean(
                                             errors.birth_date,
                                         )}
-                                    />
-                                    <InputError message={errors.birth_date} />
-                                </Field>
+                                    >
+                                        <FieldLabel htmlFor="birth_date">
+                                            Fecha de nacimiento
+                                        </FieldLabel>
+                                        <DatePicker
+                                            id="birth_date"
+                                            name="birth_date"
+                                            required
+                                            autoComplete="bday"
+                                            aria-invalid={Boolean(
+                                                errors.birth_date,
+                                            )}
+                                        />
+                                        <InputError
+                                            message={errors.birth_date}
+                                        />
+                                    </Field>
 
-                                <Field
-                                    className="lg:col-span-2"
-                                    data-invalid={Boolean(errors.email)}
-                                >
-                                    <FieldLabel htmlFor="email">
-                                        Correo electrónico
-                                    </FieldLabel>
-                                    <Input
-                                        id="email"
-                                        type="email"
-                                        name="email"
-                                        required
-                                        autoComplete="email"
-                                        placeholder="correo@ejemplo.com"
-                                        aria-invalid={Boolean(errors.email)}
-                                    />
-                                    <InputError message={errors.email} />
-                                </Field>
+                                    <Field
+                                        className="lg:col-span-2"
+                                        data-invalid={Boolean(errors.email)}
+                                    >
+                                        <FieldLabel htmlFor="email">
+                                            Correo electrónico
+                                        </FieldLabel>
+                                        <Input
+                                            id="email"
+                                            type="email"
+                                            name="email"
+                                            required
+                                            autoComplete="email"
+                                            placeholder="correo@ejemplo.com"
+                                            aria-invalid={Boolean(errors.email)}
+                                        />
+                                        <InputError message={errors.email} />
+                                    </Field>
 
-                                <Field data-invalid={Boolean(errors.password)}>
-                                    <FieldLabel htmlFor="password">
-                                        Contraseña
-                                    </FieldLabel>
-                                    <PasswordInput
-                                        id="password"
-                                        name="password"
-                                        required
-                                        autoComplete="new-password"
-                                        passwordrules={passwordRules}
-                                        value={password}
-                                        onChange={(event) =>
-                                            setPassword(
-                                                event.currentTarget.value,
-                                            )
-                                        }
-                                        aria-invalid={Boolean(errors.password)}
-                                    />
-                                    <InputError message={errors.password} />
-                                </Field>
+                                    <Field
+                                        data-invalid={Boolean(errors.password)}
+                                    >
+                                        <FieldLabel htmlFor="password">
+                                            Contraseña
+                                        </FieldLabel>
+                                        <PasswordInput
+                                            id="password"
+                                            name="password"
+                                            required
+                                            autoComplete="new-password"
+                                            passwordrules={passwordRules}
+                                            value={password}
+                                            onChange={(event) =>
+                                                setPassword(
+                                                    event.currentTarget.value,
+                                                )
+                                            }
+                                            aria-invalid={Boolean(
+                                                errors.password,
+                                            )}
+                                        />
+                                        <InputError message={errors.password} />
+                                    </Field>
 
-                                <Field
-                                    data-invalid={Boolean(
-                                        errors.password_confirmation,
-                                    )}
-                                >
-                                    <FieldLabel htmlFor="password_confirmation">
-                                        Confirmar contraseña
-                                    </FieldLabel>
-                                    <PasswordInput
-                                        id="password_confirmation"
-                                        name="password_confirmation"
-                                        required
-                                        autoComplete="new-password"
-                                        passwordrules={passwordRules}
-                                        value={passwordConfirmation}
-                                        onChange={(event) =>
-                                            setPasswordConfirmation(
-                                                event.currentTarget.value,
-                                            )
-                                        }
-                                        aria-invalid={Boolean(
+                                    <Field
+                                        data-invalid={Boolean(
                                             errors.password_confirmation,
                                         )}
-                                    />
-                                    <InputError
-                                        message={errors.password_confirmation}
-                                    />
-                                </Field>
-
-                                <div className="lg:col-span-2">
-                                    <PasswordChecklist
-                                        checks={passwordChecks}
-                                    />
-                                </div>
-
-                                <Field className="lg:col-span-2 lg:mx-auto lg:max-w-sm">
-                                    <Button
-                                        type="submit"
-                                        disabled={
-                                            !passwordIsReady || processing
-                                        }
-                                        data-test="register-user-button"
                                     >
-                                        {processing && <Spinner />}
-                                        Crear cuenta
-                                    </Button>
-                                    <FieldDescription className="text-center">
-                                        ¿Ya tienes una cuenta?{' '}
-                                        <Link href={login()}>
-                                            Inicia sesión
-                                        </Link>
-                                    </FieldDescription>
-                                </Field>
-                            </FieldGroup>
-                        )}
-                    </Form>
-                </CardContent>
-            </Card>
+                                        <FieldLabel htmlFor="password_confirmation">
+                                            Confirmar contraseña
+                                        </FieldLabel>
+                                        <PasswordInput
+                                            id="password_confirmation"
+                                            name="password_confirmation"
+                                            required
+                                            autoComplete="new-password"
+                                            passwordrules={passwordRules}
+                                            value={passwordConfirmation}
+                                            onChange={(event) =>
+                                                setPasswordConfirmation(
+                                                    event.currentTarget.value,
+                                                )
+                                            }
+                                            aria-invalid={Boolean(
+                                                errors.password_confirmation,
+                                            )}
+                                        />
+                                        <InputError
+                                            message={
+                                                errors.password_confirmation
+                                            }
+                                        />
+                                    </Field>
+
+                                    <div className="lg:col-span-2">
+                                        <PasswordChecklist
+                                            checks={passwordChecks}
+                                        />
+                                    </div>
+
+                                    <Field className="lg:col-span-2 lg:mx-auto lg:max-w-sm">
+                                        <Button
+                                            type="submit"
+                                            disabled={
+                                                !passwordIsReady || processing
+                                            }
+                                            data-test="register-user-button"
+                                        >
+                                            {processing && <Spinner />}
+                                            Crear cuenta
+                                        </Button>
+                                        <FieldDescription className="text-center">
+                                            ¿Ya tienes una cuenta?{' '}
+                                            <Link href={login()}>
+                                                Inicia sesión
+                                            </Link>
+                                        </FieldDescription>
+                                    </Field>
+                                </FieldGroup>
+                            )}
+                        </Form>
+                    </CardContent>
+                </Card>
+            </div>
         </>
     );
 }

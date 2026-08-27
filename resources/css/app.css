@@ -442,6 +442,19 @@
     }
 }
 
+@media (hover: hover) and (pointer: fine) {
+    a[href]:not([aria-disabled='true']),
+    button:not(:disabled):not([aria-disabled='true']),
+    [role='button']:not([aria-disabled='true']):not([data-disabled]),
+    [role='menuitem']:not([aria-disabled='true']):not([data-disabled]),
+    [role='option']:not([aria-disabled='true']):not([data-disabled]),
+    input[type='checkbox']:not(:disabled),
+    input[type='radio']:not(:disabled),
+    summary {
+        cursor: pointer;
+    }
+}
+
 @media (prefers-reduced-motion: reduce) {
     *,
     *::before,
