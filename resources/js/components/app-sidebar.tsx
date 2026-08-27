@@ -11,7 +11,6 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { useLayoutPreferences } from '@/hooks/use-layout-preferences';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { homePath, mainNavItems } from '@/lib/navigation';
 import type { Auth } from '@/types';
@@ -23,7 +22,6 @@ type PageProps = {
 export function AppSidebar() {
     const { auth } = usePage<PageProps>().props;
     const isMobile = useIsMobile();
-    const { preferences } = useLayoutPreferences();
     const navItems = mainNavItems(auth);
     const startPath = homePath(auth);
 
@@ -32,10 +30,7 @@ export function AppSidebar() {
     }
 
     return (
-        <Sidebar
-            collapsible={preferences.sidebarCollapsible}
-            variant={preferences.sidebarVariant}
-        >
+        <Sidebar collapsible="icon" variant="sidebar">
             <SidebarHeader>
                 <SidebarMenu>
                     <SidebarMenuItem>

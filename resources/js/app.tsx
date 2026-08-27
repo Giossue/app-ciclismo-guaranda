@@ -1,11 +1,10 @@
 import { createInertiaApp } from '@inertiajs/react';
 import { configureBoneyard } from 'boneyard-js/react';
 import './bones/registry';
-import { LayoutPreferencesPanel } from '@/components/layout-preferences';
+import AppearanceCycleButton from '@/components/appearance-cycle-button';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { initializeTheme } from '@/hooks/use-appearance';
-import { initializeLayoutPreferences } from '@/hooks/use-layout-preferences';
 import AdminLayout from '@/layouts/admin-layout';
 import AppLayout from '@/layouts/app-layout';
 import AuthClassicLayout from '@/layouts/auth/auth-classic-layout';
@@ -22,7 +21,6 @@ configureBoneyard({
 });
 
 initializeTheme();
-initializeLayoutPreferences();
 
 createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
@@ -48,7 +46,7 @@ createInertiaApp({
             <TooltipProvider delayDuration={0}>
                 {app}
                 <div className="fixed top-[calc(env(safe-area-inset-top,0px)+0.25rem)] right-4 z-40">
-                    <LayoutPreferencesPanel />
+                    <AppearanceCycleButton />
                 </div>
                 <Toaster />
             </TooltipProvider>
