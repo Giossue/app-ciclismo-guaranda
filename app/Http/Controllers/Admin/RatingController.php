@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\ListRouteRatingsRequest;
 use App\Http\Requests\Admin\UpdateRouteRatingRequest;
 use App\Models\AppNotification;
 use App\Models\ModerationStatus;
 use App\Models\RouteRating;
 use DateTimeInterface;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -15,19 +17,51 @@ use Inertia\Response;
 
 class RatingController extends Controller
 {
-    public function index(): Response
+    public function index(ListRouteRatingsRequest $request): Response
     {
         $this->authorize('viewAny', RouteRating::class);
 
+        $filters = $request->validated();
+        $search = $filters['search'] ?? null;
+        $statusId = isset($filters['status']) ? (int) $filters['status'] : null;
+        $ratingValue = isset($filters['rating']) ? (int) $filters['rating'] : null;
+        $perPage = (int) ($filters['per_page'] ?? 15);
+
         $ratings = RouteRating::query()
             ->with(['route:id,name,slug', 'user:id,name,last_name,email', 'track:id,is_valid,completion_percentage', 'moderationStatus:id,name'])
+            ->when($search, function (Builder $query, string $search): void {
+                $pattern = "%{$search}%";
+
+                $query->where(function (Builder $query) use ($pattern): void {
+                    $query
+                        ->whereLike('comment', $pattern)
+                        ->orWhereLike('admin_response', $pattern)
+                        ->orWhereHas('user', function (Builder $userQuery) use ($pattern): void {
+                            $userQuery
+                                ->whereLike('name', $pattern)
+                                ->orWhereLike('last_name', $pattern)
+                                ->orWhereLike('email', $pattern);
+                        })
+                        ->orWhereHas('route', fn (Builder $routeQuery) => $routeQuery->whereLike('name', $pattern));
+                });
+            })
+            ->when($statusId, fn (Builder $query, int $statusId) => $query->where('moderation_status_id', $statusId))
+            ->when($ratingValue, fn (Builder $query, int $ratingValue) => $query->where('rating', $ratingValue))
             ->latest('rated_at')
-            ->paginate(12)
+            ->latest('id')
+            ->paginate($perPage)
+            ->withQueryString()
             ->through(fn (RouteRating $rating): array => $this->serializeRating($rating));
 
         return Inertia::render('admin/ratings/index', [
             'ratings' => $ratings,
             'statuses' => ModerationStatus::query()->orderBy('id')->get(['id', 'name']),
+            'filters' => [
+                'search' => $search ?? '',
+                'status' => $statusId === null ? '' : (string) $statusId,
+                'rating' => $ratingValue === null ? '' : (string) $ratingValue,
+                'per_page' => $perPage,
+            ],
         ]);
     }
 

@@ -255,3 +255,57 @@ test('admin moderation controls visibility and approved average', function () {
             ->has('route.approved_ratings', 1)
             ->where('route.approved_ratings.0.comment', 'Excelente experiencia.'));
 });
+
+test('administrator can search, filter and paginate route ratings', function () {
+    $this->withoutVite();
+
+    $admin = User::factory()->administrator()->create();
+    $cyclist = User::factory()->cyclist()->create([
+        'name' => 'Ciclista Valoración',
+        'email' => 'ciclista.valoracion@example.com',
+    ]);
+    $otherCyclist = User::factory()->cyclist()->create();
+    $route = createRouteForFavoritesAndRatings();
+    $otherRoute = createRouteForFavoritesAndRatings();
+    $pending = ModerationStatus::query()->where('name', 'pendiente')->firstOrFail();
+    $approved = ModerationStatus::query()->where('name', 'aprobado')->firstOrFail();
+
+    $rating = RouteRating::query()->create([
+        'user_id' => $cyclist->id,
+        'route_id' => $route->id,
+        'moderation_status_id' => $pending->id,
+        'rating' => 5,
+        'comment' => 'Comentario visible para la tabla.',
+        'rated_at' => now(),
+    ]);
+
+    RouteRating::query()->create([
+        'user_id' => $otherCyclist->id,
+        'route_id' => $otherRoute->id,
+        'moderation_status_id' => $approved->id,
+        'rating' => 1,
+        'comment' => 'Comentario que no coincide.',
+        'rated_at' => now()->subMinute(),
+    ]);
+
+    $this->actingAs($admin)
+        ->get(route('admin.ratings.index', [
+            'search' => 'visible para la tabla',
+            'status' => $pending->id,
+            'rating' => 5,
+            'per_page' => 10,
+        ]))
+        ->assertSuccessful()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('admin/ratings/index')
+            ->where('filters.search', 'visible para la tabla')
+            ->where('filters.status', (string) $pending->id)
+            ->where('filters.rating', '5')
+            ->where('filters.per_page', 10)
+            ->where('ratings.per_page', 10)
+            ->has('ratings.data', 1)
+            ->where('ratings.data.0.id', $rating->id)
+            ->where('ratings.data.0.status.id', $pending->id)
+            ->where('ratings.data.0.user.id', $cyclist->id)
+            ->where('ratings.data.0.route.id', $route->id));
+});
