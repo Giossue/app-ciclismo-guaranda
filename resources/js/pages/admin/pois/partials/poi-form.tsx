@@ -13,6 +13,7 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Field, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -24,6 +25,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
+import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import type { CatalogOption } from '@/types';
 
@@ -78,9 +80,6 @@ type Props = {
     workshopServices: CatalogOption[];
     healthCenterTypes: CatalogOption[];
 };
-
-const textareaClass =
-    'min-h-28 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm shadow-sm outline-none transition-[color,box-shadow] placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20';
 
 export default function PoiForm({
     mode,
@@ -191,11 +190,10 @@ export default function PoiForm({
 
                             <div className="grid gap-2 sm:col-span-2">
                                 <Label htmlFor="description">Descripción</Label>
-                                <textarea
+                                <Textarea
                                     id="description"
                                     name="description"
                                     defaultValue={poi?.description ?? ''}
-                                    className={textareaClass}
                                     placeholder="Qué encontrará el ciclista en este lugar"
                                     aria-invalid={Boolean(errors.description)}
                                 />
@@ -206,11 +204,10 @@ export default function PoiForm({
                                 <Label htmlFor="observations">
                                     Observaciones
                                 </Label>
-                                <textarea
+                                <Textarea
                                     id="observations"
                                     name="observations"
                                     defaultValue={poi?.observations ?? ''}
-                                    className={textareaClass}
                                     placeholder="Referencia, acceso, seguridad, temporada"
                                     aria-invalid={Boolean(errors.observations)}
                                 />
@@ -830,8 +827,8 @@ function CatalogSelect({
     onValueChange,
 }: CatalogSelectProps) {
     return (
-        <div className="grid gap-2">
-            <Label htmlFor={id}>{label}</Label>
+        <Field data-invalid={Boolean(error)}>
+            <FieldLabel htmlFor={id}>{label}</FieldLabel>
             <Select
                 name={name}
                 defaultValue={
@@ -861,7 +858,7 @@ function CatalogSelect({
                 </SelectContent>
             </Select>
             <InputError message={error} />
-        </div>
+        </Field>
     );
 }
 
@@ -885,8 +882,8 @@ function NumberField({
     step = 'any',
 }: NumberFieldProps) {
     return (
-        <div className="grid gap-2">
-            <Label htmlFor={id}>{label}</Label>
+        <Field data-invalid={Boolean(error)}>
+            <FieldLabel htmlFor={id}>{label}</FieldLabel>
             <Input
                 id={id}
                 name={name}
@@ -898,7 +895,7 @@ function NumberField({
                 aria-invalid={Boolean(error)}
             />
             <InputError message={error} />
-        </div>
+        </Field>
     );
 }
 
@@ -920,18 +917,17 @@ function TextAreaField({
     placeholder,
 }: TextAreaFieldProps) {
     return (
-        <div className="grid gap-2">
-            <Label htmlFor={id}>{label}</Label>
-            <textarea
+        <Field data-invalid={Boolean(error)}>
+            <FieldLabel htmlFor={id}>{label}</FieldLabel>
+            <Textarea
                 id={id}
                 name={name}
                 defaultValue={defaultValue ?? ''}
-                className={textareaClass}
                 placeholder={placeholder}
                 aria-invalid={Boolean(error)}
             />
             <InputError message={error} />
-        </div>
+        </Field>
     );
 }
 

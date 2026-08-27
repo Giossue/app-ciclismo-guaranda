@@ -17,6 +17,7 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Field, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -28,6 +29,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
+import { Textarea } from '@/components/ui/textarea';
 import { mediaUrl } from '@/lib/media';
 import { cn } from '@/lib/utils';
 import type { CatalogOption } from '@/types';
@@ -91,9 +93,6 @@ type Props = {
     defaultGeojson?: string | null;
     route?: RouteFormData;
 };
-
-const textareaClass =
-    'min-h-28 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm shadow-sm outline-none transition-[color,box-shadow] placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20';
 
 const experienceOptions = [
     {
@@ -324,13 +323,12 @@ export default function RouteForm({
 
                             <div className="grid gap-2 sm:col-span-2">
                                 <Label htmlFor="description">Descripción</Label>
-                                <textarea
+                                <Textarea
                                     id="description"
                                     name="description"
                                     defaultValue={route?.description ?? ''}
                                     placeholder="Describe el recorrido, atractivos, tipo de terreno y recomendaciones generales."
                                     required
-                                    className={textareaClass}
                                     aria-invalid={Boolean(errors.description)}
                                 />
                                 <InputError message={errors.description} />
@@ -684,13 +682,12 @@ export default function RouteForm({
                                 <Label htmlFor="additional_images_text">
                                     Imágenes ya existentes o URLs internas
                                 </Label>
-                                <textarea
+                                <Textarea
                                     id="additional_images_text"
                                     name="additional_images_text"
                                     defaultValue={
                                         route?.additional_images_text ?? ''
                                     }
-                                    className={textareaClass}
                                     placeholder={
                                         'routes/mirador.jpg|Mirador principal\nroutes/descanso.jpg|Punto de descanso'
                                     }
@@ -1040,7 +1037,7 @@ export default function RouteForm({
                                 <Label htmlFor="recommendations_text">
                                     Recomendaciones
                                 </Label>
-                                <textarea
+                                <Textarea
                                     id="recommendations_text"
                                     name="recommendations_text"
                                     defaultValue={
@@ -1050,7 +1047,6 @@ export default function RouteForm({
                                         'Llevar hidratación\nUsar casco y luces\nRevisar frenos antes de iniciar'
                                     }
                                     required
-                                    className={textareaClass}
                                     aria-invalid={Boolean(
                                         errors.recommendations_text,
                                     )}
@@ -1064,7 +1060,7 @@ export default function RouteForm({
                                 <Label htmlFor="observations_text">
                                     Observaciones
                                 </Label>
-                                <textarea
+                                <Textarea
                                     id="observations_text"
                                     name="observations_text"
                                     defaultValue={
@@ -1074,7 +1070,6 @@ export default function RouteForm({
                                         'Tramo con neblina frecuente\nEvitar lluvia intensa'
                                     }
                                     required
-                                    className={textareaClass}
                                     aria-invalid={Boolean(
                                         errors.observations_text,
                                     )}
@@ -1147,8 +1142,8 @@ function CatalogSelect({
     error,
 }: SelectProps) {
     return (
-        <div className="grid gap-2">
-            <Label htmlFor={id}>{label}</Label>
+        <Field data-invalid={Boolean(error)}>
+            <FieldLabel htmlFor={id}>{label}</FieldLabel>
             <Select
                 name={name}
                 defaultValue={
@@ -1177,7 +1172,7 @@ function CatalogSelect({
                 </SelectContent>
             </Select>
             <InputError message={error} />
-        </div>
+        </Field>
     );
 }
 
@@ -1209,8 +1204,8 @@ function NumberField({
     const controlled = value !== undefined;
 
     return (
-        <div className="grid gap-2">
-            <Label htmlFor={id}>{label}</Label>
+        <Field data-invalid={Boolean(error)}>
+            <FieldLabel htmlFor={id}>{label}</FieldLabel>
             <Input
                 id={id}
                 name={name}
@@ -1229,7 +1224,7 @@ function NumberField({
                 aria-invalid={Boolean(error)}
             />
             <InputError message={error} />
-        </div>
+        </Field>
     );
 }
 

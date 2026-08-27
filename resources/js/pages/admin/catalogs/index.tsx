@@ -12,6 +12,7 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -22,9 +23,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-
-const textareaClass =
-    'min-h-20 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm shadow-sm outline-none transition-[color,box-shadow] placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20';
+import { Textarea } from '@/components/ui/textarea';
 
 type CatalogRecord = {
     id: number;
@@ -172,12 +171,9 @@ export default function AdminCatalogsIndex({ catalogs }: Props) {
                                                     >
                                                         Descripción
                                                     </Label>
-                                                    <textarea
+                                                    <Textarea
                                                         id={`${catalog.slug}_description_new`}
                                                         name="description"
-                                                        className={
-                                                            textareaClass
-                                                        }
                                                         placeholder="Descripción opcional"
                                                         aria-invalid={Boolean(
                                                             errors.description,
@@ -193,16 +189,18 @@ export default function AdminCatalogsIndex({ catalogs }: Props) {
 
                                             <div className="flex flex-col gap-3">
                                                 {catalog.has_active && (
-                                                    <label className="flex items-center gap-2 text-sm">
-                                                        <input
-                                                            type="checkbox"
+                                                    <Label
+                                                        className="flex items-center gap-2 text-sm"
+                                                        htmlFor={`${catalog.slug}_active_new`}
+                                                    >
+                                                        <Checkbox
+                                                            id={`${catalog.slug}_active_new`}
                                                             name="active"
                                                             value="1"
                                                             defaultChecked
-                                                            className="size-4 accent-primary"
                                                         />
                                                         Activo
-                                                    </label>
+                                                    </Label>
                                                 )}
                                                 <Button
                                                     type="submit"
@@ -265,15 +263,12 @@ export default function AdminCatalogsIndex({ catalogs }: Props) {
                                                             >
                                                                 Descripción
                                                             </Label>
-                                                            <textarea
+                                                            <Textarea
                                                                 id={`${catalog.slug}_${record.id}_description`}
                                                                 name="description"
                                                                 defaultValue={
                                                                     record.description ??
                                                                     ''
-                                                                }
-                                                                className={
-                                                                    textareaClass
                                                                 }
                                                                 aria-invalid={Boolean(
                                                                     errors.description,
@@ -289,18 +284,20 @@ export default function AdminCatalogsIndex({ catalogs }: Props) {
 
                                                     <div className="flex flex-col gap-3">
                                                         {catalog.has_active && (
-                                                            <label className="flex items-center gap-2 text-sm">
-                                                                <input
-                                                                    type="checkbox"
+                                                            <Label
+                                                                className="flex items-center gap-2 text-sm"
+                                                                htmlFor={`${catalog.slug}_${record.id}_active`}
+                                                            >
+                                                                <Checkbox
+                                                                    id={`${catalog.slug}_${record.id}_active`}
                                                                     name="active"
                                                                     value="1"
                                                                     defaultChecked={Boolean(
                                                                         record.active,
                                                                     )}
-                                                                    className="size-4 accent-primary"
                                                                 />
                                                                 Activo
-                                                            </label>
+                                                            </Label>
                                                         )}
                                                         <Button
                                                             type="submit"

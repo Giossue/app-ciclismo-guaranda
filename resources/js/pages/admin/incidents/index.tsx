@@ -22,6 +22,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import type { CatalogOption } from '@/types';
 
 type ManagedIncident = {
@@ -58,9 +59,6 @@ type Props = {
     statuses: CatalogOption[];
     types: CatalogOption[];
 };
-
-const textareaClass =
-    'min-h-20 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm shadow-sm outline-none transition-[color,box-shadow] placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20';
 
 export default function AdminIncidentsIndex({
     incidents,
@@ -262,11 +260,10 @@ function ReviewForm({
                         <Label htmlFor={`admin_response_${incident.id}`}>
                             Respuesta administrativa
                         </Label>
-                        <textarea
+                        <Textarea
                             id={`admin_response_${incident.id}`}
                             name="admin_response"
                             defaultValue={incident.admin_response ?? ''}
-                            className={textareaClass}
                             placeholder="Acción tomada, recomendación o motivo de descarte"
                             aria-invalid={Boolean(errors.admin_response)}
                         />

@@ -34,6 +34,7 @@ import {
     SheetTitle,
     SheetTrigger,
 } from '@/components/ui/sheet';
+import { Textarea } from '@/components/ui/textarea';
 import {
     browserNetworkStatus,
     getCurrentAppLocation,
@@ -396,7 +397,7 @@ export default function ChatIndex({
 
                             <div className="ueb-chat-input-area">
                                 <div className="ueb-chat-input-box">
-                                    <textarea
+                                    <Textarea
                                         ref={messageRef}
                                         id="message"
                                         name="message"

@@ -60,6 +60,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
+import { Textarea } from '@/components/ui/textarea';
 import { mediaUrl } from '@/lib/media';
 import { getNetworkStatus, watchNetworkStatus } from '@/lib/native/capacitor';
 import {
@@ -89,9 +90,6 @@ type Props = {
     incidentTypes: CatalogOption[];
     activeTrack: ActiveTrack | null;
 };
-
-const textareaClass =
-    'min-h-24 w-full rounded-2xl border border-input bg-card px-3 py-3 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/30 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20';
 
 export default function RoutesShow({
     route,
@@ -834,13 +832,12 @@ function FavoriteRatingPanel({ route }: { route: CyclingRouteMapItem }) {
                                         <Label htmlFor="rating_comment">
                                             Comentario
                                         </Label>
-                                        <textarea
+                                        <Textarea
                                             id="rating_comment"
                                             name="comment"
                                             defaultValue={
                                                 userRating?.comment ?? ''
                                             }
-                                            className={textareaClass}
                                             placeholder="Cuenta cómo estuvo la ruta, señalización, seguridad o puntos útiles"
                                             aria-invalid={Boolean(
                                                 errors.comment,
@@ -1399,10 +1396,9 @@ function OfflinePanel({
                                 required
                                 placeholder="Título de la incidencia"
                             />
-                            <textarea
+                            <Textarea
                                 name="description"
                                 required
-                                className={textareaClass}
                                 placeholder="Describe el problema"
                             />
                             <input
@@ -1599,9 +1595,8 @@ function PoiReportForm({ poiId }: { poiId: number }) {
                     </Select>
                     <InputError message={errors.report_type} />
 
-                    <textarea
+                    <Textarea
                         name="description"
-                        className={textareaClass}
                         placeholder="Describe el problema encontrado"
                         aria-invalid={Boolean(errors.description)}
                     />
@@ -1768,10 +1763,9 @@ function PoiSuggestionForm({
                                 <Label htmlFor="suggestion_description">
                                     Descripción
                                 </Label>
-                                <textarea
+                                <Textarea
                                     id="suggestion_description"
                                     name="description"
-                                    className={textareaClass}
                                     placeholder={poiSuggestionPlaceholder(
                                         selectedCategoryName,
                                     )}
@@ -1976,11 +1970,10 @@ function IncidentReportForm({
                                 <Label htmlFor="incident_description">
                                     Descripción
                                 </Label>
-                                <textarea
+                                <Textarea
                                     id="incident_description"
                                     name="description"
                                     required
-                                    className={textareaClass}
                                     placeholder="Describe el punto, riesgo y referencia para ubicarlo"
                                     aria-invalid={Boolean(errors.description)}
                                 />

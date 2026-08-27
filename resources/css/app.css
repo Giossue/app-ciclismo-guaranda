@@ -341,19 +341,24 @@
     }
 
     [data-slot='input'],
-    textarea,
+    [data-slot='textarea'],
     [data-slot='select-trigger'],
     [data-slot='date-picker-trigger'] {
         background: var(--input-surface);
         border-color: var(--border);
         color: var(--foreground);
         border-radius: var(--radius-surface);
-        height: var(--control-height) !important;
         font-weight: 400;
     }
 
+    [data-slot='input'],
+    [data-slot='select-trigger'],
+    [data-slot='date-picker-trigger'] {
+        height: var(--control-height) !important;
+    }
+
     [data-slot='input']::placeholder,
-    textarea::placeholder {
+    [data-slot='textarea']::placeholder {
         color: var(--muted-foreground);
         font-weight: 400;
     }
@@ -424,7 +429,7 @@
     }
 
     [data-slot='input'],
-    textarea,
+    [data-slot='textarea'],
     [data-slot='select-trigger'],
     [data-slot='date-picker-trigger'] {
         background: var(--input-surface) !important;
@@ -966,7 +971,7 @@
 
 :where(
         [data-slot='input'],
-        textarea,
+        [data-slot='textarea'],
         [data-slot='select-trigger'],
         [data-slot='date-picker-trigger'],
         [data-slot='checkbox'],
