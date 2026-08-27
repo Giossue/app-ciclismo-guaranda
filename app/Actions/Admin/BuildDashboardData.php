@@ -180,7 +180,15 @@ class BuildDashboardData
                 $key = $date->toDateString();
 
                 return [
-                    'label' => $date->format('D'),
+                    'label' => match ($date->dayOfWeekIso) {
+                        1 => 'Lun',
+                        2 => 'Mar',
+                        3 => 'Mié',
+                        4 => 'Jue',
+                        5 => 'Vie',
+                        6 => 'Sáb',
+                        7 => 'Dom',
+                    },
                     'views' => (int) $viewsByDay->get($key, 0),
                     'downloads' => (int) $downloadsByDay->get($key, 0),
                 ];

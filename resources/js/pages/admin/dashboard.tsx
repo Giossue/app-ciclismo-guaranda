@@ -194,12 +194,13 @@ function OverviewCard({ metric }: { metric: OverviewMetric }) {
         <Link href={destination()} prefetch className="group min-w-0">
             <Card className="h-full min-h-52 transition-colors group-hover:border-primary">
                 <CardHeader className="gap-3">
-                    <div className="flex size-9 items-center justify-center rounded-[var(--radius-control)] border bg-muted text-muted-foreground">
-                        <Icon aria-hidden="true" />
-                    </div>
                     <CardTitle className="text-base tracking-[-0.02em]">
                         {metric.label}
                     </CardTitle>
+                    <Icon
+                        aria-hidden="true"
+                        className="size-5 text-muted-foreground"
+                    />
                     <CardDescription>{metric.description}</CardDescription>
                 </CardHeader>
                 <CardContent className="mt-auto">
@@ -224,6 +225,16 @@ function ActivityCard({ activity }: { activity: Props['activity'] }) {
                 <CardDescription>{activity.period}</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-5">
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
+                    <span className="flex items-center gap-2">
+                        <span className="size-2 rounded-full bg-primary" />
+                        Consultas de rutas
+                    </span>
+                    <span className="flex items-center gap-2">
+                        <span className="size-2 rounded-full bg-foreground/35" />
+                        Descargas offline
+                    </span>
+                </div>
                 <ActivityBars days={activity.days} />
 
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -309,12 +320,15 @@ function ActivityMetric({
     icon: typeof Eye;
 }) {
     return (
-        <div className="flex min-w-0 flex-col gap-1 rounded-[var(--radius-control)] border bg-muted/50 p-3">
+        <div className="flex min-w-0 flex-col gap-2 rounded-[var(--radius-control)] border bg-muted/50 p-3">
+            <span className="text-sm font-medium">{label}</span>
             <Icon aria-hidden="true" className="size-4 text-muted-foreground" />
             <span className="text-lg leading-none font-medium tabular-nums">
                 {value.toLocaleString()}
             </span>
-            <span className="text-xs text-muted-foreground">{label}</span>
+            <span className="text-xs text-muted-foreground">
+                Últimos 7 días
+            </span>
         </div>
     );
 }
@@ -465,13 +479,17 @@ function AttentionCard({ attention }: { attention: AttentionItem[] }) {
                                     prefetch
                                     className="group flex items-center gap-3 rounded-[var(--radius-control)] border p-3 transition-colors hover:border-primary hover:bg-muted"
                                 >
-                                    <div className="flex size-9 shrink-0 items-center justify-center rounded-[var(--radius-control)] bg-muted text-muted-foreground group-hover:bg-background">
-                                        {item.key === 'incidents' ? (
-                                            <AlertTriangle aria-hidden="true" />
-                                        ) : (
-                                            <MessageSquareText aria-hidden="true" />
-                                        )}
-                                    </div>
+                                    {item.key === 'incidents' ? (
+                                        <AlertTriangle
+                                            aria-hidden="true"
+                                            className="size-5 shrink-0 text-muted-foreground"
+                                        />
+                                    ) : (
+                                        <MessageSquareText
+                                            aria-hidden="true"
+                                            className="size-5 shrink-0 text-muted-foreground"
+                                        />
+                                    )}
                                     <div className="min-w-0 flex-1">
                                         <p className="text-sm font-medium">
                                             {item.label}
@@ -632,6 +650,7 @@ function formatDate(value: string | null): string {
     return new Intl.DateTimeFormat('es-EC', {
         day: '2-digit',
         month: 'short',
+        year: 'numeric',
     }).format(new Date(value));
 }
 

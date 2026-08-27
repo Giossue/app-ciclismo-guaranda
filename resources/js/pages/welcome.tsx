@@ -123,7 +123,7 @@ function FeatureCard({
     return (
         <Card className={className}>
             <CardHeader>
-                <span className="grid size-10 place-items-center rounded-lg bg-accent text-brand-accent">
+                <span className="grid size-10 place-items-center text-brand-accent">
                     <Icon className="size-5" />
                 </span>
                 <p className="text-xs font-black tracking-[0.12em] text-muted-foreground uppercase">
