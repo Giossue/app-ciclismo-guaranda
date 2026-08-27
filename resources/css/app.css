@@ -63,6 +63,9 @@
     --color-info-foreground: var(--info-foreground);
     --color-border: var(--border);
     --color-input: var(--input);
+    --color-input-surface: var(--input-surface);
+    --color-link: var(--link);
+    --color-link-hover: var(--link-hover);
     --color-ring: var(--ring);
     --color-primary-hover: var(--primary-hover);
     --color-brand-accent: var(--brand-accent);
@@ -153,6 +156,9 @@
     --info-foreground: #050605;
     --border: #dee2e6;
     --input: #dee2e6;
+    --input-surface: #dbe0e4;
+    --link: #315d14;
+    --link-hover: #23440e;
     --ring: #b2f000;
     --chart-1: #b2f000;
     --chart-2: #72d645;
@@ -206,6 +212,9 @@
     --info-foreground: #050605;
     --border: #2c302c;
     --input: #2c302c;
+    --input-surface: #272b27;
+    --link: #c4f36b;
+    --link-hover: #e0ff9a;
     --ring: #b2f000;
 
     --primary-hover: #9ad000;
@@ -332,7 +341,7 @@
     [data-slot='input'],
     textarea,
     [data-slot='select-trigger'] {
-        background: var(--card);
+        background: var(--input-surface);
         border-color: var(--border);
         color: var(--foreground);
         border-radius: var(--radius-surface);
@@ -414,7 +423,7 @@
     [data-slot='input'],
     textarea,
     [data-slot='select-trigger'] {
-        background: var(--card) !important;
+        background: var(--input-surface) !important;
         box-shadow: none !important;
     }
 

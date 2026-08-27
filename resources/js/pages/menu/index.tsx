@@ -117,9 +117,9 @@ function NavTile({ item }: { item: NavItem }) {
             )}
         >
             {Icon && (
-                <Icon className="size-5 shrink-0 text-muted-foreground transition-colors duration-250 group-hover:text-primary" />
+                <Icon className="size-5 shrink-0 text-muted-foreground transition-colors duration-250 group-hover:text-link" />
             )}
-            <span className="text-sm font-bold text-foreground transition-colors duration-250 group-hover:text-primary">
+            <span className="text-sm font-bold text-foreground transition-colors duration-250 group-hover:text-link">
                 {item.title}
             </span>
         </Link>
@@ -138,9 +138,9 @@ function MenuCard({ item }: { item: AccountItem }) {
                 'group hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-[0_4px_16px_var(--shadow)]',
             )}
         >
-            <Icon className="size-5.5 shrink-0 text-muted-foreground transition-colors duration-250 group-hover:text-primary" />
+            <Icon className="size-5.5 shrink-0 text-muted-foreground transition-colors duration-250 group-hover:text-link" />
             <span className="min-w-0">
-                <span className="block text-sm leading-none font-bold text-foreground transition-colors duration-250 group-hover:text-primary">
+                <span className="block text-sm leading-none font-bold text-foreground transition-colors duration-250 group-hover:text-link">
                     {item.title}
                 </span>
                 <span className="mt-1.5 block truncate text-xs text-muted-foreground">

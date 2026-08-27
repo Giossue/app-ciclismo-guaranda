@@ -49,7 +49,7 @@ function FieldDescription({
         <p
             data-slot="field-description"
             className={cn(
-                'text-sm leading-normal text-muted-foreground [&>a]:underline [&>a]:underline-offset-4 [&>a:hover]:text-primary',
+                'text-sm leading-normal text-muted-foreground [&>a]:text-link [&>a]:underline [&>a]:decoration-link/35 [&>a]:underline-offset-4 [&>a:hover]:text-link-hover [&>a:hover]:decoration-link-hover',
                 className,
             )}
             {...props}

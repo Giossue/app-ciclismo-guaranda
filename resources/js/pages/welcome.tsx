@@ -1,7 +1,6 @@
 import { Head, Link, usePage } from '@inertiajs/react';
 import type { LucideIcon } from 'lucide-react';
 import { ArrowRight, Bot, Download, MapPinned, Route } from 'lucide-react';
-import AppLogoIcon from '@/components/app-logo-icon';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -11,7 +10,7 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { homePath } from '@/lib/navigation';
-import { home, login, register } from '@/routes';
+import { login, register } from '@/routes';
 import type { Auth } from '@/types';
 
 type PageProps = {
@@ -27,33 +26,7 @@ export default function Welcome() {
             <Head title="Guaranda Go" />
 
             <main className="min-h-[100dvh] bg-background px-[var(--page-pad-x)] py-[var(--page-pad-y)] text-foreground lg:py-8">
-                <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 lg:gap-8">
-                    <header className="flex items-center justify-between gap-4 pr-14 sm:pr-0">
-                        <Link
-                            href={home()}
-                            className="flex items-center gap-3 text-foreground"
-                        >
-                            <AppLogoIcon className="size-10" />
-                            <span className="flex flex-col leading-none">
-                                <span className="text-lg font-black tracking-[-0.04em]">
-                                    Guaranda Go
-                                </span>
-                                <span className="mt-1 text-xs font-bold text-muted-foreground">
-                                    Bolívar, Ecuador
-                                </span>
-                            </span>
-                        </Link>
-
-                        <div className="flex items-center gap-2">
-                            <Button asChild variant="outline" size="sm">
-                                <Link href={primaryHref}>
-                                    {auth.user ? 'Mi panel' : 'Ingresar'}
-                                    <ArrowRight data-icon="inline-end" />
-                                </Link>
-                            </Button>
-                        </div>
-                    </header>
-
+                <div className="mx-auto w-full max-w-7xl">
                     <section className="grid gap-4 lg:grid-cols-12 lg:gap-6">
                         <section className="relative flex min-h-[31rem] overflow-hidden rounded-3xl border border-border bg-[var(--map-background)] px-6 py-7 text-inverse-foreground shadow-[var(--elevation-floating)] sm:min-h-[34rem] sm:px-9 sm:py-10 lg:col-span-7 lg:min-h-[40rem] lg:px-12 lg:py-12">
                             <MountainScene />

@@ -527,7 +527,7 @@ function RoutePopup({ route }: { route: CyclingRouteMapItem }) {
             )}
             <Link
                 href={`/routes/${route.slug}`}
-                className="font-medium text-primary underline-offset-4 hover:underline"
+                className="font-medium text-link underline-offset-4 hover:text-link-hover hover:underline"
             >
                 Ver detalle
             </Link>

@@ -89,7 +89,7 @@ export default function FavoritesIndex({ favorites }: Props) {
                                             </Badge>
                                         )}
                                     </div>
-                                    <CardTitle className="text-lg font-black text-foreground transition-colors duration-250 group-hover:text-primary">
+                                    <CardTitle className="text-lg font-black text-foreground transition-colors duration-250 group-hover:text-link">
                                         {favorite.route.name}
                                     </CardTitle>
                                     <CardDescription className="line-clamp-2 text-xs leading-relaxed text-muted-foreground">

@@ -43,7 +43,7 @@ createInertiaApp({
         return (
             <TooltipProvider delayDuration={0}>
                 {app}
-                <div className="fixed top-[calc(env(safe-area-inset-top,0px)+1rem)] right-4 z-40">
+                <div className="fixed top-[calc(env(safe-area-inset-top,0px)+2rem)] right-4 z-40">
                     <AppearanceCycleButton />
                 </div>
                 <Toaster />
