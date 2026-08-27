@@ -368,7 +368,7 @@
             [data-slot='select-trigger'],
             [data-slot='date-picker-trigger']
         )[aria-expanded='true']:not([aria-invalid='true']) {
-        border-color: var(--primary) !important;
+        border-color: var(--border) !important;
         box-shadow: none;
     }
 
