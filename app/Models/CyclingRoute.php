@@ -117,6 +117,22 @@ class CyclingRoute extends Model
     }
 
     /**
+     * @return HasMany<RouteView, $this>
+     */
+    public function routeViews(): HasMany
+    {
+        return $this->hasMany(RouteView::class, 'route_id');
+    }
+
+    /**
+     * @return HasMany<RouteDownload, $this>
+     */
+    public function downloads(): HasMany
+    {
+        return $this->hasMany(RouteDownload::class, 'route_id');
+    }
+
+    /**
      * @return HasMany<Track, $this>
      */
     public function tracks(): HasMany

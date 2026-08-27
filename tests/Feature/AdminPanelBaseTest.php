@@ -2,6 +2,7 @@
 
 use App\Models\User;
 use Database\Seeders\CatalogSeeder;
+use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function () {
     $this->seed(CatalogSeeder::class);
@@ -14,7 +15,15 @@ test('administrator can access admin dashboard', function () {
 
     $this->actingAs($admin)
         ->get(route('admin.dashboard'))
-        ->assertOk();
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('admin/dashboard')
+            ->has('overview', 6)
+            ->has('activity.days', 7)
+            ->has('routeStatuses')
+            ->has('popularRoutes')
+            ->has('attention', 2)
+            ->has('recentIncidents'));
 });
 
 test('admin index redirects to admin dashboard', function () {
