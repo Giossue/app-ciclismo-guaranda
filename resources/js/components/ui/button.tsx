@@ -6,20 +6,26 @@ import * as React from 'react';
 import { cn } from '@/lib/utils';
 
 const buttonVariants = cva(
-    "inline-flex min-h-11 touch-manipulation items-center justify-center gap-2 whitespace-nowrap rounded-[var(--radius-surface)] text-sm font-black transition-all duration-200 disabled:pointer-events-none disabled:opacity-60 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 [&_svg]:shrink-0 outline-none active:scale-[0.98]",
+    "inline-flex min-h-11 touch-manipulation items-center justify-center gap-2 whitespace-nowrap rounded-[var(--radius-surface)] text-sm font-black outline-none transition-[background-color,border-color,color,box-shadow,transform] duration-200 ease-out disabled:pointer-events-none disabled:opacity-60 enabled:active:scale-[0.98] [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 [&_svg]:shrink-0",
     {
         variants: {
             variant: {
                 default:
-                    'border border-primary bg-primary text-primary-foreground shadow-[0_8px_18px_var(--shadow)] hover:bg-primary-hover',
+                    'border border-primary bg-primary text-primary-foreground hover:border-primary-hover hover:bg-primary-hover',
                 destructive:
                     'border border-destructive bg-destructive text-destructive-foreground hover:brightness-95',
                 outline:
-                    'border border-input bg-input text-foreground hover:border-primary hover:text-link',
+                    'border border-input bg-transparent text-foreground hover:border-primary hover:bg-muted hover:text-foreground',
                 secondary:
-                    'border border-primary bg-primary text-primary-foreground shadow-[0_8px_18px_var(--shadow)] hover:bg-primary-hover',
-                ghost: 'border border-transparent bg-transparent text-muted-foreground hover:bg-input hover:text-foreground',
+                    'border border-border bg-secondary text-secondary-foreground hover:border-primary hover:bg-muted hover:text-foreground',
+                ghost: 'border border-transparent bg-transparent text-muted-foreground hover:bg-accent hover:text-accent-foreground',
                 link: 'h-auto min-h-0 rounded-none border-0 bg-transparent px-0 py-0 text-link underline-offset-4 hover:text-link-hover hover:underline active:scale-100',
+                inverse:
+                    'border border-inverse-foreground/35 bg-transparent text-inverse-foreground hover:border-primary hover:bg-primary hover:text-primary-foreground',
+                overlay:
+                    'border border-border/60 bg-background/85 text-foreground backdrop-blur-sm hover:border-primary hover:bg-background',
+                'destructive-ghost':
+                    'border border-transparent bg-transparent text-destructive hover:bg-destructive/10 hover:text-destructive',
                 warning:
                     'border border-warning bg-warning text-warning-foreground hover:brightness-95',
                 success:
@@ -41,8 +47,8 @@ const buttonVariants = cva(
 
 function Button({
     className,
-    variant,
-    size,
+    variant = 'default',
+    size = 'default',
     asChild = false,
     ...props
 }: React.ComponentProps<'button'> &
@@ -54,6 +60,8 @@ function Button({
     return (
         <Comp
             data-slot="button"
+            data-variant={variant}
+            data-size={size}
             className={cn(buttonVariants({ variant, size, className }))}
             {...props}
         />

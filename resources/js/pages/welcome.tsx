@@ -60,8 +60,8 @@ export default function Welcome() {
                                         <Button
                                             asChild
                                             size="lg"
-                                            variant="outline"
-                                            className="w-full border-inverse-foreground/35 bg-transparent text-inverse-foreground hover:border-primary hover:bg-primary hover:text-primary-foreground sm:w-auto"
+                                            variant="inverse"
+                                            className="w-full sm:w-auto"
                                         >
                                             <Link href={register()}>
                                                 Crear cuenta

@@ -129,10 +129,7 @@ export default function FavoritesIndex({ favorites }: Props) {
                                 </CardContent>
 
                                 <CardFooter className="mt-2 grid gap-3 sm:grid-cols-2">
-                                    <Button
-                                        asChild
-                                        className="flex h-11 items-center justify-center gap-1.5 rounded-xl bg-primary text-xs font-black tracking-wider text-primary-foreground uppercase transition-all duration-200 hover:bg-primary/90 active:scale-95"
-                                    >
+                                    <Button asChild className="w-full">
                                         <Link
                                             href={`/routes/${favorite.route.slug}`}
                                             prefetch
@@ -149,9 +146,9 @@ export default function FavoritesIndex({ favorites }: Props) {
                                     >
                                         {({ processing }) => (
                                             <Button
-                                                variant="outline"
+                                                variant="secondary"
                                                 disabled={processing}
-                                                className="flex h-11 w-full items-center justify-center gap-1.5 rounded-xl border border-border bg-secondary text-xs font-black tracking-wider text-muted-foreground uppercase transition-all duration-200 hover:bg-border hover:text-foreground"
+                                                className="w-full"
                                             >
                                                 <HeartOff className="size-4 shrink-0" />
                                                 <span>Quitar</span>

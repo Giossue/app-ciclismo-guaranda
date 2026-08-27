@@ -354,8 +354,8 @@ function RouteHeader({ route }: { route: CyclingRouteMapItem }) {
                 <Button
                     asChild
                     size="icon"
-                    variant="secondary"
-                    className="absolute top-3 left-3 z-[5] size-9 rounded-full border border-border/60 bg-background/85 shadow-sm backdrop-blur-sm hover:bg-background"
+                    variant="overlay"
+                    className="absolute top-3 left-3 z-[5] size-9"
                 >
                     <Link href="/routes" prefetch aria-label="Volver a rutas">
                         <ArrowLeft className="size-5" />
@@ -756,7 +756,7 @@ function FavoriteRatingPanel({ route }: { route: CyclingRouteMapItem }) {
                                 <Button
                                     type="submit"
                                     disabled={processing}
-                                    className="w-full bg-primary text-primary-foreground hover:bg-primary-hover"
+                                    className="w-full"
                                 >
                                     <Heart data-icon="inline-start" />
                                     Guardar favorita

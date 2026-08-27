@@ -13,10 +13,10 @@ export default function Appearance() {
                 {/* Header with back button */}
                 <div className="flex items-center gap-3 border-b border-border/40 py-3">
                     <Button
-                        variant="ghost"
+                        variant="secondary"
                         size="icon"
                         asChild
-                        className="size-11 rounded-2xl border border-border bg-secondary text-muted-foreground transition-all duration-200 hover:bg-border hover:text-foreground"
+                        className="size-11"
                     >
                         <Link href="/menu" replace>
                             <ArrowLeft className="size-5" />

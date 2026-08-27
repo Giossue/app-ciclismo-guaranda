@@ -29,10 +29,10 @@ export default function Security(props: Props) {
                 {/* Header with back button */}
                 <div className="flex items-center gap-3 border-b border-border/40 py-3">
                     <Button
-                        variant="ghost"
+                        variant="secondary"
                         size="icon"
                         asChild
-                        className="size-11 rounded-2xl border border-border bg-secondary text-muted-foreground transition-all duration-200 hover:bg-border hover:text-foreground"
+                        className="size-11"
                     >
                         <Link href="/menu" replace>
                             <ArrowLeft className="size-5" />
@@ -133,7 +133,7 @@ export default function Security(props: Props) {
                             <Button
                                 disabled={processing}
                                 data-test="update-password-button"
-                                className="mt-2 flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-primary text-xs font-black tracking-wider text-primary-foreground uppercase shadow-md transition-all duration-300 hover:bg-primary/90 hover:shadow-[0_8px_20px_var(--primary-glow)] active:scale-[0.99]"
+                                className="mt-2 w-full"
                             >
                                 Actualizar contraseña
                             </Button>
