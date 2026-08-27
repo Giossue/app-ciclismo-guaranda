@@ -18,7 +18,7 @@ export default function AuthClassicLayout({ children }: AuthLayoutProps) {
                     Volver a inicio
                 </Link>
             </Button>
-            <div className="w-full max-w-sm md:max-w-md lg:max-w-3xl">
+            <div className="flex w-full max-w-sm flex-col md:max-w-md lg:max-w-3xl">
                 {children}
             </div>
         </main>
