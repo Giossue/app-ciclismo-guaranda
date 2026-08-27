@@ -218,6 +218,14 @@
     --link-hover: #e0ff9a;
     --ring: #b2f000;
     --focus-ring: #d5ff78;
+    --sidebar: #0d0f0d;
+    --sidebar-foreground: #ffffff;
+    --sidebar-primary: #b2f000;
+    --sidebar-primary-foreground: #050605;
+    --sidebar-accent: #1c1f1c;
+    --sidebar-accent-foreground: #ffffff;
+    --sidebar-border: #2c302c;
+    --sidebar-ring: #b2f000;
 
     --primary-hover: #9ad000;
     --shadow: rgb(0 0 0 / 0.4);
