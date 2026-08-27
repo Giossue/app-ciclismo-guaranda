@@ -224,7 +224,6 @@
 - Se corrigió el enfoque del chat n8n: Laravel ya no crea conversaciones ni mensajes al enviar; solo envía `session_id`, mensaje y contexto mínimo al webhook. Las tablas `conversaciones_ia` y `mensajes_ia` quedan intactas para compatibilidad/legado.
 - Validaciones aprobadas: Pint dirty, pruebas focalizadas `ChatbotN8n|AdminRouteManagement`, suite completa `php artisan test --compact` (136 tests, 771 assertions), `composer types:check`, `npm run types:check`, `npm run lint:check`, `npm run format:check`, `npm run build` y `php artisan route:cache`.
 
-
 - Se reemplazó el refactor verde/redondeado por una dirección flat mobile-first: radios moderados, sin degradados globales y sin sombras decorativas.
 - Se agregó `MobileTabs` para dividir pantallas largas sin cambiar URL ni ensuciar el historial: rutas/lista-mapa, detalle de ruta, chat e historial, y resumen de recorrido.
 - Se reorganizó el detalle de ruta en tabs: Mapa, Ruta, POIs, Reportar, Opiniones y Sin conexión, evitando que mapa, comentarios, reportes y offline queden apilados en una sola pantalla larga.
@@ -239,7 +238,6 @@
 - Se corrigió `MobileTabs` para usar segmented control unido y centrado, sin badges/contadores visuales en los tabs, según referencia indicada por el usuario.
 - Validaciones aprobadas tras la corrección: `npm run types:check`, `npm run lint:check`, `npm run format:check` y `npm run build`.
 
-
 - Se inició Fase 15 `15_agente_n8n_tools.md` para agente n8n sin embeddings y con datos vivos desde Laravel.
 - Se crearon tools API protegidas por token: búsqueda de rutas, detalle de ruta, alertas de ruta, búsqueda de POIs y progreso/distancia restante.
 - Se agregó middleware `EnsureAgentToolToken`, ruta `routes/api.php`, carga de API en `bootstrap/app.php` y configuración `guaranda.agent.tool_token` (`GUARANDA_GO_AGENT_TOOL_TOKEN`).
@@ -247,28 +245,29 @@
 - Se agregó `AgentToolsTest` con cobertura de token, rutas cercanas, detalle, POIs, progreso y alertas.
 - Validaciones aprobadas: `pint --dirty`, `AgentToolsTest` (6 tests, 45 assertions), `composer types:check`, suite completa `php artisan test --compact` (142 tests, 816 assertions) y `php artisan route:cache --no-interaction`.
 
-
 ## 2026-07-01 — Chat IA historial y GPS
+
 - Se reactivó el historial local usando `conversaciones_ia` y `mensajes_ia`, guardando solo después de recibir respuesta del workflow n8n.
 - Se agregó continuidad de conversaciones desde el tab Historial mediante `conversation_id`.
 - Se agregó trazado visual del recorrido GPS activo en el mapa de detalle de ruta.
 - Validación: `ChatbotN8nTest`, `CyclistTrackLifecycleTest`, `npm run types:check`, `composer types:check`, `pint --dirty`, `diff --check`.
 
-
 ## 2026-07-01 — Ajustes UI móvil y storage
+
 - Chat rediseñado como conversación móvil con historial en sheet lateral derecho.
 - Rutas/Favoritas/Menu simplificados para evitar accesos duplicados con barra inferior.
 - Confirmado que las imágenes usan el disk `public` en `storage/app/public` y requieren volumen persistente en Dokploy.
 - Validación: `npm run types:check`, `npm run lint:check`, `npm run format:check`, `ChatbotN8nTest`.
 
-
 ## 2026-07-01 — POIs desde ruta con mapa interactivo
+
 - El formulario admin de rutas ahora permite crear puntos de interés propios de la ruta desde la misma pantalla.
 - La ubicación de cada POI se marca tocando el mapa, no escribiendo coordenadas manualmente.
 - Los POIs creados se guardan en `puntos_interes` y se vinculan en `ruta_punto_interes`.
 - Validación: `AdminRouteManagementTest`, `composer types:check`, `npm run types:check`, `npm run lint:check`, `npm run format:check`.
 
 ## 2026-07-01 - Plan refactor frontend mobile first
+
 - Se analizó la estructura actual del frontend con `temp/analyze_frontend.py`.
 - Se identificaron 32 pantallas Inertia y componentes base bajo `resources/js/components`, `resources/js/layouts` y `resources/js/pages`.
 - Se creó proyecto Stitch `projects/6540137781896183848` y design system `assets/8743915527678384604`.
@@ -276,6 +275,7 @@
 - No se modificó código funcional; validación no ejecutada por ser solo análisis y documentación de plan.
 
 ## 2026-07-01 - Refactor frontend mobile first implementado
+
 - Se aplicó el sistema visual Andean Field UI en tokens globales, shadcn/ui base, layouts, bottom nav, auth, welcome, settings, mapas y pantallas admin/ciclista mediante barrido de clases.
 - Toasts `sonner` quedan bottom-center con offset sobre bottom nav y avisos online/offline.
 - Se eliminaron colores Tailwind hardcodeados detectados por scanner; mapas usan tokens CSS.
@@ -292,6 +292,7 @@
 - Validaciones aprobadas: `ChatbotN8nTest`, `npm run types:check`, `npm run lint:check`, `npm run format:check` y `npm run build`.
 
 ## 2026-07-01 — Notificaciones internas
+
 - Se analizó la BD/migraciones y se confirmó que `notificaciones_app` ya existía con `user_id`, `type`, `title`, `message`, `read`, `read_at` y timestamps; no se agregó migración.
 - Se implementó `/notifications` para listar notificaciones propias, filtrar no leídas y marcarlas como leídas individualmente o todas, sin opción de eliminar.
 - Se agregó campana global en header/sidebar header con contador de no leídas; también se habilitó header móvil con campana, acceso en menú de usuario y navegación móvil.
@@ -299,6 +300,7 @@
 - Validaciones aprobadas: `AppNotificationsTest`, `AdminIncidentReviewTest`, `FavoritesAndRatingsTest`, `pint --dirty`, `npm run types:check`, `npm run lint:check`, `npm run format:check`, `composer types:check`, `npm run build` y `php artisan route:cache --no-interaction`.
 
 ## 2026-07-01 — Padding/margin consistente y despeje de navbar móvil
+
 - Diagnóstico: en `app-sidebar-layout.tsx` el `<main>` usaba `w-full` (utilidad) que pisaba el `width` de `.ueb-admin-page` (capa components) → contenido en el filo en todas las páginas sin `.ueb-page` propio (tracks, favorites, notifications, menu, admin, settings, routes/show).
 - Además `py-[var(--page-pad-y)]` pisaba el `padding-bottom` de `.safe-bottom-pad`, dejando el contenido bajo la navbar móvil fija (72px).
 - Fix centralizado en `app-sidebar-layout.tsx`: se quitó `w-full` y `md:px-0`; se reemplazó `py` por `pt-[var(--page-pad-y)]` + `md:pb-[var(--page-pad-y)]` para que `.safe-bottom-pad` despeje la nav en móvil (~92px) sin gap excesivo en desktop.
@@ -307,6 +309,7 @@
 - Validaciones aprobadas: `npm run types:check`, `npm run lint:check`, `npm run format:check`, `npm run build`.
 
 ## 2026-07-01 — Navbar, header, sombras/degradados, modo claro y tabs centrados
+
 - Navbar móvil: se quitó el ítem "Notificaciones" y se restauró "Favoritas" en `mobilePrimaryNavItems` (ciclista). El acceso a notificaciones queda solo en la campana del header.
 - Header: se quitó el título/breadcrumb duplicado en `AppSidebarHeader`; ahora muestra solo la marca "Guaranda Go" + campana. Se ajustó la cadena de props (breadcrumbs ya no se pasan al header).
 - Sombras: regla global `*::before,*::after { box-shadow: none !important }` en `@layer base` para neutralizar todas las sombras (cards, botones, navs, diálogos, etc.). Se quitó el `drop-shadow` del logo de auth.
@@ -316,12 +319,14 @@
 - Validaciones aprobadas: `npm run types:check`, `npm run lint:check`, `npm run format:check`, `npm run build`.
 
 ## 2026-07-01 — Ubicación transitoria para chat y fallback de rutas
+
 - `buscar_rutas` ahora reintenta sin `query` cuando una consulta genérica no encuentra rutas, devolviendo rutas activas generales en vez de vacío.
 - El chat permite activar ubicación desde la UI y envía `location.latitude`, `location.longitude`, `location.accuracy_m` y `location.recorded_at` al webhook n8n como dato transitorio.
 - Laravel valida la ubicación recibida y no la guarda en el contexto persistido de `conversaciones_ia`/`mensajes_ia`.
 - Validaciones aprobadas: `composer lint`, `AgentToolsTest`, `ChatbotN8nTest`, `composer types:check`, `npm run types:check`, `npm run lint:check` y `npm run format:check`.
 
 ## 2026-07-01 — Ubicación compartida entre mapa y chat
+
 - La ubicación obtenida desde el mapa ahora se recuerda de forma transitoria en `sessionStorage` durante 15 minutos.
 - El chat carga automáticamente esa última ubicación si está vigente, para que las consultas de cercanía no pidan activar ubicación de nuevo.
 - El botón de ubicación del chat sigue permitiendo actualizar la posición manualmente.
@@ -464,3 +469,8 @@
 
 - Se redujeron 30 % los radios globales no circulares, afectando de forma uniforme controles, cards, overlays, navegación y mapas.
 - Se inspeccionaron mediante el CLI los bloques `login-01` y `signup-03`; se aplicó su composición a login/registro sin sobrescribir las primitives shadcn modificadas ni alterar el contrato Fortify.
+
+## 2026-08-27 — GitHub Actions manual y Dokploy automático
+
+- Se desactivaron los disparadores automáticos de `android-apk`, `tests` y `linter`; los tres workflows quedan disponibles solo desde la pestaña Actions mediante `workflow_dispatch`.
+- Dokploy conserva su autodespliegue nativo al recibir el push, sin esperar checks de GitHub Actions ni requerir cambios en su webhook.

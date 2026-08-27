@@ -149,8 +149,13 @@
 - Todos los radios no circulares se reducen aproximadamente 30 % mediante `resources/css/app.css`; el sistema mantiene una única escala global.
 - Los bloques `login-01` y `signup-03` de shadcn sirven como composición de referencia, pero no sobrescriben las primitives locales ni reemplazan los formularios Fortify. Se adaptan a los campos y rutas tipadas reales de Guaranda Go.
 
+## 2026-08-27 — Autodespliegue directo en Dokploy
+
+- Dokploy realiza el despliegue por su detección nativa de `push`; el flujo habitual no depende de GitHub Actions como condición previa.
+- `android-apk`, `tests` y `linter` se conservan para ejecución manual mediante `workflow_dispatch`, sin checks automáticos en pushes ni pull requests mientras esta decisión esté activa.
 
 ## 2026-07-01 — Historial local posterior a n8n
+
 - Decisión: Laravel puede persistir `conversaciones_ia`/`mensajes_ia` después de que n8n responda, para mostrar historial en la app sin guardar mensajes al momento de escribir.
 - n8n sigue siendo el proceso externo del agente y memoria; Laravel mantiene solo historial visible para el usuario.
 
