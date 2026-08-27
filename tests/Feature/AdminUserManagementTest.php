@@ -6,6 +6,7 @@ use App\Models\UserRole;
 use Database\Seeders\CatalogSeeder;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Support\Facades\Notification;
+use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function () {
     $this->seed(CatalogSeeder::class);
@@ -20,6 +21,39 @@ test('administrator can view the user management page', function () {
     $this->actingAs($admin)
         ->get(route('admin.users.index'))
         ->assertOk();
+});
+
+test('administrator can search, filter and paginate managed users', function () {
+    $this->withoutVite();
+
+    $admin = User::factory()->administrator()->create();
+    $cyclist = User::factory()->cyclist()->create([
+        'name' => 'Ciclista Visible',
+        'email' => 'ciclista.visible@example.com',
+    ]);
+    User::factory()->cyclist()->create([
+        'name' => 'Otro ciclista',
+        'email' => 'otro.ciclista@example.com',
+    ]);
+
+    $this->actingAs($admin)
+        ->get(route('admin.users.index', [
+            'search' => 'visible',
+            'role' => $cyclist->role_id,
+            'status' => 'active',
+            'per_page' => 10,
+        ]))
+        ->assertSuccessful()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('admin/users/index')
+            ->where('filters.search', 'visible')
+            ->where('filters.role', (string) $cyclist->role_id)
+            ->where('filters.status', 'active')
+            ->where('filters.per_page', 10)
+            ->where('users.per_page', 10)
+            ->has('users.data', 1)
+            ->where('users.data.0.id', $cyclist->id)
+            ->where('users.data.0.created_at', fn ($value) => is_string($value)));
 });
 
 test('cyclist can not view the user management page', function () {
