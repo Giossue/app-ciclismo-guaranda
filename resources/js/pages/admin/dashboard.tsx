@@ -199,7 +199,7 @@ function OverviewCard({ metric }: { metric: OverviewMetric }) {
                     </CardTitle>
                     <Icon
                         aria-hidden="true"
-                        className="size-5 text-muted-foreground"
+                        className="size-4 text-muted-foreground"
                     />
                     <CardDescription>{metric.description}</CardDescription>
                 </CardHeader>
@@ -487,12 +487,12 @@ function AttentionCard({ attention }: { attention: AttentionItem[] }) {
                                     {item.key === 'incidents' ? (
                                         <AlertTriangle
                                             aria-hidden="true"
-                                            className="size-5 shrink-0 text-muted-foreground"
+                                            className="size-4 shrink-0 text-muted-foreground"
                                         />
                                     ) : (
                                         <MessageSquareText
                                             aria-hidden="true"
-                                            className="size-5 shrink-0 text-muted-foreground"
+                                            className="size-4 shrink-0 text-muted-foreground"
                                         />
                                     )}
                                     <div className="min-w-0 flex-1">

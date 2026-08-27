@@ -35,7 +35,7 @@ export default function Security(props: Props) {
                         className="size-11"
                     >
                         <Link href="/menu" replace>
-                            <ArrowLeft className="size-5" />
+                            <ArrowLeft className="size-4" />
                         </Link>
                     </Button>
                     <div className="flex flex-col">

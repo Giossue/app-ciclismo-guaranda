@@ -65,7 +65,7 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                     size="icon"
                                     className="mr-2 size-9"
                                 >
-                                    <Menu className="size-5" />
+                                    <Menu className="size-4" />
                                 </Button>
                             </SheetTrigger>
                             <SheetContent
@@ -96,7 +96,7 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                             className="flex items-center gap-2 rounded-2xl px-3 py-2 font-semibold transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                                         >
                                             {item.icon && (
-                                                <item.icon className="size-5" />
+                                                <item.icon className="size-4" />
                                             )}
                                             <span>{item.title}</span>
                                         </Link>

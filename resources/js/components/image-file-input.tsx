@@ -175,7 +175,7 @@ export default function ImageFileInput({
 
             {processing && (
                 <p className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Loader2 className="size-3.5 animate-spin" />
+                    <Loader2 className="size-4 animate-spin" />
                     Optimizando imágenes para que no superen {maxSizeMb} MB...
                 </p>
             )}
@@ -193,7 +193,7 @@ export default function ImageFileInput({
                                 className="absolute top-1.5 right-1.5 z-10 flex size-6 items-center justify-center rounded-full bg-background/90 text-foreground shadow-sm transition-colors hover:bg-destructive hover:text-white"
                                 aria-label={`Quitar ${item.file.name}`}
                             >
-                                <X className="size-3.5" />
+                                <X className="size-4" />
                             </button>
 
                             {item.isImage ? (
@@ -204,7 +204,7 @@ export default function ImageFileInput({
                                 />
                             ) : (
                                 <div className="flex h-24 w-full items-center justify-center bg-muted/40 text-muted-foreground">
-                                    <FileVideo className="size-8" />
+                                    <FileVideo className="size-4" />
                                 </div>
                             )}
 

@@ -122,6 +122,8 @@
     --radius-pill: 9999px;
     --radius-circle: 50%;
     --control-height: 3.25rem;
+    /* Tamaño único de icono del sistema: todo SVG de interfaz mide lo mismo. */
+    --icon-size: 1rem;
     --action-height: 2.75rem;
     --action-height-sm: 2.5rem;
     --action-height-lg: 3rem;
@@ -305,6 +307,15 @@
 
     svg {
         display: block;
+    }
+
+    /*
+     * Contrato de iconografía: cualquier icono Lucide hereda --icon-size.
+     * Vive en @layer base, así que una utilidad size-* explícita sigue ganando.
+     */
+    svg.lucide {
+        width: var(--icon-size);
+        height: var(--icon-size);
     }
 }
 

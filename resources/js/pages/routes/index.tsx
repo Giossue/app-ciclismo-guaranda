@@ -85,7 +85,7 @@ export default function RoutesIndex({
 
                 {routes.data.length === 0 && (
                     <div className="flex flex-col items-center gap-2 py-12 text-center">
-                        <RouteIcon className="size-8 text-muted-foreground" />
+                        <RouteIcon className="size-4 text-muted-foreground" />
                         <h2 className="text-base font-black text-foreground">
                             No hay rutas disponibles
                         </h2>
@@ -203,7 +203,7 @@ function FeaturedRouteCard({ route }: { route: CyclingRouteMapItem }) {
                     className="size-full object-cover"
                     fallback={
                         <div className="flex size-full items-center justify-center bg-muted text-muted-foreground">
-                            <ImageIcon className="size-10" />
+                            <ImageIcon className="size-4" />
                         </div>
                     }
                 />
@@ -302,7 +302,7 @@ function RouteCover({ route }: { route: CyclingRouteMapItem }) {
                     route.main_image_path ? mediaUrl(route.main_image_path) : ''
                 }
                 alt={route.name}
-                fallback={<ImageIcon className="size-6" />}
+                fallback={<ImageIcon className="size-4" />}
             />
         </div>
     );

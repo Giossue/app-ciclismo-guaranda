@@ -128,7 +128,7 @@ function FeatureCard({
         <Card className={className}>
             <CardHeader>
                 <span className="grid size-10 place-items-center text-brand-accent">
-                    <Icon className="size-5" />
+                    <Icon className="size-4" />
                 </span>
                 <p className="text-xs font-black tracking-[0.12em] text-muted-foreground uppercase">
                     {eyebrow}

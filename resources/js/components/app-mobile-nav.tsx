@@ -44,7 +44,7 @@ export function AppMobileNav() {
                         >
                             <span className="relative">
                                 {Icon && (
-                                    <Icon className="size-[18px] transition-transform" />
+                                    <Icon className="size-4 transition-transform" />
                                 )}
                                 {item.href === '/notifications' &&
                                     unreadCount > 0 && (
@@ -73,7 +73,7 @@ export function AppMobileNav() {
                             : 'text-muted-foreground hover:text-foreground',
                     )}
                 >
-                    <Menu className="size-[18px]" />
+                    <Menu className="size-4" />
                     Más
                 </Link>
             </div>

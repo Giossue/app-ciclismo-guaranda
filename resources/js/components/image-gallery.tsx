@@ -24,7 +24,7 @@ type Props = {
 
 const thumbFallback = (
     <div className="flex size-full items-center justify-center bg-muted text-muted-foreground">
-        <ImageIcon className="size-8" />
+        <ImageIcon className="size-4" />
     </div>
 );
 
@@ -130,7 +130,7 @@ export default function ImageGallery({
                             aria-label="Cerrar"
                             className="rounded-full bg-white/10 p-2 transition-colors hover:bg-white/20"
                         >
-                            <X className="size-5" />
+                            <X className="size-4" />
                         </button>
                     </div>
 
@@ -152,7 +152,7 @@ export default function ImageGallery({
                                     aria-label="Imagen anterior"
                                     className="absolute top-1/2 left-2 -translate-y-1/2 rounded-full bg-white/10 p-2 text-white transition-colors hover:bg-white/20"
                                 >
-                                    <ChevronLeft className="size-6" />
+                                    <ChevronLeft className="size-4" />
                                 </button>
                                 <button
                                     type="button"
@@ -160,7 +160,7 @@ export default function ImageGallery({
                                     aria-label="Imagen siguiente"
                                     className="absolute top-1/2 right-2 -translate-y-1/2 rounded-full bg-white/10 p-2 text-white transition-colors hover:bg-white/20"
                                 >
-                                    <ChevronRight className="size-6" />
+                                    <ChevronRight className="size-4" />
                                 </button>
                             </>
                         )}
@@ -255,7 +255,7 @@ export default function ImageGallery({
                             aria-label="Imagen anterior"
                             className="absolute top-1/2 left-2 -translate-y-1/2 rounded-full bg-black/45 p-1.5 text-white transition-opacity hover:bg-black/65 disabled:pointer-events-none disabled:opacity-0"
                         >
-                            <ChevronLeft className="size-5" />
+                            <ChevronLeft className="size-4" />
                         </button>
                         <button
                             type="button"
@@ -264,7 +264,7 @@ export default function ImageGallery({
                             aria-label="Imagen siguiente"
                             className="absolute top-1/2 right-2 -translate-y-1/2 rounded-full bg-black/45 p-1.5 text-white transition-opacity hover:bg-black/65 disabled:pointer-events-none disabled:opacity-0"
                         >
-                            <ChevronRight className="size-5" />
+                            <ChevronRight className="size-4" />
                         </button>
 
                         <div className="pointer-events-none absolute inset-x-0 bottom-2 flex items-center justify-center gap-1.5">

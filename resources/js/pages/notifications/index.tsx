@@ -112,7 +112,7 @@ export default function NotificationsIndex({
 
                 {notifications.data.length === 0 && (
                     <div className="flex flex-col items-center gap-2 py-6 text-center">
-                        <Bell className="size-8 text-muted-foreground" />
+                        <Bell className="size-4 text-muted-foreground" />
                         <h2 className="text-base font-black text-foreground">
                             {onlyUnread
                                 ? 'No tienes notificaciones sin leer'
@@ -178,9 +178,9 @@ function NotificationCard({ notification }: { notification: AppNotification }) {
                         )}
                     >
                         {notification.read ? (
-                            <MailOpen className="size-5" />
+                            <MailOpen className="size-4" />
                         ) : (
-                            <Bell className="size-5" />
+                            <Bell className="size-4" />
                         )}
                     </div>
 

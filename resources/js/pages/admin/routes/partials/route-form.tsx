@@ -621,7 +621,7 @@ export default function RouteForm({
                                             className="h-44 w-full object-cover"
                                             fallback={
                                                 <div className="flex h-44 w-full flex-col items-center justify-center gap-2 bg-muted text-muted-foreground">
-                                                    <ImageIcon className="size-7" />
+                                                    <ImageIcon className="size-4" />
                                                     <span className="text-xs">
                                                         La portada guardada no
                                                         existe. Sube una nueva.

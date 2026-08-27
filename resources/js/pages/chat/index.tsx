@@ -266,7 +266,7 @@ export default function ChatIndex({
 
                     {latestMessages.length === 0 && !agentIsLoading && (
                         <div className="m-auto flex max-w-64 flex-col items-center gap-3 text-center text-muted-foreground">
-                            <Bot className="size-8 text-muted-foreground" />
+                            <Bot className="size-4 text-muted-foreground" />
                             <div className="flex flex-col gap-1">
                                 <p className="text-sm font-black text-foreground">
                                     Empieza una consulta
@@ -379,9 +379,9 @@ export default function ChatIndex({
                                         }
                                     >
                                         {location.status === 'loading' ? (
-                                            <LoaderCircle className="size-3.5 animate-spin" />
+                                            <LoaderCircle className="size-4 animate-spin" />
                                         ) : (
-                                            <MapPin className="size-3.5" />
+                                            <MapPin className="size-4" />
                                         )}
                                         {location.status === 'ready'
                                             ? 'Actualizar'
@@ -415,7 +415,7 @@ export default function ChatIndex({
                                     className="ueb-chat-send"
                                     aria-label="Enviar mensaje"
                                 >
-                                    <Send className="size-5" />
+                                    <Send className="size-4" />
                                 </Button>
                             </div>
                             <InputError message={errors.message} />
@@ -658,9 +658,9 @@ function MessageBubble({
                             title={isSpeaking ? 'Detener' : 'Escuchar'}
                         >
                             {isSpeaking ? (
-                                <Square className="size-3 fill-current" />
+                                <Square className="size-4 fill-current" />
                             ) : (
-                                <Volume2 className="size-3.5" />
+                                <Volume2 className="size-4" />
                             )}
                         </button>
                     )}

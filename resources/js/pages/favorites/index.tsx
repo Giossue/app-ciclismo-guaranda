@@ -75,7 +75,7 @@ export default function FavoritesIndex({ favorites }: Props) {
                                 <CardHeader className="gap-2">
                                     <div className="z-10 flex flex-wrap gap-1.5">
                                         <Badge className="flex items-center gap-1 rounded-lg border border-primary/20 bg-primary/10 px-1.5 py-0.5 font-black tracking-wider text-[var(--fs-caption)] text-primary uppercase hover:bg-primary/10">
-                                            <Star className="size-2.5 fill-primary text-primary" />
+                                            <Star className="size-4 fill-primary text-primary" />
                                             <span>Favorita</span>
                                         </Badge>
                                         {favorite.route.category && (
@@ -165,7 +165,7 @@ export default function FavoritesIndex({ favorites }: Props) {
                 {favorites.data.length === 0 && (
                     <div className="flex flex-col items-center gap-2 py-8 text-center">
                         <div className="mb-2 flex size-14 items-center justify-center rounded-2xl bg-border/50 text-muted-foreground/60">
-                            <HeartOff className="size-7" />
+                            <HeartOff className="size-4" />
                         </div>
                         <h2 className="text-base font-bold text-foreground">
                             No tienes favoritas

@@ -43,7 +43,7 @@ function GridScanIcon() {
                         />
                     ))}
                 </div>
-                <ScanLine className="relative z-20 size-6 text-foreground" />
+                <ScanLine className="relative z-20 size-4 text-foreground" />
             </div>
         </div>
     );

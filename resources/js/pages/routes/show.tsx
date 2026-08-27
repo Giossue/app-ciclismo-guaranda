@@ -226,11 +226,11 @@ function RouteDetailPanel({ route }: { route: CyclingRouteMapItem }) {
             <CardContent className="flex flex-col gap-4">
                 <div className="grid gap-3 text-sm text-muted-foreground sm:grid-cols-2">
                     <div className="flex items-center gap-2">
-                        <MapPinned className="size-5 shrink-0" />
+                        <MapPinned className="size-4 shrink-0" />
                         <span>Inicio: {route.start_name}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <MapPinned className="size-5 shrink-0" />
+                        <MapPinned className="size-4 shrink-0" />
                         <span>Final: {route.end_name}</span>
                     </div>
                     {route.metric && (
@@ -324,7 +324,7 @@ function RouteHeader({ route }: { route: CyclingRouteMapItem }) {
     const placeholder = (
         <div className="flex min-h-52 items-center justify-center bg-muted text-muted-foreground md:min-h-72">
             <div className="flex flex-col items-center gap-2 text-center">
-                <ImageIcon className="size-8" />
+                <ImageIcon className="size-4" />
                 <span className="text-sm font-medium">Ruta sin portada</span>
             </div>
         </div>
@@ -356,7 +356,7 @@ function RouteHeader({ route }: { route: CyclingRouteMapItem }) {
                     className="absolute top-3 left-3 z-[5] size-9"
                 >
                     <Link href="/routes" prefetch aria-label="Volver a rutas">
-                        <ArrowLeft className="size-5" />
+                        <ArrowLeft className="size-4" />
                     </Link>
                 </Button>
             </div>

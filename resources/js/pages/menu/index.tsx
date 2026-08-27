@@ -96,7 +96,7 @@ export default function MenuIndex() {
                     as="button"
                     className="flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl border border-red-500/20 bg-secondary px-4 text-xs font-black tracking-wider text-red-400 uppercase transition-all duration-200 hover:-translate-y-0.5 hover:border-red-500/40 hover:bg-red-500/10 active:translate-y-0 active:scale-[0.99]"
                 >
-                    <LogOut className="size-5 shrink-0" />
+                    <LogOut className="size-4 shrink-0" />
                     <span>Cerrar sesión</span>
                 </Link>
             </div>
@@ -117,7 +117,7 @@ function NavTile({ item }: { item: NavItem }) {
             )}
         >
             {Icon && (
-                <Icon className="size-5 shrink-0 text-muted-foreground transition-colors duration-250 group-hover:text-link" />
+                <Icon className="size-4 shrink-0 text-muted-foreground transition-colors duration-250 group-hover:text-link" />
             )}
             <span className="text-sm font-bold text-foreground transition-colors duration-250 group-hover:text-link">
                 {item.title}
@@ -138,7 +138,7 @@ function MenuCard({ item }: { item: AccountItem }) {
                 'group hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-[0_4px_16px_var(--shadow)]',
             )}
         >
-            <Icon className="size-5.5 shrink-0 text-muted-foreground transition-colors duration-250 group-hover:text-link" />
+            <Icon className="size-4 shrink-0 text-muted-foreground transition-colors duration-250 group-hover:text-link" />
             <span className="min-w-0">
                 <span className="block text-sm leading-none font-bold text-foreground transition-colors duration-250 group-hover:text-link">
                     {item.title}
