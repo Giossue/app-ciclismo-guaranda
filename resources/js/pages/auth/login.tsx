@@ -125,6 +125,7 @@ export default function Login({ status, canResetPassword }: Props) {
                                     <Field>
                                         <Button
                                             type="submit"
+                                            className="font-bold"
                                             disabled={processing || !canSubmit}
                                             data-test="login-button"
                                         >

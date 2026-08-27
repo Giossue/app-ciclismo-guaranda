@@ -1,4 +1,4 @@
-import { Form, Head, router, usePage } from '@inertiajs/react';
+import { Form, Head, router } from '@inertiajs/react';
 import { Ellipsis, KeyRound, Pencil, Power, RotateCcw } from 'lucide-react';
 import { useState } from 'react';
 import UserController from '@/actions/App/Http/Controllers/Admin/UserController';
@@ -9,14 +9,6 @@ import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from '@/components/ui/dialog';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -35,7 +27,15 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import type { Auth, CatalogOption } from '@/types';
+import {
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetFooter,
+    SheetHeader,
+    SheetTitle,
+} from '@/components/ui/sheet';
+import type { CatalogOption } from '@/types';
 
 type ManagedUser = {
     active: boolean;
@@ -70,10 +70,6 @@ type UserFilters = {
     status: string;
 };
 
-type PageProps = {
-    auth: Auth;
-};
-
 type Props = {
     filters: UserFilters;
     genders: CatalogOption[];
@@ -87,8 +83,6 @@ export default function AdminUsersIndex({
     roles,
     users,
 }: Props) {
-    const { auth } = usePage<PageProps>().props;
-
     const changeQuery = (query: DataTableQuery) => {
         router.get(UserController.index.url(), query, {
             only: ['users', 'filters'],
@@ -105,7 +99,7 @@ export default function AdminUsersIndex({
             hideable: false,
             cell: (user) => (
                 <div className="flex min-w-48 flex-col gap-0.5">
-                    <span className="font-medium text-foreground">
+                    <span className="text-foreground">
                         {user.name} {user.last_name}
                     </span>
                     <span className="truncate text-xs text-muted-foreground">
@@ -162,7 +156,7 @@ export default function AdminUsersIndex({
                     user={user}
                     roles={roles}
                     genders={genders}
-                    isCurrentUser={auth.user?.id === user.id}
+                    isAdmin={user.role?.name === 'administrador'}
                 />
             ),
         },
@@ -179,8 +173,6 @@ export default function AdminUsersIndex({
                 />
 
                 <DataTable
-                    title="Usuarios registrados"
-                    description="Busca y filtra las cuentas registradas en el sistema."
                     data={users.data}
                     columns={columns}
                     getRowId={(user) => user.id}
@@ -224,19 +216,19 @@ export default function AdminUsersIndex({
 
 function UserRowActions({
     genders,
-    isCurrentUser,
+    isAdmin,
     roles,
     user,
 }: {
     genders: CatalogOption[];
-    isCurrentUser: boolean;
+    isAdmin: boolean;
     roles: CatalogOption[];
     user: ManagedUser;
 }) {
     const [editOpen, setEditOpen] = useState(false);
 
-    if (isCurrentUser) {
-        return <Badge>Tu cuenta</Badge>;
+    if (isAdmin) {
+        return null;
     }
 
     return (
@@ -314,23 +306,23 @@ function UserRowActions({
                 </DropdownMenuContent>
             </DropdownMenu>
 
-            <Dialog open={editOpen} onOpenChange={setEditOpen}>
-                <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-2xl">
-                    <DialogHeader>
-                        <DialogTitle>Editar usuario</DialogTitle>
-                        <DialogDescription>
+            <Sheet open={editOpen} onOpenChange={setEditOpen}>
+                <SheetContent className="w-full overflow-y-auto sm:max-w-2xl">
+                    <SheetHeader>
+                        <SheetTitle>Editar usuario</SheetTitle>
+                        <SheetDescription>
                             Actualiza el perfil y acceso de {user.name}{' '}
                             {user.last_name}.
-                        </DialogDescription>
-                    </DialogHeader>
+                        </SheetDescription>
+                    </SheetHeader>
                     <UserEditForm
                         user={user}
                         roles={roles}
                         genders={genders}
                         onSuccess={() => setEditOpen(false)}
                     />
-                </DialogContent>
-            </Dialog>
+                </SheetContent>
+            </Sheet>
         </>
     );
 }
@@ -351,7 +343,7 @@ function UserEditForm({
             {...UserController.update.form(user.id)}
             onSuccess={onSuccess}
             options={{ preserveScroll: true }}
-            className="flex flex-col gap-5"
+            className="flex flex-col gap-5 px-5 pb-5"
         >
             {({ errors, processing }) => (
                 <>
@@ -484,11 +476,11 @@ function UserEditForm({
                         </Field>
                     </FieldGroup>
 
-                    <DialogFooter>
+                    <SheetFooter>
                         <Button type="submit" disabled={processing}>
                             Guardar cambios
                         </Button>
-                    </DialogFooter>
+                    </SheetFooter>
                 </>
             )}
         </Form>

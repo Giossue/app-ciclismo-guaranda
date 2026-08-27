@@ -9,13 +9,6 @@ import InputError from '@/components/input-error';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-} from '@/components/ui/dialog';
-import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuGroup,
@@ -31,6 +24,13 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import {
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetHeader,
+    SheetTitle,
+} from '@/components/ui/sheet';
 import { Textarea } from '@/components/ui/textarea';
 import { show as routeShow } from '@/routes/routes';
 import type { CatalogOption } from '@/types';
@@ -115,7 +115,7 @@ export default function AdminRatingsIndex({
             label: 'Usuario',
             cell: (rating) => (
                 <div className="flex min-w-48 flex-col gap-0.5">
-                    <span className="font-medium text-foreground">
+                    <span className="text-foreground">
                         {rating.user?.name ?? 'Usuario eliminado'}
                     </span>
                     <span className="truncate text-xs text-muted-foreground">
@@ -131,7 +131,7 @@ export default function AdminRatingsIndex({
                 rating.route ? (
                     <Link
                         href={routeShow.url(rating.route.slug)}
-                        className="font-medium text-foreground underline-offset-4 hover:underline focus-visible:underline"
+                        className="text-foreground underline-offset-4 hover:underline focus-visible:underline"
                         prefetch
                     >
                         {rating.route.name}
@@ -200,8 +200,6 @@ export default function AdminRatingsIndex({
                 />
 
                 <DataTable
-                    title="Valoraciones registradas"
-                    description="Busca, filtra y modera la experiencia compartida por los ciclistas."
                     data={ratings.data}
                     columns={columns}
                     getRowId={(rating) => rating.id}
@@ -275,19 +273,19 @@ function RatingRowActions({
                 </DropdownMenuContent>
             </DropdownMenu>
 
-            <Dialog open={open} onOpenChange={setOpen}>
-                <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-xl">
-                    <DialogHeader>
-                        <DialogTitle>Revisar valoración</DialogTitle>
-                        <DialogDescription>
+            <Sheet open={open} onOpenChange={setOpen}>
+                <SheetContent className="w-full overflow-y-auto sm:max-w-xl">
+                    <SheetHeader>
+                        <SheetTitle>Revisar valoración</SheetTitle>
+                        <SheetDescription>
                             {rating.user?.name ?? 'Usuario eliminado'} ·{' '}
                             {rating.route?.name ?? 'Ruta eliminada'} ·{' '}
                             {rating.rating}/5
-                        </DialogDescription>
-                    </DialogHeader>
+                        </SheetDescription>
+                    </SheetHeader>
 
                     <div className="flex flex-col gap-2 rounded-[var(--radius-control)] border p-3 text-sm">
-                        <div className="flex items-center gap-2 font-medium text-foreground">
+                        <div className="flex items-center gap-2 text-foreground">
                             <RouteIcon />
                             Comentario del ciclista
                         </div>
@@ -302,8 +300,8 @@ function RatingRowActions({
                         statuses={statuses}
                         onSuccess={() => setOpen(false)}
                     />
-                </DialogContent>
-            </Dialog>
+                </SheetContent>
+            </Sheet>
         </>
     );
 }
@@ -322,7 +320,7 @@ function ModerationForm({
             {...RatingController.update.form(rating.id)}
             onSuccess={onSuccess}
             options={{ preserveScroll: true }}
-            className="flex flex-col gap-5"
+            className="flex flex-col gap-5 px-5 pb-5"
         >
             {({ processing, errors }) => (
                 <>

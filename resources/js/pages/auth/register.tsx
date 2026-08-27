@@ -246,6 +246,7 @@ export default function Register({ genders, passwordRules }: Props) {
                                     <Field className="lg:col-span-2 lg:mx-auto lg:max-w-sm">
                                         <Button
                                             type="submit"
+                                            className="font-bold"
                                             disabled={
                                                 !passwordIsReady || processing
                                             }

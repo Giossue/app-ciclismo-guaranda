@@ -5,16 +5,17 @@ import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
 import { Button } from '@/components/ui/button';
-import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogTitle,
-    DialogTrigger,
-} from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import {
+    Sheet,
+    SheetClose,
+    SheetContent,
+    SheetDescription,
+    SheetFooter,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger,
+} from '@/components/ui/sheet';
 
 export default function DeleteUser() {
     const passwordInput = useRef<HTMLInputElement>(null);
@@ -28,30 +29,33 @@ export default function DeleteUser() {
             />
             <div className="flex flex-col gap-4 rounded-2xl border border-destructive/20 bg-destructive/5 p-4">
                 <div className="relative flex flex-col gap-0.5 text-destructive">
-                    <p className="font-medium">Advertencia</p>
+                    <p>Advertencia</p>
                     <p className="text-sm">
                         Tu cuenta quedará inactiva y no podrás iniciar sesión
                         hasta que un administrador la reactive.
                     </p>
                 </div>
 
-                <Dialog>
-                    <DialogTrigger asChild>
+                <Sheet>
+                    <SheetTrigger asChild>
                         <Button
                             variant="destructive"
                             data-test="delete-user-button"
                         >
                             Desactivar cuenta
                         </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                        <DialogTitle>
-                            ¿Seguro que quieres desactivar tu cuenta?
-                        </DialogTitle>
-                        <DialogDescription>
-                            Esta acción cerrará tu sesión y marcará tu cuenta
-                            como inactiva. Ingresa tu contraseña para confirmar.
-                        </DialogDescription>
+                    </SheetTrigger>
+                    <SheetContent>
+                        <SheetHeader>
+                            <SheetTitle>
+                                ¿Seguro que quieres desactivar tu cuenta?
+                            </SheetTitle>
+                            <SheetDescription>
+                                Esta acción cerrará tu sesión y marcará tu
+                                cuenta como inactiva. Ingresa tu contraseña para
+                                confirmar.
+                            </SheetDescription>
+                        </SheetHeader>
 
                         <Form
                             {...ProfileController.destroy.form()}
@@ -60,7 +64,7 @@ export default function DeleteUser() {
                             }}
                             onError={() => passwordInput.current?.focus()}
                             resetOnSuccess
-                            className="flex flex-col gap-6"
+                            className="flex flex-col gap-6 px-5 pb-5"
                         >
                             {({ resetAndClearErrors, processing, errors }) => (
                                 <>
@@ -86,8 +90,8 @@ export default function DeleteUser() {
                                         <InputError message={errors.password} />
                                     </div>
 
-                                    <DialogFooter className="gap-2">
-                                        <DialogClose asChild>
+                                    <SheetFooter>
+                                        <SheetClose asChild>
                                             <Button
                                                 variant="secondary"
                                                 onClick={() =>
@@ -96,7 +100,7 @@ export default function DeleteUser() {
                                             >
                                                 Cancelar
                                             </Button>
-                                        </DialogClose>
+                                        </SheetClose>
 
                                         <Button
                                             variant="destructive"
@@ -110,12 +114,12 @@ export default function DeleteUser() {
                                                 Desactivar cuenta
                                             </button>
                                         </Button>
-                                    </DialogFooter>
+                                    </SheetFooter>
                                 </>
                             )}
                         </Form>
-                    </DialogContent>
-                </Dialog>
+                    </SheetContent>
+                </Sheet>
             </div>
         </div>
     );

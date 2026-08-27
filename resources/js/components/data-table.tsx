@@ -8,7 +8,7 @@ import {
     Settings2,
     X,
 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -75,7 +75,7 @@ export type DataTablePagination = {
 type Props<T> = {
     columns: DataTableColumn<T>[];
     data: T[];
-    description: string;
+    description?: string;
     emptyMessage: string;
     filters?: DataTableFilter[];
     getRowId: (row: T) => number | string;
@@ -83,7 +83,7 @@ type Props<T> = {
     pagination: DataTablePagination;
     query: DataTableQuery;
     searchPlaceholder?: string;
-    title: string;
+    title?: string;
 };
 
 export function DataTable<T>({
@@ -132,108 +132,125 @@ export function DataTable<T>({
 
     return (
         <Card>
-            <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                <div className="flex flex-col gap-1.5">
-                    <CardTitle>{title}</CardTitle>
-                    <CardDescription>{description}</CardDescription>
-                </div>
-
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="sm">
-                            <Settings2 data-icon="inline-start" />
-                            Ver
-                            <ChevronDown data-icon="inline-end" />
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-48">
-                        <DropdownMenuLabel>Columnas visibles</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuGroup>
-                            {columns
-                                .filter((column) => column.hideable !== false)
-                                .map((column) => (
-                                    <DropdownMenuCheckboxItem
-                                        key={column.id}
-                                        checked={!hiddenColumns.has(column.id)}
-                                        onCheckedChange={(checked) =>
-                                            toggleColumn(column.id, checked)
-                                        }
-                                    >
-                                        {column.label}
-                                    </DropdownMenuCheckboxItem>
-                                ))}
-                        </DropdownMenuGroup>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            </CardHeader>
+            {title && (
+                <CardHeader>
+                    <div className="flex flex-col gap-1.5">
+                        <CardTitle>{title}</CardTitle>
+                        {description && (
+                            <CardDescription>{description}</CardDescription>
+                        )}
+                    </div>
+                </CardHeader>
+            )}
 
             <CardContent className="flex flex-col gap-4">
                 <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-                    <DataTableSearch
-                        key={String(query.search ?? '')}
-                        initialValue={String(query.search ?? '')}
-                        placeholder={searchPlaceholder}
-                        onSearchChange={(search) =>
-                            onQueryChange({
-                                ...query,
-                                page: 1,
-                                search: search || undefined,
-                            })
-                        }
-                    />
+                    <div className="flex flex-1 flex-col gap-3 sm:flex-row sm:items-center">
+                        <DataTableSearch
+                            initialValue={String(query.search ?? '')}
+                            placeholder={searchPlaceholder}
+                            onSearchChange={(search) =>
+                                onQueryChange({
+                                    ...query,
+                                    page: 1,
+                                    search: search || undefined,
+                                })
+                            }
+                        />
 
-                    <div className="flex flex-wrap gap-3">
-                        {filters.map((filter) => (
-                            <Select
-                                key={filter.id}
-                                value={
-                                    String(query[filter.id] ?? '') || undefined
-                                }
-                                onValueChange={(value) =>
-                                    updateFilter(filter.id, value)
-                                }
-                            >
-                                <SelectTrigger
-                                    size="sm"
-                                    aria-label={filter.label}
-                                    className="min-w-40"
+                        <div className="flex flex-wrap gap-3">
+                            {filters.map((filter) => (
+                                <Select
+                                    key={filter.id}
+                                    value={
+                                        String(query[filter.id] ?? '') ||
+                                        undefined
+                                    }
+                                    onValueChange={(value) =>
+                                        updateFilter(filter.id, value)
+                                    }
                                 >
-                                    <SelectValue
-                                        placeholder={filter.placeholder}
-                                    />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectGroup>
-                                        {filter.options.map((option) => (
-                                            <SelectItem
-                                                key={option.value}
-                                                value={option.value}
-                                            >
-                                                {option.label}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectGroup>
-                                </SelectContent>
-                            </Select>
-                        ))}
-                        {(String(query.search ?? '') !== '' ||
-                            hasActiveFilters) && (
+                                    <SelectTrigger
+                                        size="sm"
+                                        aria-label={filter.label}
+                                        className="min-w-40"
+                                    >
+                                        <SelectValue
+                                            placeholder={filter.placeholder}
+                                        />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectGroup>
+                                            {filter.options.map((option) => (
+                                                <SelectItem
+                                                    key={option.value}
+                                                    value={option.value}
+                                                >
+                                                    {option.label}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                            ))}
+                            {(String(query.search ?? '') !== '' ||
+                                hasActiveFilters) && (
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => {
+                                        onQueryChange({
+                                            per_page: pagination.perPage,
+                                        });
+                                    }}
+                                >
+                                    <X data-icon="inline-start" />
+                                    Limpiar
+                                </Button>
+                            )}
+                        </div>
+                    </div>
+
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
                             <Button
                                 type="button"
-                                variant="ghost"
+                                variant="outline"
                                 size="sm"
-                                onClick={() => {
-                                    onQueryChange({
-                                        per_page: pagination.perPage,
-                                    });
-                                }}
+                                className="shrink-0"
                             >
-                                <X data-icon="inline-start" />
-                                Limpiar
+                                <Settings2 data-icon="inline-start" />
+                                Ver
+                                <ChevronDown data-icon="inline-end" />
                             </Button>
-                        )}
-                    </div>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48">
+                            <DropdownMenuLabel>
+                                Columnas visibles
+                            </DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuGroup>
+                                {columns
+                                    .filter(
+                                        (column) => column.hideable !== false,
+                                    )
+                                    .map((column) => (
+                                        <DropdownMenuCheckboxItem
+                                            key={column.id}
+                                            checked={
+                                                !hiddenColumns.has(column.id)
+                                            }
+                                            onCheckedChange={(checked) =>
+                                                toggleColumn(column.id, checked)
+                                            }
+                                        >
+                                            {column.label}
+                                        </DropdownMenuCheckboxItem>
+                                    ))}
+                            </DropdownMenuGroup>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </div>
 
                 <div className="overflow-hidden rounded-[var(--radius-control)] border">
@@ -250,7 +267,7 @@ export function DataTable<T>({
                                 ))}
                             </TableRow>
                         </TableHeader>
-                        <TableBody>
+                        <TableBody className="[&_tr:nth-child(even)]:bg-muted/25">
                             {data.length > 0 ? (
                                 data.map((row) => (
                                     <TableRow key={getRowId(row)}>
@@ -285,7 +302,7 @@ export function DataTable<T>({
                     {pagination.total} registros.
                 </p>
 
-                <div className="flex w-full flex-wrap items-center justify-between gap-3 lg:w-auto lg:justify-end">
+                <div className="flex flex-wrap items-center gap-3 lg:ml-auto lg:flex-nowrap">
                     <div className="flex items-center gap-2">
                         <span className="text-sm text-muted-foreground">
                             Filas por página
@@ -322,7 +339,7 @@ export function DataTable<T>({
                         </Select>
                     </div>
 
-                    <div className="text-sm font-medium tabular-nums">
+                    <div className="text-sm tabular-nums">
                         Página {pagination.currentPage} de {pagination.lastPage}
                     </div>
 
@@ -404,31 +421,39 @@ function DataTableSearch({
     onSearchChange: (search: string) => void;
     placeholder: string;
 }) {
-    const [search, setSearch] = useState(initialValue);
+    const inputRef = useRef<HTMLInputElement>(null);
+    const timeoutRef = useRef<number | undefined>(undefined);
 
     useEffect(() => {
-        const normalizedSearch = search.trim();
+        const input = inputRef.current;
 
-        if (normalizedSearch === initialValue) {
-            return;
+        if (input && input.value !== initialValue) {
+            input.value = initialValue;
         }
+    }, [initialValue]);
 
-        const timeout = window.setTimeout(() => {
-            onSearchChange(normalizedSearch);
-        }, 300);
-
-        return () => window.clearTimeout(timeout);
-    }, [initialValue, onSearchChange, search]);
+    useEffect(() => {
+        return () => window.clearTimeout(timeoutRef.current);
+    }, []);
 
     return (
-        <div className="relative w-full lg:max-w-sm">
+        <div className="relative w-full sm:max-w-sm">
             <Search
                 aria-hidden="true"
                 className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
             />
             <Input
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
+                ref={inputRef}
+                defaultValue={initialValue}
+                onChange={(event) => {
+                    const search = event.target.value.trim();
+
+                    window.clearTimeout(timeoutRef.current);
+
+                    timeoutRef.current = window.setTimeout(() => {
+                        onSearchChange(search);
+                    }, 300);
+                }}
                 placeholder={placeholder}
                 aria-label={placeholder}
                 className="pl-9"

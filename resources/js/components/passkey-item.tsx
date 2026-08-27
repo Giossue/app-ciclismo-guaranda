@@ -2,14 +2,15 @@ import { KeyRound, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogTitle,
-    DialogTrigger,
-} from '@/components/ui/dialog';
+    Sheet,
+    SheetClose,
+    SheetContent,
+    SheetDescription,
+    SheetFooter,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger,
+} from '@/components/ui/sheet';
 import type { Passkey } from '@/types/auth';
 
 type Props = {
@@ -33,11 +34,9 @@ export default function PasskeyItem({ passkey, onDelete }: Props) {
                 </div>
                 <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-2.5">
-                        <p className="font-medium tracking-tight">
-                            {passkey.name}
-                        </p>
+                        <p className="tracking-tight">{passkey.name}</p>
                         {passkey.authenticator && (
-                            <span className="inline-flex items-center gap-1 rounded-xl bg-muted px-2 py-0.5 font-medium tracking-wide text-[var(--fs-caption)] text-muted-foreground uppercase ring-1 ring-border ring-inset">
+                            <span className="inline-flex items-center gap-1 rounded-xl bg-muted px-2 py-0.5 font-normal tracking-wide text-[var(--fs-caption)] text-muted-foreground uppercase ring-1 ring-border ring-inset">
                                 {passkey.authenticator}
                             </span>
                         )}
@@ -56,23 +55,25 @@ export default function PasskeyItem({ passkey, onDelete }: Props) {
                 </div>
             </div>
 
-            <Dialog>
-                <DialogTrigger asChild>
+            <Sheet>
+                <SheetTrigger asChild>
                     <Button variant="destructive-ghost" size="sm">
                         <Trash2 className="h-4 w-4" />
                         <span className="sr-only">Quitar</span>
                     </Button>
-                </DialogTrigger>
-                <DialogContent>
-                    <DialogTitle>Quitar clave de acceso</DialogTitle>
-                    <DialogDescription>
-                        ¿Seguro que quieres quitar la clave "{passkey.name}"? Ya
-                        no podrás usarla para iniciar sesión.
-                    </DialogDescription>
-                    <DialogFooter className="gap-2">
-                        <DialogClose asChild>
+                </SheetTrigger>
+                <SheetContent>
+                    <SheetHeader>
+                        <SheetTitle>Quitar clave de acceso</SheetTitle>
+                        <SheetDescription>
+                            ¿Seguro que quieres quitar la clave "{passkey.name}
+                            "? Ya no podrás usarla para iniciar sesión.
+                        </SheetDescription>
+                    </SheetHeader>
+                    <SheetFooter>
+                        <SheetClose asChild>
                             <Button variant="secondary">Cancelar</Button>
-                        </DialogClose>
+                        </SheetClose>
                         <Button
                             variant="destructive"
                             onClick={handleDelete}
@@ -82,9 +83,9 @@ export default function PasskeyItem({ passkey, onDelete }: Props) {
                                 ? 'Quitando...'
                                 : 'Quitar clave de acceso'}
                         </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
+                    </SheetFooter>
+                </SheetContent>
+            </Sheet>
         </div>
     );
 }
