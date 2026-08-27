@@ -2,13 +2,7 @@ import { Form, Head, Link } from '@inertiajs/react';
 import { toast } from 'sonner';
 import PasswordInput from '@/components/password-input';
 import { Button } from '@/components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
     Field,
@@ -38,9 +32,6 @@ export default function Login({ status, canResetPassword }: Props) {
             <Card className="w-full gap-6 py-6 lg:max-w-md lg:self-center">
                 <CardHeader className="gap-2">
                     <CardTitle>Inicia sesión</CardTitle>
-                    <CardDescription>
-                        Ingresa tus datos para continuar en Guaranda Go.
-                    </CardDescription>
                 </CardHeader>
                 <CardContent>
                     <Form

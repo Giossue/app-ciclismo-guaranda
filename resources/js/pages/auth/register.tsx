@@ -5,13 +5,7 @@ import { DatePicker } from '@/components/date-picker';
 import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
 import { Button } from '@/components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
     Field,
     FieldDescription,
@@ -53,9 +47,6 @@ export default function Register({ genders, passwordRules }: Props) {
             <Card className="w-full gap-6 py-6 lg:px-2">
                 <CardHeader className="gap-2 text-center lg:px-6">
                     <CardTitle>Crea tu cuenta</CardTitle>
-                    <CardDescription>
-                        Completa tus datos para comenzar a recorrer Guaranda.
-                    </CardDescription>
                 </CardHeader>
                 <CardContent className="lg:px-6">
                     <Form
