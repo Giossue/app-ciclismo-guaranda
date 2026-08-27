@@ -1,5 +1,6 @@
 import { Link, usePage } from '@inertiajs/react';
 import AppLogo from '@/components/app-logo';
+import { AppSidebarMenu } from '@/components/app-sidebar-menu';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import {
@@ -10,8 +11,8 @@ import {
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
+    useSidebar,
 } from '@/components/ui/sidebar';
-import { useIsMobile } from '@/hooks/use-mobile';
 import { homePath, mainNavItems } from '@/lib/navigation';
 import type { Auth } from '@/types';
 
@@ -21,38 +22,40 @@ type PageProps = {
 
 export function AppSidebar() {
     const { auth } = usePage<PageProps>().props;
-    const isMobile = useIsMobile();
+    const { isMobile } = useSidebar();
     const navItems = mainNavItems(auth);
     const sidebarNavItems = navItems.filter(
         (item) => item.href !== '/notifications',
     );
     const startPath = homePath(auth);
 
-    if (isMobile) {
-        return null;
-    }
-
     return (
         <Sidebar collapsible="icon" variant="sidebar">
-            <SidebarHeader>
-                <SidebarMenu>
-                    <SidebarMenuItem>
-                        <SidebarMenuButton size="lg" asChild>
-                            <Link href={startPath} prefetch>
-                                <AppLogo />
-                            </Link>
-                        </SidebarMenuButton>
-                    </SidebarMenuItem>
-                </SidebarMenu>
-            </SidebarHeader>
+            {isMobile ? (
+                <AppSidebarMenu items={sidebarNavItems} />
+            ) : (
+                <>
+                    <SidebarHeader>
+                        <SidebarMenu>
+                            <SidebarMenuItem>
+                                <SidebarMenuButton size="lg" asChild>
+                                    <Link href={startPath} prefetch>
+                                        <AppLogo />
+                                    </Link>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                        </SidebarMenu>
+                    </SidebarHeader>
 
-            <SidebarContent>
-                <NavMain items={sidebarNavItems} />
-            </SidebarContent>
+                    <SidebarContent>
+                        <NavMain items={sidebarNavItems} />
+                    </SidebarContent>
 
-            <SidebarFooter>
-                <NavUser />
-            </SidebarFooter>
+                    <SidebarFooter>
+                        <NavUser />
+                    </SidebarFooter>
+                </>
+            )}
         </Sidebar>
     );
 }

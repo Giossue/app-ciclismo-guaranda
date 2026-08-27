@@ -1,5 +1,6 @@
 import { Link, usePage } from '@inertiajs/react';
 import { Menu } from 'lucide-react';
+import { useSidebar } from '@/components/ui/sidebar';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { mobilePrimaryNavItems } from '@/lib/navigation';
 import { cn } from '@/lib/utils';
@@ -15,6 +16,7 @@ type PageProps = {
 export function AppMobileNav() {
     const { auth, notifications } = usePage<PageProps>().props;
     const { isCurrentUrl } = useCurrentUrl();
+    const { openMobile, setOpenMobile } = useSidebar();
     const primaryItems = mobilePrimaryNavItems(auth);
     const unreadCount = notifications?.unread_count ?? 0;
 
@@ -62,20 +64,21 @@ export function AppMobileNav() {
                     );
                 })}
 
-                <Link
-                    href="/menu"
-                    prefetch
-                    aria-current={isCurrentUrl('/menu') ? 'page' : undefined}
+                <button
+                    type="button"
+                    onClick={() => setOpenMobile(true)}
+                    aria-expanded={openMobile}
+                    aria-label="Abrir menú de navegación"
                     className={cn(
                         'flex min-w-0 flex-1 touch-manipulation flex-col items-center justify-center gap-0.5 rounded-xl px-1 py-1 leading-none font-bold text-[var(--fs-caption)] transition-[color,transform] active:scale-[0.96]',
-                        isCurrentUrl('/menu')
+                        openMobile
                             ? 'text-primary'
                             : 'text-muted-foreground hover:text-foreground',
                     )}
                 >
                     <Menu className="size-4" />
                     Más
-                </Link>
+                </button>
             </div>
         </nav>
     );

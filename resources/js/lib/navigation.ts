@@ -52,11 +52,3 @@ export function mobilePrimaryNavItems(auth: Auth): NavItem[] {
         adminNavItems.find((item) => item.href === '/admin/incidents'),
     ].filter((item): item is NavItem => Boolean(item));
 }
-
-export function mobileMoreNavItems(auth: Auth): NavItem[] {
-    const primaryHrefs = new Set(
-        mobilePrimaryNavItems(auth).map((item) => item.href),
-    );
-
-    return mainNavItems(auth).filter((item) => !primaryHrefs.has(item.href));
-}

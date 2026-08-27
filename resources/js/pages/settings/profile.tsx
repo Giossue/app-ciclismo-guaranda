@@ -15,6 +15,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { homePath } from '@/lib/navigation';
 import { edit } from '@/routes/profile';
 import { send } from '@/routes/verification';
 import type { Auth, CatalogOption } from '@/types';
@@ -52,7 +53,7 @@ export default function Profile({
                         asChild
                         className="size-11"
                     >
-                        <Link href="/menu" replace>
+                        <Link href={homePath(auth)} replace>
                             <ArrowLeft className="size-4" />
                         </Link>
                     </Button>

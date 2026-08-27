@@ -31,7 +31,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('notifications', [AppNotificationController::class, 'index'])->name('notifications.index');
     Route::patch('notifications/read-all', [AppNotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
     Route::patch('notifications/{notification}/read', [AppNotificationController::class, 'markAsRead'])->name('notifications.read');
-    Route::inertia('menu', 'menu/index')->name('menu.index');
     Route::get('chat', [ChatController::class, 'index'])->name('chat.index');
     Route::post('chat/messages', [ChatController::class, 'store'])->middleware('throttle:12,1')->name('chat.messages.store');
     Route::delete('chat/conversations/{conversation}', [ChatController::class, 'destroy'])->name('chat.conversations.destroy');

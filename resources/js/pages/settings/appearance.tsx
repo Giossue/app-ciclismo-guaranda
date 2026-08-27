@@ -1,10 +1,18 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
 import AppearanceTabs from '@/components/appearance-tabs';
 import { Button } from '@/components/ui/button';
+import { homePath } from '@/lib/navigation';
 import { edit as editAppearance } from '@/routes/appearance';
+import type { Auth } from '@/types';
+
+type PageProps = {
+    auth: Auth;
+};
 
 export default function Appearance() {
+    const { auth } = usePage<PageProps>().props;
+
     return (
         <>
             <Head title="Ajustes de apariencia" />
@@ -18,7 +26,7 @@ export default function Appearance() {
                         asChild
                         className="size-11"
                     >
-                        <Link href="/menu" replace>
+                        <Link href={homePath(auth)} replace>
                             <ArrowLeft className="size-4" />
                         </Link>
                     </Button>

@@ -1,4 +1,4 @@
-import { Form, Head, Link } from '@inertiajs/react';
+import { Form, Head, Link, usePage } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
 import { useRef } from 'react';
 import SecurityController from '@/actions/App/Http/Controllers/Settings/SecurityController';
@@ -10,14 +10,21 @@ import ManageTwoFactor from '@/components/manage-two-factor';
 import PasswordInput from '@/components/password-input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { homePath } from '@/lib/navigation';
 import { edit } from '@/routes/security';
+import type { Auth } from '@/types';
 
 type Props = {
     passwordRules: string;
 } & ManagePasskeysProps &
     ManageTwoFactorProps;
 
+type PageProps = {
+    auth: Auth;
+};
+
 export default function Security(props: Props) {
+    const { auth } = usePage<PageProps>().props;
     const passwordInput = useRef<HTMLInputElement>(null);
     const currentPasswordInput = useRef<HTMLInputElement>(null);
 
@@ -34,7 +41,7 @@ export default function Security(props: Props) {
                         asChild
                         className="size-11"
                     >
-                        <Link href="/menu" replace>
+                        <Link href={homePath(auth)} replace>
                             <ArrowLeft className="size-4" />
                         </Link>
                     </Button>
