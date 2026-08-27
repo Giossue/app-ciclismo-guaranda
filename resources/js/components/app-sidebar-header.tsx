@@ -1,3 +1,4 @@
+import AppearanceCycleButton from '@/components/appearance-cycle-button';
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { NotificationBellLink } from '@/components/notification-bell-link';
 import { Separator } from '@/components/ui/separator';
@@ -12,7 +13,7 @@ export function AppSidebarHeader({
     return (
         <header
             data-slot="app-sidebar-header"
-            className="flex h-12 shrink-0 items-center gap-2 border-b bg-background/80 px-4 backdrop-blur transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 md:px-6"
+            className="sticky top-0 z-30 flex h-12 shrink-0 items-center gap-2 border-b bg-background/80 px-4 backdrop-blur transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 md:px-6"
         >
             <div className="flex min-w-0 flex-1 items-center gap-2">
                 <SidebarTrigger className="-ml-1 hidden md:inline-flex" />
@@ -28,7 +29,10 @@ export function AppSidebarHeader({
                     )}
                 </div>
             </div>
-            <NotificationBellLink className="mr-12" />
+            <div className="flex items-center gap-1">
+                <NotificationBellLink />
+                <AppearanceCycleButton />
+            </div>
         </header>
     );
 }

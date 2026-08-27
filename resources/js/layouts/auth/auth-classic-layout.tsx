@@ -1,23 +1,22 @@
 import { Link } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
+import AppearanceCycleButton from '@/components/appearance-cycle-button';
 import { Button } from '@/components/ui/button';
 import { home } from '@/routes';
 import type { AuthLayoutProps } from '@/types';
 
 export default function AuthClassicLayout({ children }: AuthLayoutProps) {
     return (
-        <main className="relative flex min-h-svh w-full items-center justify-center bg-background p-6 md:p-10 lg:p-12">
-            <Button
-                asChild
-                variant="outline"
-                size="sm"
-                className="absolute top-[calc(env(safe-area-inset-top,0px)+2rem)] left-4"
-            >
-                <Link href={home()}>
-                    <ArrowLeft data-icon="inline-start" />
-                    Volver a inicio
-                </Link>
-            </Button>
+        <main className="flex min-h-svh w-full items-center justify-center bg-background p-6 pt-20 md:p-10 md:pt-24 lg:p-12 lg:pt-28">
+            <header className="fixed inset-x-0 top-0 z-30 flex h-16 items-center justify-between border-b bg-background/80 px-4 backdrop-blur md:px-6">
+                <Button asChild variant="outline" size="sm">
+                    <Link href={home()}>
+                        <ArrowLeft data-icon="inline-start" />
+                        Volver a inicio
+                    </Link>
+                </Button>
+                <AppearanceCycleButton />
+            </header>
             <div className="flex w-full max-w-sm flex-col md:max-w-md lg:max-w-3xl">
                 {children}
             </div>

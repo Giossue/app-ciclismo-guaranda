@@ -2,6 +2,7 @@ import { Link, usePage } from '@inertiajs/react';
 import { Menu } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import AppLogoIcon from '@/components/app-logo-icon';
+import AppearanceCycleButton from '@/components/appearance-cycle-button';
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { NotificationBellLink } from '@/components/notification-bell-link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -54,7 +55,7 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
 
     return (
         <>
-            <div className="border-b border-sidebar-border/70 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/65">
+            <div className="sticky top-0 z-30 border-b border-sidebar-border/70 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/65">
                 <div className="mx-auto flex h-16 items-center px-4 md:max-w-7xl">
                     <div className="lg:hidden">
                         <Sheet>
@@ -148,6 +149,7 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
 
                     <div className="ml-auto flex items-center gap-3">
                         {auth.user && <NotificationBellLink />}
+                        <AppearanceCycleButton />
                         {auth.user && (
                             <p className="hidden text-sm text-muted-foreground sm:block">
                                 Hola,{' '}

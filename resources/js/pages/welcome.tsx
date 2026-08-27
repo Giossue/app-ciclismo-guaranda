@@ -1,6 +1,7 @@
 import { Head, Link, usePage } from '@inertiajs/react';
 import type { LucideIcon } from 'lucide-react';
 import { ArrowRight, Bot, Download, MapPinned, Route } from 'lucide-react';
+import AppearanceCycleButton from '@/components/appearance-cycle-button';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -25,7 +26,10 @@ export default function Welcome() {
         <>
             <Head title="Guaranda Go" />
 
-            <main className="min-h-[100dvh] bg-background px-[var(--page-pad-x)] py-[var(--page-pad-y)] text-foreground lg:py-8">
+            <main className="min-h-[100dvh] bg-background px-[var(--page-pad-x)] pt-20 pb-[var(--page-pad-y)] text-foreground lg:pt-24 lg:pb-8">
+                <header className="fixed inset-x-0 top-0 z-30 flex h-16 items-center justify-end border-b bg-background/80 px-[var(--page-pad-x)] backdrop-blur">
+                    <AppearanceCycleButton />
+                </header>
                 <div className="mx-auto w-full max-w-7xl">
                     <section className="grid gap-4 lg:grid-cols-12 lg:gap-6">
                         <section className="relative flex min-h-[31rem] overflow-hidden rounded-3xl border border-border bg-[var(--map-background)] px-6 py-7 text-inverse-foreground shadow-[var(--elevation-floating)] sm:min-h-[34rem] sm:px-9 sm:py-10 lg:col-span-7 lg:min-h-[40rem] lg:px-12 lg:py-12">

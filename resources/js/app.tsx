@@ -1,7 +1,6 @@
 import { createInertiaApp } from '@inertiajs/react';
 import { configureBoneyard } from 'boneyard-js/react';
 import './bones/registry';
-import AppearanceCycleButton from '@/components/appearance-cycle-button';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { initializeTheme } from '@/hooks/use-appearance';
@@ -45,9 +44,6 @@ createInertiaApp({
         return (
             <TooltipProvider delayDuration={0}>
                 {app}
-                <div className="fixed top-[calc(env(safe-area-inset-top,0px)+0.25rem)] right-4 z-40">
-                    <AppearanceCycleButton />
-                </div>
                 <Toaster />
             </TooltipProvider>
         );

@@ -1,5 +1,6 @@
 import { Link } from '@inertiajs/react';
 import AppLogoIcon from '@/components/app-logo-icon';
+import AppearanceCycleButton from '@/components/appearance-cycle-button';
 import { home } from '@/routes';
 import type { AuthLayoutProps } from '@/types';
 
@@ -15,6 +16,9 @@ export default function AuthSimpleLayout({
 
     return (
         <main className="ueb-auth-shell">
+            <header className="fixed inset-x-0 top-0 z-30 flex h-16 items-center justify-end border-b bg-background/80 px-4 backdrop-blur md:px-6">
+                <AppearanceCycleButton />
+            </header>
             <section className="ueb-auth-hero">
                 <Link href={home()} className="ueb-auth-logo">
                     <span className="ueb-auth-logo-mark">
