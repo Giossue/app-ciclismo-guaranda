@@ -14,3 +14,7 @@ Esta carpeta está reservada para scripts Python y archivos de trabajo que se re
 - Dependencias Python (`.venv/`, `__pycache__/`) ni archivos generados pesados que puedan regenerarse.
 
 Si un script pasa a ser parte estable del producto o despliegue, muévelo a una carpeta específica y documenta su uso.
+
+## Scripts actuales
+
+- `audit_ui_tokens.py`: inventaría radios, sombras, colores no semánticos y tokens CSS de `resources/` sin modificar archivos. Ejecutar con `python3 temp/audit_ui_tokens.py --details`.

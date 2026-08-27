@@ -47,9 +47,13 @@
     --text-4xl: var(--fs-title);
     --text-4xl--line-height: var(--lh-title);
 
-    --radius-lg: var(--radius);
-    --radius-md: calc(var(--radius) - 4px);
-    --radius-sm: calc(var(--radius) - 8px);
+    /* Radius scale — every non-circular UI shape resolves from these tokens. */
+    --radius-sm: var(--radius-tight);
+    --radius-md: var(--radius-compact);
+    --radius-lg: var(--radius-compact);
+    --radius-xl: var(--radius-control);
+    --radius-2xl: var(--radius-surface);
+    --radius-3xl: var(--radius-emphasis);
 
     --color-background: var(--background);
     --color-foreground: var(--foreground);
@@ -117,7 +121,23 @@
     --page-pad-x: clamp(16px, 4vw, 28px);
     --page-pad-y: clamp(18px, 4vw, 34px);
     --page-gap: 18px;
-    --card-radius: 22px;
+    /* Radius contracts: controls, cards, overlays and map surfaces. */
+    --radius-tight: 0.25rem;
+    --radius-compact: 0.5rem;
+    --radius-control: 0.75rem;
+    --radius-surface: 1rem;
+    --radius-emphasis: 1.5rem;
+    --radius-map: 2rem;
+    --radius-pill: 9999px;
+    --radius-circle: 50%;
+    --control-height: 3.25rem;
+    --action-height: 2.75rem;
+    --action-height-sm: 2.5rem;
+    --action-height-lg: 3rem;
+    --elevation-flat: none;
+    --elevation-subtle: 0 2px 6px var(--shadow);
+    --elevation-raised: 0 4px 12px var(--shadow);
+    --elevation-floating: 0 12px 40px var(--overlay-shadow);
     --safe-bottom: env(safe-area-inset-bottom, 0px);
     --bottom-nav-height: 58px;
 
@@ -152,7 +172,7 @@
     --chart-3: #ff9800;
     --chart-4: #00c853;
     --chart-5: #ff6b6b;
-    --radius: 1.25rem;
+    --radius: var(--radius-surface);
     --sidebar: #ffffff;
     --sidebar-foreground: #1a1a1a;
     --sidebar-primary: #b2f000;
@@ -301,7 +321,7 @@
     .route-picker,
     .search-container,
     .message-bubble {
-        border-radius: var(--card-radius);
+        border-radius: var(--radius-surface);
     }
 
     [data-slot='card'] {
@@ -324,8 +344,8 @@
         background: var(--card);
         border-color: var(--border);
         color: var(--foreground);
-        border-radius: 16px;
-        height: 52px;
+        border-radius: var(--radius-surface);
+        height: var(--control-height);
         font-weight: 600;
     }
 
@@ -344,12 +364,12 @@
     }
 
     [data-slot='button'] {
-        border-radius: 16px;
+        border-radius: var(--radius-surface);
         font-weight: 900;
     }
 
     [data-slot='badge'] {
-        border-radius: 12px;
+        border-radius: var(--radius-control);
         font-size: var(--fs-xs);
         font-weight: 900;
         text-transform: uppercase;
@@ -383,10 +403,10 @@
 
     .leaflet-popup-content-wrapper {
         border: 1px solid var(--border);
-        border-radius: 18px;
+        border-radius: var(--radius-surface);
         background: var(--card);
         color: var(--foreground);
-        box-shadow: 0 12px 40px var(--overlay-shadow);
+        box-shadow: var(--elevation-floating);
     }
 
     .leaflet-popup-tip {
@@ -408,7 +428,7 @@
     }
 
     [class*='shadow'] {
-        box-shadow: none !important;
+        box-shadow: var(--elevation-flat) !important;
     }
 
     [data-slot='button'],
@@ -504,7 +524,7 @@
         align-items: stretch;
         gap: 10px;
         border: 1px solid var(--border);
-        border-radius: 20px;
+        border-radius: var(--radius-surface);
         background: var(--card);
         color: var(--foreground);
         padding: 10px;
@@ -526,7 +546,7 @@
         height: 54px;
         flex-shrink: 0;
         overflow: hidden;
-        border-radius: 16px;
+        border-radius: var(--radius-surface);
         background: var(--brand-accent);
         color: var(--primary-foreground);
         display: grid;
@@ -571,7 +591,7 @@
     }
 
     .ueb-difficulty-tag {
-        border-radius: 8px;
+        border-radius: var(--radius-compact);
         padding: 4px 7px;
         background: color-mix(in srgb, var(--primary) 12%, transparent);
         color: var(--primary);
@@ -584,7 +604,7 @@
         display: inline-flex;
         align-items: center;
         gap: 5px;
-        border-radius: 999px;
+        border-radius: var(--radius-pill);
         border: 1px solid var(--border);
         background: var(--secondary);
         padding: 5px 8px;
@@ -681,7 +701,7 @@
         overflow-y: auto;
         background: var(--card);
         padding: 24px;
-        box-shadow: 0 -10px 30px var(--shadow);
+        box-shadow: var(--elevation-floating);
     }
 
     .ueb-chat-shell {
@@ -719,10 +739,10 @@
         height: 36px;
         flex-shrink: 0;
         place-items: center;
-        border-radius: 10px;
+        border-radius: var(--radius-compact);
         background: var(--primary);
         color: var(--primary-foreground);
-        box-shadow: 0 4px 10px var(--shadow);
+        box-shadow: var(--elevation-raised);
     }
 
     .ueb-chat-messages {
@@ -764,8 +784,8 @@
         height: 32px;
         flex-shrink: 0;
         place-items: center;
-        border-radius: 50%;
-        box-shadow: 0 2px 6px var(--shadow);
+        border-radius: var(--radius-circle);
+        box-shadow: var(--elevation-subtle);
         font-size: var(--fs-sm);
         font-weight: 900;
     }
@@ -782,7 +802,7 @@
     }
 
     .ueb-message-bubble {
-        border-radius: 18px;
+        border-radius: var(--radius-surface);
         padding: 12px 16px;
         font-size: var(--fs-sm);
         line-height: 1.45;
@@ -816,16 +836,16 @@
 
     .ueb-message-row.bot .ueb-message-bubble {
         border: 1px solid var(--border);
-        border-top-left-radius: 4px;
+        border-top-left-radius: var(--radius-tight);
         background: var(--card);
         color: var(--foreground);
     }
 
     .ueb-message-row.user .ueb-message-bubble {
-        border-top-right-radius: 4px;
+        border-top-right-radius: var(--radius-tight);
         background: var(--primary);
         color: var(--primary-foreground);
-        box-shadow: 0 4px 12px var(--shadow);
+        box-shadow: var(--elevation-raised);
     }
 
     .ueb-chat-footer {
@@ -850,7 +870,7 @@
         flex: 1;
         align-items: center;
         border: 1px solid var(--border);
-        border-radius: 16px;
+        border-radius: var(--radius-surface);
         background: var(--secondary);
         padding: 0 12px;
         transition:
@@ -889,7 +909,7 @@
     .ueb-chat-send {
         width: 48px !important;
         height: 48px !important;
-        border-radius: 999px !important;
+        border-radius: var(--radius-pill) !important;
     }
 
     @keyframes messageSlideIn {

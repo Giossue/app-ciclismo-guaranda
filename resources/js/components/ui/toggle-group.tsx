@@ -1,5 +1,5 @@
 import * as ToggleGroupPrimitive from "@radix-ui/react-toggle-group"
-import { type VariantProps } from "class-variance-authority"
+import type { VariantProps } from "class-variance-authority"
 import * as React from "react"
 
 import { toggleVariants } from "@/components/ui/toggle"
@@ -26,7 +26,7 @@ function ToggleGroup({
       data-variant={variant}
       data-size={size}
       className={cn(
-        "group/toggle-group flex items-center rounded-xl data-[variant=outline]:shadow-sm",
+        "group/toggle-group flex items-center rounded-[var(--radius-control)] data-[variant=outline]:shadow-sm",
         className
       )}
       {...props}

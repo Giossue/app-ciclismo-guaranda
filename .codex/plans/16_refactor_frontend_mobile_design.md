@@ -332,3 +332,11 @@ Notas:
 
 - El build muestra advertencia no bloqueante de Vite sobre fuentes en `/assets/fonts/*.ttf`; quedan como URLs públicas runtime, coherente con archivos en `public/assets/fonts`.
 - No hubo cambios de backend, BD, rutas URL ni lógica de formularios.
+
+## Centralización de tokens visuales 2026-08-27
+
+- Se consolidó en `resources/css/app.css` la escala de radios, alturas de control/acción y elevaciones para toda la interfaz.
+- Las escalas Tailwind `rounded-sm` a `rounded-3xl` ahora resuelven desde tokens globales; las primitives shadcn usan explícitamente los tokens de `control` o `surface`.
+- Se reemplazaron radios arbitrarios de navegación y mapa por tokens de superficie, énfasis o mapa; formas circulares/píldora quedan como excepciones semánticas.
+- Se creó `temp/audit_ui_tokens.py` para inventariar radios, sombras, colores no semánticos y tokens antes de futuras refactorizaciones.
+- Validación focalizada aprobada: Prettier, ESLint de componentes modificados, compilación Python y `npm run build`.

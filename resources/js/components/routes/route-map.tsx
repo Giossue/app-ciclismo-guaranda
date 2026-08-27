@@ -178,7 +178,7 @@ export default function RouteMap({
 
     return (
         <div className="flex flex-col gap-3">
-            <div className="flex flex-wrap items-center gap-2 rounded-[1.5rem] border border-primary/10 bg-card/80 p-2 shadow-sm shadow-primary/10 backdrop-blur">
+            <div className="flex flex-wrap items-center gap-2 rounded-[var(--radius-emphasis)] border border-primary/10 bg-card/80 p-2 shadow-sm shadow-primary/10 backdrop-blur">
                 <Badge variant={isOnline ? 'secondary' : 'destructive'}>
                     {isOnline ? (
                         <Wifi data-icon="inline-start" />
@@ -273,7 +273,7 @@ export default function RouteMap({
 
             <div
                 className={cn(
-                    'relative isolate z-0 overflow-hidden rounded-[2rem] border border-primary/10 bg-card shadow-lg shadow-primary/10',
+                    'relative isolate z-0 overflow-hidden rounded-[var(--radius-map)] border border-primary/10 bg-card shadow-lg shadow-primary/10',
                     className,
                 )}
             >

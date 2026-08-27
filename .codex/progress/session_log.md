@@ -441,3 +441,10 @@
 
 - Se reforzó el contexto transversal para exigir Context7 al verificar documentación de librerías externas y Laravel Boost para paquetes Laravel instalados.
 - Se documentó el flujo shadcn/ui: skill + contexto del proyecto + documentación del componente + inspección de diff antes de agregar/actualizar, manteniendo tokens, accesibilidad y componentes existentes.
+
+## 2026-08-27 — Centralización visual
+
+- Se creó `temp/audit_ui_tokens.py` y se usó para inventariar 124 archivos de UI antes del refactor; queda documentado y reutilizable en `temp/README.md`.
+- Se centralizaron radios, alturas y elevaciones en `resources/css/app.css`; botones, cards, inputs, badges, alertas, diálogos, selects, toggles, skeletons, toasts, navegación y mapa consumen esos tokens.
+- Se verificaron las APIs/componentes shadcn instalados con su CLI antes de modificar sus primitives.
+- Validaciones aprobadas: Prettier y ESLint focalizados, `python3 -m py_compile` y `npm run build`.

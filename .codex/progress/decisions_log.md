@@ -126,6 +126,13 @@
 - Las tareas con shadcn/ui cargan el skill `shadcn`, consultan el contexto/documentación del CLI antes de usar componentes y reutilizan los componentes/tokens instalados antes de crear alternativas personalizadas.
 - Agregar o actualizar componentes shadcn exige inspección previa de registry, API y diff; sobrescribir componentes locales requiere autorización explícita.
 
+## 2026-08-27 — Tokens visuales centralizados
+
+- `resources/css/app.css` es la única fuente de verdad de radios, alturas de controles/acciones y elevaciones de Guaranda Go.
+- Se adopta la escala `tight`, `compact`, `control`, `surface`, `emphasis`, `map`, `pill` y `circle`; los radios Tailwind estándar se mapean a ella.
+- `rounded-full`/`rounded-none` son excepciones semánticas; no se añaden radios numéricos arbitrarios en JSX/CSS cuando un token cubra el caso.
+- El análisis recurrente se realiza con `temp/audit_ui_tokens.py`; el script no modifica código ni reemplaza una revisión visual.
+
 
 ## 2026-07-01 — Historial local posterior a n8n
 - Decisión: Laravel puede persistir `conversaciones_ia`/`mensajes_ia` después de que n8n responda, para mostrar historial en la app sin guardar mensajes al momento de escribir.

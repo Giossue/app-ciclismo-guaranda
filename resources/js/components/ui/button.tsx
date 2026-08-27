@@ -1,11 +1,12 @@
 import { Slot } from '@radix-ui/react-slot';
-import { cva, type VariantProps } from 'class-variance-authority';
+import { cva } from 'class-variance-authority';
+import type { VariantProps } from 'class-variance-authority';
 import * as React from 'react';
 
 import { cn } from '@/lib/utils';
 
 const buttonVariants = cva(
-    "inline-flex min-h-11 touch-manipulation items-center justify-center gap-2 whitespace-nowrap rounded-2xl text-sm font-black transition-all duration-200 disabled:pointer-events-none disabled:opacity-60 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 [&_svg]:shrink-0 outline-none active:scale-[0.98]",
+    "inline-flex min-h-11 touch-manipulation items-center justify-center gap-2 whitespace-nowrap rounded-[var(--radius-surface)] text-sm font-black transition-all duration-200 disabled:pointer-events-none disabled:opacity-60 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 [&_svg]:shrink-0 outline-none active:scale-[0.98]",
     {
         variants: {
             variant: {
@@ -25,10 +26,10 @@ const buttonVariants = cva(
                     'border border-success bg-success text-success-foreground hover:brightness-95',
             },
             size: {
-                default: 'h-11 px-5 py-2 has-[>svg]:px-4',
-                sm: 'h-10 px-4 text-xs has-[>svg]:px-3',
-                lg: 'h-12 px-7 text-base has-[>svg]:px-5',
-                icon: 'size-11 min-h-11 rounded-full',
+                default: 'h-[var(--action-height)] px-5 py-2 has-[>svg]:px-4',
+                sm: 'h-[var(--action-height-sm)] px-4 text-xs has-[>svg]:px-3',
+                lg: 'h-[var(--action-height-lg)] px-7 text-base has-[>svg]:px-5',
+                icon: 'size-[var(--action-height)] min-h-[var(--action-height)] rounded-full',
             },
         },
         defaultVariants: {

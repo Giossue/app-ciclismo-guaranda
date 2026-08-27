@@ -1,8 +1,9 @@
 import { useEffect } from 'react';
-import { toast } from 'sonner';
-import { useFlashToast } from '@/hooks/use-flash-toast';
+import { Toaster as Sonner, toast } from 'sonner';
+import type { ToasterProps } from 'sonner';
+
 import { useAppearance } from '@/hooks/use-appearance';
-import { Toaster as Sonner, type ToasterProps } from 'sonner';
+import { useFlashToast } from '@/hooks/use-flash-toast';
 
 function Toaster({ ...props }: ToasterProps) {
     const { appearance } = useAppearance();
@@ -20,7 +21,7 @@ function Toaster({ ...props }: ToasterProps) {
             mobileOffset="calc(env(safe-area-inset-top, 0px) + 3.5rem)"
             toastOptions={{
                 classNames: {
-                    toast: 'rounded-2xl border-border bg-popover text-popover-foreground shadow-[0_18px_55px_color-mix(in_oklch,var(--foreground)_18%,transparent)]',
+                    toast: 'rounded-[var(--radius-surface)] border-border bg-popover text-popover-foreground shadow-[0_18px_55px_color-mix(in_oklch,var(--foreground)_18%,transparent)]',
                     title: 'font-bold',
                     description: 'text-muted-foreground',
                     actionButton: 'bg-primary text-primary-foreground',

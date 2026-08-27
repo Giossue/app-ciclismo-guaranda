@@ -26,6 +26,19 @@
 - Usar `size-*` cuando ancho y alto sean iguales.
 - Usar `cn()` para clases condicionales.
 
+## Tokens visuales globales
+
+Los estilos reutilizables se definen en `resources/css/app.css`; no crear otra fuente de verdad para radios, alturas o elevaciones.
+
+- Radios: `--radius-tight`, `--radius-compact`, `--radius-control`, `--radius-surface`, `--radius-emphasis`, `--radius-map`, `--radius-pill` y `--radius-circle`.
+- Las utilidades `rounded-sm`, `rounded-md`, `rounded-lg`, `rounded-xl`, `rounded-2xl` y `rounded-3xl` se enlazan a esa escala desde `@theme`.
+- Primitives shadcn y controles compartidos deben usar el token semántico adecuado (`control` para inputs/badges/toggles; `surface` para botones, cards, diálogos y toasts).
+- Alturas: `--control-height`, `--action-height`, `--action-height-sm` y `--action-height-lg`.
+- Elevaciones: `--elevation-flat`, `--elevation-subtle`, `--elevation-raised` y `--elevation-floating`.
+- `rounded-full` y `rounded-none` solo se usan cuando la forma es intencionalmente circular/píldora o sin radio. Evitar valores arbitrarios como `rounded-[18px]` o `border-radius: 16px`.
+
+Antes de una refactorización visual amplia, ejecutar `python3 temp/audit_ui_tokens.py --details` para localizar excepciones. El script solo analiza; las ediciones siguen haciéndose deliberadamente en código/CSS.
+
 ## UX crítica para Guaranda Go
 
 - Estados offline visibles.
