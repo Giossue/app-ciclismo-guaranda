@@ -967,8 +967,18 @@
     ):not(:disabled):not([aria-disabled='true']):not(
         [data-disabled]
     ):focus-visible {
-    outline-color: var(--focus-ring) !important;
-    outline-offset: 3px !important;
-    outline-style: solid !important;
-    outline-width: 2px !important;
+    outline: none !important;
+    box-shadow: 0 0 0 3px var(--focus-ring) !important;
+}
+
+:where(
+        [data-slot='input'],
+        textarea,
+        [data-slot='select-trigger'],
+        [data-slot='date-picker-trigger'],
+        [data-slot='checkbox'],
+        [data-slot='toggle'],
+        [data-slot='toggle-group-item']
+    ):not([aria-invalid='true']):focus-visible {
+    border-color: var(--focus-ring) !important;
 }
