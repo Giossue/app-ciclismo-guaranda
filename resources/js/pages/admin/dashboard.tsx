@@ -321,8 +321,13 @@ function ActivityMetric({
 }) {
     return (
         <div className="flex min-w-0 flex-col gap-2 rounded-[var(--radius-control)] border bg-muted/50 p-3">
-            <span className="text-sm font-medium">{label}</span>
-            <Icon aria-hidden="true" className="size-4 text-muted-foreground" />
+            <div className="flex items-center gap-2">
+                <Icon
+                    aria-hidden="true"
+                    className="size-4 shrink-0 text-muted-foreground"
+                />
+                <span className="text-sm font-medium">{label}</span>
+            </div>
             <span className="text-lg leading-none font-medium tabular-nums">
                 {value.toLocaleString()}
             </span>

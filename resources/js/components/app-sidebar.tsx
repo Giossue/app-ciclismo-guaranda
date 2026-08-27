@@ -23,6 +23,9 @@ export function AppSidebar() {
     const { auth } = usePage<PageProps>().props;
     const isMobile = useIsMobile();
     const navItems = mainNavItems(auth);
+    const sidebarNavItems = navItems.filter(
+        (item) => item.href !== '/notifications',
+    );
     const startPath = homePath(auth);
 
     if (isMobile) {
@@ -44,7 +47,7 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                <NavMain items={navItems} />
+                <NavMain items={sidebarNavItems} />
             </SidebarContent>
 
             <SidebarFooter>
