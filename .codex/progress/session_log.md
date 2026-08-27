@@ -485,3 +485,14 @@
 ## 2026-08-27 — Skeletons de autenticación
 
 - Login, registro, recuperación, confirmación, reset y 2FA no usan Boneyard; conservan sus estados pendientes de formulario y se muestran de inmediato.
+
+## 2026-08-27 — Rotación de acceso PostgreSQL remoto
+
+- Se confirmó que `guaranda_go_db` existe en el clúster remoto y que `guaranda_go_app` es su rol de aplicación sin privilegios de superusuario.
+- Se rotó su contraseña y se verificó una conexión nueva con dicho rol. La credencial se guarda únicamente en `.pgpass` local; no se registró en el repositorio ni en documentación.
+
+## 2026-08-27 — Landing adaptable
+
+- Se consultó el MCP de 21st.dev y se adaptó la referencia `Feature Bento` a la landing existente.
+- La página ahora usa composición hero + bento en escritorio y una sola columna en móvil, conservando el flujo Fortify, Wayfinder, tokens semánticos y sin añadir dependencias.
+- Se validó visualmente en 1440 px y 390 px, además de TypeScript, ESLint focalizado, Prettier, build y diff limpio.

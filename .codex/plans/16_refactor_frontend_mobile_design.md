@@ -355,3 +355,8 @@ Notas:
 
 - Registro, perfil, usuarios y filtros de estadísticas usan un selector reutilizable compuesto por `Calendar` y `Popover` de shadcn.
 - La UI no invoca el selector nativo del dispositivo; Laravel sigue recibiendo valores `YYYY-MM-DD`.
+
+## Landing responsive 2026-08-27
+
+- La landing deja de limitarse a un lienzo móvil: en escritorio compone un hero panorámico y una cuadrícula bento de rutas, modo sin conexión y guía ciclista; en móvil se apila conservando jerarquía y acciones táctiles completas.
+- Se tomó como referencia estructural el componente `Feature Bento` de 21st.dev y se adaptó a los tokens, rutas Wayfinder y restricciones visuales de Guaranda Go, sin incorporar sus gradientes, dependencias ni métricas ficticias.

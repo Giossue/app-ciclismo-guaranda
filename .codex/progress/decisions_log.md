@@ -149,6 +149,16 @@
 - La generación se automatiza por componentes Boneyard nombrados que tengan una ruta o fixture de desarrollo explícita. Se rechaza un watcher global: Laravel/Inertia no sirve las páginas desde Vite y el crawler recorrería formularios/rutas sin carga de datos. Los bones generados permanecen versionados.
 - Las capturas autenticadas usan fixtures o un entorno local preparado; no se guardan secretos en configuración.
 
+## 2026-08-27 — Rotación de credencial PostgreSQL remota
+
+- La aplicación usa el rol de mínimo privilegio `guaranda_go_app` para `guaranda_go_db`; las rotaciones se realizan con una credencial administrativa externa al repositorio y se validan iniciando sesión con el rol de aplicación.
+- La contraseña rotada reside exclusivamente en el almacén local de credenciales y en la configuración de despliegue correspondiente; nunca en Git, código, documentación ni APK.
+
+## 2026-08-27 — Landing de escritorio y móvil
+
+- La landing usa una estructura responsive de hero y cuadrícula bento: escritorio aprovecha el ancho disponible y móvil mantiene una secuencia única con CTA accesibles.
+- Las referencias externas de 21st.dev se adaptan a los componentes y tokens locales; no se instalan ni copian estilos que contradigan el diseño flat, los radios globales, la tipografía nativa o las rutas existentes.
+
 ## 2026-08-27 — Radios compactos y bloques de autenticación
 
 - Todos los radios no circulares se reducen aproximadamente 30 % mediante `resources/css/app.css`; el sistema mantiene una única escala global.
