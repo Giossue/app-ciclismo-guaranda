@@ -348,6 +348,17 @@
         box-shadow: none;
     }
 
+    html[data-content-layout='centered'] .ueb-admin-page {
+        width: min(100%, 96rem);
+        margin-inline: auto;
+    }
+
+    html[data-navbar-style='sticky'] [data-slot='app-sidebar-header'] {
+        position: sticky;
+        top: 0;
+        z-index: 30;
+    }
+
     [data-slot='input'],
     [data-slot='textarea'],
     [data-slot='select-trigger'],
