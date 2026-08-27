@@ -347,13 +347,13 @@
         color: var(--foreground);
         border-radius: var(--radius-surface);
         height: var(--control-height) !important;
-        font-weight: 600;
+        font-weight: 400;
     }
 
     [data-slot='input']::placeholder,
     textarea::placeholder {
         color: var(--muted-foreground);
-        font-weight: 500;
+        font-weight: 400;
     }
 
     [data-slot='input']:focus,
