@@ -1,5 +1,6 @@
 import { createInertiaApp } from '@inertiajs/react';
-import { GlobalLoadingIndicator } from '@/components/global-loading-indicator';
+import './bones/registry';
+import { NavigationSkeleton } from '@/components/navigation-skeleton';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { initializeTheme } from '@/hooks/use-appearance';
@@ -33,8 +34,7 @@ createInertiaApp({
     withApp(app) {
         return (
             <TooltipProvider delayDuration={0}>
-                {app}
-                <GlobalLoadingIndicator />
+                <NavigationSkeleton>{app}</NavigationSkeleton>
                 <Toaster />
             </TooltipProvider>
         );

@@ -45,6 +45,14 @@ Antes de una refactorización visual amplia, ejecutar `python3 temp/audit_ui_tok
 - La pila global, definida en `resources/css/app.css`, prioriza `-apple-system` (San Francisco en iOS y macOS), seguida de `Segoe UI` (Windows), `Roboto` (Android) y `Helvetica`/`Arial`/`sans-serif` como respaldo.
 - `font-sans` y `font-display` usan la misma pila nativa para preservar rendimiento, legibilidad y consistencia por plataforma.
 
+## Skeletons de navegación
+
+- Boneyard genera los skeletons desde el DOM real de las pantallas; no crear placeholders manuales para las visitas Inertia GET.
+- `NavigationSkeleton` envuelve la aplicación en `resources/js/app.tsx` y sustituye el indicador global de carga anterior. Las mutaciones de formularios mantienen su propio estado pendiente.
+- Los archivos generados viven en `resources/js/bones/` y se versionan. Tras cambiar un layout, iniciar Laravel localmente y Vite, ejecutar `npm run bones:build` para regenerarlos.
+- Los nombres de Boneyard se derivan de la ruta actual y solo contienen caracteres seguros. El `Skeleton` de Boneyard debe importarse con alias `BoneyardSkeleton` para distinguirlo del componente `Skeleton` de shadcn/ui.
+- Las rutas protegidas se capturan con una sesión local temporal o fixtures de desarrollo; no guardar cookies, tokens ni credenciales en `boneyard.config.json`.
+
 ## UX crítica para Guaranda Go
 
 - Estados offline visibles.

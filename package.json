@@ -5,6 +5,7 @@
     "scripts": {
         "build": "vite build",
         "build:ssr": "vite build && vite build --ssr",
+        "bones:build": "boneyard-js build http://127.0.0.1:8000 --no-scan && eslint --fix resources/js/bones/registry.ts && prettier --write resources/js/bones",
         "dev": "vite",
         "format": "prettier --write resources/ capacitor.config.ts",
         "format:check": "prettier --check resources/ capacitor.config.ts",
@@ -65,6 +66,7 @@
         "@types/react": "^19.2.0",
         "@types/react-dom": "^19.2.0",
         "@vitejs/plugin-react": "^5.2.0",
+        "boneyard-js": "^1.9.0",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
         "concurrently": "^9.0.1",

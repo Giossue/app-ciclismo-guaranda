@@ -453,3 +453,9 @@
 
 - Se reemplazó CicloSans por una pila tipográfica nativa: San Francisco para iOS/macOS, Segoe UI para Windows, Roboto para Android y fallbacks estándar.
 - Se retiraron las declaraciones `@font-face` y los preloads de CicloSans; no se descargan ni requieren fuentes instaladas manualmente.
+
+## 2026-08-27 — Boneyard
+
+- Se instaló `boneyard-js`, se añadió la configuración mobile-first, el script `npm run bones:build` y el registro generado de bones en `resources/js/bones/`.
+- `NavigationSkeleton` reemplazó el indicador global de carga para visitas GET de Inertia; los formularios siguen mostrando su estado de envío local.
+- Se generaron y verificaron los bones de inicio, login y recuperación de contraseña. Registro requiere una BD local con sus tablas para completar su captura.

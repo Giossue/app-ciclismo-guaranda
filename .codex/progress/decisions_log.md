@@ -138,6 +138,12 @@
 - Se elimina la carga de `CicloSans` de la interfaz y sus preloads. La tipografía global usa la pila de sistema: San Francisco en Apple mediante `-apple-system`, Segoe UI en Windows, Roboto en Android y respaldos estándar.
 - No se instala ni se distribuye una fuente externa para la UI; el navegador resuelve la fuente disponible en cada dispositivo.
 
+## 2026-08-27 — Skeletons automáticos con Boneyard
+
+- Boneyard reemplaza el indicador global de carga durante visitas GET de Inertia. Genera archivos estáticos de skeleton desde el DOM, sin medir layouts en tiempo de ejecución.
+- La captura se ejecuta de forma explícita con `npm run bones:build` para no abrir un navegador automático por cada HMR en el stack Laravel + Vite. Los bones generados forman parte del código versionado.
+- Las mutaciones no activan el skeleton global: conservan su feedback de procesamiento local. Las capturas autenticadas usan solo sesión temporal o fixtures, sin secretos en configuración.
+
 
 ## 2026-07-01 — Historial local posterior a n8n
 - Decisión: Laravel puede persistir `conversaciones_ia`/`mensajes_ia` después de que n8n responda, para mostrar historial en la app sin guardar mensajes al momento de escribir.

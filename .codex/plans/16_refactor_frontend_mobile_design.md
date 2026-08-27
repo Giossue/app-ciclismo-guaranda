@@ -340,3 +340,9 @@ Notas:
 - Se reemplazaron radios arbitrarios de navegación y mapa por tokens de superficie, énfasis o mapa; formas circulares/píldora quedan como excepciones semánticas.
 - Se creó `temp/audit_ui_tokens.py` para inventariar radios, sombras, colores no semánticos y tokens antes de futuras refactorizaciones.
 - Validación focalizada aprobada: Prettier, ESLint de componentes modificados, compilación Python y `npm run build`.
+
+## Boneyard para cargas de navegación 2026-08-27
+
+- Se reemplazó el indicador global de spinner por Boneyard: las visitas GET de Inertia muestran un skeleton extraído del DOM de la pantalla actual; los envíos de formularios conservan sus estados de procesamiento locales.
+- Los bones responsivos y el registro generado se guardan en `resources/js/bones/`. `boneyard.config.json` configura breakpoints mobile-first y colores semánticos; `npm run bones:build` los recaptura desde Laravel + Vite locales.
+- Las pantallas protegidas requieren una sesión local temporal o fixtures para ser capturadas. No se guardan credenciales de captura en el repositorio.
