@@ -6,19 +6,16 @@ import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useToastMessage } from '@/hooks/use-toast-message';
 import { login } from '@/routes';
 import { email } from '@/routes/password';
 
 export default function ForgotPassword({ status }: { status?: string }) {
+    useToastMessage(status);
+
     return (
         <>
             <Head title="Recuperar contraseña" />
-
-            {status && (
-                <div className="mb-4 text-center text-sm font-medium text-success">
-                    {status}
-                </div>
-            )}
 
             <div className="flex flex-col gap-6">
                 <Form {...email.form()}>

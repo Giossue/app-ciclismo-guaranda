@@ -1,5 +1,5 @@
 import { Form, Head, Link } from '@inertiajs/react';
-import InputError from '@/components/input-error';
+import { toast } from 'sonner';
 import PasswordInput from '@/components/password-input';
 import { Button } from '@/components/ui/button';
 import {
@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
+import { useToastMessage } from '@/hooks/use-toast-message';
 import { register } from '@/routes';
 import { store } from '@/routes/login';
 import { request } from '@/routes/password';
@@ -28,6 +29,8 @@ type Props = {
 };
 
 export default function Login({ status, canResetPassword }: Props) {
+    useToastMessage(status);
+
     return (
         <>
             <Head title="Iniciar sesión" />
@@ -40,10 +43,20 @@ export default function Login({ status, canResetPassword }: Props) {
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <Form {...store.form()} resetOnSuccess={['password']}>
-                        {({ processing, errors }) => (
+                    <Form
+                        {...store.form()}
+                        resetOnSuccess={['password']}
+                        onError={(errors) =>
+                            toast.error('No se pudo iniciar sesión', {
+                                description:
+                                    firstError(errors) ??
+                                    'Revisa tus datos e inténtalo nuevamente.',
+                            })
+                        }
+                    >
+                        {({ processing }) => (
                             <FieldGroup>
-                                <Field data-invalid={Boolean(errors.email)}>
+                                <Field>
                                     <FieldLabel htmlFor="email">
                                         Correo electrónico
                                     </FieldLabel>
@@ -55,12 +68,10 @@ export default function Login({ status, canResetPassword }: Props) {
                                         autoFocus
                                         autoComplete="email"
                                         placeholder="correo@ejemplo.com"
-                                        aria-invalid={Boolean(errors.email)}
                                     />
-                                    <InputError message={errors.email} />
                                 </Field>
 
-                                <Field data-invalid={Boolean(errors.password)}>
+                                <Field>
                                     <div className="flex items-center justify-between gap-3">
                                         <FieldLabel htmlFor="password">
                                             Contraseña
@@ -79,9 +90,7 @@ export default function Login({ status, canResetPassword }: Props) {
                                         name="password"
                                         required
                                         autoComplete="current-password"
-                                        aria-invalid={Boolean(errors.password)}
                                     />
-                                    <InputError message={errors.password} />
                                 </Field>
 
                                 <Field className="flex-row items-center gap-2">
@@ -113,14 +122,15 @@ export default function Login({ status, canResetPassword }: Props) {
                             </FieldGroup>
                         )}
                     </Form>
-
-                    {status && (
-                        <p role="status" className="mt-5 text-sm text-success">
-                            {status}
-                        </p>
-                    )}
                 </CardContent>
             </Card>
         </>
+    );
+}
+
+function firstError(errors: Record<string, string>): string | undefined {
+    return Object.values(errors).find(
+        (message): message is string =>
+            typeof message === 'string' && message.length > 0,
     );
 }

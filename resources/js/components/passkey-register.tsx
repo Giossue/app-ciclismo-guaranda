@@ -1,9 +1,9 @@
 import { usePasskeyRegister } from '@laravel/passkeys/react';
 import { useState } from 'react';
-import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useToastMessage } from '@/hooks/use-toast-message';
 
 type Props = {
     onSuccess: () => void;
@@ -40,6 +40,7 @@ export default function PasskeyRegistration({ onSuccess }: Props) {
             onSuccess();
         },
     });
+    useToastMessage(error, 'error');
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -94,8 +95,6 @@ export default function PasskeyRegistration({ onSuccess }: Props) {
                     El nombre te ayuda a identificar esta clave después.
                 </p>
             </div>
-
-            {error && <InputError message={error} />}
 
             <div className="flex gap-2">
                 <Button type="submit" disabled={isLoading || !name.trim()}>

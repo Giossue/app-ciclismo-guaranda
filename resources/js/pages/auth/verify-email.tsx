@@ -3,20 +3,20 @@ import { Form, Head } from '@inertiajs/react';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
+import { useToastMessage } from '@/hooks/use-toast-message';
 import { logout } from '@/routes';
 import { send } from '@/routes/verification';
 
 export default function VerifyEmail({ status }: { status?: string }) {
+    useToastMessage(
+        status === 'verification-link-sent'
+            ? 'Se envió un nuevo enlace de verificación a tu correo electrónico.'
+            : undefined,
+    );
+
     return (
         <>
             <Head title="Verificación de correo" />
-
-            {status === 'verification-link-sent' && (
-                <div className="mb-4 text-center text-sm font-medium text-success">
-                    Se envió un nuevo enlace de verificación al correo
-                    electrónico que registraste.
-                </div>
-            )}
 
             <Form {...send.form()} className="flex flex-col gap-6 text-center">
                 {({ processing }) => (
