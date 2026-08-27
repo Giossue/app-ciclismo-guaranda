@@ -1,16 +1,8 @@
 import { Head, Link, usePage } from '@inertiajs/react';
 import type { LucideIcon } from 'lucide-react';
-import {
-    ArrowRight,
-    Bot,
-    Compass,
-    Download,
-    MapPinned,
-    Route,
-    ShieldCheck,
-} from 'lucide-react';
+import { ArrowRight, Bot, Download, MapPinned, Route } from 'lucide-react';
 import AppLogoIcon from '@/components/app-logo-icon';
-import { Badge } from '@/components/ui/badge';
+import AppearanceCycleButton from '@/components/appearance-cycle-button';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -42,9 +34,7 @@ export default function Welcome() {
                             href={home()}
                             className="flex items-center gap-3 text-foreground"
                         >
-                            <span className="grid size-10 place-items-center rounded-xl border border-border bg-card text-primary shadow-[var(--elevation-subtle)]">
-                                <AppLogoIcon className="size-6" />
-                            </span>
+                            <AppLogoIcon className="size-10" />
                             <span className="flex flex-col leading-none">
                                 <span className="text-lg font-black tracking-[-0.04em]">
                                     Guaranda Go
@@ -55,37 +45,27 @@ export default function Welcome() {
                             </span>
                         </Link>
 
-                        <Button asChild variant="outline" size="sm">
-                            <Link href={primaryHref}>
-                                {auth.user ? 'Mi panel' : 'Ingresar'}
-                                <ArrowRight data-icon="inline-end" />
-                            </Link>
-                        </Button>
+                        <div className="flex items-center gap-2">
+                            <AppearanceCycleButton />
+                            <Button asChild variant="outline" size="sm">
+                                <Link href={primaryHref}>
+                                    {auth.user ? 'Mi panel' : 'Ingresar'}
+                                    <ArrowRight data-icon="inline-end" />
+                                </Link>
+                            </Button>
+                        </div>
                     </header>
 
                     <section className="grid gap-4 lg:grid-cols-12 lg:gap-6">
-                        <section className="relative flex min-h-[31rem] overflow-hidden rounded-3xl border border-border bg-[var(--map-background)] px-6 py-7 text-background shadow-[var(--elevation-floating)] sm:min-h-[34rem] sm:px-9 sm:py-10 lg:col-span-7 lg:min-h-[40rem] lg:px-12 lg:py-12">
+                        <section className="relative flex min-h-[31rem] overflow-hidden rounded-3xl border border-border bg-[var(--map-background)] px-6 py-7 text-inverse-foreground shadow-[var(--elevation-floating)] sm:min-h-[34rem] sm:px-9 sm:py-10 lg:col-span-7 lg:min-h-[40rem] lg:px-12 lg:py-12">
                             <MountainScene />
 
-                            <div className="relative z-10 flex w-full flex-col justify-between gap-10">
-                                <div className="flex items-center justify-between gap-4">
-                                    <Badge className="bg-primary text-primary-foreground">
-                                        Cicloturismo local
-                                    </Badge>
-                                    <span className="flex items-center gap-2 text-xs font-bold text-background/70">
-                                        <span className="size-2 rounded-full bg-primary" />
-                                        Rutas preparadas
-                                    </span>
-                                </div>
-
+                            <div className="relative z-10 flex w-full flex-col justify-center gap-10">
                                 <div className="max-w-xl">
-                                    <p className="mb-4 text-sm font-black tracking-[0.14em] text-primary uppercase">
-                                        Muévete a tu ritmo
-                                    </p>
-                                    <h1 className="text-[length:var(--fs-hero)] leading-none font-black tracking-[-0.065em] text-background">
+                                    <h1 className="text-[length:var(--fs-hero)] leading-none font-black tracking-[-0.065em] text-inverse-foreground">
                                         Guaranda se vive mejor sobre dos ruedas.
                                     </h1>
-                                    <p className="mt-6 max-w-lg text-base leading-relaxed font-medium text-background/75 sm:text-lg">
+                                    <p className="mt-6 max-w-lg text-base leading-relaxed font-medium text-inverse-muted-foreground sm:text-lg">
                                         Planifica rutas oficiales, llévalas sin
                                         conexión y descubre la provincia con una
                                         guía hecha para ciclistas.
@@ -110,7 +90,7 @@ export default function Welcome() {
                                             asChild
                                             size="lg"
                                             variant="outline"
-                                            className="w-full border-background/35 bg-transparent text-background hover:border-primary hover:bg-primary hover:text-primary-foreground sm:w-auto"
+                                            className="w-full border-inverse-foreground/35 bg-transparent text-inverse-foreground hover:border-primary hover:bg-primary hover:text-primary-foreground sm:w-auto"
                                         >
                                             <Link href={register()}>
                                                 Crear cuenta
@@ -141,42 +121,14 @@ export default function Welcome() {
                                 title="Pregunta y sigue avanzando."
                                 description="Recibe orientación para organizar mejor tu recorrido."
                             />
-                            <Card className="sm:col-span-2">
-                                <CardHeader>
-                                    <div className="flex items-center justify-between gap-4">
-                                        <span className="grid size-10 place-items-center rounded-lg bg-primary text-primary-foreground">
-                                            <MapPinned className="size-5" />
-                                        </span>
-                                        <ShieldCheck className="size-5 text-muted-foreground" />
-                                    </div>
-                                    <CardTitle>
-                                        Todo empieza con una buena preparación.
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <CardDescription>
-                                        Accede con tu cuenta para consultar
-                                        rutas, guardar favoritas y registrar tus
-                                        recorridos.
-                                    </CardDescription>
-                                </CardContent>
-                            </Card>
+                            <FeatureCard
+                                className="sm:col-span-2"
+                                icon={MapPinned}
+                                eyebrow="Tu cuenta"
+                                title="Todo empieza con una buena preparación."
+                                description="Accede con tu cuenta para consultar rutas, guardar favoritas y registrar tus recorridos."
+                            />
                         </section>
-                    </section>
-
-                    <section className="grid gap-3 border-t border-border pt-5 text-sm text-muted-foreground sm:grid-cols-3 sm:gap-6">
-                        <LandingNote
-                            icon={Compass}
-                            text="Diseñada para ciclistas de Bolívar."
-                        />
-                        <LandingNote
-                            icon={Download}
-                            text="Información útil también fuera de cobertura."
-                        />
-                        <LandingNote
-                            icon={ShieldCheck}
-                            text="Acceso seguro para tu actividad y perfil."
-                        />
                     </section>
                 </div>
             </main>
@@ -215,15 +167,6 @@ function FeatureCard({
     );
 }
 
-function LandingNote({ icon: Icon, text }: { icon: LucideIcon; text: string }) {
-    return (
-        <p className="flex items-center gap-2 font-semibold">
-            <Icon className="size-4 shrink-0 text-brand-accent" />
-            {text}
-        </p>
-    );
-}
-
 function MountainScene() {
     return (
         <svg
@@ -239,11 +182,11 @@ function MountainScene() {
             />
             <path
                 d="M0 394L152 262L284 370L436 194L596 384L704 278L800 366V520H0V394Z"
-                className="fill-background/12"
+                className="fill-inverse-foreground/12"
             />
             <path
                 d="M0 430L114 338L246 414L390 292L524 440L664 342L800 426V520H0V430Z"
-                className="fill-background/10"
+                className="fill-inverse-foreground/10"
             />
         </svg>
     );

@@ -365,3 +365,10 @@ Notas:
 
 - `AuthClassicLayout` conserva la columna compacta en móvil y amplía de forma controlada el contenedor a partir de `lg`.
 - Login mantiene una tarjeta estrecha y centrada en escritorio; registro usa dos columnas solo para pares de campos relacionados, preservando el orden natural de tabulación, las validaciones Fortify y una columna única en móvil.
+- El logo de login y registro permanece centrado sobre la superficie de autenticación también en escritorio; no queda anclado al borde del contenedor expandido.
+
+## Correcciones de landing 2026-08-27
+
+- El encabezado incorpora un botón de icono permanente que alterna, en orden, tema claro, oscuro y del sistema; conserva la preferencia mediante el hook de apariencia existente.
+- El hero usa tokens semánticos de contenido inverso para conservar contraste sobre su superficie oscura en los tres modos.
+- Las tarjetas siguen una estructura homogénea de icono, etiqueta, título y descripción; se retiraron el icono de escudo redundante, las notas de pie y etiquetas decorativas del hero.

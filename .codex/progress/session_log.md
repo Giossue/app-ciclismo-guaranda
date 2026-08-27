@@ -501,3 +501,10 @@
 
 - Se hizo responsivo `AuthClassicLayout`: móvil permanece compacto y login/registro aprovechan el ancho disponible desde `lg`.
 - Registro usa una cuadrícula de dos columnas únicamente en escritorio para pares de datos relacionados; correo, checklist y acción conservan ancho completo para legibilidad y validación de Fortify.
+- Se corrigió la alineación del logo de autenticación en escritorio: queda centrado sobre login/registro aunque el contenedor se amplíe para el registro.
+
+## 2026-08-27 — Correcciones de jerarquía en landing
+
+- Se añadió al encabezado de la landing un botón de icono que cicla claro, oscuro y sistema con la preferencia persistente existente.
+- Se corrigió el contraste del hero oscuro mediante tokens semánticos inversos, se eliminó el contenedor visual del logo, las etiquetas decorativas y las notas inferiores.
+- La tarjeta de preparación se compuso con la misma estructura de icono, etiqueta, título y descripción del resto, sin icono de escudo adicional.

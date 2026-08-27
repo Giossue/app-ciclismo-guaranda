@@ -9,7 +9,7 @@ export default function AuthClassicLayout({ children }: AuthLayoutProps) {
             <div className="flex w-full max-w-sm flex-col gap-6 md:max-w-md lg:max-w-3xl lg:gap-8">
                 <Link
                     href={home()}
-                    className="flex items-center gap-2 self-center font-black text-foreground lg:self-start"
+                    className="flex items-center gap-2 self-center font-black text-foreground"
                 >
                     <span className="flex size-9 items-center justify-center overflow-hidden rounded-[var(--radius-compact)] border border-primary bg-primary text-primary-foreground">
                         <AppLogoIcon className="size-full" />

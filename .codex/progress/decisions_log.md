@@ -168,6 +168,11 @@
 
 - El shell de login/registro mantiene el diseño de una columna en móvil. Desde escritorio, login conserva una tarjeta de lectura cómoda y registro distribuye pares de campos en dos columnas para reducir su altura sin alterar el contrato Fortify ni el orden de teclado.
 
+## 2026-08-27 — Tema y contraste en landing
+
+- La landing dispone de un único control de tema por icono en su encabezado: alterna claro, oscuro y sistema sin depender de un texto visible. Se apoya en `useAppearance`, que persiste y aplica la preferencia existente.
+- Las superficies oscuras no reutilizan `background` como color de texto: se usan tokens inversos globales para que el contraste no dependa del modo activo.
+
 ## 2026-08-27 — Autodespliegue directo en Dokploy
 
 - Dokploy realiza el despliegue por su detección nativa de `push`; el flujo habitual no depende de GitHub Actions como condición previa.

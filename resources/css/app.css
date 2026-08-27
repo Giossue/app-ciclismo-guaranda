@@ -66,6 +66,8 @@
     --color-ring: var(--ring);
     --color-primary-hover: var(--primary-hover);
     --color-brand-accent: var(--brand-accent);
+    --color-inverse-foreground: var(--inverse-foreground);
+    --color-inverse-muted-foreground: var(--inverse-muted-foreground);
     --color-chart-1: var(--chart-1);
     --color-chart-2: var(--chart-2);
     --color-chart-3: var(--chart-3);
@@ -171,6 +173,8 @@
     --shadow: rgb(0 0 0 / 0.05);
     --primary-glow: rgb(178 240 0 / 0.1);
     --brand-accent: #2b540e;
+    --inverse-foreground: #f8f9fa;
+    --inverse-muted-foreground: #d1d5db;
     --overlay: rgb(0 0 0 / 0.48);
     --overlay-shadow: rgb(0 0 0 / 0.35);
     --map-background: #101310;
@@ -208,6 +212,8 @@
     --shadow: rgb(0 0 0 / 0.4);
     --primary-glow: rgb(178 240 0 / 0.2);
     --brand-accent: #b2f000;
+    --inverse-foreground: #f8f9fa;
+    --inverse-muted-foreground: #d1d5db;
     --overlay: rgb(0 0 0 / 0.48);
     --overlay-shadow: rgb(0 0 0 / 0.35);
     --map-background: #101310;
