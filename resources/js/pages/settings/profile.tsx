@@ -134,7 +134,7 @@ export default function Profile({
                                 >
                                     <SelectTrigger
                                         id="gender_id"
-                                        className="h-12 w-full rounded-2xl border-border bg-secondary text-foreground focus:border-primary focus:ring-primary/10"
+                                        className="h-12 w-full rounded-2xl border-border bg-secondary text-foreground"
                                         aria-invalid={Boolean(errors.gender_id)}
                                     >
                                         <SelectValue placeholder="Selecciona tu género" />
