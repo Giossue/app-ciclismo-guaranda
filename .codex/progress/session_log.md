@@ -448,3 +448,8 @@
 - Se centralizaron radios, alturas y elevaciones en `resources/css/app.css`; botones, cards, inputs, badges, alertas, diálogos, selects, toggles, skeletons, toasts, navegación y mapa consumen esos tokens.
 - Se verificaron las APIs/componentes shadcn instalados con su CLI antes de modificar sus primitives.
 - Validaciones aprobadas: Prettier y ESLint focalizados, `python3 -m py_compile` y `npm run build`.
+
+## 2026-08-27 — Tipografía del sistema
+
+- Se reemplazó CicloSans por una pila tipográfica nativa: San Francisco para iOS/macOS, Segoe UI para Windows, Roboto para Android y fallbacks estándar.
+- Se retiraron las declaraciones `@font-face` y los preloads de CicloSans; no se descargan ni requieren fuentes instaladas manualmente.

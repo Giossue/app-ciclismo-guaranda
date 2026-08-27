@@ -6,28 +6,12 @@
 
 @custom-variant dark (&:is(.dark *));
 
-@font-face {
-    font-family: 'CicloSans';
-    src: url('/assets/fonts/CicloSans-Regular.ttf') format('truetype');
-    font-weight: 300 600;
-    font-style: normal;
-    font-display: block;
-}
-
-@font-face {
-    font-family: 'CicloSans';
-    src: url('/assets/fonts/CicloSans-Bold.ttf') format('truetype');
-    font-weight: 700 900;
-    font-style: normal;
-    font-display: block;
-}
-
 @theme {
     --font-sans:
-        'CicloSans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+        -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial,
         sans-serif;
     --font-display:
-        'CicloSans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+        -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial,
         sans-serif;
 
     --text-xs: var(--fs-caption);

@@ -133,6 +133,11 @@
 - `rounded-full`/`rounded-none` son excepciones semánticas; no se añaden radios numéricos arbitrarios en JSX/CSS cuando un token cubra el caso.
 - El análisis recurrente se realiza con `temp/audit_ui_tokens.py`; el script no modifica código ni reemplaza una revisión visual.
 
+## 2026-08-27 — Tipografía nativa por plataforma
+
+- Se elimina la carga de `CicloSans` de la interfaz y sus preloads. La tipografía global usa la pila de sistema: San Francisco en Apple mediante `-apple-system`, Segoe UI en Windows, Roboto en Android y respaldos estándar.
+- No se instala ni se distribuye una fuente externa para la UI; el navegador resuelve la fuente disponible en cada dispositivo.
+
 
 ## 2026-07-01 — Historial local posterior a n8n
 - Decisión: Laravel puede persistir `conversaciones_ia`/`mensajes_ia` después de que n8n responda, para mostrar historial en la app sin guardar mensajes al momento de escribir.

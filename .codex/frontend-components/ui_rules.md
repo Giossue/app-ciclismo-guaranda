@@ -39,6 +39,12 @@ Los estilos reutilizables se definen en `resources/css/app.css`; no crear otra f
 
 Antes de una refactorización visual amplia, ejecutar `python3 temp/audit_ui_tokens.py --details` para localizar excepciones. El script solo analiza; las ediciones siguen haciéndose deliberadamente en código/CSS.
 
+## Tipografía del sistema
+
+- La interfaz no descarga fuentes web ni depende de que una fuente esté instalada manualmente.
+- La pila global, definida en `resources/css/app.css`, prioriza `-apple-system` (San Francisco en iOS y macOS), seguida de `Segoe UI` (Windows), `Roboto` (Android) y `Helvetica`/`Arial`/`sans-serif` como respaldo.
+- `font-sans` y `font-display` usan la misma pila nativa para preservar rendimiento, legibilidad y consistencia por plataforma.
+
 ## UX crítica para Guaranda Go
 
 - Estados offline visibles.
