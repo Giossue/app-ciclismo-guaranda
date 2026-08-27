@@ -1,6 +1,13 @@
 import { Head } from '@inertiajs/react';
-import { Activity } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import {
+    MapPin,
+    MessageSquareText,
+    Route,
+    AlertTriangle,
+    UserCheck,
+    Users,
+} from 'lucide-react';
+import Heading from '@/components/heading';
 import {
     Card,
     CardContent,
@@ -19,6 +26,15 @@ type Props = {
     metrics: Record<string, Metric>;
 };
 
+const metricIcons = {
+    users: Users,
+    activeUsers: UserCheck,
+    routes: Route,
+    pois: MapPin,
+    incidents: AlertTriangle,
+    ratings: MessageSquareText,
+} as const;
+
 export default function AdminDashboard({ metrics }: Props) {
     const metricItems = Object.entries(metrics);
 
@@ -26,32 +42,44 @@ export default function AdminDashboard({ metrics }: Props) {
         <>
             <Head title="Resumen" />
 
-            <div className="flex flex-col gap-5">
-                <section className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
+            <div className="flex flex-col gap-6">
+                <Heading
+                    title="Resumen operativo"
+                    description="Vista general de la actividad de Guaranda Go."
+                />
+
+                <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                     {metricItems.map(([key, metric]) => (
                         <Card key={key} className="min-w-0">
-                            <CardHeader className="gap-2">
-                                <Badge variant="outline" className="w-fit">
-                                    <Activity data-icon="inline-start" />
-                                    Activo
-                                </Badge>
-                                <CardDescription className="break-words">
+                            <CardHeader className="gap-3">
+                                <MetricIcon metricKey={key} />
+                                <CardTitle className="text-base tracking-[-0.02em] break-words">
                                     {metric.label}
-                                </CardDescription>
-                                <CardTitle className="text-3xl">
-                                    {metric.value.toLocaleString()}
                                 </CardTitle>
                             </CardHeader>
-                            <CardContent>
-                                <p className="text-sm break-words text-muted-foreground">
-                                    {metric.description}
+                            <CardContent className="flex flex-col gap-1">
+                                <p className="text-3xl leading-none font-medium tracking-tight tabular-nums">
+                                    {metric.value.toLocaleString()}
                                 </p>
+                                <CardDescription className="break-words">
+                                    {metric.description}
+                                </CardDescription>
                             </CardContent>
                         </Card>
                     ))}
                 </section>
             </div>
         </>
+    );
+}
+
+function MetricIcon({ metricKey }: { metricKey: string }) {
+    const Icon = metricIcons[metricKey as keyof typeof metricIcons] ?? Users;
+
+    return (
+        <div className="flex size-8 items-center justify-center rounded-[var(--radius-control)] border bg-muted text-muted-foreground">
+            <Icon />
+        </div>
     );
 }
 

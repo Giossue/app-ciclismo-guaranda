@@ -1,4 +1,6 @@
+import { Breadcrumbs } from '@/components/breadcrumbs';
 import { NotificationBellLink } from '@/components/notification-bell-link';
+import { Separator } from '@/components/ui/separator';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import type { BreadcrumbItem as BreadcrumbItemType } from '@/types';
 
@@ -7,17 +9,23 @@ export function AppSidebarHeader({
 }: {
     breadcrumbs?: BreadcrumbItemType[];
 }) {
-    const title = breadcrumbs.at(-1)?.title ?? 'Guaranda Go';
-
     return (
-        <header className="flex h-14 shrink-0 items-center gap-3 border-b border-input bg-background px-4 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 md:h-16 md:px-5">
-            <SidebarTrigger className="-ml-1 hidden rounded-full border border-input bg-card text-foreground hover:border-primary hover:text-link md:inline-flex" />
-            <div className="min-w-0 flex-1">
-                <h1 className="truncate leading-tight font-black tracking-[-0.03em] text-[var(--fs-lg)] text-foreground">
-                    {title}
-                </h1>
+        <header className="flex h-12 shrink-0 items-center gap-2 border-b bg-background/80 px-4 backdrop-blur transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 md:px-6">
+            <div className="flex min-w-0 flex-1 items-center gap-2">
+                <SidebarTrigger className="-ml-1 hidden md:inline-flex" />
+                <Separator
+                    orientation="vertical"
+                    className="hidden h-4 md:block"
+                />
+                <div className="min-w-0 text-sm text-muted-foreground">
+                    {breadcrumbs.length > 0 ? (
+                        <Breadcrumbs breadcrumbs={breadcrumbs} />
+                    ) : (
+                        'Guaranda Go'
+                    )}
+                </div>
             </div>
-            <NotificationBellLink />
+            <NotificationBellLink className="mr-12" />
         </header>
     );
 }

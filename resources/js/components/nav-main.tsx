@@ -1,6 +1,7 @@
 import { Link } from '@inertiajs/react';
 import {
     SidebarGroup,
+    SidebarGroupContent,
     SidebarGroupLabel,
     SidebarMenu,
     SidebarMenuButton,
@@ -10,30 +11,32 @@ import { useCurrentUrl } from '@/hooks/use-current-url';
 import type { NavItem } from '@/types';
 
 export function NavMain({ items = [] }: { items: NavItem[] }) {
-    const { isCurrentUrl } = useCurrentUrl();
+    const { isCurrentOrParentUrl } = useCurrentUrl();
 
     return (
-        <SidebarGroup className="px-3 py-2">
-            <SidebarGroupLabel className="px-3 font-black tracking-[0.08em] text-[var(--fs-xs)] text-sidebar-foreground/60 uppercase">
-                Guaranda Go
+        <SidebarGroup className="px-2 py-2">
+            <SidebarGroupLabel className="px-2 text-xs text-sidebar-foreground/60">
+                Navegación
             </SidebarGroupLabel>
-            <SidebarMenu className="gap-2">
-                {items.map((item) => (
-                    <SidebarMenuItem key={item.title}>
-                        <SidebarMenuButton
-                            asChild
-                            isActive={isCurrentUrl(item.href)}
-                            tooltip={{ children: item.title }}
-                            className="min-h-12 rounded-[var(--radius-surface)] border border-sidebar-border bg-input px-3 font-black shadow-[0_2px_8px_var(--shadow)] transition-[transform,border-color,background,color] hover:-translate-y-0.5 hover:border-primary data-[active=true]:border-primary data-[active=true]:bg-primary data-[active=true]:text-primary-foreground"
-                        >
-                            <Link href={item.href} prefetch>
-                                {item.icon && <item.icon />}
-                                <span>{item.title}</span>
-                            </Link>
-                        </SidebarMenuButton>
-                    </SidebarMenuItem>
-                ))}
-            </SidebarMenu>
+            <SidebarGroupContent>
+                <SidebarMenu className="gap-1">
+                    {items.map((item) => (
+                        <SidebarMenuItem key={item.title}>
+                            <SidebarMenuButton
+                                asChild
+                                isActive={isCurrentOrParentUrl(item.href)}
+                                tooltip={{ children: item.title }}
+                                className="min-h-10 rounded-[var(--radius-control)] font-medium"
+                            >
+                                <Link href={item.href} prefetch>
+                                    {item.icon && <item.icon />}
+                                    <span>{item.title}</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                    ))}
+                </SidebarMenu>
+            </SidebarGroupContent>
         </SidebarGroup>
     );
 }
