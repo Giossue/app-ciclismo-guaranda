@@ -37,3 +37,11 @@ Permitir que ciclistas registrados consulten rutas oficiales, descarguen mapas/r
 - Recorrido válido al completar aproximadamente 90% de la ruta.
 - Incidencias con revisión administrativa antes de hacerse públicas.
 - Chatbot externo por webhook n8n.
+
+## Agente cicloturístico n8n
+
+- El asistente vive en n8n y consulta datos reales mediante tools HTTP protegidas de Laravel.
+- No usa embeddings ni vector store para rutas/POIs/reportes.
+- Laravel envía al webhook contexto mínimo: usuario, ruta seleccionada, mensaje y ubicación transitoria si el ciclista la activó.
+- Sin ubicación, el asistente funciona en modo limitado: puede recomendar rutas generales, clima referencial de Guaranda, detalle de ruta, POIs y alertas; no debe afirmar cercanía.
+- Con ubicación, el asistente puede recomendar por cercanía, calcular progreso/distancias y usar clima de la posición del usuario.

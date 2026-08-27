@@ -190,7 +190,7 @@ function FeaturedRouteCard({ route }: { route: CyclingRouteMapItem }) {
         <Link
             href={`/routes/${route.slug}`}
             prefetch
-            className="group flex flex-col overflow-hidden rounded-3xl border border-input bg-card shadow-[0_2px_8px_var(--shadow-color)] transition-all duration-200 hover:-translate-y-0.5 hover:border-primary hover:shadow-[0_10px_24px_var(--shadow-color)]"
+            className="group flex flex-col overflow-hidden rounded-3xl border border-input bg-card shadow-[0_2px_8px_var(--shadow)] transition-all duration-200 hover:-translate-y-0.5 hover:border-primary hover:shadow-[0_10px_24px_var(--shadow)]"
         >
             <div className="relative h-48 w-full sm:h-60">
                 <ImageWithFallback
@@ -208,7 +208,7 @@ function FeaturedRouteCard({ route }: { route: CyclingRouteMapItem }) {
                     }
                 />
                 <div className="absolute inset-x-3 top-3 flex items-start justify-between gap-2">
-                    <span className="rounded-full bg-primary px-2.5 py-1 text-[var(--fs-caption)] font-black tracking-wider text-primary-foreground uppercase shadow-sm">
+                    <span className="rounded-full bg-primary px-2.5 py-1 font-black tracking-wider text-[var(--fs-caption)] text-primary-foreground uppercase shadow-sm">
                         Más reciente
                     </span>
                     <RouteBadges route={route} />

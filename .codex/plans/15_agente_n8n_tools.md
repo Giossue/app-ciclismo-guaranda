@@ -71,11 +71,12 @@ Las tools deben devolver datos listos para que n8n construya cards:
 
 ### 4. Chat con ubicación transitoria
 
-En una segunda iteración de esta fase:
+Implementado:
 
 - Agregar opción en UI: compartir ubicación con asistente.
 - Enviar `latitude`, `longitude`, `accuracy_m`, `recorded_at` al webhook n8n.
 - No guardar ubicación en tablas de chat.
+- Mantener modo limitado sin ubicación; la cercanía/progreso requieren ubicación.
 
 ### 5. Respuesta enriquecida del agente
 

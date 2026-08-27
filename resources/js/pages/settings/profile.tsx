@@ -44,22 +44,22 @@ export default function Profile({
 
             <div className="ueb-page flex flex-col gap-5 md:w-full">
                 {/* Header with back button */}
-                <div className="flex items-center gap-3 border-b border-[var(--input-border)]/40 py-3">
+                <div className="flex items-center gap-3 border-b border-border/40 py-3">
                     <Button
                         variant="ghost"
                         size="icon"
                         asChild
-                        className="size-11 rounded-2xl border border-[var(--input-border)] bg-[var(--input-bg)] text-[var(--text-secondary)] transition-all duration-200 hover:bg-[var(--input-border)] hover:text-[var(--text-color)]"
+                        className="size-11 rounded-2xl border border-border bg-secondary text-muted-foreground transition-all duration-200 hover:bg-border hover:text-foreground"
                     >
                         <Link href="/menu" replace>
                             <ArrowLeft className="size-5" />
                         </Link>
                     </Button>
                     <div className="flex flex-col">
-                        <h1 className="text-base leading-none font-black text-[var(--text-color)]">
+                        <h1 className="text-base leading-none font-black text-foreground">
                             Perfil
                         </h1>
-                        <p className="mt-1 text-[var(--fs-caption)] text-[var(--text-secondary)]">
+                        <p className="mt-1 text-[var(--fs-caption)] text-muted-foreground">
                             Actualiza tus datos personales y correo electrónico
                         </p>
                     </div>
@@ -78,7 +78,7 @@ export default function Profile({
                             <div className="grid gap-1.5">
                                 <Label
                                     htmlFor="name"
-                                    className="pl-0.5 text-xs font-bold text-[var(--text-secondary)]"
+                                    className="pl-0.5 text-xs font-bold text-muted-foreground"
                                 >
                                     Nombre
                                 </Label>
@@ -90,7 +90,7 @@ export default function Profile({
                                     autoComplete="given-name"
                                     placeholder="Nombre"
                                     aria-invalid={Boolean(errors.name)}
-                                    className="h-12 rounded-2xl border-[var(--input-border)] bg-[var(--input-bg)] px-4 text-[var(--text-color)] transition-all duration-200 placeholder:text-[var(--text-muted)] focus-visible:border-[#b2f000] focus-visible:ring-4 focus-visible:ring-[#b2f000]/10"
+                                    className="h-12 rounded-2xl border-border bg-secondary px-4 text-foreground transition-all duration-200 placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-4 focus-visible:ring-primary/10"
                                 />
                                 <InputError message={errors.name} />
                             </div>
@@ -98,7 +98,7 @@ export default function Profile({
                             <div className="grid gap-1.5">
                                 <Label
                                     htmlFor="last_name"
-                                    className="pl-0.5 text-xs font-bold text-[var(--text-secondary)]"
+                                    className="pl-0.5 text-xs font-bold text-muted-foreground"
                                 >
                                     Apellido
                                 </Label>
@@ -110,7 +110,7 @@ export default function Profile({
                                     autoComplete="family-name"
                                     placeholder="Apellido"
                                     aria-invalid={Boolean(errors.last_name)}
-                                    className="h-12 rounded-2xl border-[var(--input-border)] bg-[var(--input-bg)] px-4 text-[var(--text-color)] transition-all duration-200 placeholder:text-[var(--text-muted)] focus-visible:border-[#b2f000] focus-visible:ring-4 focus-visible:ring-[#b2f000]/10"
+                                    className="h-12 rounded-2xl border-border bg-secondary px-4 text-foreground transition-all duration-200 placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-4 focus-visible:ring-primary/10"
                                 />
                                 <InputError message={errors.last_name} />
                             </div>
@@ -118,7 +118,7 @@ export default function Profile({
                             <div className="grid gap-1.5">
                                 <Label
                                     htmlFor="gender_id"
-                                    className="pl-0.5 text-xs font-bold text-[var(--text-secondary)]"
+                                    className="pl-0.5 text-xs font-bold text-muted-foreground"
                                 >
                                     Género
                                 </Label>
@@ -133,12 +133,12 @@ export default function Profile({
                                 >
                                     <SelectTrigger
                                         id="gender_id"
-                                        className="h-12 w-full rounded-2xl border-[var(--input-border)] bg-[var(--input-bg)] text-[var(--text-color)] focus:border-[#b2f000] focus:ring-[#b2f000]/10"
+                                        className="h-12 w-full rounded-2xl border-border bg-secondary text-foreground focus:border-primary focus:ring-primary/10"
                                         aria-invalid={Boolean(errors.gender_id)}
                                     >
                                         <SelectValue placeholder="Selecciona tu género" />
                                     </SelectTrigger>
-                                    <SelectContent className="border-[var(--input-border)] bg-[var(--bg-card-color)] text-[var(--text-color)]">
+                                    <SelectContent className="border-border bg-card text-foreground">
                                         <SelectGroup>
                                             {genders.map((gender) => (
                                                 <SelectItem
@@ -157,7 +157,7 @@ export default function Profile({
                             <div className="grid gap-1.5">
                                 <Label
                                     htmlFor="birth_date"
-                                    className="pl-0.5 text-xs font-bold text-[var(--text-secondary)]"
+                                    className="pl-0.5 text-xs font-bold text-muted-foreground"
                                 >
                                     Fecha de nacimiento
                                 </Label>
@@ -169,7 +169,7 @@ export default function Profile({
                                     required
                                     autoComplete="bday"
                                     aria-invalid={Boolean(errors.birth_date)}
-                                    className="h-12 rounded-2xl border-[var(--input-border)] bg-[var(--input-bg)] px-4 text-[var(--text-color)] transition-all duration-200 placeholder:text-[var(--text-muted)] focus-visible:border-[#b2f000] focus-visible:ring-4 focus-visible:ring-[#b2f000]/10"
+                                    className="h-12 rounded-2xl border-border bg-secondary px-4 text-foreground transition-all duration-200 placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-4 focus-visible:ring-primary/10"
                                 />
                                 <InputError message={errors.birth_date} />
                             </div>
@@ -177,7 +177,7 @@ export default function Profile({
                             <div className="grid gap-1.5">
                                 <Label
                                     htmlFor="email"
-                                    className="pl-0.5 text-xs font-bold text-[var(--text-secondary)]"
+                                    className="pl-0.5 text-xs font-bold text-muted-foreground"
                                 >
                                     Correo electrónico
                                 </Label>
@@ -190,7 +190,7 @@ export default function Profile({
                                     autoComplete="username"
                                     placeholder="Correo electrónico"
                                     aria-invalid={Boolean(errors.email)}
-                                    className="h-12 rounded-2xl border-[var(--input-border)] bg-[var(--input-bg)] px-4 text-[var(--text-color)] transition-all duration-200 placeholder:text-[var(--text-muted)] focus-visible:border-[#b2f000] focus-visible:ring-4 focus-visible:ring-[#b2f000]/10"
+                                    className="h-12 rounded-2xl border-border bg-secondary px-4 text-foreground transition-all duration-200 placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-4 focus-visible:ring-primary/10"
                                 />
                                 <InputError message={errors.email} />
                             </div>
@@ -213,7 +213,7 @@ export default function Profile({
 
                                         {status ===
                                             'verification-link-sent' && (
-                                            <div className="mt-2 font-bold text-[#b2f000]">
+                                            <div className="mt-2 font-bold text-primary">
                                                 Se envió un nuevo enlace de
                                                 verificación a tu correo.
                                             </div>
@@ -224,7 +224,7 @@ export default function Profile({
                             <Button
                                 disabled={processing}
                                 data-test="update-profile-button"
-                                className="mt-2 flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[#b2f000] text-xs font-black tracking-wider text-[#050605] uppercase shadow-md transition-all duration-300 hover:bg-[#9ad000] hover:shadow-[0_8px_20px_rgba(178,240,0,0.15)] active:scale-[0.99]"
+                                className="mt-2 flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-primary text-xs font-black tracking-wider text-primary-foreground uppercase shadow-md transition-all duration-300 hover:bg-primary/90 hover:shadow-[0_8px_20px_var(--primary-glow)] active:scale-[0.99]"
                             >
                                 Guardar cambios
                             </Button>
@@ -233,7 +233,7 @@ export default function Profile({
                 </Form>
 
                 {/* Account Deactivation section */}
-                <div className="border-t border-[var(--input-border)]/40 pt-4">
+                <div className="border-t border-border/40 pt-4">
                     <DeleteUser />
                 </div>
             </div>

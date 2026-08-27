@@ -1,19 +1,23 @@
 import { Form, Head, Link } from '@inertiajs/react';
-import {
-    ArrowRight,
-    Calendar,
-    CheckCircle2,
-    Lock,
-    Mail,
-    User,
-    XCircle,
-} from 'lucide-react';
+import { CheckCircle2, XCircle } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
 import { Button } from '@/components/ui/button';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
+import {
+    Field,
+    FieldDescription,
+    FieldGroup,
+    FieldLabel,
+} from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
     Select,
     SelectContent,
@@ -23,7 +27,6 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
-import { cn } from '@/lib/utils';
 import { login } from '@/routes';
 import { store } from '@/routes/register';
 import type { CatalogOption } from '@/types';
@@ -36,7 +39,6 @@ type Props = {
 export default function Register({ genders, passwordRules }: Props) {
     const [password, setPassword] = useState('');
     const [passwordConfirmation, setPasswordConfirmation] = useState('');
-    const [birthDate, setBirthDate] = useState('');
     const passwordChecks = useMemo(
         () => buildPasswordChecks(password, passwordConfirmation),
         [password, passwordConfirmation],
@@ -45,281 +47,195 @@ export default function Register({ genders, passwordRules }: Props) {
 
     return (
         <>
-            <Head title="Registro" />
-            <Form
-                {...store.form()}
-                resetOnSuccess={['password', 'password_confirmation']}
-                disableWhileProcessing
-                className="flex flex-col gap-5"
-            >
-                {({ processing, errors }) => (
-                    <>
-                        <div className="grid gap-4">
-                            {/* Nombre & Apellido Row */}
-                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                {/* Nombre */}
-                                <div className="grid gap-1">
-                                    <Label htmlFor="name" className="sr-only">
+            <Head title="Crear cuenta" />
+
+            <Card>
+                <CardHeader>
+                    <CardTitle>Crea tu cuenta</CardTitle>
+                    <CardDescription>
+                        Completa tus datos para comenzar a recorrer Guaranda.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Form
+                        {...store.form()}
+                        resetOnSuccess={['password', 'password_confirmation']}
+                        disableWhileProcessing
+                    >
+                        {({ processing, errors }) => (
+                            <FieldGroup>
+                                <Field data-invalid={Boolean(errors.name)}>
+                                    <FieldLabel htmlFor="name">
                                         Nombre
-                                    </Label>
-                                    <div className="relative flex items-center">
-                                        <User className="pointer-events-none absolute left-4 z-10 size-5 text-muted-foreground" />
-                                        <Input
-                                            id="name"
-                                            type="text"
-                                            required
-                                            autoFocus
-                                            tabIndex={1}
-                                            autoComplete="given-name"
-                                            name="name"
-                                            placeholder="Nombre"
-                                            aria-invalid={Boolean(errors.name)}
-                                            className="h-13 pl-12"
-                                        />
-                                    </div>
+                                    </FieldLabel>
+                                    <Input
+                                        id="name"
+                                        type="text"
+                                        name="name"
+                                        required
+                                        autoFocus
+                                        autoComplete="given-name"
+                                        aria-invalid={Boolean(errors.name)}
+                                    />
                                     <InputError message={errors.name} />
-                                </div>
+                                </Field>
 
-                                {/* Apellido */}
-                                <div className="grid gap-1">
-                                    <Label
-                                        htmlFor="last_name"
-                                        className="sr-only"
-                                    >
+                                <Field data-invalid={Boolean(errors.last_name)}>
+                                    <FieldLabel htmlFor="last_name">
                                         Apellido
-                                    </Label>
-                                    <div className="relative flex items-center">
-                                        <User className="pointer-events-none absolute left-4 z-10 size-5 text-muted-foreground" />
-                                        <Input
-                                            id="last_name"
-                                            type="text"
-                                            required
-                                            tabIndex={2}
-                                            autoComplete="family-name"
-                                            name="last_name"
-                                            placeholder="Apellido"
-                                            aria-invalid={Boolean(
-                                                errors.last_name,
-                                            )}
-                                            className="h-13 pl-12"
-                                        />
-                                    </div>
+                                    </FieldLabel>
+                                    <Input
+                                        id="last_name"
+                                        type="text"
+                                        name="last_name"
+                                        required
+                                        autoComplete="family-name"
+                                        aria-invalid={Boolean(errors.last_name)}
+                                    />
                                     <InputError message={errors.last_name} />
-                                </div>
-                            </div>
+                                </Field>
 
-                            {/* Género & Fecha Nacimiento Row */}
-                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                {/* Género */}
-                                <div className="grid gap-1">
-                                    <Label
-                                        htmlFor="gender_id"
-                                        className="sr-only"
-                                    >
+                                <Field data-invalid={Boolean(errors.gender_id)}>
+                                    <FieldLabel htmlFor="gender_id">
                                         Género
-                                    </Label>
-                                    <div className="relative flex items-center">
-                                        <User className="pointer-events-none absolute left-4 z-10 size-5 text-muted-foreground" />
-                                        <Select name="gender_id" required>
-                                            <SelectTrigger
-                                                id="gender_id"
-                                                className="h-13 w-full pl-12 text-left font-normal"
-                                                tabIndex={3}
-                                                aria-invalid={Boolean(
-                                                    errors.gender_id,
-                                                )}
-                                            >
-                                                <SelectValue placeholder="Género" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectGroup>
-                                                    {genders.map((gender) => (
-                                                        <SelectItem
-                                                            key={gender.id}
-                                                            value={String(
-                                                                gender.id,
-                                                            )}
-                                                        >
-                                                            {gender.name}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectGroup>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                    <InputError message={errors.gender_id} />
-                                </div>
-
-                                {/* Fecha de nacimiento */}
-                                <div className="grid gap-1">
-                                    <Label
-                                        htmlFor="birth_date"
-                                        className="sr-only"
-                                    >
-                                        Fecha de nacimiento
-                                    </Label>
-                                    <div className="relative flex items-center">
-                                        <Calendar className="pointer-events-none absolute left-4 z-10 size-5 text-muted-foreground" />
-                                        <Input
-                                            id="birth_date"
-                                            type="date"
-                                            required
-                                            tabIndex={4}
-                                            autoComplete="bday"
-                                            name="birth_date"
-                                            placeholder="Fecha de nacimiento"
-                                            aria-label="Fecha de nacimiento"
-                                            value={birthDate}
-                                            onChange={(event) =>
-                                                setBirthDate(
-                                                    event.currentTarget.value,
-                                                )
-                                            }
+                                    </FieldLabel>
+                                    <Select name="gender_id" required>
+                                        <SelectTrigger
+                                            id="gender_id"
                                             aria-invalid={Boolean(
-                                                errors.birth_date,
+                                                errors.gender_id,
                                             )}
-                                            className={cn(
-                                                'h-13 bg-[var(--bg-card-color)] pl-12 [color-scheme:light] dark:[color-scheme:dark]',
-                                                !birthDate &&
-                                                    '[&::-webkit-datetime-edit]:text-transparent',
-                                            )}
-                                        />
-                                        {!birthDate && (
-                                            <span className="pointer-events-none absolute left-12 text-sm text-muted-foreground">
-                                                Fecha de nacimiento
-                                            </span>
-                                        )}
-                                    </div>
-                                    <InputError message={errors.birth_date} />
-                                </div>
-                            </div>
+                                        >
+                                            <SelectValue placeholder="Selecciona una opción" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectGroup>
+                                                {genders.map((gender) => (
+                                                    <SelectItem
+                                                        key={gender.id}
+                                                        value={String(
+                                                            gender.id,
+                                                        )}
+                                                    >
+                                                        {gender.name}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectGroup>
+                                        </SelectContent>
+                                    </Select>
+                                    <InputError message={errors.gender_id} />
+                                </Field>
 
-                            {/* Correo electrónico */}
-                            <div className="grid gap-1">
-                                <Label htmlFor="email" className="sr-only">
-                                    Correo electrónico
-                                </Label>
-                                <div className="relative flex items-center">
-                                    <Mail className="pointer-events-none absolute left-4 z-10 size-5 text-muted-foreground" />
+                                <Field
+                                    data-invalid={Boolean(errors.birth_date)}
+                                >
+                                    <FieldLabel htmlFor="birth_date">
+                                        Fecha de nacimiento
+                                    </FieldLabel>
+                                    <Input
+                                        id="birth_date"
+                                        type="date"
+                                        name="birth_date"
+                                        required
+                                        autoComplete="bday"
+                                        aria-invalid={Boolean(
+                                            errors.birth_date,
+                                        )}
+                                    />
+                                    <InputError message={errors.birth_date} />
+                                </Field>
+
+                                <Field data-invalid={Boolean(errors.email)}>
+                                    <FieldLabel htmlFor="email">
+                                        Correo electrónico
+                                    </FieldLabel>
                                     <Input
                                         id="email"
                                         type="email"
-                                        required
-                                        tabIndex={5}
-                                        autoComplete="email"
                                         name="email"
-                                        placeholder="Correo electrónico"
+                                        required
+                                        autoComplete="email"
+                                        placeholder="correo@ejemplo.com"
                                         aria-invalid={Boolean(errors.email)}
-                                        className="h-13 pl-12"
                                     />
-                                </div>
-                                <InputError message={errors.email} />
-                            </div>
+                                    <InputError message={errors.email} />
+                                </Field>
 
-                            {/* Contraseña & Confirmación Row */}
-                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                {/* Contraseña */}
-                                <div className="grid gap-1">
-                                    <Label
-                                        htmlFor="password"
-                                        className="sr-only"
-                                    >
+                                <Field data-invalid={Boolean(errors.password)}>
+                                    <FieldLabel htmlFor="password">
                                         Contraseña
-                                    </Label>
-                                    <div className="relative flex items-center">
-                                        <Lock className="pointer-events-none absolute left-4 z-10 size-5 text-muted-foreground" />
-                                        <PasswordInput
-                                            id="password"
-                                            required
-                                            tabIndex={6}
-                                            autoComplete="new-password"
-                                            name="password"
-                                            placeholder="Contraseña"
-                                            passwordrules={passwordRules}
-                                            value={password}
-                                            onChange={(event) =>
-                                                setPassword(
-                                                    event.currentTarget.value,
-                                                )
-                                            }
-                                            aria-invalid={Boolean(
-                                                errors.password,
-                                            )}
-                                            className="h-13 pl-12"
-                                        />
-                                    </div>
+                                    </FieldLabel>
+                                    <PasswordInput
+                                        id="password"
+                                        name="password"
+                                        required
+                                        autoComplete="new-password"
+                                        passwordrules={passwordRules}
+                                        value={password}
+                                        onChange={(event) =>
+                                            setPassword(
+                                                event.currentTarget.value,
+                                            )
+                                        }
+                                        aria-invalid={Boolean(errors.password)}
+                                    />
                                     <InputError message={errors.password} />
-                                </div>
+                                </Field>
 
-                                {/* Confirmar contraseña */}
-                                <div className="grid gap-1">
-                                    <Label
-                                        htmlFor="password_confirmation"
-                                        className="sr-only"
-                                    >
+                                <Field
+                                    data-invalid={Boolean(
+                                        errors.password_confirmation,
+                                    )}
+                                >
+                                    <FieldLabel htmlFor="password_confirmation">
                                         Confirmar contraseña
-                                    </Label>
-                                    <div className="relative flex items-center">
-                                        <Lock className="pointer-events-none absolute left-4 z-10 size-5 text-muted-foreground" />
-                                        <PasswordInput
-                                            id="password_confirmation"
-                                            required
-                                            tabIndex={7}
-                                            autoComplete="new-password"
-                                            name="password_confirmation"
-                                            placeholder="Confirmar"
-                                            passwordrules={passwordRules}
-                                            value={passwordConfirmation}
-                                            onChange={(event) =>
-                                                setPasswordConfirmation(
-                                                    event.currentTarget.value,
-                                                )
-                                            }
-                                            aria-invalid={Boolean(
-                                                errors.password_confirmation,
-                                            )}
-                                            className="h-13 pl-12"
-                                        />
-                                    </div>
+                                    </FieldLabel>
+                                    <PasswordInput
+                                        id="password_confirmation"
+                                        name="password_confirmation"
+                                        required
+                                        autoComplete="new-password"
+                                        passwordrules={passwordRules}
+                                        value={passwordConfirmation}
+                                        onChange={(event) =>
+                                            setPasswordConfirmation(
+                                                event.currentTarget.value,
+                                            )
+                                        }
+                                        aria-invalid={Boolean(
+                                            errors.password_confirmation,
+                                        )}
+                                    />
                                     <InputError
                                         message={errors.password_confirmation}
                                     />
-                                </div>
-                            </div>
+                                </Field>
 
-                            <PasswordChecklist checks={passwordChecks} />
+                                <PasswordChecklist checks={passwordChecks} />
 
-                            <Button
-                                type="submit"
-                                className="mt-1 flex h-13 w-full items-center justify-center gap-2 rounded-2xl bg-primary text-sm font-black tracking-wider text-primary-foreground uppercase shadow-md transition-all duration-300 hover:-translate-y-[1px] hover:bg-[var(--primary-hover)] hover:shadow-[0_8px_20px_var(--glow-color)] active:translate-y-0 active:scale-[0.99]"
-                                tabIndex={8}
-                                data-test="register-user-button"
-                                disabled={!passwordIsReady || processing}
-                            >
-                                {processing ? (
-                                    <Spinner className="text-primary-foreground" />
-                                ) : (
-                                    <>
-                                        <span>Crear cuenta</span>
-                                        <ArrowRight className="size-4.5" />
-                                    </>
-                                )}
-                            </Button>
-                        </div>
-
-                        <div className="mt-1 text-center text-sm text-muted-foreground">
-                            ¿Ya tienes una cuenta?{' '}
-                            <Link
-                                href={login()}
-                                className="font-sans text-xs font-bold tracking-widest text-primary uppercase underline underline-offset-4 transition-colors duration-150 hover:text-[var(--primary-hover)]"
-                                tabIndex={9}
-                            >
-                                Inicia sesión
-                            </Link>
-                        </div>
-                    </>
-                )}
-            </Form>
+                                <Field>
+                                    <Button
+                                        type="submit"
+                                        disabled={
+                                            !passwordIsReady || processing
+                                        }
+                                        data-test="register-user-button"
+                                    >
+                                        {processing && <Spinner />}
+                                        Crear cuenta
+                                    </Button>
+                                    <FieldDescription className="text-center">
+                                        ¿Ya tienes una cuenta?{' '}
+                                        <Link href={login()}>
+                                            Inicia sesión
+                                        </Link>
+                                    </FieldDescription>
+                                </Field>
+                            </FieldGroup>
+                        )}
+                    </Form>
+                </CardContent>
+            </Card>
         </>
     );
 }
@@ -334,22 +250,13 @@ function buildPasswordChecks(
     confirmation: string,
 ): PasswordCheck[] {
     return [
-        {
-            label: 'Mínimo 8 caracteres',
-            valid: password.length >= 8,
-        },
+        { label: 'Mínimo 8 caracteres', valid: password.length >= 8 },
         {
             label: 'Incluye mayúsculas y minúsculas',
             valid: /[a-z]/.test(password) && /[A-Z]/.test(password),
         },
-        {
-            label: 'Incluye al menos un número',
-            valid: /\d/.test(password),
-        },
-        {
-            label: 'Incluye un símbolo',
-            valid: /[^A-Za-z0-9]/.test(password),
-        },
+        { label: 'Incluye al menos un número', valid: /\d/.test(password) },
+        { label: 'Incluye un símbolo', valid: /[^A-Za-z0-9]/.test(password) },
         {
             label: 'La confirmación coincide',
             valid: password.length > 0 && password === confirmation,
@@ -359,35 +266,17 @@ function buildPasswordChecks(
 
 function PasswordChecklist({ checks }: { checks: PasswordCheck[] }) {
     return (
-        <div className="grid gap-3 rounded-2xl border border-border bg-muted/40 p-4">
-            <ul className="grid gap-1.5">
-                {checks.map((check) => (
-                    <li
-                        key={check.label}
-                        className="flex items-center gap-2 text-xs"
-                    >
-                        {check.valid ? (
-                            <CheckCircle2 className="size-4 text-primary" />
-                        ) : (
-                            <XCircle className="size-4 text-muted-foreground" />
-                        )}
-                        <span
-                            className={
-                                check.valid
-                                    ? 'font-bold text-foreground'
-                                    : 'text-muted-foreground'
-                            }
-                        >
-                            {check.label}
-                        </span>
-                    </li>
-                ))}
-            </ul>
-        </div>
+        <ul className="flex flex-col gap-1.5 text-sm text-muted-foreground">
+            {checks.map((check) => (
+                <li key={check.label} className="flex items-center gap-2">
+                    {check.valid ? (
+                        <CheckCircle2 className="size-4 text-success" />
+                    ) : (
+                        <XCircle className="size-4" />
+                    )}
+                    <span>{check.label}</span>
+                </li>
+            ))}
+        </ul>
     );
 }
-
-Register.layout = {
-    title: 'Crear una cuenta',
-    description: 'Completa tus datos para usar Guaranda Go',
-};

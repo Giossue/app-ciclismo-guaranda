@@ -43,7 +43,7 @@ export default function Welcome() {
                             <Button
                                 asChild
                                 size="lg"
-                                className="h-12 w-full rounded-2xl bg-[#b2f000] text-xs font-black tracking-wider text-[#050605] uppercase shadow-md transition-all duration-200 hover:bg-[#9ad000] active:scale-95"
+                                className="h-12 w-full rounded-2xl bg-primary text-xs font-black tracking-wider text-primary-foreground uppercase shadow-md transition-all duration-200 hover:bg-primary/90 active:scale-95"
                             >
                                 <Link href={homePath(auth)}>Entrar</Link>
                             </Button>
@@ -52,7 +52,7 @@ export default function Welcome() {
                                 <Button
                                     asChild
                                     size="lg"
-                                    className="h-12 rounded-2xl bg-[#b2f000] text-xs font-black tracking-wider text-[#050605] uppercase shadow-md transition-all duration-200 hover:bg-[#9ad000] active:scale-95"
+                                    className="h-12 rounded-2xl bg-primary text-xs font-black tracking-wider text-primary-foreground uppercase shadow-md transition-all duration-200 hover:bg-primary/90 active:scale-95"
                                 >
                                     <Link href={login()}>Ingresar</Link>
                                 </Button>
@@ -60,7 +60,7 @@ export default function Welcome() {
                                     asChild
                                     size="lg"
                                     variant="outline"
-                                    className="h-12 rounded-2xl border-[var(--input-border)] bg-[var(--bg-card-color)] text-xs font-black tracking-wider text-[var(--text-color)] uppercase shadow-sm transition-all duration-200 hover:bg-[var(--panel-soft)] active:scale-95"
+                                    className="h-12 rounded-2xl border-border bg-card text-xs font-black tracking-wider text-foreground uppercase shadow-sm transition-all duration-200 hover:bg-accent active:scale-95"
                                 >
                                     <Link href={register()}>Registro</Link>
                                 </Button>
@@ -88,7 +88,7 @@ export default function Welcome() {
                         <Button
                             asChild
                             size="lg"
-                            className="h-12 w-full rounded-2xl bg-[#b2f000] text-xs font-black tracking-wider text-[#050605] uppercase shadow-md transition-all duration-200 hover:bg-[#9ad000] active:scale-95"
+                            className="h-12 w-full rounded-2xl bg-primary text-xs font-black tracking-wider text-primary-foreground uppercase shadow-md transition-all duration-200 hover:bg-primary/90 active:scale-95"
                         >
                             <Link href={auth.user ? homePath(auth) : login()}>
                                 {auth.user ? 'Ir al panel' : 'Comenzar'}
@@ -111,12 +111,12 @@ function Feature({
     value: string;
 }) {
     return (
-        <div className="flex min-h-[104px] flex-col items-center justify-center rounded-2xl border border-[var(--input-border)] bg-[var(--bg-card-color)] p-3 text-center shadow-sm transition-all duration-200 hover:-translate-y-0.5">
-            <Icon className="mb-3 size-5 text-[var(--brand-accent)]" />
-            <p className="font-bold text-[var(--fs-xs)] text-[var(--text-secondary)]">
+        <div className="flex min-h-[104px] flex-col items-center justify-center rounded-2xl border border-border bg-card p-3 text-center shadow-sm transition-all duration-200 hover:-translate-y-0.5">
+            <Icon className="mb-3 size-5 text-brand-accent" />
+            <p className="font-bold text-[var(--fs-xs)] text-muted-foreground">
                 {label}
             </p>
-            <p className="text-sm font-black tracking-[-0.02em] text-[var(--text-color)]">
+            <p className="text-sm font-black tracking-[-0.02em] text-foreground">
                 {value}
             </p>
         </div>
@@ -134,15 +134,15 @@ function MountainScene() {
         >
             <path
                 d="M0 140L72 74L122 118L182 46L268 132L332 86L430 154V200H0V140Z"
-                fill="rgb(178 240 0 / 0.11)"
+                className="fill-primary/10"
             />
             <path
                 d="M0 166L88 104L150 140L224 72L302 154L362 116L430 162V200H0V166Z"
-                fill="rgb(178 240 0 / 0.16)"
+                className="fill-primary/15"
             />
             <path
                 d="M0 182L68 138L132 162L206 112L286 174L350 144L430 176V200H0V182Z"
-                fill="rgb(178 240 0 / 0.24)"
+                className="fill-primary/25"
             />
         </svg>
     );

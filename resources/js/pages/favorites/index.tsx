@@ -53,12 +53,12 @@ export default function FavoritesIndex({ favorites }: Props) {
 
             <div className="ueb-page flex flex-col gap-5 md:w-full">
                 {/* Welcoming Header & Notifications Button */}
-                <div className="flex items-center justify-between border-b border-[var(--input-border)]/40 py-2">
+                <div className="flex items-center justify-between border-b border-border/40 py-2">
                     <div className="flex flex-col gap-0.5">
-                        <span className="text-[var(--fs-caption)] font-black tracking-widest text-[var(--text-secondary)] uppercase">
+                        <span className="font-black tracking-widest text-[var(--fs-caption)] text-muted-foreground uppercase">
                             Hola, {auth?.user?.name ?? 'Ciclista'}
                         </span>
-                        <h1 className="text-2xl font-black tracking-tight text-[var(--text-color)]">
+                        <h1 className="text-2xl font-black tracking-tight text-foreground">
                             Favoritas
                         </h1>
                     </div>
@@ -70,53 +70,53 @@ export default function FavoritesIndex({ favorites }: Props) {
                         favorite.route ? (
                             <Card
                                 key={favorite.route.id}
-                                className="group overflow-hidden rounded-3xl border-[var(--input-border)] bg-[var(--bg-card-color)] transition-all duration-300 hover:-translate-y-1 hover:border-[#b2f000]/40 hover:shadow-[0_8px_24px_var(--shadow-color)]"
+                                className="group overflow-hidden rounded-3xl border-border bg-card transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-[0_8px_24px_var(--shadow)]"
                             >
                                 <CardHeader className="gap-2">
                                     <div className="z-10 flex flex-wrap gap-1.5">
-                                        <Badge className="flex items-center gap-1 rounded-lg border border-[#b2f000]/20 bg-[#b2f000]/10 px-1.5 py-0.5 text-[var(--fs-caption)] font-black tracking-wider text-[#b2f000] uppercase hover:bg-[#b2f000]/10">
-                                            <Star className="size-2.5 fill-[#b2f000] text-[#b2f000]" />
+                                        <Badge className="flex items-center gap-1 rounded-lg border border-primary/20 bg-primary/10 px-1.5 py-0.5 font-black tracking-wider text-[var(--fs-caption)] text-primary uppercase hover:bg-primary/10">
+                                            <Star className="size-2.5 fill-primary text-primary" />
                                             <span>Favorita</span>
                                         </Badge>
                                         {favorite.route.category && (
-                                            <Badge className="rounded-lg border border-[#b2f000]/10 bg-[#b2f000]/10 px-2 py-0.5 text-[var(--fs-caption)] font-black tracking-wider text-[#b2f000] uppercase">
+                                            <Badge className="rounded-lg border border-primary/10 bg-primary/10 px-2 py-0.5 font-black tracking-wider text-[var(--fs-caption)] text-primary uppercase">
                                                 {favorite.route.category.name}
                                             </Badge>
                                         )}
                                         {favorite.route.difficulty && (
-                                            <Badge className="rounded-lg border border-[#b2f000]/10 bg-[#b2f000]/10 px-2 py-0.5 text-[var(--fs-caption)] font-black tracking-wider text-[#b2f000] uppercase">
+                                            <Badge className="rounded-lg border border-primary/10 bg-primary/10 px-2 py-0.5 font-black tracking-wider text-[var(--fs-caption)] text-primary uppercase">
                                                 {favorite.route.difficulty.name}
                                             </Badge>
                                         )}
                                     </div>
-                                    <CardTitle className="text-lg font-black text-[var(--text-color)] transition-colors duration-250 group-hover:text-[#b2f000]">
+                                    <CardTitle className="text-lg font-black text-foreground transition-colors duration-250 group-hover:text-primary">
                                         {favorite.route.name}
                                     </CardTitle>
-                                    <CardDescription className="line-clamp-2 text-xs leading-relaxed text-[var(--text-secondary)]">
+                                    <CardDescription className="line-clamp-2 text-xs leading-relaxed text-muted-foreground">
                                         {favorite.route.description}
                                     </CardDescription>
                                 </CardHeader>
 
-                                <CardContent className="grid gap-2 text-xs text-[var(--text-color)] sm:grid-cols-3">
-                                    <div className="flex items-center gap-2 rounded-xl border border-[var(--input-border)] bg-[var(--input-bg)] p-2.5">
-                                        <MapPinned className="size-4 shrink-0 text-[var(--text-secondary)]" />
-                                        <span className="line-clamp-1 font-bold text-[var(--text-secondary)]">
+                                <CardContent className="grid gap-2 text-xs text-foreground sm:grid-cols-3">
+                                    <div className="flex items-center gap-2 rounded-xl border border-border bg-secondary p-2.5">
+                                        <MapPinned className="size-4 shrink-0 text-muted-foreground" />
+                                        <span className="line-clamp-1 font-bold text-muted-foreground">
                                             {favorite.route.start_name} →{' '}
                                             {favorite.route.end_name}
                                         </span>
                                     </div>
                                     {favorite.route.metric && (
                                         <>
-                                            <div className="flex items-center gap-2 rounded-xl border border-[var(--input-border)] bg-[var(--input-bg)] p-2.5">
-                                                <Bike className="size-4 shrink-0 text-[#b2f000]" />
-                                                <span className="font-bold text-[var(--text-color)]">
+                                            <div className="flex items-center gap-2 rounded-xl border border-border bg-secondary p-2.5">
+                                                <Bike className="size-4 shrink-0 text-primary" />
+                                                <span className="font-bold text-foreground">
                                                     {favorite.route.metric.distance_km.toLocaleString()}{' '}
                                                     km
                                                 </span>
                                             </div>
-                                            <div className="flex items-center gap-2 rounded-xl border border-[var(--input-border)] bg-[var(--input-bg)] p-2.5">
-                                                <Clock className="size-4 shrink-0 text-[#b2f000]" />
-                                                <span className="font-bold text-[var(--text-color)]">
+                                            <div className="flex items-center gap-2 rounded-xl border border-border bg-secondary p-2.5">
+                                                <Clock className="size-4 shrink-0 text-primary" />
+                                                <span className="font-bold text-foreground">
                                                     {
                                                         favorite.route.metric
                                                             .estimated_time_minutes
@@ -131,7 +131,7 @@ export default function FavoritesIndex({ favorites }: Props) {
                                 <CardFooter className="mt-2 grid gap-3 sm:grid-cols-2">
                                     <Button
                                         asChild
-                                        className="flex h-11 items-center justify-center gap-1.5 rounded-xl bg-[#b2f000] text-xs font-black tracking-wider text-[#050605] uppercase transition-all duration-200 hover:bg-[#9ad000] active:scale-95"
+                                        className="flex h-11 items-center justify-center gap-1.5 rounded-xl bg-primary text-xs font-black tracking-wider text-primary-foreground uppercase transition-all duration-200 hover:bg-primary/90 active:scale-95"
                                     >
                                         <Link
                                             href={`/routes/${favorite.route.slug}`}
@@ -151,7 +151,7 @@ export default function FavoritesIndex({ favorites }: Props) {
                                             <Button
                                                 variant="outline"
                                                 disabled={processing}
-                                                className="flex h-11 w-full items-center justify-center gap-1.5 rounded-xl border border-[var(--input-border)] bg-[var(--input-bg)] text-xs font-black tracking-wider text-[var(--text-secondary)] uppercase transition-all duration-200 hover:bg-[var(--input-border)] hover:text-[var(--text-color)]"
+                                                className="flex h-11 w-full items-center justify-center gap-1.5 rounded-xl border border-border bg-secondary text-xs font-black tracking-wider text-muted-foreground uppercase transition-all duration-200 hover:bg-border hover:text-foreground"
                                             >
                                                 <HeartOff className="size-4 shrink-0" />
                                                 <span>Quitar</span>
@@ -167,19 +167,19 @@ export default function FavoritesIndex({ favorites }: Props) {
                 {/* Empty State */}
                 {favorites.data.length === 0 && (
                     <div className="flex flex-col items-center gap-2 py-8 text-center">
-                        <div className="mb-2 flex size-14 items-center justify-center rounded-2xl bg-[var(--input-border)]/50 text-[var(--text-secondary)]/60">
+                        <div className="mb-2 flex size-14 items-center justify-center rounded-2xl bg-border/50 text-muted-foreground/60">
                             <HeartOff className="size-7" />
                         </div>
-                        <h2 className="text-base font-bold text-[var(--text-color)]">
+                        <h2 className="text-base font-bold text-foreground">
                             No tienes favoritas
                         </h2>
-                        <p className="mx-auto max-w-[240px] text-xs leading-relaxed text-[var(--text-secondary)]">
+                        <p className="mx-auto max-w-[240px] text-xs leading-relaxed text-muted-foreground">
                             Guarda una ruta para verla aquí.
                         </p>
                     </div>
                 )}
 
-                <div className="pl-1 text-xs font-bold text-[var(--text-secondary)]">
+                <div className="pl-1 text-xs font-bold text-muted-foreground">
                     {favorites.from ?? 0}-{favorites.to ?? 0} de{' '}
                     {favorites.total} favoritas.
                 </div>

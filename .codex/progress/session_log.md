@@ -287,3 +287,145 @@
 - Se mantuvieron intactos backend, BD, rutas URL, nombres de campos y flujos de formularios.
 - Validaciones aprobadas: `npm --prefix ciclismo-guaranda run format`, `npm --prefix ciclismo-guaranda run format:check`, `npm --prefix ciclismo-guaranda run types:check`, `npm --prefix ciclismo-guaranda run lint:check` y `npm --prefix ciclismo-guaranda run build`.
 
+- Se corrigió la UI del asistente: botón visible para nueva conversación, acciones para ocultar conversación activa o desde historial, y renderizado local básico de Markdown (`**negrita**`, párrafos y listas) sin depender de n8n ni agregar paquetes.
+- Se confirmó que ocultar conversación usa el endpoint existente con `SoftDeletes`: se quita del historial del usuario sin borrado físico de `conversaciones_ia`.
+- Validaciones aprobadas: `ChatbotN8nTest`, `npm run types:check`, `npm run lint:check`, `npm run format:check` y `npm run build`.
+
+## 2026-07-01 — Notificaciones internas
+- Se analizó la BD/migraciones y se confirmó que `notificaciones_app` ya existía con `user_id`, `type`, `title`, `message`, `read`, `read_at` y timestamps; no se agregó migración.
+- Se implementó `/notifications` para listar notificaciones propias, filtrar no leídas y marcarlas como leídas individualmente o todas, sin opción de eliminar.
+- Se agregó campana global en header/sidebar header con contador de no leídas; también se habilitó header móvil con campana, acceso en menú de usuario y navegación móvil.
+- Se agregaron relación `User::appNotifications()` y `AppNotification::user()`, contador compartido por Inertia y tests `AppNotificationsTest`.
+- Validaciones aprobadas: `AppNotificationsTest`, `AdminIncidentReviewTest`, `FavoritesAndRatingsTest`, `pint --dirty`, `npm run types:check`, `npm run lint:check`, `npm run format:check`, `composer types:check`, `npm run build` y `php artisan route:cache --no-interaction`.
+
+## 2026-07-01 — Padding/margin consistente y despeje de navbar móvil
+- Diagnóstico: en `app-sidebar-layout.tsx` el `<main>` usaba `w-full` (utilidad) que pisaba el `width` de `.ueb-admin-page` (capa components) → contenido en el filo en todas las páginas sin `.ueb-page` propio (tracks, favorites, notifications, menu, admin, settings, routes/show).
+- Además `py-[var(--page-pad-y)]` pisaba el `padding-bottom` de `.safe-bottom-pad`, dejando el contenido bajo la navbar móvil fija (72px).
+- Fix centralizado en `app-sidebar-layout.tsx`: se quitó `w-full` y `md:px-0`; se reemplazó `py` por `pt-[var(--page-pad-y)]` + `md:pb-[var(--page-pad-y)]` para que `.safe-bottom-pad` despeje la nav en móvil (~92px) sin gap excesivo en desktop.
+- CSS `.ueb-page`: se pasó de `width: min(calc(...))` a `width:100%` + `max-width:var(--page-max-tablet)` + `margin-inline:auto`, evitando doble padding en rutas/chat y unificando el margen lateral en todas las vistas.
+- CSS `.ueb-chat-shell`: se reemplazó `height: calc(100dvh - nav - safe)` por `flex: 1 1 0%` para que el chat llene el `<main>` y su footer quede sobre la navbar en vez de tras ella.
+- Validaciones aprobadas: `npm run types:check`, `npm run lint:check`, `npm run format:check`, `npm run build`.
+
+## 2026-07-01 — Navbar, header, sombras/degradados, modo claro y tabs centrados
+- Navbar móvil: se quitó el ítem "Notificaciones" y se restauró "Favoritas" en `mobilePrimaryNavItems` (ciclista). El acceso a notificaciones queda solo en la campana del header.
+- Header: se quitó el título/breadcrumb duplicado en `AppSidebarHeader`; ahora muestra solo la marca "Guaranda Go" + campana. Se ajustó la cadena de props (breadcrumbs ya no se pasan al header).
+- Sombras: regla global `*::before,*::after { box-shadow: none !important }` en `@layer base` para neutralizar todas las sombras (cards, botones, navs, diálogos, etc.). Se quitó el `drop-shadow` del logo de auth.
+- Degradados: se eliminó el radial-gradient del body, el linear-gradient de `.ueb-route-thumb` (ahora `var(--panel-soft)`) y el degradado del card destacado de `welcome.tsx` (ahora verde sólido `#2f7d00`).
+- Modo claro: el tema estaba definido en `:root, .dark` (misma paleta oscura) por lo que el modo claro era idéntico al oscuro. Se separó en `:root` (paleta clara: fondos claros, texto oscuro, primario verde `#3f6b0a`) y `.dark` (paleta oscura con lime `#b2f000`). Se quitó `color-scheme: dark` hardcodeado (lo controla el hook use-appearance).
+- Tabs centrados: `MobileTabs` ahora centra la fila de tabs (`mx-auto`) y `SettingsLayout` centra su nav (`justify-center` / `lg:justify-start`), eliminando el espacio al final en ajustes.
+- Validaciones aprobadas: `npm run types:check`, `npm run lint:check`, `npm run format:check`, `npm run build`.
+
+## 2026-07-01 — Ubicación transitoria para chat y fallback de rutas
+- `buscar_rutas` ahora reintenta sin `query` cuando una consulta genérica no encuentra rutas, devolviendo rutas activas generales en vez de vacío.
+- El chat permite activar ubicación desde la UI y envía `location.latitude`, `location.longitude`, `location.accuracy_m` y `location.recorded_at` al webhook n8n como dato transitorio.
+- Laravel valida la ubicación recibida y no la guarda en el contexto persistido de `conversaciones_ia`/`mensajes_ia`.
+- Validaciones aprobadas: `composer lint`, `AgentToolsTest`, `ChatbotN8nTest`, `composer types:check`, `npm run types:check`, `npm run lint:check` y `npm run format:check`.
+
+## 2026-07-01 — Ubicación compartida entre mapa y chat
+- La ubicación obtenida desde el mapa ahora se recuerda de forma transitoria en `sessionStorage` durante 15 minutos.
+- El chat carga automáticamente esa última ubicación si está vigente, para que las consultas de cercanía no pidan activar ubicación de nuevo.
+- El botón de ubicación del chat sigue permitiendo actualizar la posición manualmente.
+- Validaciones aprobadas: `npm run types:check`, `npm run lint:check`, `npm run format:check`.
+
+## 2026-07-01
+
+- Se ajustó el layout autenticado para aplicar padding lateral global y evitar contenido pegado al borde en móvil.
+- Se rediseñó la pantalla del asistente IA para verse como chat integrado, sin contenedor tipo card en el shell principal.
+- Se cambió el avatar del mensaje del usuario para usar la inicial real del nombre autenticado.
+- Se eliminó el toast de éxito al recibir respuestas normales del asistente.
+- Se mantuvieron los toasts/errores para acciones no relacionadas y fallos del asistente.
+
+## 2026-07-01 — limpieza BD IA
+
+- Se eliminaron directamente en la BD PostgreSQL remota los registros de historial del asistente IA.
+- Tablas afectadas: `mensajes_ia` y `conversaciones_ia`.
+- Conteo antes: 84 mensajes y 17 conversaciones.
+- Conteo después: 0 mensajes y 0 conversaciones.
+- No se usaron seeders ni se modificó esquema.
+
+## 2026-07-01 — eliminación tabla memoria n8n
+
+- Se eliminó en la BD PostgreSQL remota la tabla externa `n8n_chat_histories` usada por la memoria del agente n8n.
+- Conteo antes de eliminar: 116 registros.
+- Verificación posterior: la tabla ya no existe en el esquema `public`.
+- No se modificaron tablas Laravel ni migraciones.
+
+## 2026-07-01 — ajustes welcome y menú
+
+- Se actualizó el menú móvil para mostrar nombre y apellido del usuario autenticado.
+- Se simplificó la pantalla welcome eliminando la card promocional grande, sus badges Android/Mobile First y el botón secundario Ver rutas.
+- Se cambió el texto de la característica IA de `n8n` a `Agente`.
+
+## 2026-07-01
+
+- Se corrigió el registro de cuentas: placeholder visible para fecha de nacimiento, eliminación del aviso de revisión de contraseña filtrada y mínimo visual de contraseña a 8 caracteres.
+- Se ajustó la validación backend global de contraseñas a mínimo 8 caracteres en todos los entornos, manteniendo reglas fuertes adicionales en producción.
+- Se agregó prueba feature para rechazar contraseñas menores a 8 caracteres.
+- Validaciones aprobadas: Pint dirty check, `RegistrationTest`, `npm run lint:check` y `npm run types:check`.
+
+## 2026-07-01 — session_id en tablas IA existentes
+
+- Se agregó `session_id` nullable a las tablas existentes `conversaciones_ia` y `mensajes_ia` en PostgreSQL remoto para evitar el error de n8n por columna inexistente.
+- Se agregó migración Laravel `2026_07_01_204600_add_session_id_to_ai_chat_tables.php` para versionar el cambio de esquema.
+- Se actualizó `ChatController` para guardar `session_id` en conversaciones y mensajes IA persistidos por Laravel.
+- No se creó una nueva tabla de memoria n8n.
+- Se centraron los tabs segmentados en rutas, se aplicó el mismo patrón visual centrado en notificaciones y se simplificó el estado vacío de notificaciones quitando la card blanca.
+- Validaciones aprobadas: `npm run format`, `npm run types:check` y `npm run lint:check`.
+- Se definió una jerarquía tipográfica de 4 tamaños visibles: caption 12px, body 14px, emphasis 16px y title 22px; se mapearon utilidades Tailwind y tamaños arbitrarios pequeños a esos tokens.
+- No se ejecutaron pruebas ni build por instrucción del usuario.
+
+## 2026-07-01 — restauración memoria n8n separada
+
+- Se recreó en PostgreSQL remoto la tabla `n8n_chat_histories` con columnas `id`, `session_id` y `message jsonb` para memoria interna de n8n.
+- Se removieron de la BD remota las columnas temporales `session_id` agregadas a `conversaciones_ia` y `mensajes_ia`, dejando esas tablas solo para historial Laravel.
+- Se eliminó la migración temporal de `session_id` en tablas IA y se revirtió `ChatController` para no escribir esa columna.
+- Se actualizó `.codex/project/n8n_workflow.md` para que el nodo de memoria apunte a `n8n_chat_histories`.
+
+## 2026-07-01 — limpieza migración temporal IA
+
+- Se eliminó de la tabla `migraciones` el registro temporal `2026_07_01_204600_add_session_id_to_ai_chat_tables` porque el cambio fue revertido y la memoria n8n quedó separada en `n8n_chat_histories`.
+
+## 2026-07-01 — payload mínimo para webhook IA
+
+- Se redujo el payload enviado por Laravel al webhook n8n: se removieron `user_id`, `language`, `privacy`, `user.role`, `user.id`, `offline_available` y `context` innecesario.
+- El webhook recibe ahora solo `session_id`, `message`, y opcionalmente `route_id`, `route` y `location`.
+- Se actualizó `ChatbotN8nTest` para validar el payload reducido.
+- Se actualizó `.codex/project/n8n_workflow.md` para que `Normalizar entrada` lea `body.route` y el prompt del agente use la ruta top-level.
+
+## 2026-07-01 — memoria n8n en tabla existente
+
+- Se eliminó la tabla separada `n8n_chat_histories` en PostgreSQL remoto.
+- Se adaptó la tabla existente `conversaciones_ia` para memoria n8n agregando `session_id` y `message jsonb`, y permitiendo filas sin `user_id`.
+- Se mantuvo `mensajes_ia` sin cambios para el historial visible de mensajes Laravel.
+- Se creó la migración `2026_07_01_211500_make_ai_conversations_compatible_with_n8n_memory.php` y se registró/aplicó en la BD remota.
+- Se actualizó `.codex/project/n8n_workflow.md` para que el nodo Postgres Chat Memory use `conversaciones_ia`.
+
+## 2026-07-01 — consolidación endpoints API y tools n8n
+
+- Se agregaron endpoints consolidados `POST /api/agent/routes` y `POST /api/agent/pois` que reemplazan a `buscar_rutas`, `detalle_ruta`, `alertas_ruta` y `buscar_pois`.
+- `/api/agent/routes` resuelve listar, recomendar, buscar, detalle de ruta seleccionada y alertas en una sola respuesta con estructura fija.
+- `/api/agent/pois` busca POIs con resumen incluido.
+- Se mantienen los endpoints viejos por compatibilidad mientras se migra el workflow vivo.
+- Se actualizaron pruebas `AgentToolsTest` con 3 tests nuevos para los endpoints consolidados.
+- Se actualizó `.codex/project/n8n_workflow.md` reduciendo tools de 6 a 4: `rutas`, `pois`, `progreso_ruta`, `clima`.
+- Se eliminaron nodos `detalle_ruta` y `alertas_ruta` del workflow documentado.
+- Se actualizó prompt del agente para reflejar solo 4 tools.
+
+## 2026-07-02 — consolidación de tools rutas+POIs y JSON limpio para el agente
+
+- Se fusionó la tool `pois` dentro de la tool `rutas` (via `intent: "pois"`). El sistema quedó con exactamente 3 tools: `rutas`, `progreso_ruta`, `clima`.
+- Se reescribió `AgentToolController` en un solo método `routes()` que resuelve list/recommend/search/detail/alerts/pois según los parámetros recibidos.
+- Se agregó al JSON de la tool `rutas`: observaciones de cada POI (`puntos_interes.observations`), y resumen de valoraciones aprobadas de la ruta (`rating.average`, `rating.total`, `reviews[]` con las últimas 3 opiniones).
+- Se decidió NO exponer `reportes_punto_interes` al agente porque no tiene un estado de moderación equivalente a "revisado/visible" (solo `pendiente` por defecto), a diferencia de incidencias de ruta que sí tienen `en revisión`.
+- Se eliminaron del JSON de salida campos pensados para tarjetas UI que no aportaban al agente: `geojson`, `image_url`, `href`, `type`, `subtitle`, `meta`, y el objeto `route` anidado duplicado.
+- Se eliminaron los endpoints legacy `/api/agent/routes/search`, `/api/agent/routes/{route}`, `/api/agent/routes/{route}/alerts`, `/api/agent/pois/search`. Quedan solo `POST /api/agent/routes` y `POST /api/agent/navigation/progress`.
+- Se reescribió `tests/Feature/AgentToolsTest.php` con pruebas para el endpoint consolidado, incluyendo observaciones de POI, valoraciones aprobadas/pendientes y búsqueda de POIs independiente.
+- Se actualizó `.codex/project/n8n_workflow.md`: se eliminó el nodo `pois`, se actualizó `rutas` con parámetro `poi_category` e `intent: pois`, y se simplificó el system prompt del agente a 3 tools.
+- Se actualizaron `.codex/domain/chatbot_ia.md` y `.codex/architecture/n8n_webhook_agent.md` con el diseño final.
+- Validaciones aprobadas: `composer exec -- php artisan test --compact` (150 tests, 898 assertions), `composer types:check`, `composer lint`.
+
+## 2026-08-27 — Migración de tokens semánticos
+
+- Se eliminó la capa de aliases visuales legacy (`--bg-color`, `--input-border`, `--primary-color`, etc.) y se consolidó la paleta en los tokens semánticos de shadcn/Tailwind en `resources/css/app.css`.
+- Las pantallas y componentes React usan ahora clases semánticas (`bg-card`, `text-foreground`, `border-border`, `bg-primary`, etc.); no quedan colores hardcodeados en la UI.
+- Se conservaron tokens de estado y propósito (`primary-hover`, `primary-glow`, `shadow`, `overlay`, `map-background` y `brand-accent`) para los casos que no encajan en el set base de shadcn.

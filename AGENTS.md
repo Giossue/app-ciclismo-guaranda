@@ -1,6 +1,6 @@
 # AGENTS.md — Router de conocimiento para Guaranda Go
 
-Este archivo es el punto de entrada para cualquier agente que trabaje en este repositorio. Antes de implementar, modificar o revisar código, usa este router para cargar el contexto correcto desde `.codex/` y desde la aplicación Laravel ubicada en `ciclismo-guaranda/`.
+Este archivo es el punto de entrada para cualquier agente que trabaje en este repositorio Laravel/React. Antes de implementar, modificar o revisar código, usa este router para cargar el contexto correcto desde `README.md` y `.codex/`.
 
 ## 1. Contexto base obligatorio
 
@@ -8,7 +8,7 @@ Siempre considera estos archivos como fuente principal:
 
 1. `README.md` — especificación completa del producto Guaranda Go.
 2. `.codex/README.md` — mapa de carpetas de conocimiento.
-3. `ciclismo-guaranda/AGENTS.md` — reglas generadas por Laravel Boost para el proyecto Laravel/React.
+3. `AGENTS.md` — reglas del proyecto Laravel/React y de Laravel Boost.
 
 Si hay conflicto entre documentos:
 
@@ -16,7 +16,7 @@ Si hay conflicto entre documentos:
 2. Luego `AGENTS.md` de la raíz.
 3. Luego `README.md`.
 4. Luego los documentos específicos de `.codex/`.
-5. Luego reglas generadas dentro de `ciclismo-guaranda/AGENTS.md`, especialmente para Laravel Boost, estilo, tests y paquetes instalados.
+5. Luego reglas de Laravel Boost, especialmente para estilo, tests y paquetes instalados.
 
 ## 2. Regla obligatoria: MCP Context7
 
@@ -27,7 +27,7 @@ Reglas:
 - Usa Context7 cuando necesites documentación actualizada de librerías externas o APIs: Capacitor, Leaflet, shadcn/ui, React, Inertia, Laravel, PostGIS, TileServer GL, OSRM, GraphHopper, OpenRouteService, n8n, etc.
 - Primero resuelve el ID de librería con `resolve-library-id` y luego consulta con `query-docs`.
 - No inventes APIs, métodos, parámetros ni configuraciones cuando se puedan verificar con Context7.
-- Para paquetes Laravel instalados en `ciclismo-guaranda`, si Laravel Boost está disponible, prioriza sus herramientas/documentación específica del proyecto. Usa Context7 como apoyo cuando Boost no cubra la duda o cuando sea una librería externa.
+- Para paquetes Laravel instalados en este repositorio, si Laravel Boost está disponible, prioriza sus herramientas/documentación específica del proyecto. Usa Context7 como apoyo cuando Boost no cubra la duda o cuando sea una librería externa.
 - No incluyas secretos, tokens, credenciales ni URLs privadas al consultar documentación.
 
 Ver también: `.codex/rules/context7_mcp.md`.
@@ -43,7 +43,7 @@ Ver también: `.codex/rules/context7_mcp.md`.
 | Planes de implementación por fase | `.codex/plans/README.md` y el plan de fase correspondiente |
 | Operaciones de base de datos remota | `.codex/rules/database_operations.md` |
 | Uso de Context7 | `.codex/rules/context7_mcp.md` |
-| Laravel Boost y starter kit | `.codex/rules/laravel_boost.md`, `ciclismo-guaranda/AGENTS.md` |
+| Laravel Boost y starter kit | `.codex/rules/laravel_boost.md`, `AGENTS.md` |
 | Seguridad, privacidad y datos sensibles | `.codex/rules/security_privacy.md` |
 | Calidad, lint, tests y validación | `.codex/rules/quality_testing.md`, `.codex/workflows/validation_commands.md` |
 | Arquitectura general | `.codex/architecture/system_architecture.md` |
@@ -68,7 +68,7 @@ Ver también: `.codex/rules/context7_mcp.md`.
 ## 4. Reglas de arquitectura del proyecto
 
 - El producto es una **app híbrida Android**, no una PWA pura.
-- El código principal vive en `ciclismo-guaranda/`.
+- El código principal vive en la raíz de este repositorio.
 - El backend será Laravel como monolito modular con API REST.
 - El frontend será React + Inertia + TypeScript + Vite.
 - La app Android se empaquetará con Capacitor.
@@ -77,10 +77,10 @@ Ver también: `.codex/rules/context7_mcp.md`.
 - El chatbot no es nativo: se consume un webhook externo de n8n y se muestra/procesa el JSON de `Respond to Webhook`.
 - No se deben hardcodear claves de IA, mapas, APIs, webhooks ni credenciales en frontend o APK.
 
-## 5. Reglas para trabajar en `ciclismo-guaranda/`
+## 5. Reglas para trabajar en este repositorio
 
 - Respeta el starter kit instalado: Laravel 13, React, Inertia, Fortify, Pest, Wayfinder, Tailwind v4 y Laravel Boost.
-- Antes de tocar código Laravel/React, lee `ciclismo-guaranda/AGENTS.md`.
+- Antes de tocar código Laravel/React, lee este `AGENTS.md`.
 - Usa comandos Artisan para crear modelos, migraciones, tests, requests, resources y clases cuando aplique.
 - Usa Pest para pruebas.
 - Usa Wayfinder para rutas tipadas del frontend cuando corresponda.

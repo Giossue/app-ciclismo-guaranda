@@ -37,3 +37,11 @@ Colas: Laravel Jobs + Redis
 - Pest.
 - Laravel Boost.
 - Email verification, registration, 2FA, passkeys y password confirmation habilitados.
+
+## Decisiones n8n/tools
+
+- n8n usa un nodo Agent conectado a modelo, memoria Postgres y tools HTTP.
+- Las tools Laravel actuales son: `buscar_rutas`, `detalle_ruta`, `buscar_pois`, `progreso_ruta` y `alertas_ruta`.
+- El clima se consulta desde n8n con Open-Meteo; si no hay ubicación se usa Guaranda como fallback.
+- `buscar_rutas` y `buscar_pois` no deben enviar el mensaje completo del usuario como `query`; `query` solo sirve para nombres/lugares/necesidades concretas.
+- Las tools Laravel se autentican con token de servidor (`GUARANDA_GO_AGENT_TOOL_TOKEN`) desde n8n; nunca desde frontend/APK.

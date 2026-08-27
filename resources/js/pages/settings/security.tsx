@@ -27,22 +27,22 @@ export default function Security(props: Props) {
 
             <div className="ueb-page flex flex-col gap-5 md:w-full">
                 {/* Header with back button */}
-                <div className="flex items-center gap-3 border-b border-[var(--input-border)]/40 py-3">
+                <div className="flex items-center gap-3 border-b border-border/40 py-3">
                     <Button
                         variant="ghost"
                         size="icon"
                         asChild
-                        className="size-11 rounded-2xl border border-[var(--input-border)] bg-[var(--input-bg)] text-[var(--text-secondary)] transition-all duration-200 hover:bg-[var(--input-border)] hover:text-[var(--text-color)]"
+                        className="size-11 rounded-2xl border border-border bg-secondary text-muted-foreground transition-all duration-200 hover:bg-border hover:text-foreground"
                     >
                         <Link href="/menu" replace>
                             <ArrowLeft className="size-5" />
                         </Link>
                     </Button>
                     <div className="flex flex-col">
-                        <h1 className="text-base leading-none font-black text-[var(--text-color)]">
+                        <h1 className="text-base leading-none font-black text-foreground">
                             Seguridad
                         </h1>
-                        <p className="mt-1 text-[var(--fs-caption)] text-[var(--text-secondary)]">
+                        <p className="mt-1 text-[var(--fs-caption)] text-muted-foreground">
                             Administra tu contraseña, doble factor y accesos
                         </p>
                     </div>
@@ -76,7 +76,7 @@ export default function Security(props: Props) {
                             <div className="grid gap-1.5">
                                 <Label
                                     htmlFor="current_password"
-                                    className="pl-0.5 text-xs font-bold text-[var(--text-secondary)]"
+                                    className="pl-0.5 text-xs font-bold text-muted-foreground"
                                 >
                                     Contraseña actual
                                 </Label>
@@ -84,7 +84,7 @@ export default function Security(props: Props) {
                                     id="current_password"
                                     ref={currentPasswordInput}
                                     name="current_password"
-                                    className="h-12 w-full rounded-2xl border-[var(--input-border)] bg-[var(--input-bg)] px-4 text-[var(--text-color)] transition-all duration-200 placeholder:text-[var(--text-muted)] focus-visible:border-[#b2f000] focus-visible:ring-4 focus-visible:ring-[#b2f000]/10"
+                                    className="h-12 w-full rounded-2xl border-border bg-secondary px-4 text-foreground transition-all duration-200 placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-4 focus-visible:ring-primary/10"
                                     autoComplete="current-password"
                                     placeholder="Contraseña actual"
                                 />
@@ -94,7 +94,7 @@ export default function Security(props: Props) {
                             <div className="grid gap-1.5">
                                 <Label
                                     htmlFor="password"
-                                    className="pl-0.5 text-xs font-bold text-[var(--text-secondary)]"
+                                    className="pl-0.5 text-xs font-bold text-muted-foreground"
                                 >
                                     Nueva contraseña
                                 </Label>
@@ -102,7 +102,7 @@ export default function Security(props: Props) {
                                     id="password"
                                     ref={passwordInput}
                                     name="password"
-                                    className="h-12 w-full rounded-2xl border-[var(--input-border)] bg-[var(--input-bg)] px-4 text-[var(--text-color)] transition-all duration-200 placeholder:text-[var(--text-muted)] focus-visible:border-[#b2f000] focus-visible:ring-4 focus-visible:ring-[#b2f000]/10"
+                                    className="h-12 w-full rounded-2xl border-border bg-secondary px-4 text-foreground transition-all duration-200 placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-4 focus-visible:ring-primary/10"
                                     autoComplete="new-password"
                                     placeholder="Nueva contraseña"
                                     passwordrules={props.passwordRules}
@@ -113,14 +113,14 @@ export default function Security(props: Props) {
                             <div className="grid gap-1.5">
                                 <Label
                                     htmlFor="password_confirmation"
-                                    className="pl-0.5 text-xs font-bold text-[var(--text-secondary)]"
+                                    className="pl-0.5 text-xs font-bold text-muted-foreground"
                                 >
                                     Confirmar contraseña
                                 </Label>
                                 <PasswordInput
                                     id="password_confirmation"
                                     name="password_confirmation"
-                                    className="h-12 w-full rounded-2xl border-[var(--input-border)] bg-[var(--input-bg)] px-4 text-[var(--text-color)] transition-all duration-200 placeholder:text-[var(--text-muted)] focus-visible:border-[#b2f000] focus-visible:ring-4 focus-visible:ring-[#b2f000]/10"
+                                    className="h-12 w-full rounded-2xl border-border bg-secondary px-4 text-foreground transition-all duration-200 placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-4 focus-visible:ring-primary/10"
                                     autoComplete="new-password"
                                     placeholder="Confirmar contraseña"
                                     passwordrules={props.passwordRules}
@@ -133,7 +133,7 @@ export default function Security(props: Props) {
                             <Button
                                 disabled={processing}
                                 data-test="update-password-button"
-                                className="mt-2 flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[#b2f000] text-xs font-black tracking-wider text-[#050605] uppercase shadow-md transition-all duration-300 hover:bg-[#9ad000] hover:shadow-[0_8px_20px_rgba(178,240,0,0.15)] active:scale-[0.99]"
+                                className="mt-2 flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-primary text-xs font-black tracking-wider text-primary-foreground uppercase shadow-md transition-all duration-300 hover:bg-primary/90 hover:shadow-[0_8px_20px_var(--primary-glow)] active:scale-[0.99]"
                             >
                                 Actualizar contraseña
                             </Button>
@@ -142,7 +142,7 @@ export default function Security(props: Props) {
                 </Form>
 
                 {/* Two Factor Authentication Section */}
-                <div className="border-t border-[var(--input-border)]/40 pt-4">
+                <div className="border-t border-border/40 pt-4">
                     <ManageTwoFactor
                         canManageTwoFactor={props.canManageTwoFactor}
                         requiresConfirmation={props.requiresConfirmation}
@@ -151,7 +151,7 @@ export default function Security(props: Props) {
                 </div>
 
                 {/* Passkeys Section */}
-                <div className="border-t border-[#2c302c]/40 pt-4">
+                <div className="border-t border-border/40 pt-4">
                     <ManagePasskeys
                         canManagePasskeys={props.canManagePasskeys}
                         passkeys={props.passkeys}

@@ -34,3 +34,11 @@
 ## Reglas para cambios de alcance
 
 Si una tarea intenta agregar algo excluido, primero consultar al usuario. Si el usuario confirma, actualizar `README.md` y `.codex/project/scope_boundaries.md`.
+
+## Límites del agente IA
+
+- El agente no debe inventar rutas, POIs, distancias, desniveles, reportes ni clima.
+- El agente no genera cards; responde texto natural y la app decide la representación visual.
+- No se expone al usuario final lenguaje técnico como Laravel, n8n, webhook, API, base de datos, parser, tools o moderación.
+- El chatbot no funciona offline.
+- La ubicación no bloquea toda la app: solo limita funciones de cercanía, navegación/progreso y clima exacto.

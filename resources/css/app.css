@@ -76,6 +76,8 @@
     --color-border: var(--border);
     --color-input: var(--input);
     --color-ring: var(--ring);
+    --color-primary-hover: var(--primary-hover);
+    --color-brand-accent: var(--brand-accent);
     --color-chart-1: var(--chart-1);
     --color-chart-2: var(--chart-2);
     --color-chart-3: var(--chart-3);
@@ -119,54 +121,22 @@
     --safe-bottom: env(safe-area-inset-bottom, 0px);
     --bottom-nav-height: 58px;
 
-    /* Light Mode Colors */
-    --bg-color: #f8f9fa;
-    --bg-card-color: #ffffff;
-    --text-color: #1a1a1a;
-    --text-secondary: #6c757d;
-    --text-muted: #adb5bd;
-    --input-bg: #ffffff;
-    --input-border: #dee2e6;
-    --input-text: #1a1a1a;
-    --input-placeholder: #adb5bd;
-    --primary-color: #b2f000;
-    --primary-hover: #9ad000;
-    --primary-text: #050605;
-    --tab-bg: #e9ecef;
-    --tab-active-bg: #b2f000;
-    --tab-active-text: #050605;
-    --tab-inactive-text: #495057;
-    --avatar-bg: #b2f000;
-    --avatar-text: #050605;
-    --filter-btn-bg: #b2f000;
-    --filter-btn-text: #050605;
-    --chip-bg: #e9ecef;
-    --chip-border: #dee2e6;
-    --chip-text: #495057;
-    --chip-active-bg: #b2f000;
-    --chip-active-text: #050605;
-    --panel-soft: #f4f6f8;
-    --shadow-color: rgb(0 0 0 / 0.05);
-    --glow-color: rgb(178 240 0 / 0.1);
-    --danger: #ff4a4a;
-    --featured-card-text: #1a1a1a;
-    --brand-accent: #2b540e;
-
-    --background: var(--bg-color);
-    --foreground: var(--text-color);
-    --card: var(--bg-card-color);
-    --card-foreground: var(--text-color);
-    --popover: var(--bg-card-color);
-    --popover-foreground: var(--text-color);
-    --primary: var(--primary-color);
-    --primary-foreground: var(--primary-text);
-    --secondary: var(--input-bg);
-    --secondary-foreground: var(--text-color);
-    --muted: var(--input-bg);
-    --muted-foreground: var(--text-secondary);
-    --accent: var(--panel-soft);
-    --accent-foreground: var(--text-color);
-    --destructive: var(--danger);
+    /* Semantic color tokens — light mode. */
+    --background: #f8f9fa;
+    --foreground: #1a1a1a;
+    --card: #ffffff;
+    --card-foreground: #1a1a1a;
+    --popover: #ffffff;
+    --popover-foreground: #1a1a1a;
+    --primary: #b2f000;
+    --primary-foreground: #050605;
+    --secondary: #ffffff;
+    --secondary-foreground: #1a1a1a;
+    --muted: #e9ecef;
+    --muted-foreground: #6c757d;
+    --accent: #f4f6f8;
+    --accent-foreground: #1a1a1a;
+    --destructive: #ff4a4a;
     --destructive-foreground: #ffffff;
     --warning: #ff9800;
     --warning-foreground: #050605;
@@ -174,58 +144,68 @@
     --success-foreground: #050605;
     --info: #72d645;
     --info-foreground: #050605;
-    --border: var(--input-border);
-    --input: var(--input-border);
-    --ring: var(--primary-color);
-    --chart-1: var(--primary-color);
+    --border: #dee2e6;
+    --input: #dee2e6;
+    --ring: #b2f000;
+    --chart-1: #b2f000;
     --chart-2: #72d645;
     --chart-3: #ff9800;
     --chart-4: #00c853;
     --chart-5: #ff6b6b;
     --radius: 1.25rem;
-    --sidebar: var(--bg-card-color);
-    --sidebar-foreground: var(--text-color);
-    --sidebar-primary: var(--primary-color);
-    --sidebar-primary-foreground: var(--primary-text);
-    --sidebar-accent: var(--input-bg);
-    --sidebar-accent-foreground: var(--text-color);
-    --sidebar-border: var(--input-border);
-    --sidebar-ring: var(--primary-color);
+    --sidebar: #ffffff;
+    --sidebar-foreground: #1a1a1a;
+    --sidebar-primary: #b2f000;
+    --sidebar-primary-foreground: #050605;
+    --sidebar-accent: #ffffff;
+    --sidebar-accent-foreground: #1a1a1a;
+    --sidebar-border: #dee2e6;
+    --sidebar-ring: #b2f000;
+
+    --primary-hover: #9ad000;
+    --shadow: rgb(0 0 0 / 0.05);
+    --primary-glow: rgb(178 240 0 / 0.1);
+    --brand-accent: #2b540e;
+    --overlay: rgb(0 0 0 / 0.48);
+    --overlay-shadow: rgb(0 0 0 / 0.35);
+    --map-background: #101310;
 }
 
 .dark {
-    /* Dark Mode Colors */
-    --bg-color: #0d0f0d;
-    --bg-card-color: #151815;
-    --text-color: #ffffff;
-    --text-secondary: #8e958e;
-    --text-muted: #5e645e;
-    --input-bg: #1c1f1c;
-    --input-border: #2c302c;
-    --input-text: #ffffff;
-    --input-placeholder: #5e645e;
-    --primary-color: #b2f000;
+    /* Semantic color tokens — dark mode. */
+    --background: #0d0f0d;
+    --foreground: #ffffff;
+    --card: #151815;
+    --card-foreground: #ffffff;
+    --popover: #151815;
+    --popover-foreground: #ffffff;
+    --primary: #b2f000;
+    --primary-foreground: #050605;
+    --secondary: #1c1f1c;
+    --secondary-foreground: #ffffff;
+    --muted: #1b1e1b;
+    --muted-foreground: #8e958e;
+    --accent: #1d2415;
+    --accent-foreground: #ffffff;
+    --destructive: #ff6b6b;
+    --destructive-foreground: #ffffff;
+    --warning: #ff9800;
+    --warning-foreground: #050605;
+    --success: #00c853;
+    --success-foreground: #050605;
+    --info: #72d645;
+    --info-foreground: #050605;
+    --border: #2c302c;
+    --input: #2c302c;
+    --ring: #b2f000;
+
     --primary-hover: #9ad000;
-    --primary-text: #050605;
-    --tab-bg: #1b1e1b;
-    --tab-active-bg: #b2f000;
-    --tab-active-text: #050605;
-    --tab-inactive-text: #8e958e;
-    --avatar-bg: #b2f000;
-    --avatar-text: #050605;
-    --filter-btn-bg: #b2f000;
-    --filter-btn-text: #050605;
-    --chip-bg: #1c1f1c;
-    --chip-border: #2c302c;
-    --chip-text: #8e958e;
-    --chip-active-bg: #b2f000;
-    --chip-active-text: #050605;
-    --panel-soft: #1d2415;
-    --shadow-color: rgb(0 0 0 / 0.4);
-    --glow-color: rgb(178 240 0 / 0.2);
-    --danger: #ff6b6b;
-    --featured-card-text: #ffffff;
+    --shadow: rgb(0 0 0 / 0.4);
+    --primary-glow: rgb(178 240 0 / 0.2);
     --brand-accent: #b2f000;
+    --overlay: rgb(0 0 0 / 0.48);
+    --overlay-shadow: rgb(0 0 0 / 0.35);
+    --map-background: #101310;
 }
 
 @media (max-width: 560px) {
@@ -250,8 +230,8 @@
         min-height: 100dvh;
         overflow-x: hidden;
         overflow-y: auto;
-        background-color: var(--bg-color);
-        color: var(--text-color);
+        background-color: var(--background);
+        color: var(--foreground);
         font-family: var(--font-sans);
         font-size: var(--fs-md);
         line-height: var(--lh-body);
@@ -261,10 +241,10 @@
         background:
             radial-gradient(
                 circle at 12% -8%,
-                var(--glow-color),
+                var(--primary-glow),
                 transparent 32%
             ),
-            var(--bg-color);
+            var(--background);
     }
 
     button,
@@ -283,12 +263,12 @@
     }
 
     ::selection {
-        background: var(--primary-color);
-        color: var(--primary-text);
+        background: var(--primary);
+        color: var(--primary-foreground);
     }
 
     :focus-visible {
-        outline: 2px solid var(--primary-color);
+        outline: 2px solid var(--primary);
         outline-offset: 2px;
     }
 
@@ -325,8 +305,8 @@
     }
 
     [data-slot='card'] {
-        background: var(--bg-card-color);
-        border: 1px solid var(--input-border);
+        background: var(--card);
+        border: 1px solid var(--border);
         box-shadow: none;
         transition:
             transform 0.2s ease,
@@ -334,20 +314,16 @@
     }
 
     [data-slot='card']:hover {
-        border-color: color-mix(
-            in srgb,
-            var(--primary-color) 58%,
-            var(--input-border)
-        );
+        border-color: color-mix(in srgb, var(--primary) 58%, var(--border));
         box-shadow: none;
     }
 
     [data-slot='input'],
     textarea,
     [data-slot='select-trigger'] {
-        background: var(--bg-card-color);
-        border-color: var(--input-border);
-        color: var(--input-text);
+        background: var(--card);
+        border-color: var(--border);
+        color: var(--foreground);
         border-radius: 16px;
         height: 52px;
         font-weight: 600;
@@ -355,7 +331,7 @@
 
     [data-slot='input']::placeholder,
     textarea::placeholder {
-        color: var(--input-placeholder);
+        color: var(--muted-foreground);
         font-weight: 500;
     }
 
@@ -363,7 +339,7 @@
     textarea:focus,
     [data-slot='select-trigger']:focus,
     [data-slot='select-trigger'][data-state='open'] {
-        border-color: var(--primary-color);
+        border-color: var(--primary);
         box-shadow: none;
     }
 
@@ -382,21 +358,21 @@
 
     [data-slot='dialog-overlay'],
     [data-slot='sheet-overlay'] {
-        background: rgb(0 0 0 / 0.48);
+        background: var(--overlay);
         backdrop-filter: blur(4px);
     }
 
     .leaflet-container {
         font-family: var(--font-sans);
-        background: #101310;
+        background: var(--map-background);
     }
 
     .leaflet-control-layers,
     .leaflet-bar a,
     .leaflet-bar a:hover {
-        border-color: var(--input-border);
-        background: var(--bg-card-color);
-        color: var(--text-color);
+        border-color: var(--border);
+        background: var(--card);
+        color: var(--foreground);
     }
 
     .leaflet-bar a {
@@ -406,15 +382,15 @@
     }
 
     .leaflet-popup-content-wrapper {
-        border: 1px solid var(--input-border);
+        border: 1px solid var(--border);
         border-radius: 18px;
-        background: var(--bg-card-color);
-        color: var(--text-color);
-        box-shadow: 0 12px 40px rgb(0 0 0 / 0.35);
+        background: var(--card);
+        color: var(--foreground);
+        box-shadow: 0 12px 40px var(--overlay-shadow);
     }
 
     .leaflet-popup-tip {
-        background: var(--bg-card-color);
+        background: var(--card);
     }
 
     .leaflet-pane,
@@ -427,7 +403,7 @@
     [data-slot='input'],
     textarea,
     [data-slot='select-trigger'] {
-        background: var(--bg-card-color) !important;
+        background: var(--card) !important;
         box-shadow: none !important;
     }
 
@@ -458,8 +434,8 @@
     .app-phone-frame {
         width: 100%;
         min-height: 100dvh;
-        background: var(--bg-color);
-        color: var(--text-color);
+        background: var(--background);
+        color: var(--foreground);
     }
 
     .ueb-page {
@@ -482,7 +458,7 @@
     }
 
     .ueb-section-title {
-        color: var(--text-color);
+        color: var(--foreground);
         font-size: var(--fs-lg);
         line-height: var(--lh-title);
         font-weight: 900;
@@ -490,7 +466,7 @@
     }
 
     .ueb-muted {
-        color: var(--text-secondary);
+        color: var(--muted-foreground);
         font-size: var(--fs-sm);
         line-height: 1.35;
         font-weight: 600;
@@ -527,10 +503,10 @@
         flex-direction: column;
         align-items: stretch;
         gap: 10px;
-        border: 1px solid var(--input-border);
+        border: 1px solid var(--border);
         border-radius: 20px;
-        background: var(--bg-card-color);
-        color: var(--text-color);
+        background: var(--card);
+        color: var(--foreground);
         padding: 10px;
         text-decoration: none;
         box-shadow: none;
@@ -541,7 +517,7 @@
 
     .ueb-route-card:hover {
         transform: translateY(-2px);
-        border-color: var(--primary-color);
+        border-color: var(--primary);
         box-shadow: none;
     }
 
@@ -551,8 +527,8 @@
         flex-shrink: 0;
         overflow: hidden;
         border-radius: 16px;
-        background: linear-gradient(135deg, #2b540e, #326b12);
-        color: #72d645;
+        background: var(--brand-accent);
+        color: var(--primary-foreground);
         display: grid;
         place-items: center;
     }
@@ -569,7 +545,7 @@
         overflow: hidden;
         -webkit-box-orient: vertical;
         -webkit-line-clamp: 2;
-        color: var(--text-color);
+        color: var(--foreground);
         font-size: var(--fs-md);
         line-height: 1.2;
         font-weight: 900;
@@ -580,7 +556,7 @@
         flex-wrap: wrap;
         align-items: center;
         gap: 5px;
-        color: var(--text-secondary);
+        color: var(--muted-foreground);
         font-size: var(--fs-xs);
         line-height: 1.25;
         font-weight: 700;
@@ -597,8 +573,8 @@
     .ueb-difficulty-tag {
         border-radius: 8px;
         padding: 4px 7px;
-        background: rgb(178 240 0 / 0.12);
-        color: var(--primary-color);
+        background: color-mix(in srgb, var(--primary) 12%, transparent);
+        color: var(--primary);
         font-size: var(--fs-xs);
         font-weight: 900;
         text-transform: uppercase;
@@ -609,10 +585,10 @@
         align-items: center;
         gap: 5px;
         border-radius: 999px;
-        border: 1px solid var(--input-border);
-        background: var(--input-bg);
+        border: 1px solid var(--border);
+        background: var(--secondary);
         padding: 5px 8px;
-        color: var(--text-secondary);
+        color: var(--muted-foreground);
         font-size: var(--fs-xs);
         font-weight: 800;
     }
@@ -622,8 +598,8 @@
         min-height: 100dvh;
         flex-direction: column;
         overflow: hidden;
-        background: var(--bg-color);
-        color: var(--text-color);
+        background: var(--background);
+        color: var(--foreground);
     }
 
     .ueb-auth-hero {
@@ -640,7 +616,7 @@
         display: flex;
         align-items: center;
         gap: 8px;
-        color: var(--text-color);
+        color: var(--foreground);
         text-decoration: none;
     }
 
@@ -649,8 +625,8 @@
         width: 36px;
         height: 36px;
         place-items: center;
-        color: var(--primary-color);
-        filter: drop-shadow(0 2px 8px var(--glow-color));
+        color: var(--primary);
+        filter: drop-shadow(0 2px 8px var(--primary-glow));
     }
 
     .ueb-auth-logo-text {
@@ -661,7 +637,7 @@
 
     .ueb-auth-logo-text span,
     .ueb-auth-banner strong {
-        color: var(--primary-color);
+        color: var(--primary);
     }
 
     .ueb-auth-mountains {
@@ -681,7 +657,7 @@
 
     .ueb-auth-banner h1 {
         margin: 0;
-        color: var(--text-color);
+        color: var(--foreground);
         font-size: var(--fs-title);
         line-height: var(--lh-title);
         font-weight: 900;
@@ -690,7 +666,7 @@
 
     .ueb-auth-banner p {
         margin: 8px 0 0;
-        color: var(--text-color);
+        color: var(--foreground);
         font-size: var(--fs-sm);
         font-weight: 700;
     }
@@ -703,9 +679,9 @@
         flex-direction: column;
         gap: 18px;
         overflow-y: auto;
-        background: var(--bg-card-color);
+        background: var(--card);
         padding: 24px;
-        box-shadow: 0 -10px 30px var(--shadow-color);
+        box-shadow: 0 -10px 30px var(--shadow);
     }
 
     .ueb-chat-shell {
@@ -732,7 +708,7 @@
         flex-shrink: 0;
         align-items: center;
         gap: 8px;
-        border-bottom: 1px solid var(--input-border);
+        border-bottom: 1px solid var(--border);
         background: transparent;
         padding: 0 0 12px;
     }
@@ -744,9 +720,9 @@
         flex-shrink: 0;
         place-items: center;
         border-radius: 10px;
-        background: var(--primary-color);
-        color: var(--primary-text);
-        box-shadow: 0 4px 10px var(--shadow-color);
+        background: var(--primary);
+        color: var(--primary-foreground);
+        box-shadow: 0 4px 10px var(--shadow);
     }
 
     .ueb-chat-messages {
@@ -789,20 +765,20 @@
         flex-shrink: 0;
         place-items: center;
         border-radius: 50%;
-        box-shadow: 0 2px 6px var(--shadow-color);
+        box-shadow: 0 2px 6px var(--shadow);
         font-size: var(--fs-sm);
         font-weight: 900;
     }
 
     .ueb-message-avatar.bot {
-        border: 1px solid var(--input-border);
-        background: var(--bg-card-color);
-        color: var(--primary-color);
+        border: 1px solid var(--border);
+        background: var(--card);
+        color: var(--primary);
     }
 
     .ueb-message-avatar.user {
-        background: var(--avatar-bg);
-        color: var(--avatar-text);
+        background: var(--primary);
+        color: var(--primary-foreground);
     }
 
     .ueb-message-bubble {
@@ -839,17 +815,17 @@
     }
 
     .ueb-message-row.bot .ueb-message-bubble {
-        border: 1px solid var(--input-border);
+        border: 1px solid var(--border);
         border-top-left-radius: 4px;
-        background: var(--bg-card-color);
-        color: var(--text-color);
+        background: var(--card);
+        color: var(--foreground);
     }
 
     .ueb-message-row.user .ueb-message-bubble {
         border-top-right-radius: 4px;
-        background: var(--primary-color);
-        color: var(--primary-text);
-        box-shadow: 0 4px 12px var(--shadow-color);
+        background: var(--primary);
+        color: var(--primary-foreground);
+        box-shadow: 0 4px 12px var(--shadow);
     }
 
     .ueb-chat-footer {
@@ -857,7 +833,7 @@
         flex-shrink: 0;
         flex-direction: column;
         gap: 10px;
-        border-top: 1px solid var(--input-border);
+        border-top: 1px solid var(--border);
         background: transparent;
         padding: 12px 0 0;
     }
@@ -873,9 +849,9 @@
         min-height: 48px;
         flex: 1;
         align-items: center;
-        border: 1px solid var(--input-border);
+        border: 1px solid var(--border);
         border-radius: 16px;
-        background: var(--input-bg);
+        background: var(--secondary);
         padding: 0 12px;
         transition:
             border-color 0.2s ease,
@@ -883,7 +859,7 @@
     }
 
     .ueb-chat-input-box:focus-within {
-        border-color: var(--primary-color);
+        border-color: var(--primary);
         box-shadow: none;
     }
 
@@ -897,7 +873,7 @@
         background: transparent !important;
         box-shadow: none !important;
         padding: 12px 4px;
-        color: var(--input-text);
+        color: var(--foreground);
         font-size: var(--fs-sm);
         font-weight: 600;
         outline: 0;

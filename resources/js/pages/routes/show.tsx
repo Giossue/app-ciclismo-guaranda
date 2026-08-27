@@ -756,7 +756,7 @@ function FavoriteRatingPanel({ route }: { route: CyclingRouteMapItem }) {
                                 <Button
                                     type="submit"
                                     disabled={processing}
-                                    className="w-full bg-primary text-primary-foreground hover:bg-[var(--primary-hover)]"
+                                    className="w-full bg-primary text-primary-foreground hover:bg-primary-hover"
                                 >
                                     <Heart data-icon="inline-start" />
                                     Guardar favorita
@@ -770,7 +770,8 @@ function FavoriteRatingPanel({ route }: { route: CyclingRouteMapItem }) {
                         <strong className="text-foreground">
                             {route.user_interaction.valid_tracks_count}
                         </strong>
-                        . Solo cuentan recorridos finalizados con al menos 90% de avance.
+                        . Solo cuentan recorridos finalizados con al menos 90%
+                        de avance.
                     </p>
                 </div>
 
@@ -941,7 +942,9 @@ function FavoriteRatingPanel({ route }: { route: CyclingRouteMapItem }) {
                     <Separator />
 
                     <div className="flex flex-col gap-3">
-                        <h3 className="font-black text-foreground">Comentarios</h3>
+                        <h3 className="font-black text-foreground">
+                            Comentarios
+                        </h3>
                         {route.approved_ratings.map((rating) => (
                             <div
                                 key={rating.id}
@@ -1344,100 +1347,108 @@ function OfflinePanel({
                 <div className="grid gap-4 lg:grid-cols-2">
                     {isOnline ? (
                         <div className="rounded-2xl border border-primary/10 p-4 text-sm text-muted-foreground">
-                            <h3 className="font-black text-foreground">Alertas sin conexión</h3>
-                            <p className="mt-1">Tienes conexión. Para reportar una incidencia usa el tab Reportar. Este formulario aparecerá cuando el dispositivo esté sin internet.</p>
-                        </div>
-                    ) : (
-                    <form
-                        onSubmit={enqueueIncident}
-                        className="grid gap-3 rounded-2xl border border-primary/10 bg-transparent p-4"
-                    >
-                        <div>
-                            <h3 className="font-medium">Alerta sin conexión</h3>
-                            <p className="text-sm text-muted-foreground">
-                                Se enviará cuando recuperes conexión.
+                            <h3 className="font-black text-foreground">
+                                Alertas sin conexión
+                            </h3>
+                            <p className="mt-1">
+                                Tienes conexión. Para reportar una incidencia
+                                usa el tab Reportar. Este formulario aparecerá
+                                cuando el dispositivo esté sin internet.
                             </p>
                         </div>
-                        <div className="grid gap-2">
-                            <Label htmlFor="offline_incident_type_id">
-                                Tipo de incidencia
-                            </Label>
-                            <Select name="incident_type_id" required>
-                                <SelectTrigger
-                                    id="offline_incident_type_id"
-                                    className="w-full"
-                                >
-                                    <SelectValue placeholder="Selecciona tipo" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectGroup>
-                                        {incidentTypes.map((type) => (
-                                            <SelectItem
-                                                key={type.id}
-                                                value={String(type.id)}
-                                            >
-                                                {type.name}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectGroup>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <Input
-                            name="title"
-                            required
-                            placeholder="Título de la incidencia"
-                        />
-                        <textarea
-                            name="description"
-                            required
-                            className={textareaClass}
-                            placeholder="Describe el problema"
-                        />
-                        <input
-                            type="hidden"
-                            name="latitude"
-                            value={offlineIncidentPoint.latitude}
-                        />
-                        <input
-                            type="hidden"
-                            name="longitude"
-                            value={offlineIncidentPoint.longitude}
-                        />
-                        <div className="grid gap-2">
-                            <Label>Ubicación de la alerta</Label>
-                            <div className="overflow-hidden rounded-2xl border border-primary/10">
-                                <MapContainer
-                                    center={[
-                                        offlineIncidentPoint.latitude,
-                                        offlineIncidentPoint.longitude,
-                                    ]}
-                                    zoom={14}
-                                    scrollWheelZoom={false}
-                                    className="h-64 w-full"
-                                >
-                                    <TileLayer
-                                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                                    />
-                                    <SuggestionLocationPicker
-                                        selectedPoint={offlineIncidentPoint}
-                                        onSelect={setOfflineIncidentPoint}
-                                    />
-                                </MapContainer>
-                            </div>
-                            <span className="text-sm text-muted-foreground">
-                                {`${offlineIncidentPoint.latitude.toFixed(5)}, ${offlineIncidentPoint.longitude.toFixed(5)}`}
-                            </span>
-                        </div>
-                        <Button
-                            type="submit"
-                            variant="outline"
-                            disabled={isBusy}
+                    ) : (
+                        <form
+                            onSubmit={enqueueIncident}
+                            className="grid gap-3 rounded-2xl border border-primary/10 bg-transparent p-4"
                         >
-                            Guardar alerta
-                        </Button>
-                    </form>
+                            <div>
+                                <h3 className="font-medium">
+                                    Alerta sin conexión
+                                </h3>
+                                <p className="text-sm text-muted-foreground">
+                                    Se enviará cuando recuperes conexión.
+                                </p>
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="offline_incident_type_id">
+                                    Tipo de incidencia
+                                </Label>
+                                <Select name="incident_type_id" required>
+                                    <SelectTrigger
+                                        id="offline_incident_type_id"
+                                        className="w-full"
+                                    >
+                                        <SelectValue placeholder="Selecciona tipo" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectGroup>
+                                            {incidentTypes.map((type) => (
+                                                <SelectItem
+                                                    key={type.id}
+                                                    value={String(type.id)}
+                                                >
+                                                    {type.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <Input
+                                name="title"
+                                required
+                                placeholder="Título de la incidencia"
+                            />
+                            <textarea
+                                name="description"
+                                required
+                                className={textareaClass}
+                                placeholder="Describe el problema"
+                            />
+                            <input
+                                type="hidden"
+                                name="latitude"
+                                value={offlineIncidentPoint.latitude}
+                            />
+                            <input
+                                type="hidden"
+                                name="longitude"
+                                value={offlineIncidentPoint.longitude}
+                            />
+                            <div className="grid gap-2">
+                                <Label>Ubicación de la alerta</Label>
+                                <div className="overflow-hidden rounded-2xl border border-primary/10">
+                                    <MapContainer
+                                        center={[
+                                            offlineIncidentPoint.latitude,
+                                            offlineIncidentPoint.longitude,
+                                        ]}
+                                        zoom={14}
+                                        scrollWheelZoom={false}
+                                        className="h-64 w-full"
+                                    >
+                                        <TileLayer
+                                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                        />
+                                        <SuggestionLocationPicker
+                                            selectedPoint={offlineIncidentPoint}
+                                            onSelect={setOfflineIncidentPoint}
+                                        />
+                                    </MapContainer>
+                                </div>
+                                <span className="text-sm text-muted-foreground">
+                                    {`${offlineIncidentPoint.latitude.toFixed(5)}, ${offlineIncidentPoint.longitude.toFixed(5)}`}
+                                </span>
+                            </div>
+                            <Button
+                                type="submit"
+                                variant="outline"
+                                disabled={isBusy}
+                            >
+                                Guardar alerta
+                            </Button>
+                        </form>
                     )}
 
                     <div className="flex flex-col gap-3 rounded-2xl border border-primary/10 bg-transparent p-4">
@@ -1796,9 +1807,13 @@ function SuggestionLocationPicker({
             return;
         }
 
-        map.setView([selectedPoint.latitude, selectedPoint.longitude], map.getZoom(), {
-            animate: false,
-        });
+        map.setView(
+            [selectedPoint.latitude, selectedPoint.longitude],
+            map.getZoom(),
+            {
+                animate: false,
+            },
+        );
     }, [map, selectedPoint]);
 
     useMapEvents({

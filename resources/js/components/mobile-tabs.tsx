@@ -55,14 +55,14 @@ export function MobileTabs({
                                     'flex min-h-10 touch-manipulation items-center justify-center gap-1.5 rounded-xl px-3.5 text-sm font-bold whitespace-nowrap transition-[background,color,transform] active:scale-[0.98]',
                                     active
                                         ? 'bg-primary text-primary-foreground'
-                                        : 'text-[var(--tab-inactive-text)] hover:text-foreground',
+                                        : 'text-muted-foreground hover:text-foreground',
                                 )}
                             >
                                 <span>{item.label}</span>
                                 {item.badge ? (
                                     <span
                                         className={cn(
-                                            'rounded-full px-1.5 py-0.5 text-[var(--fs-caption)] leading-none font-black',
+                                            'rounded-full px-1.5 py-0.5 leading-none font-black text-[var(--fs-caption)]',
                                             active
                                                 ? 'bg-primary-foreground/18 text-primary-foreground'
                                                 : 'bg-input text-muted-foreground',

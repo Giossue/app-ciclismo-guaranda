@@ -51,14 +51,14 @@ export default function MenuIndex() {
 
             <div className="ueb-page flex flex-col gap-5 md:w-full">
                 {/* Active Session Info */}
-                <section className="flex flex-col gap-0.5 rounded-2xl border border-[var(--input-border)] bg-[var(--bg-card-color)] p-4">
-                    <p className="font-black tracking-wider text-[var(--fs-caption)] text-[var(--text-secondary)] uppercase">
+                <section className="flex flex-col gap-0.5 rounded-2xl border border-border bg-card p-4">
+                    <p className="font-black tracking-wider text-[var(--fs-caption)] text-muted-foreground uppercase">
                         Sesión activa
                     </p>
-                    <p className="mt-1 text-base font-black text-[var(--text-color)]">
+                    <p className="mt-1 text-base font-black text-foreground">
                         {fullName || auth.user?.name}
                     </p>
-                    <p className="text-xs text-[var(--text-secondary)]">
+                    <p className="text-xs text-muted-foreground">
                         {auth.user?.email}
                     </p>
                 </section>
@@ -66,7 +66,7 @@ export default function MenuIndex() {
                 {/* Navigation Modules */}
                 {moduleItems.length > 0 && (
                     <section className="flex flex-col gap-2">
-                        <p className="px-1 font-black tracking-wider text-[var(--fs-caption)] text-[var(--text-secondary)] uppercase">
+                        <p className="px-1 font-black tracking-wider text-[var(--fs-caption)] text-muted-foreground uppercase">
                             Explorar
                         </p>
                         <div className="grid grid-cols-2 gap-3">
@@ -79,7 +79,7 @@ export default function MenuIndex() {
 
                 {/* Account Options */}
                 <section className="flex flex-col gap-2">
-                    <p className="px-1 font-black tracking-wider text-[var(--fs-caption)] text-[var(--text-secondary)] uppercase">
+                    <p className="px-1 font-black tracking-wider text-[var(--fs-caption)] text-muted-foreground uppercase">
                         Cuenta
                     </p>
                     <div className="grid gap-3">
@@ -94,7 +94,7 @@ export default function MenuIndex() {
                     href={logout()}
                     method="post"
                     as="button"
-                    className="flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl border border-red-500/20 bg-[var(--input-bg)] px-4 text-xs font-black tracking-wider text-red-400 uppercase transition-all duration-200 hover:-translate-y-0.5 hover:border-red-500/40 hover:bg-red-500/10 active:translate-y-0 active:scale-[0.99]"
+                    className="flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl border border-red-500/20 bg-secondary px-4 text-xs font-black tracking-wider text-red-400 uppercase transition-all duration-200 hover:-translate-y-0.5 hover:border-red-500/40 hover:bg-red-500/10 active:translate-y-0 active:scale-[0.99]"
                 >
                     <LogOut className="size-5 shrink-0" />
                     <span>Cerrar sesión</span>
@@ -112,14 +112,14 @@ function NavTile({ item }: { item: NavItem }) {
             href={item.href}
             prefetch
             className={cn(
-                'group flex min-h-[76px] flex-col justify-between gap-2 rounded-2xl border border-[var(--input-border)] bg-[var(--bg-card-color)] p-3.5 transition-all duration-300',
-                'hover:-translate-y-0.5 hover:border-[#b2f000]/40 hover:shadow-[0_4px_16px_var(--shadow-color)]',
+                'group flex min-h-[76px] flex-col justify-between gap-2 rounded-2xl border border-border bg-card p-3.5 transition-all duration-300',
+                'hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-[0_4px_16px_var(--shadow)]',
             )}
         >
             {Icon && (
-                <Icon className="size-5 shrink-0 text-[var(--text-secondary)] transition-colors duration-250 group-hover:text-[#b2f000]" />
+                <Icon className="size-5 shrink-0 text-muted-foreground transition-colors duration-250 group-hover:text-primary" />
             )}
-            <span className="text-sm font-bold text-[var(--text-color)] transition-colors duration-250 group-hover:text-[#b2f000]">
+            <span className="text-sm font-bold text-foreground transition-colors duration-250 group-hover:text-primary">
                 {item.title}
             </span>
         </Link>
@@ -134,16 +134,16 @@ function MenuCard({ item }: { item: AccountItem }) {
             href={item.href}
             prefetch
             className={cn(
-                'flex min-h-16 items-center gap-3.5 rounded-2xl border border-[var(--input-border)] bg-[var(--bg-card-color)] p-4 transition-all duration-300',
-                'group hover:-translate-y-0.5 hover:border-[#b2f000]/40 hover:shadow-[0_4px_16px_var(--shadow-color)]',
+                'flex min-h-16 items-center gap-3.5 rounded-2xl border border-border bg-card p-4 transition-all duration-300',
+                'group hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-[0_4px_16px_var(--shadow)]',
             )}
         >
-            <Icon className="size-5.5 shrink-0 text-[var(--text-secondary)] transition-colors duration-250 group-hover:text-[#b2f000]" />
+            <Icon className="size-5.5 shrink-0 text-muted-foreground transition-colors duration-250 group-hover:text-primary" />
             <span className="min-w-0">
-                <span className="block text-sm leading-none font-bold text-[var(--text-color)] transition-colors duration-250 group-hover:text-[#b2f000]">
+                <span className="block text-sm leading-none font-bold text-foreground transition-colors duration-250 group-hover:text-primary">
                     {item.title}
                 </span>
-                <span className="mt-1.5 block truncate text-xs text-[var(--text-secondary)]">
+                <span className="mt-1.5 block truncate text-xs text-muted-foreground">
                     {item.description}
                 </span>
             </span>

@@ -23,7 +23,7 @@ export function AppMobileNav() {
     }
 
     return (
-        <nav className="fixed inset-x-0 bottom-0 z-[70] h-[calc(var(--bottom-nav-height)+var(--safe-bottom))] border-t border-input bg-card px-2 pb-[var(--safe-bottom)] shadow-[0_-4px_15px_var(--shadow-color)] md:hidden">
+        <nav className="fixed inset-x-0 bottom-0 z-[70] h-[calc(var(--bottom-nav-height)+var(--safe-bottom))] border-t border-input bg-card px-2 pb-[var(--safe-bottom)] shadow-[0_-4px_15px_var(--shadow)] md:hidden">
             <div className="mx-auto flex h-[var(--bottom-nav-height)] max-w-md items-center justify-around gap-1">
                 {primaryItems.map((item) => {
                     const active = isCurrentUrl(item.href);
@@ -36,10 +36,10 @@ export function AppMobileNav() {
                             prefetch
                             aria-current={active ? 'page' : undefined}
                             className={cn(
-                                'flex min-w-0 flex-1 touch-manipulation flex-col items-center justify-center gap-0.5 rounded-xl px-1 py-1 text-[var(--fs-caption)] leading-none font-bold transition-[color,transform] active:scale-[0.96]',
+                                'flex min-w-0 flex-1 touch-manipulation flex-col items-center justify-center gap-0.5 rounded-xl px-1 py-1 leading-none font-bold text-[var(--fs-caption)] transition-[color,transform] active:scale-[0.96]',
                                 active
                                     ? 'text-primary'
-                                    : 'text-[var(--text-muted)] hover:text-foreground',
+                                    : 'text-muted-foreground hover:text-foreground',
                             )}
                         >
                             <span className="relative">
@@ -48,7 +48,7 @@ export function AppMobileNav() {
                                 )}
                                 {item.href === '/notifications' &&
                                     unreadCount > 0 && (
-                                        <span className="absolute -top-1.5 -right-2 grid min-w-4 place-items-center rounded-full bg-primary px-1 text-[var(--fs-caption)] leading-4 font-black text-primary-foreground">
+                                        <span className="absolute -top-1.5 -right-2 grid min-w-4 place-items-center rounded-full bg-primary px-1 leading-4 font-black text-[var(--fs-caption)] text-primary-foreground">
                                             {unreadCount > 9
                                                 ? '9+'
                                                 : unreadCount}
@@ -67,10 +67,10 @@ export function AppMobileNav() {
                     prefetch
                     aria-current={isCurrentUrl('/menu') ? 'page' : undefined}
                     className={cn(
-                        'flex min-w-0 flex-1 touch-manipulation flex-col items-center justify-center gap-0.5 rounded-xl px-1 py-1 text-[var(--fs-caption)] leading-none font-bold transition-[color,transform] active:scale-[0.96]',
+                        'flex min-w-0 flex-1 touch-manipulation flex-col items-center justify-center gap-0.5 rounded-xl px-1 py-1 leading-none font-bold text-[var(--fs-caption)] transition-[color,transform] active:scale-[0.96]',
                         isCurrentUrl('/menu')
                             ? 'text-primary'
-                            : 'text-[var(--text-muted)] hover:text-foreground',
+                            : 'text-muted-foreground hover:text-foreground',
                     )}
                 >
                     <Menu className="size-[18px]" />

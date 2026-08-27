@@ -118,7 +118,9 @@ Después de esa prueba manual, marcar Fase 12 y Fase 14 como `Completado` si tod
 - Tools implementadas bajo `/api/agent/*`: rutas cercanas, detalle de ruta, POIs cercanos, progreso/distancia restante y alertas visibles.
 - Seguridad implementada con `GUARANDA_GO_AGENT_TOOL_TOKEN`; n8n debe enviar Bearer token o `X-Agent-Token`.
 - No se agregaron tablas; se reutilizan rutas, geometría, métricas, POIs, incidencias y recorridos existentes.
-- Pendiente: enviar ubicación transitoria desde chat, contrato de cards en respuesta n8n, render de cards y TTS local.
+- Ubicación transitoria desde chat implementada; pendiente contrato/render de cards y TTS local.
+- Chat n8n: búsqueda de rutas ahora tiene fallback a rutas activas si una consulta genérica no coincide; el chat puede enviar ubicación transitoria al webhook sin guardarla en el historial local.
+- Notificaciones internas web/app implementadas sobre `notificaciones_app`: campana global, contador, pantalla `/notifications` y marcado como leído sin eliminación. Sigue pendiente validar permisos/notificaciones nativas en Android real.
 
 ## Fase 16 refactor frontend mobile first 2026-07-01
 

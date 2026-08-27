@@ -11,22 +11,22 @@ export default function Appearance() {
 
             <div className="ueb-page flex flex-col gap-5 md:w-full">
                 {/* Header with back button */}
-                <div className="flex items-center gap-3 border-b border-[var(--input-border)]/40 py-3">
+                <div className="flex items-center gap-3 border-b border-border/40 py-3">
                     <Button
                         variant="ghost"
                         size="icon"
                         asChild
-                        className="size-11 rounded-2xl border border-[var(--input-border)] bg-[var(--input-bg)] text-[var(--text-secondary)] transition-all duration-200 hover:bg-[var(--input-border)] hover:text-[var(--text-color)]"
+                        className="size-11 rounded-2xl border border-border bg-secondary text-muted-foreground transition-all duration-200 hover:bg-border hover:text-foreground"
                     >
                         <Link href="/menu" replace>
                             <ArrowLeft className="size-5" />
                         </Link>
                     </Button>
                     <div className="flex flex-col">
-                        <h1 className="text-base leading-none font-black text-[var(--text-color)]">
+                        <h1 className="text-base leading-none font-black text-foreground">
                             Apariencia
                         </h1>
-                        <p className="mt-1 text-[var(--fs-caption)] text-[var(--text-secondary)]">
+                        <p className="mt-1 text-[var(--fs-caption)] text-muted-foreground">
                             Personaliza el tema visual de Guaranda Go
                         </p>
                     </div>

@@ -52,15 +52,15 @@ function MountainScene() {
         >
             <path
                 d="M0 140L72 74L122 118L182 46L268 132L332 86L430 154V200H0V140Z"
-                fill="rgb(178 240 0 / 0.11)"
+                className="fill-primary/10"
             />
             <path
                 d="M0 166L88 104L150 140L224 72L302 154L362 116L430 162V200H0V166Z"
-                fill="rgb(178 240 0 / 0.16)"
+                className="fill-primary/15"
             />
             <path
                 d="M0 182L68 138L132 162L206 112L286 174L350 144L430 176V200H0V182Z"
-                fill="rgb(178 240 0 / 0.24)"
+                className="fill-primary/25"
             />
         </svg>
     );

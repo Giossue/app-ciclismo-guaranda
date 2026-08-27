@@ -66,7 +66,7 @@ export default function NotificationsIndex({
                                     'flex min-h-10 touch-manipulation items-center justify-center rounded-xl px-3.5 text-sm font-bold whitespace-nowrap transition-[background,color,transform] active:scale-[0.98]',
                                     !onlyUnread
                                         ? 'bg-primary text-primary-foreground'
-                                        : 'text-[var(--tab-inactive-text)] hover:text-foreground',
+                                        : 'text-muted-foreground hover:text-foreground',
                                 )}
                             >
                                 Todas
@@ -78,7 +78,7 @@ export default function NotificationsIndex({
                                     'flex min-h-10 touch-manipulation items-center justify-center rounded-xl px-3.5 text-sm font-bold whitespace-nowrap transition-[background,color,transform] active:scale-[0.98]',
                                     onlyUnread
                                         ? 'bg-primary text-primary-foreground'
-                                        : 'text-[var(--tab-inactive-text)] hover:text-foreground',
+                                        : 'text-muted-foreground hover:text-foreground',
                                 )}
                             >
                                 No leídas

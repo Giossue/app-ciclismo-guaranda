@@ -629,7 +629,7 @@ function MessageBubble({
                 </div>
                 <div className="flex items-center gap-2 px-1">
                     {message.sent_at && (
-                        <span className="text-[0.625rem] leading-none font-black tracking-wide text-[var(--text-muted)]">
+                        <span className="text-[0.625rem] leading-none font-black tracking-wide text-muted-foreground">
                             {new Date(message.sent_at).toLocaleTimeString(
                                 'es-EC',
                                 {
