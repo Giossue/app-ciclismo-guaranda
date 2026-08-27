@@ -1,6 +1,7 @@
 import { Form, Head, Link } from '@inertiajs/react';
 import { CheckCircle2, XCircle } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import { DatePicker } from '@/components/date-picker';
 import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
 import { Button } from '@/components/ui/button';
@@ -132,9 +133,8 @@ export default function Register({ genders, passwordRules }: Props) {
                                     <FieldLabel htmlFor="birth_date">
                                         Fecha de nacimiento
                                     </FieldLabel>
-                                    <Input
+                                    <DatePicker
                                         id="birth_date"
-                                        type="date"
                                         name="birth_date"
                                         required
                                         autoComplete="bday"

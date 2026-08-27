@@ -1,6 +1,6 @@
 import { createInertiaApp } from '@inertiajs/react';
+import { configureBoneyard } from 'boneyard-js/react';
 import './bones/registry';
-import { NavigationSkeleton } from '@/components/navigation-skeleton';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { initializeTheme } from '@/hooks/use-appearance';
@@ -11,6 +11,13 @@ import AuthLayout from '@/layouts/auth-layout';
 import { setupNativeBackButton } from '@/lib/native/capacitor';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Guaranda Go';
+
+configureBoneyard({
+    color: 'var(--muted)',
+    darkColor: 'var(--muted)',
+    animate: 'pulse',
+    transition: 160,
+});
 
 createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
@@ -34,7 +41,7 @@ createInertiaApp({
     withApp(app) {
         return (
             <TooltipProvider delayDuration={0}>
-                <NavigationSkeleton>{app}</NavigationSkeleton>
+                {app}
                 <Toaster />
             </TooltipProvider>
         );

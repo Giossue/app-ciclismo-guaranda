@@ -2,6 +2,7 @@ import { Head, Link, router } from '@inertiajs/react';
 import { Download, Filter, TrendingUp } from 'lucide-react';
 import { useState } from 'react';
 import type { FormEvent } from 'react';
+import { DatePicker } from '@/components/date-picker';
 import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -12,7 +13,6 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 type Metric = {
@@ -113,24 +113,18 @@ export default function AdminStatisticsIndex({
                         >
                             <div className="grid gap-2">
                                 <Label htmlFor="from">Desde</Label>
-                                <Input
+                                <DatePicker
                                     id="from"
-                                    type="date"
                                     value={from}
-                                    onChange={(event) =>
-                                        setFrom(event.target.value)
-                                    }
+                                    onChange={setFrom}
                                 />
                             </div>
                             <div className="grid gap-2">
                                 <Label htmlFor="to">Hasta</Label>
-                                <Input
+                                <DatePicker
                                     id="to"
-                                    type="date"
                                     value={to}
-                                    onChange={(event) =>
-                                        setTo(event.target.value)
-                                    }
+                                    onChange={setTo}
                                 />
                             </div>
                             <Button type="submit">

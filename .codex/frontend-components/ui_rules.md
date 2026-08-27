@@ -17,6 +17,7 @@
 - Usar `Dialog`, `Sheet` o `Drawer` con título accesible.
 - Usar `FieldGroup` y `Field` para formularios.
 - Usar `sonner` para toasts si ya está disponible.
+- Para fechas, usar `DatePicker` compuesto por `Calendar` y `Popover` de shadcn; no usar `input[type="date"]`, para evitar el selector nativo del dispositivo y mantener una experiencia consistente en Android.
 
 ## Tailwind
 
@@ -46,13 +47,14 @@ Antes de una refactorización visual amplia, ejecutar `python3 temp/audit_ui_tok
 - La pila global, definida en `resources/css/app.css`, prioriza `-apple-system` (San Francisco en iOS y macOS), seguida de `Segoe UI` (Windows), `Roboto` (Android) y `Helvetica`/`Arial`/`sans-serif` como respaldo.
 - `font-sans` y `font-display` usan la misma pila nativa para preservar rendimiento, legibilidad y consistencia por plataforma.
 
-## Skeletons de navegación
+## Skeletons de datos
 
-- Boneyard genera los skeletons desde el DOM real de las pantallas; no crear placeholders manuales para las visitas Inertia GET.
-- `NavigationSkeleton` envuelve la aplicación en `resources/js/app.tsx` y sustituye el indicador global de carga anterior. Las mutaciones de formularios mantienen su propio estado pendiente.
-- Los archivos generados viven en `resources/js/bones/` y se versionan. Tras cambiar un layout, iniciar Laravel localmente y Vite, ejecutar `npm run bones:build` para regenerarlos.
-- Los nombres de Boneyard se derivan de la ruta actual y solo contienen caracteres seguros. El `Skeleton` de Boneyard debe importarse con alias `BoneyardSkeleton` para distinguirlo del componente `Skeleton` de shadcn/ui.
-- Las rutas protegidas se capturan con una sesión local temporal o fixtures de desarrollo; no guardar cookies, tokens ni credenciales en `boneyard.config.json`.
+- Boneyard se usa únicamente en componentes que tengan un estado de carga real (`loading`) o suspendan; nunca como overlay global de navegación ni para formularios de autenticación.
+- Cada componente que espere datos remotos envuelve solo su propia superficie con `Skeleton` de `boneyard-js/react`, define un `name` estable y, si necesita datos para renderizar durante la captura, aporta un `fixture` sin datos reales.
+- `resources/js/app.tsx` configura una sola vez los valores visuales globales y carga `resources/js/bones/registry.ts`; ningún componente importa JSON de bones manualmente.
+- La captura automática de Boneyard solo se habilita cuando una superficie asíncrona nombrada tenga una ruta o fixture de desarrollo explícita. No añadir watchers globales: Laravel/Inertia sirve las páginas desde PHP y una captura global recorrería enlaces/formularios sin estado de datos que capturar.
+- Los bones generados viven en `resources/js/bones/` y se versionan; el registro de entrada permite que cada `Skeleton` nombrado los resuelva automáticamente.
+- Las rutas protegidas no almacenan cookies, tokens ni credenciales en `boneyard.config.json`. Para capturar una superficie autenticada se usa un fixture o un entorno local de desarrollo explícitamente preparado.
 
 ## UX crítica para Guaranda Go
 

@@ -61,6 +61,7 @@ import {
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { mediaUrl } from '@/lib/media';
+import { getNetworkStatus, watchNetworkStatus } from '@/lib/native/capacitor';
 import {
     deleteOfflineRoute,
     enqueueOfflineEvent,
@@ -73,7 +74,6 @@ import type {
     OfflineRoutePackage,
     OfflineRouteRecord,
 } from '@/lib/offline/local-database';
-import { getNetworkStatus, watchNetworkStatus } from '@/lib/native/capacitor';
 import { syncPendingOfflineEvents } from '@/lib/offline/sync-client';
 import type {
     ActiveTrack,

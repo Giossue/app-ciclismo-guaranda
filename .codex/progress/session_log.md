@@ -165,9 +165,9 @@
 
 - Se actualizó AGENTS.md, .codex/rules/database_operations.md y .codex/rules/project_rules.md para dejar obligatoria la regla: producción sin seeders automáticos; datos reales directos en BD; schema por migraciones; deploy normal sin seeders.
 
-- Se agregó workflow  para crear GitHub Releases automáticas con APK release firmada cuando ,  y  pasan en .
-- Se configuró  para leer firma y versión Android desde variables de entorno del CI.
-- Se activó ignore de  y  en  para evitar subir keystores al repositorio.
+- Se agregó workflow para crear GitHub Releases automáticas con APK release firmada cuando , y pasan en .
+- Se configuró para leer firma y versión Android desde variables de entorno del CI.
+- Se activó ignore de y en para evitar subir keystores al repositorio.
 
 - Se agregó workflow de release APK para crear GitHub Releases automáticas con APK release firmada cuando tests, linter y android-apk pasan en main.
 - Se configuró Android Gradle para leer firma y versión Android desde variables de entorno del CI.
@@ -181,7 +181,7 @@
 - Se analizó feedback de testers contra el código actual: creación de rutas, mapa, POIs, registro, contraseña, portadas y asistente IA.
 - Validaciones aprobadas: npm run format:check, npm run types:check, npm run lint:check y npm run build.
 
-- Se implementó paquete bugfix de feedback de testers en  con 8 archivos de seguimiento.
+- Se implementó paquete bugfix de feedback de testers en con 8 archivos de seguimiento.
 - Se eliminó el bloque de tarjetas informativas del welcome/login público.
 - Se agregó creación/edición de rutas con mapa Leaflet.draw, geocoder OSM/Nominatim, cálculo de distancia y derivación automática de inicio/final.
 - Se agregó subida de imagen principal y galería de rutas con límite de 5 MB por imagen, y portadas en listado/detalle.
@@ -461,9 +461,9 @@
 
 ## 2026-08-27 — Boneyard
 
-- Se instaló `boneyard-js`, se añadió la configuración mobile-first, el script `npm run bones:build` y el registro generado de bones en `resources/js/bones/`.
-- `NavigationSkeleton` reemplazó el indicador global de carga para visitas GET de Inertia; los formularios siguen mostrando su estado de envío local.
-- Se generaron y verificaron los bones de inicio, login y recuperación de contraseña. Registro requiere una BD local con sus tablas para completar su captura.
+- Se instaló `boneyard-js` y se centralizaron sus defaults visuales y registro en la entrada React.
+- La primera integración como overlay global de visitas Inertia se retiró: generaba huesos de páginas completas y era inapropiada para autenticación.
+- La captura automática se reserva para componentes nombrados que dispongan de una ruta o fixture de desarrollo; no se deja un watcher global porque Laravel/Inertia no entrega una superficie de datos válida en cada navegación y el crawler recorrería formularios. Boneyard queda reservado para datos con estado `loading` real o Suspense.
 
 ## 2026-08-27 — Radio visual y auth shadcn
 
@@ -474,3 +474,14 @@
 
 - Se desactivaron los disparadores automáticos de `android-apk`, `tests` y `linter`; los tres workflows quedan disponibles solo desde la pestaña Actions mediante `workflow_dispatch`.
 - Dokploy conserva su autodespliegue nativo al recibir el push, sin esperar checks de GitHub Actions ni requerir cambios en su webhook.
+
+## 2026-08-27 — DatePicker shadcn y PostgreSQL local
+
+- Se reemplazaron los cinco campos `input[type="date"]` por un DatePicker reutilizable con `Calendar` y `Popover` de shadcn, localizado en español y compatible con los valores ISO del backend.
+- Se añadieron `react-day-picker`, `date-fns` y el primitive de Popover Radix; no se sobrescribieron las primitives shadcn ya personalizadas.
+- Se creó PostgreSQL de desarrollo en Podman, se actualizaron solo las variables DB de `.env`, se aplicaron 16 migraciones y se ejecutó exclusivamente `CatalogSeeder`.
+- Validaciones aprobadas: `npm run types:check`, ESLint focalizado, `npm run build`, captura Boneyard de registro y petición local `GET /register` con HTTP 200.
+
+## 2026-08-27 — Skeletons de autenticación
+
+- Login, registro, recuperación, confirmación, reset y 2FA no usan Boneyard; conservan sus estados pendientes de formulario y se muestran de inmediato.

@@ -1,6 +1,7 @@
 import { Form, Head, Link, usePage } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
 import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
+import { DatePicker } from '@/components/date-picker';
 import DeleteUser from '@/components/delete-user';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
@@ -161,9 +162,8 @@ export default function Profile({
                                 >
                                     Fecha de nacimiento
                                 </Label>
-                                <Input
+                                <DatePicker
                                     id="birth_date"
-                                    type="date"
                                     defaultValue={user.birth_date ?? ''}
                                     name="birth_date"
                                     required

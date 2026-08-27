@@ -1,5 +1,10 @@
 # Registro de decisiones
 
+## 2026-08-27 — Fechas consistentes entre web y Android
+
+- Las fechas de formularios usan un DatePicker propio basado en `Calendar` y `Popover` de shadcn, no `input[type="date"]` ni el selector nativo.
+- La presentación se localiza en español y la frontera con Laravel conserva fechas ISO (`YYYY-MM-DD`) sin conversiones de zona horaria.
+
 ## 2026-06-29
 
 - Guaranda Go será app híbrida Android con Capacitor.
@@ -140,9 +145,9 @@
 
 ## 2026-08-27 — Skeletons automáticos con Boneyard
 
-- Boneyard reemplaza el indicador global de carga durante visitas GET de Inertia. Genera archivos estáticos de skeleton desde el DOM, sin medir layouts en tiempo de ejecución.
-- La captura se ejecuta de forma explícita con `npm run bones:build` para no abrir un navegador automático por cada HMR en el stack Laravel + Vite. Los bones generados forman parte del código versionado.
-- Las mutaciones no activan el skeleton global: conservan su feedback de procesamiento local. Las capturas autenticadas usan solo sesión temporal o fixtures, sin secretos en configuración.
+- Boneyard no se usa como overlay global de visitas Inertia: el estado `loading` debe pertenecer a la superficie de datos que realmente espera una respuesta. Autenticación y mutaciones conservan su feedback propio.
+- La generación se automatiza por componentes Boneyard nombrados que tengan una ruta o fixture de desarrollo explícita. Se rechaza un watcher global: Laravel/Inertia no sirve las páginas desde Vite y el crawler recorrería formularios/rutas sin carga de datos. Los bones generados permanecen versionados.
+- Las capturas autenticadas usan fixtures o un entorno local preparado; no se guardan secretos en configuración.
 
 ## 2026-08-27 — Radios compactos y bloques de autenticación
 

@@ -1,5 +1,6 @@
 import { Form, Head, usePage } from '@inertiajs/react';
 import UserController from '@/actions/App/Http/Controllers/Admin/UserController';
+import { DatePicker } from '@/components/date-picker';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
 import { Badge } from '@/components/ui/badge';
@@ -198,9 +199,8 @@ export default function AdminUsersIndex({ users, roles, genders }: Props) {
                                                     >
                                                         Fecha de nacimiento
                                                     </Label>
-                                                    <Input
+                                                    <DatePicker
                                                         id={`birth_date-${user.id}`}
-                                                        type="date"
                                                         name="birth_date"
                                                         defaultValue={
                                                             user.birth_date ??

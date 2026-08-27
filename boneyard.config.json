@@ -2,7 +2,6 @@
     "breakpoints": [375, 430, 760, 1280],
     "out": "./resources/js/bones",
     "wait": 500,
-    "routes": ["/login", "/register", "/forgot-password"],
     "color": "var(--muted)",
     "darkColor": "var(--muted)",
     "animate": "pulse",

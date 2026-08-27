@@ -7,4 +7,9 @@
 - Cambios destructivos requieren plan de datos, backup/verificación y migración reversible cuando sea posible.
 - Considerar índices, carga anticipada y paginación para evitar N+1 y listas costosas; no optimizar sin una medición.
 
+## Desarrollo local
+
+- Para desarrollo local se puede usar PostgreSQL en Podman con volumen persistente y un puerto publicado solo en `127.0.0.1`.
+- La conexión local vive exclusivamente en `.env`; aplicar las migraciones existentes y, si se requieren catálogos de desarrollo, ejecutar solamente los seeders explícitos necesarios.
+
 Reglas operativas completas: `.codex/rules/database_operations.md` y `.codex/architecture/database_postgis.md`.

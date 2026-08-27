@@ -303,7 +303,6 @@ Validación aprobada:
 
 No hubo cambios de BD, backend ni rutas URL.
 
-
 ## Reimplementación 2026-07-01 - Clon visual `ciclismo-ueb`
 
 Por feedback del usuario se reemplazó la dirección Andean Field UI por el estilo del repositorio `ciclismo-ueb`.
@@ -341,13 +340,18 @@ Notas:
 - Se creó `temp/audit_ui_tokens.py` para inventariar radios, sombras, colores no semánticos y tokens antes de futuras refactorizaciones.
 - Validación focalizada aprobada: Prettier, ESLint de componentes modificados, compilación Python y `npm run build`.
 
-## Boneyard para cargas de navegación 2026-08-27
+## Boneyard para cargas de datos 2026-08-27
 
-- Se reemplazó el indicador global de spinner por Boneyard: las visitas GET de Inertia muestran un skeleton extraído del DOM de la pantalla actual; los envíos de formularios conservan sus estados de procesamiento locales.
-- Los bones responsivos y el registro generado se guardan en `resources/js/bones/`. `boneyard.config.json` configura breakpoints mobile-first y colores semánticos; `npm run bones:build` los recaptura desde Laravel + Vite locales.
-- Las pantallas protegidas requieren una sesión local temporal o fixtures para ser capturadas. No se guardan credenciales de captura en el repositorio.
+- Boneyard no sustituye la navegación global de Inertia: se aplica de forma localizada en componentes con `loading` real o Suspense y nunca sobre formularios de autenticación.
+- La captura automática se configura por superficie asíncrona nombrada y con ruta o fixture de desarrollo explícita; no se instala un watcher global sobre Laravel/Inertia porque recorrería rutas y formularios que no están cargando datos. `boneyard.config.json` mantiene los defaults mobile-first.
+- Las superficies autenticadas se capturan mediante fixtures o un entorno local preparado, sin cookies, tokens ni credenciales en el repositorio.
 
 ## Ajuste de densidad y autenticación 2026-08-27
 
 - La escala global de radios se redujo aproximadamente 30 % desde sus tokens, manteniendo círculos y píldoras como formas semánticas sin cambios.
 - Los bloques oficiales shadcn `login-01` y `signup-03` se revisaron por CLI y se adaptaron sobre las páginas Fortify existentes, conservando campos de Guaranda Go, validación, Wayfinder y primitives locales.
+
+## DatePicker consistente 2026-08-27
+
+- Registro, perfil, usuarios y filtros de estadísticas usan un selector reutilizable compuesto por `Calendar` y `Popover` de shadcn.
+- La UI no invoca el selector nativo del dispositivo; Laravel sigue recibiendo valores `YYYY-MM-DD`.

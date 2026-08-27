@@ -130,3 +130,8 @@ Después de esa prueba manual, marcar Fase 12 y Fase 14 como `Completado` si tod
 - La generación de pantalla style board en Stitch dio timeout y no dejó pantallas listadas; no se reintentó.
 - Validación frontend aprobada: `types:check`, `lint:check`, `format:check` y `build`. No se realizaron cambios de BD ni backend.
 - Sistema visual Andean Field UI aplicado: tokens globales, shadcn base, navbar, auth, welcome, ajustes, mapas, tabs, modales, inputs, badges, botones y toasts.
+
+## Entorno local 2026-08-27
+
+- Se creó PostgreSQL local en el contenedor Podman `guaranda-go-postgres`, con volumen persistente y acceso limitado a `127.0.0.1`.
+- `.env` local usa esa instancia; se aplicaron las 16 migraciones existentes y `CatalogSeeder` para los catálogos de desarrollo, sin tocar producción ni crear administrador.
