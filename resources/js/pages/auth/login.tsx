@@ -1,4 +1,5 @@
 import { Form, Head, Link } from '@inertiajs/react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 import PasswordInput from '@/components/password-input';
 import { Button } from '@/components/ui/button';
@@ -24,6 +25,9 @@ type Props = {
 
 export default function Login({ status, canResetPassword }: Props) {
     useToastMessage(status);
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const canSubmit = email.trim().length > 0 && password.length > 0;
 
     return (
         <>
@@ -64,6 +68,12 @@ export default function Login({ status, canResetPassword }: Props) {
                                             id="email"
                                             type="email"
                                             name="email"
+                                            value={email}
+                                            onChange={(event) =>
+                                                setEmail(
+                                                    event.currentTarget.value,
+                                                )
+                                            }
                                             required
                                             autoFocus
                                             autoComplete="email"
@@ -88,6 +98,12 @@ export default function Login({ status, canResetPassword }: Props) {
                                         <PasswordInput
                                             id="password"
                                             name="password"
+                                            value={password}
+                                            onChange={(event) =>
+                                                setPassword(
+                                                    event.currentTarget.value,
+                                                )
+                                            }
                                             required
                                             autoComplete="current-password"
                                         />
@@ -109,7 +125,7 @@ export default function Login({ status, canResetPassword }: Props) {
                                     <Field>
                                         <Button
                                             type="submit"
-                                            disabled={processing}
+                                            disabled={processing || !canSubmit}
                                             data-test="login-button"
                                         >
                                             {processing && <Spinner />}
