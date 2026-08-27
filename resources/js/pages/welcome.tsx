@@ -2,7 +2,6 @@ import { Head, Link, usePage } from '@inertiajs/react';
 import type { LucideIcon } from 'lucide-react';
 import { ArrowRight, Bot, Download, MapPinned, Route } from 'lucide-react';
 import AppLogoIcon from '@/components/app-logo-icon';
-import AppearanceCycleButton from '@/components/appearance-cycle-button';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -29,7 +28,7 @@ export default function Welcome() {
 
             <main className="min-h-[100dvh] bg-background px-[var(--page-pad-x)] py-[var(--page-pad-y)] text-foreground lg:py-8">
                 <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 lg:gap-8">
-                    <header className="flex items-center justify-between gap-4">
+                    <header className="flex items-center justify-between gap-4 pr-14 sm:pr-0">
                         <Link
                             href={home()}
                             className="flex items-center gap-3 text-foreground"
@@ -46,7 +45,6 @@ export default function Welcome() {
                         </Link>
 
                         <div className="flex items-center gap-2">
-                            <AppearanceCycleButton />
                             <Button asChild variant="outline" size="sm">
                                 <Link href={primaryHref}>
                                     {auth.user ? 'Mi panel' : 'Ingresar'}
