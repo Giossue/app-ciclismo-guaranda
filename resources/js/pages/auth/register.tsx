@@ -49,8 +49,8 @@ export default function Register({ genders, passwordRules }: Props) {
         <>
             <Head title="Crear cuenta" />
 
-            <Card>
-                <CardHeader>
+            <Card className="gap-6 py-6">
+                <CardHeader className="gap-2 text-center">
                     <CardTitle>Crea tu cuenta</CardTitle>
                     <CardDescription>
                         Completa tus datos para comenzar a recorrer Guaranda.

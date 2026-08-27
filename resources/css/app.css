@@ -106,12 +106,12 @@
     --page-pad-y: clamp(18px, 4vw, 34px);
     --page-gap: 18px;
     /* Radius contracts: controls, cards, overlays and map surfaces. */
-    --radius-tight: 0.25rem;
-    --radius-compact: 0.5rem;
-    --radius-control: 0.75rem;
-    --radius-surface: 1rem;
-    --radius-emphasis: 1.5rem;
-    --radius-map: 2rem;
+    --radius-tight: 0.175rem;
+    --radius-compact: 0.35rem;
+    --radius-control: 0.525rem;
+    --radius-surface: 0.7rem;
+    --radius-emphasis: 1.05rem;
+    --radius-map: 1.4rem;
     --radius-pill: 9999px;
     --radius-circle: 50%;
     --control-height: 3.25rem;

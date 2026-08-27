@@ -31,6 +31,7 @@
 Los estilos reutilizables se definen en `resources/css/app.css`; no crear otra fuente de verdad para radios, alturas o elevaciones.
 
 - Radios: `--radius-tight`, `--radius-compact`, `--radius-control`, `--radius-surface`, `--radius-emphasis`, `--radius-map`, `--radius-pill` y `--radius-circle`.
+- La escala no circular vigente reduce aproximadamente 30 % los radios frente a la versión anterior; cualquier ajuste futuro debe preservar esas proporciones en vez de añadir valores locales.
 - Las utilidades `rounded-sm`, `rounded-md`, `rounded-lg`, `rounded-xl`, `rounded-2xl` y `rounded-3xl` se enlazan a esa escala desde `@theme`.
 - Primitives shadcn y controles compartidos deben usar el token semántico adecuado (`control` para inputs/badges/toggles; `surface` para botones, cards, diálogos y toasts).
 - Alturas: `--control-height`, `--action-height`, `--action-height-sm` y `--action-height-lg`.

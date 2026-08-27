@@ -144,6 +144,11 @@
 - La captura se ejecuta de forma explícita con `npm run bones:build` para no abrir un navegador automático por cada HMR en el stack Laravel + Vite. Los bones generados forman parte del código versionado.
 - Las mutaciones no activan el skeleton global: conservan su feedback de procesamiento local. Las capturas autenticadas usan solo sesión temporal o fixtures, sin secretos en configuración.
 
+## 2026-08-27 — Radios compactos y bloques de autenticación
+
+- Todos los radios no circulares se reducen aproximadamente 30 % mediante `resources/css/app.css`; el sistema mantiene una única escala global.
+- Los bloques `login-01` y `signup-03` de shadcn sirven como composición de referencia, pero no sobrescriben las primitives locales ni reemplazan los formularios Fortify. Se adaptan a los campos y rutas tipadas reales de Guaranda Go.
+
 
 ## 2026-07-01 — Historial local posterior a n8n
 - Decisión: Laravel puede persistir `conversaciones_ia`/`mensajes_ia` después de que n8n responda, para mostrar historial en la app sin guardar mensajes al momento de escribir.

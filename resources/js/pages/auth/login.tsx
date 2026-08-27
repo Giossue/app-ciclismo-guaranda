@@ -32,8 +32,8 @@ export default function Login({ status, canResetPassword }: Props) {
         <>
             <Head title="Iniciar sesión" />
 
-            <Card>
-                <CardHeader>
+            <Card className="gap-6 py-6">
+                <CardHeader className="gap-2">
                     <CardTitle>Inicia sesión</CardTitle>
                     <CardDescription>
                         Ingresa tus datos para continuar en Guaranda Go.

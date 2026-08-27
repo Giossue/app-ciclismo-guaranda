@@ -346,3 +346,8 @@ Notas:
 - Se reemplazó el indicador global de spinner por Boneyard: las visitas GET de Inertia muestran un skeleton extraído del DOM de la pantalla actual; los envíos de formularios conservan sus estados de procesamiento locales.
 - Los bones responsivos y el registro generado se guardan en `resources/js/bones/`. `boneyard.config.json` configura breakpoints mobile-first y colores semánticos; `npm run bones:build` los recaptura desde Laravel + Vite locales.
 - Las pantallas protegidas requieren una sesión local temporal o fixtures para ser capturadas. No se guardan credenciales de captura en el repositorio.
+
+## Ajuste de densidad y autenticación 2026-08-27
+
+- La escala global de radios se redujo aproximadamente 30 % desde sus tokens, manteniendo círculos y píldoras como formas semánticas sin cambios.
+- Los bloques oficiales shadcn `login-01` y `signup-03` se revisaron por CLI y se adaptaron sobre las páginas Fortify existentes, conservando campos de Guaranda Go, validación, Wayfinder y primitives locales.
