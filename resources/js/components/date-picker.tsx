@@ -95,6 +95,7 @@ function DatePicker({
                 <PopoverTrigger asChild>
                     <Button
                         id={id}
+                        data-slot="date-picker-trigger"
                         type="button"
                         variant="outline"
                         disabled={disabled}

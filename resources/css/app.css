@@ -340,12 +340,13 @@
 
     [data-slot='input'],
     textarea,
-    [data-slot='select-trigger'] {
+    [data-slot='select-trigger'],
+    [data-slot='date-picker-trigger'] {
         background: var(--input-surface);
         border-color: var(--border);
         color: var(--foreground);
         border-radius: var(--radius-surface);
-        height: var(--control-height);
+        height: var(--control-height) !important;
         font-weight: 600;
     }
 
@@ -358,7 +359,9 @@
     [data-slot='input']:focus,
     textarea:focus,
     [data-slot='select-trigger']:focus,
-    [data-slot='select-trigger'][data-state='open'] {
+    [data-slot='select-trigger'][data-state='open'],
+    [data-slot='date-picker-trigger']:focus-visible,
+    [data-slot='date-picker-trigger'][data-state='open'] {
         border-color: var(--primary);
         box-shadow: none;
     }
@@ -422,7 +425,8 @@
 
     [data-slot='input'],
     textarea,
-    [data-slot='select-trigger'] {
+    [data-slot='select-trigger'],
+    [data-slot='date-picker-trigger'] {
         background: var(--input-surface) !important;
         box-shadow: none !important;
     }
