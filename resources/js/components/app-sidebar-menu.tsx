@@ -53,11 +53,15 @@ export function AppSidebarMenu({ items }: { items: NavItem[] }) {
         .filter(Boolean)
         .join(' ');
 
-    const close = () => setOpenMobile(false);
+    // Cierra la hoja y libera el `pointer-events` que Radix fija en el body
+    // cuando la navegación de Inertia ocurre a la vez que el cierre.
+    const close = () => {
+        setOpenMobile(false);
+        cleanup();
+    };
 
     const handleLogout = () => {
         close();
-        cleanup();
         router.flushAll();
     };
 
