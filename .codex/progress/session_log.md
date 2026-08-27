@@ -429,3 +429,15 @@
 - Se eliminó la capa de aliases visuales legacy (`--bg-color`, `--input-border`, `--primary-color`, etc.) y se consolidó la paleta en los tokens semánticos de shadcn/Tailwind en `resources/css/app.css`.
 - Las pantallas y componentes React usan ahora clases semánticas (`bg-card`, `text-foreground`, `border-border`, `bg-primary`, etc.); no quedan colores hardcodeados en la UI.
 - Se conservaron tokens de estado y propósito (`primary-hover`, `primary-glow`, `shadow`, `overlay`, `map-background` y `brand-accent`) para los casos que no encajan en el set base de shadcn.
+
+## 2026-08-27 — Actualización de contexto de ingeniería
+
+- Se revisó la versión actual de `Elvis-WDev/ExpressJS-agent-context` y se incorporaron sus prácticas útiles adaptadas a Laravel 13, React/Inertia, Capacitor, PostgreSQL/PostGIS y n8n.
+- Se crearon `ARCHITECTURE.md`, `CLAUDE.md`, instrucciones GitHub Copilot y `docs/` con arquitectura, producto, calidad, seguridad, planes y plantillas de especificación/ADR.
+- Se añadieron skills locales de implementación, migraciones, frontend operativo, hardening, rendimiento, revisión, documentación y commits.
+- Se actualizaron `AGENTS.md` y `.codex/README.md` para establecer una sola ruta de lectura y evitar duplicación entre `docs/` y `.codex/`.
+
+## 2026-08-27 — Context7 y shadcn/ui
+
+- Se reforzó el contexto transversal para exigir Context7 al verificar documentación de librerías externas y Laravel Boost para paquetes Laravel instalados.
+- Se documentó el flujo shadcn/ui: skill + contexto del proyecto + documentación del componente + inspección de diff antes de agregar/actualizar, manteniendo tokens, accesibilidad y componentes existentes.

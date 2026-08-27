@@ -1,24 +1,27 @@
 # AGENTS.md — Router de conocimiento para Guaranda Go
 
-Este archivo es el punto de entrada para cualquier agente que trabaje en este repositorio Laravel/React. Antes de implementar, modificar o revisar código, usa este router para cargar el contexto correcto desde `README.md` y `.codex/`.
+Este archivo es el punto de entrada para cualquier agente que trabaje en este repositorio Laravel/React. Antes de implementar, modificar o revisar código, usa este router para cargar el contexto correcto desde `README.md`, `ARCHITECTURE.md`, `docs/` y `.codex/`.
 
 ## 1. Contexto base obligatorio
 
 Siempre considera estos archivos como fuente principal:
 
 1. `README.md` — especificación completa del producto Guaranda Go.
-2. `.codex/README.md` — mapa de carpetas de conocimiento.
-3. `AGENTS.md` — reglas del proyecto Laravel/React y de Laravel Boost.
+2. `ARCHITECTURE.md` — mapa técnico de alto nivel y fronteras del sistema real.
+3. `docs/README.md` — índice transversal de producto, arquitectura, calidad y seguridad.
+4. `.codex/README.md` — mapa del detalle operativo, dominio y progreso.
+5. `AGENTS.md` — reglas del proyecto Laravel/React y de Laravel Boost.
 
 Si hay conflicto entre documentos:
 
 1. La petición actual del usuario tiene prioridad.
 2. Luego `AGENTS.md` de la raíz.
 3. Luego `README.md`.
-4. Luego los documentos específicos de `.codex/`.
-5. Luego reglas de Laravel Boost, especialmente para estilo, tests y paquetes instalados.
+4. Luego `ARCHITECTURE.md` y `docs/`.
+5. Luego los documentos específicos de `.codex/`.
+6. Luego reglas de Laravel Boost, especialmente para estilo, tests y paquetes instalados.
 
-## 2. Regla obligatoria: MCP Context7
+## 2. Reglas obligatorias: MCP Context7 y shadcn/ui
 
 El agente tiene a disposición el MCP de **Context7** para consultar documentación actualizada de librerías, frameworks y herramientas.
 
@@ -32,11 +35,28 @@ Reglas:
 
 Ver también: `.codex/rules/context7_mcp.md`.
 
+### shadcn/ui
+
+Cuando una tarea cree, modifique, arregle o componga interfaz con shadcn/ui:
+
+1. Carga el skill `shadcn` y consulta primero el contexto real del proyecto con `npx shadcn@latest info --json`.
+2. Reutiliza componentes instalados y sus variantes antes de escribir markup o estilos personalizados.
+3. Antes de usar, reparar o añadir un componente, consulta su API actual con `npx shadcn@latest docs <componente>`; para componentes no instalados, busca/inspecciona el registry primero.
+4. No agregar ni sobrescribir componentes sin respetar la regla de dependencias y sin revisar el diff/compatibilidad con los tokens, alias, accesibilidad y patrones de Guaranda Go.
+5. Usa colores semánticos, `FieldGroup`/`Field`, composición accesible y `gap-*`; evita `space-x-*`, `space-y-*`, colores hardcodeados y variantes visuales duplicadas.
+
+Ver también `docs/architecture/frontend.md`, `docs/architecture/component-system.md` y `.codex/frontend-components/ui_rules.md`.
+
 ## 3. Router por tipo de tarea
 
 | Si la tarea trata sobre... | Lee primero |
 |---|---|
 | Visión general, alcance, stack y decisiones | `README.md`, `.codex/project/product_context.md`, `.codex/project/stack_decisions.md` |
+| Mapa rápido de componentes y fronteras | `ARCHITECTURE.md`, `docs/architecture/index.md` |
+| Especificación de una funcionalidad nueva | `docs/product/overview.md`, `docs/product/domain-model.md`, `.codex/domain/` y el plan relevante |
+| Definition of Done, revisión o rendimiento | `docs/quality/definition-of-done.md`, `docs/quality/code-review.md`, `docs/quality/performance.md` |
+| Seguridad, amenazas o hardening | `docs/security/principles.md`, `docs/security/hardening.md`, `docs/security/threat-model.md` |
+| Observabilidad, logs o fallos de integración | `docs/quality/observability.md`, arquitectura de la integración y `.codex/rules/security_privacy.md` |
 | Límites del sistema y qué no construir | `.codex/project/scope_boundaries.md` |
 | Reglas generales de desarrollo | `.codex/rules/project_rules.md` |
 | Seguimiento de progreso por fases | `.codex/rules/progress_tracking.md`, `.codex/progress/current_status.md`, `.codex/progress/phases.md` |
@@ -111,6 +131,8 @@ Según el tipo de cambio, ejecuta lo mínimo necesario:
 
 No afirmes que algo pasó si no ejecutaste el comando y viste el resultado.
 
+Consulta además `docs/quality/definition-of-done.md`. Para cambios de frontend usa `docs/quality/frontend-checklist.md`; para rendimiento mide antes/después siguiendo `docs/quality/performance.md`.
+
 ## 8. Regla obligatoria de progreso
 
 - Antes de comenzar una tarea grande, revisa `.codex/progress/current_status.md`, `.codex/progress/phases.md` y `.codex/plans/README.md`.
@@ -133,6 +155,23 @@ No afirmes que algo pasó si no ejecutaste el comando y viste el resultado.
 
 ## 10. Convenciones de documentación
 
-- `.codex/` es conocimiento para agentes, no documentación de usuario final.
+- `docs/` concentra el método transversal: especificaciones nuevas, arquitectura, calidad, seguridad, ADRs y deuda técnica.
+- `.codex/` es el conocimiento operativo detallado de Guaranda Go: reglas, dominio, arquitectura específica, planes y progreso. No trasladar ni duplicar en masa su historial a `docs/`.
+- Si cambia una funcionalidad, actualiza la fuente de verdad más cercana y sus enlaces derivados. No entierres una decisión duradera solo en una conversación o commit.
 - Si cambia una decisión arquitectónica importante, actualiza el archivo `.codex/` correspondiente y, si afecta el producto, también `README.md`.
 - Mantén cada archivo `.codex` enfocado en una sola responsabilidad.
+
+## 11. Procedimientos reutilizables
+
+Cuando el cambio lo requiera, usa los procedimientos de `.agents/skills/`:
+
+- `implement-feature`: funcionalidad o cambio de comportamiento.
+- `create-migration`: schema, migraciones o transformación de datos.
+- `implement-operational-frontend`: pantallas CRUD, administración, navegación o workflows móviles.
+- `harden-security`: fronteras no confiables, auth, autorización, archivos o integraciones.
+- `optimize-performance`: regresiones, profiling o presupuestos de rendimiento.
+- `review-code`: revisión de bugs, seguridad, arquitectura, pruebas y documentación.
+- `update-documentation`: contratos, reglas, decisiones y contexto.
+- `commit-changes`: preparar commits/PR cuando el usuario lo haya solicitado.
+
+Estos procedimientos complementan —no reemplazan— los skills Laravel/React/Fortify/Pest/Tailwind/Wayfinder ya disponibles.

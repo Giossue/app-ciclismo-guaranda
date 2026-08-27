@@ -1,6 +1,8 @@
 # .codex — Knowledge folders de Guaranda Go
 
-Esta carpeta contiene conocimiento estructurado para agentes de IA que trabajen en Guaranda Go. El archivo `../AGENTS.md` funciona como router principal y decide qué documentos leer según la tarea.
+Esta carpeta contiene conocimiento operativo y detallado para agentes de IA que trabajen en Guaranda Go. El archivo `../AGENTS.md` funciona como router principal y decide qué documentos leer según la tarea.
+
+Para el mapa técnico rápido y las reglas transversales de calidad, seguridad, revisión, rendimiento y ADRs, consulta también `../ARCHITECTURE.md` y `../docs/README.md`. No se debe duplicar aquí ese contenido; `.codex/` conserva el detalle de producto, dominio, fase y operación propio de Guaranda Go.
 
 ## Estructura
 
@@ -21,9 +23,10 @@ Esta carpeta contiene conocimiento estructurado para agentes de IA que trabajen 
 ## Uso recomendado
 
 1. Lee `../AGENTS.md`.
-2. Lee `../README.md` para contexto completo del producto.
-3. Abre solo los archivos `.codex` relevantes para la tarea.
-4. Si trabajas dentro de `ciclismo-guaranda/`, también lee `../ciclismo-guaranda/AGENTS.md` porque contiene reglas de Laravel Boost.
+2. Lee `../README.md` y `../ARCHITECTURE.md` para el producto y sus fronteras.
+3. Abre `../docs/` solo para el criterio transversal aplicable.
+4. Abre solo los archivos `.codex` relevantes para la tarea.
+5. Si trabajas dentro de `ciclismo-guaranda/`, también lee `../ciclismo-guaranda/AGENTS.md` porque contiene reglas de Laravel Boost.
 
 ## Capas de conocimiento
 

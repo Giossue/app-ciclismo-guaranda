@@ -113,6 +113,19 @@
 - Las tools del agente no requieren tablas nuevas: usan rutas, geometrias, metricas, puntos_interes, ruta_punto_interes, incidencias y recorridos existentes. La ubicación enviada al agente será transitoria.
 - Las tools `/api/agent/*` se protegen con `GUARANDA_GO_AGENT_TOOL_TOKEN`; el token solo vive en servidor/n8n y nunca en frontend/APK.
 
+## 2026-08-27 — Context engineering adaptado
+
+- Se adopta el enfoque de contexto versionado de `Elvis-WDev/ExpressJS-agent-context`, adaptado al stack y estado real de Guaranda Go; no se incorporan sus decisiones de Express, Next.js, Prisma, Better Auth ni pnpm.
+- `ARCHITECTURE.md` y `docs/` son la capa transversal para mapa técnico, especificaciones futuras, Definition of Done, revisión, rendimiento, observabilidad, seguridad, amenazas y ADRs.
+- `.codex/` conserva el conocimiento detallado y operativo ya existente: dominio, arquitectura específica, reglas, fases, planes y progreso. Las capas se enlazan en lugar de duplicar especificaciones largas.
+- Se agregan procedimientos reutilizables en `.agents/skills/` para implementar funcionalidades, migraciones, frontend operativo, seguridad, rendimiento, revisión, documentación y commits; complementan los skills Laravel/React/Fortify/Pest/Tailwind/Wayfinder existentes.
+
+## 2026-08-27 — Documentación de librerías y componentes UI
+
+- Context7 se mantiene como consulta obligatoria para APIs, métodos, configuraciones y patrones actualizados de dependencias externas; Laravel Boost se prioriza para paquetes Laravel instalados.
+- Las tareas con shadcn/ui cargan el skill `shadcn`, consultan el contexto/documentación del CLI antes de usar componentes y reutilizan los componentes/tokens instalados antes de crear alternativas personalizadas.
+- Agregar o actualizar componentes shadcn exige inspección previa de registry, API y diff; sobrescribir componentes locales requiere autorización explícita.
+
 
 ## 2026-07-01 — Historial local posterior a n8n
 - Decisión: Laravel puede persistir `conversaciones_ia`/`mensajes_ia` después de que n8n responda, para mostrar historial en la app sin guardar mensajes al momento de escribir.
