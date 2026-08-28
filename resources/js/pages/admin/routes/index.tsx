@@ -1,9 +1,18 @@
 import { Form, Head, Link } from '@inertiajs/react';
-import { Bike, Clock, Ellipsis, MapPinned, Pencil, Plus, Power } from 'lucide-react';
+import {
+    Bike,
+    Clock,
+    Ellipsis,
+    MapPinned,
+    Pencil,
+    Plus,
+    Power,
+} from 'lucide-react';
 import type { ReactNode } from 'react';
 import RouteController from '@/actions/App/Http/Controllers/Admin/RouteController';
 import Heading from '@/components/heading';
 import ImageWithFallback from '@/components/image-with-fallback';
+import { PrimaryActionButton } from '@/components/primary-action-button';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -77,12 +86,10 @@ export default function AdminRoutesIndex({ routes }: Props) {
                         title="Rutas oficiales"
                         description="Gestiona las rutas disponibles para ciclistas."
                     />
-                    <Button asChild>
-                        <Link href={RouteController.create.url()} prefetch>
-                            <Plus data-icon="inline-start" />
-                            Nueva ruta
-                        </Link>
-                    </Button>
+                    <PrimaryActionButton
+                        href={RouteController.create.url()}
+                        label="Nueva ruta"
+                    />
                 </div>
 
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -327,10 +334,7 @@ function RouteCardActions({ route }: { route: RouteSummary }) {
                                     variant="destructive"
                                     disabled={processing}
                                 >
-                                    <button
-                                        type="submit"
-                                        disabled={processing}
-                                    >
+                                    <button type="submit" disabled={processing}>
                                         <Power />
                                         Inactivar ruta
                                     </button>

@@ -2,6 +2,7 @@ import { Form, Head, Link } from '@inertiajs/react';
 import { MapPin, Pencil, Plus, Power, RouteIcon } from 'lucide-react';
 import PoiController from '@/actions/App/Http/Controllers/Admin/PoiController';
 import Heading from '@/components/heading';
+import { PrimaryActionButton } from '@/components/primary-action-button';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -74,12 +75,10 @@ export default function AdminPoisIndex({
                         title="Puntos de interés"
                         description="Gestiona POIs oficiales, categorías, detalles y relación con rutas"
                     />
-                    <Button asChild>
-                        <Link href="/admin/pois/create" prefetch>
-                            <Plus data-icon="inline-start" />
-                            Nuevo POI
-                        </Link>
-                    </Button>
+                    <PrimaryActionButton
+                        href="/admin/pois/create"
+                        label="Nuevo POI"
+                    />
                 </div>
 
                 <section className="grid gap-4 lg:grid-cols-2">

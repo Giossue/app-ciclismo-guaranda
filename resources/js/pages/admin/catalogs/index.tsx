@@ -1,11 +1,12 @@
 import { Form, Head, router } from '@inertiajs/react';
-import { Pencil, Plus } from 'lucide-react';
+import { Pencil } from 'lucide-react';
 import { useState } from 'react';
 import CatalogController from '@/actions/App/Http/Controllers/Admin/CatalogController';
 import { DataTable } from '@/components/data-table';
 import type { DataTableColumn, DataTableQuery } from '@/components/data-table';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
+import { PrimaryActionButton } from '@/components/primary-action-button';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -184,13 +185,10 @@ export default function AdminCatalogsIndex({
 
                 <DataTable
                     toolbarAction={
-                        <Button
-                            type="button"
+                        <PrimaryActionButton
+                            label="Nuevo registro"
                             onClick={() => setCreateOpen(true)}
-                        >
-                            <Plus data-icon="inline-start" />
-                            Nuevo registro
-                        </Button>
+                        />
                     }
                     data={records.data}
                     columns={columns}
