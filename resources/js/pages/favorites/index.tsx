@@ -1,5 +1,5 @@
 import { Form, Head, Link } from '@inertiajs/react';
-import { HeartOff, ImageIcon, Star } from 'lucide-react';
+import { HeartOff, ImageIcon, Star, X } from 'lucide-react';
 import FavoriteRouteController from '@/actions/App/Http/Controllers/Cyclist/FavoriteRouteController';
 import CyclistRouteController from '@/actions/App/Http/Controllers/Cyclist/RouteController';
 import { CatalogPagination } from '@/components/catalog-pagination';
@@ -24,6 +24,7 @@ import {
     EmptyTitle,
 } from '@/components/ui/empty';
 import { mediaUrl } from '@/lib/media';
+import { index as mapsIndex } from '@/routes/maps';
 import type { CatalogOption, RouteMetric } from '@/types';
 
 type FavoriteRouteItem = {
@@ -67,10 +68,22 @@ export default function FavoritesIndex({ favorites }: Props) {
             <Head title="Favoritas" />
 
             <div className="flex w-full flex-col gap-6">
-                <Heading
-                    title="Rutas favoritas"
-                    description="Encuentra rápidamente las rutas que guardaste para tu próxima salida."
-                />
+                <div className="flex items-start justify-between gap-3">
+                    <Heading
+                        title="Rutas favoritas"
+                        description="Encuentra rápidamente las rutas que guardaste para tu próxima salida."
+                    />
+                    <Button asChild variant="ghost" size="icon">
+                        <Link
+                            href={mapsIndex.url()}
+                            replace
+                            aria-label="Volver al mapa"
+                            title="Volver al mapa"
+                        >
+                            <X />
+                        </Link>
+                    </Button>
+                </div>
 
                 {favorites.data.length > 0 ? (
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">

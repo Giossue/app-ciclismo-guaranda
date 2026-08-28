@@ -355,6 +355,12 @@
   los cuatro momentos turísticos sin esperar pgvector y conserva el filtro de
   recursos activos en el instante de responder.
 
+## 2026-08-28 — Entrada del ciclista y navegación del explorador
+
+- `/dashboard` continúa siendo la entrada neutral por rol: para ciclistas redirige a `/user/dashboard`; para administradores conserva `/admin/dashboard`.
+- El dashboard ciclista no duplica métricas administrativas: concentra los accesos a mapa, rutas, favoritas y guía IA.
+- El mapa es una superficie inmersiva con navegación local propia y una salida explícita al dashboard. Rutas y favoritas se consideran vistas derivadas del mapa y regresan a él mediante cierre explícito, sin navbar móvil global.
+
 ## 2026-08-28 — Proyección pgvector reconstruible
 
 - La base central queda en PostgreSQL 18 con PostGIS 3.6.4 y pgvector 0.8.6

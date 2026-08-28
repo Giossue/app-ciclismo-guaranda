@@ -17,7 +17,12 @@ export function AppMobileNav() {
     const { openMobile, setOpenMobile } = useSidebar();
     const primaryItems = mobilePrimaryNavItems(auth);
 
-    if (!auth.user || page.component === 'routes/show') {
+    if (
+        !auth.user ||
+        ['routes/show', 'routes/index', 'favorites/index'].includes(
+            page.component,
+        )
+    ) {
         return null;
     }
 

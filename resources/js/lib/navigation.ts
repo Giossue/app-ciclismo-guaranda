@@ -4,6 +4,7 @@ import { index as chatIndex } from '@/routes/chat';
 import { index as favoritesIndex } from '@/routes/favorites';
 import { index as mapsIndex } from '@/routes/maps';
 import { index as routesIndex } from '@/routes/routes';
+import { dashboard as cyclistDashboard } from '@/routes/user';
 import type { Auth, NavItem } from '@/types';
 
 const cyclistNavItems: NavItem[] = [
@@ -34,7 +35,7 @@ export function isAdmin(auth: Auth): boolean {
 }
 
 export function homePath(auth: Auth): string {
-    return isAdmin(auth) ? '/admin/dashboard' : mapsIndex.url();
+    return isAdmin(auth) ? '/admin/dashboard' : cyclistDashboard.url();
 }
 
 export function mainNavItems(auth: Auth): NavItem[] {

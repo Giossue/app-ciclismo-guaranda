@@ -29,6 +29,7 @@ use App\Http\Controllers\Cyclist\SyncController;
 use App\Http\Controllers\Cyclist\TrackController as CyclistTrackController;
 use App\Http\Controllers\DashboardRedirectController;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 Route::inertia('/', 'welcome')->name('home');
 
@@ -36,6 +37,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', DashboardRedirectController::class)->name('dashboard');
 
     Route::prefix('user')->group(function () {
+        Route::get('dashboard', fn () => Inertia::render('user/dashboard'))->name('user.dashboard');
         Route::get('maps', CyclistMapController::class)->name('maps.index');
         Route::get('notifications', [AppNotificationController::class, 'index'])->name('notifications.index');
         Route::patch('notifications/read-all', [AppNotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
@@ -71,7 +73,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::redirect('favorites', '/user/favorites');
     Route::redirect('notifications', '/user/notifications');
     Route::redirect('chat', '/user/chat');
-    Route::redirect('user', '/user/maps');
+    Route::redirect('user', '/user/dashboard');
 });
 
 Route::middleware(['auth', 'verified', 'admin'])

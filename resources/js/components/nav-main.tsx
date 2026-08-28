@@ -10,7 +10,6 @@ import {
     SidebarGroupContent,
     SidebarGroupLabel,
     SidebarMenu,
-    SidebarMenuAction,
     SidebarMenuBadge,
     SidebarMenuButton,
     SidebarMenuItem,
@@ -40,7 +39,7 @@ function PendingDot({ count }: { count: number }) {
 }
 
 export function NavMain({ items = [] }: { items: NavItem[] }) {
-    const { isCurrentOrParentUrl, isCurrentUrl } = useCurrentUrl();
+    const { isCurrentOrParentUrl } = useCurrentUrl();
     const counters =
         (usePage().props.adminCounters as AdminCounters | null) ?? {};
 
@@ -99,33 +98,28 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
                                     className="group/collapsible"
                                 >
                                     <SidebarMenuItem>
-                                        <SidebarMenuButton
-                                            asChild
-                                            isActive={active}
-                                            tooltip={{ children: item.title }}
-                                            className={cn(
-                                                'min-h-10 rounded-[var(--radius-control)] font-normal',
-                                                'data-[active=true]:bg-primary/12 data-[active=true]:font-normal data-[active=true]:text-link',
-                                            )}
-                                        >
-                                            <Link
-                                                href={item.href}
-                                                prefetch
+                                        {/* El botón del grupo solo despliega; navegar es cosa de los hijos. */}
+                                        <CollapsibleTrigger asChild>
+                                            <SidebarMenuButton
+                                                isActive={active}
+                                                tooltip={{
+                                                    children: item.title,
+                                                }}
                                                 aria-label={
                                                     itemPending > 0
                                                         ? `${item.title}: ${itemPending} pendientes`
                                                         : undefined
                                                 }
-                                                aria-current={
-                                                    isCurrentUrl(item.href)
-                                                        ? 'page'
-                                                        : undefined
-                                                }
+                                                className={cn(
+                                                    'min-h-10 rounded-[var(--radius-control)] font-normal',
+                                                    'data-[active=true]:bg-primary/12 data-[active=true]:font-normal data-[active=true]:text-link',
+                                                )}
                                             >
                                                 {item.icon && <item.icon />}
                                                 <span>{item.title}</span>
-                                            </Link>
-                                        </SidebarMenuButton>
+                                                <ChevronDown className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-180" />
+                                            </SidebarMenuButton>
+                                        </CollapsibleTrigger>
                                         {itemPending > 0 && (
                                             /*
                                              * `top-5` ancla el punto a la fila del botón: con el
@@ -139,14 +133,6 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
                                                 />
                                             </SidebarMenuBadge>
                                         )}
-                                        <CollapsibleTrigger asChild>
-                                            <SidebarMenuAction
-                                                aria-label={`Mostrar secciones de ${item.title}`}
-                                            >
-                                                <ChevronDown className="transition-transform group-data-[state=open]/collapsible:rotate-180" />
-                                            </SidebarMenuAction>
-                                        </CollapsibleTrigger>
-
                                         <CollapsibleContent className="overflow-hidden data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down">
                                             <SidebarMenuSub>
                                                 {item.children.map((child) => {

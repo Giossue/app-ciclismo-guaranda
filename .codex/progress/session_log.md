@@ -774,6 +774,12 @@
   desconexión al abrirse en Capacitor. Mantiene un estado breve de comprobación
   y muestra el aviso offline solo tras recibir un resultado confirmado.
 
+## 2026-08-28 — Dashboard ciclista y flujo mapa
+
+- Se añadió `/user/dashboard` con acciones rápidas para mapa, rutas, favoritas y guía IA; el redirect de `/dashboard` para ciclistas y el acceso raíz de su navegación apuntan allí.
+- El explorador mantiene su navbar local y agrega una salida al dashboard. Rutas y favoritas ahora regresan al mapa con una X y ocultan la navbar móvil global.
+- Validación focalizada: 26 pruebas Pest / 59 aserciones; Pint, TypeScript, ESLint, Prettier y build Vite aprobados.
+
 ## 2026-08-28 — Chat móvil inmersivo
 
 - En `/chat` se oculta la navegación inferior móvil y el contenido usa la

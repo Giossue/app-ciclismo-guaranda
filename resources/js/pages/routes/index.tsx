@@ -6,6 +6,7 @@ import {
     MapPinned,
     RouteIcon,
     Star,
+    X,
 } from 'lucide-react';
 import CyclistRouteController from '@/actions/App/Http/Controllers/Cyclist/RouteController';
 import { CatalogPagination } from '@/components/catalog-pagination';
@@ -73,6 +74,18 @@ export default function RoutesIndex({
             <Head title="Rutas" />
 
             <div className="flex w-full flex-col gap-5">
+                <div className="flex justify-end">
+                    <Button asChild variant="ghost" size="icon">
+                        <Link
+                            href={mapsIndex.url()}
+                            replace
+                            aria-label="Volver al mapa"
+                            title="Volver al mapa"
+                        >
+                            <X />
+                        </Link>
+                    </Button>
+                </div>
                 <RouteFiltersToolbar
                     categories={categories}
                     difficulties={difficulties}

@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { Heart, Map, Route } from 'lucide-react';
+import { Heart, Map, Route, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { useDisableNativePullToRefresh } from '@/hooks/use-disable-native-pull-to-refresh';
@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { index as favoritesIndex } from '@/routes/favorites';
 import { index as mapsIndex } from '@/routes/maps';
 import { index as routesIndex } from '@/routes/routes';
+import { dashboard as cyclistDashboard } from '@/routes/user';
 import type { Auth } from '@/types';
 
 type PageProps = {
@@ -28,6 +29,23 @@ export default function MapsLayout({
     return (
         <div className="relative h-[100dvh] overflow-hidden bg-background">
             {children}
+
+            <Button
+                asChild
+                type="button"
+                variant="overlay"
+                size="icon"
+                className="fixed top-[calc(var(--safe-top)+0.75rem)] right-3 z-[700] rounded-full shadow-[var(--elevation-floating)]"
+            >
+                <Link
+                    href={cyclistDashboard.url()}
+                    replace
+                    aria-label="Salir del mapa"
+                    title="Volver al inicio"
+                >
+                    <X />
+                </Link>
+            </Button>
 
             <nav
                 aria-label="Navegación del mapa"
