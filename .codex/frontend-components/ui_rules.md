@@ -55,7 +55,7 @@ Antes de una refactorización visual amplia, ejecutar `python3 temp/audit_ui_tok
 - Cuando haga falta declararlo en el marcado, usar `size-4`; no introducir `size-3`, `size-5`, `size-6`, `h-5 w-5` ni valores arbitrarios como `size-[18px]`.
 - Los primitives que fijan tamaño de SVG (`button`, `alert`, `breadcrumb`, `empty`, `select`, `dropdown-menu`, `sidebar`, `toggle`, `navigation-menu`, `calendar`) usan `size-4`.
 - Excepción del contrato: el icono dentro de `Badge` mide `calc(1rem * var(--badge-scale))`, porque el badge completo va escalado y un icono de 16px lo deformaría.
-- Excepción del contrato: los iconos de la barra inferior móvil miden `1.2rem`; ahí el icono es el objetivo táctil y a 16px queda por debajo de lo cómodo.
+- Excepción del contrato: en móvil, los iconos de la barra inferior miden `1.2rem` y el de la acción flotante `1.5rem` sobre un botón de 56px, la medida estándar de un FAB. En ambos el icono es el objetivo táctil y a 16px queda por debajo de lo cómodo.
 - Los estados vacíos y los placeholders de imagen también usan el tamaño estándar; el contenedor aporta la presencia visual, no el icono.
 - Excepción única: el punto indicador de `DropdownMenuRadioItem` (`CircleIcon`) mantiene `size-2` porque es un indicador de selección, no iconografía.
 - No son iconos y quedan fuera del contrato: el logo (`AppLogoIcon`, es un `<img>`), las ilustraciones decorativas (`MountainScene`) y el QR de doble factor.

@@ -29,15 +29,16 @@ export function PrimaryActionButton({
     const hidden = useHideOnScroll();
 
     const responsive = cn(
-        'fixed right-[var(--page-pad-x)] bottom-[calc(var(--bottom-nav-height)+var(--safe-bottom)+1rem)] z-[60] shadow-[var(--elevation-floating)] transition-[background-color,border-color,color,box-shadow,transform,opacity] duration-200 ease-out',
+        // 56px es la medida estándar de una acción flotante en móvil.
+        'fixed right-[var(--page-pad-x)] bottom-[calc(var(--bottom-nav-height)+var(--safe-bottom)+1rem)] z-[60] size-14 min-h-14 shadow-[var(--elevation-floating)] transition-[background-color,border-color,color,box-shadow,transform,opacity] duration-200 ease-out',
         hidden && 'pointer-events-none translate-y-[calc(100%+2rem)] opacity-0',
-        'md:pointer-events-auto md:static md:h-[var(--action-height)] md:w-auto md:translate-y-0 md:rounded-[var(--radius-control)] md:px-4 md:opacity-100 md:shadow-none',
+        'md:pointer-events-auto md:static md:h-[var(--action-height)] md:min-h-[var(--action-height)] md:w-auto md:translate-y-0 md:rounded-[var(--radius-control)] md:px-4 md:opacity-100 md:shadow-none',
         className,
     );
 
     const content = (
         <>
-            <Plus data-icon="inline-start" />
+            <Plus data-icon="inline-start" className="size-6 md:size-4" />
             <span className="sr-only md:not-sr-only">{label}</span>
         </>
     );
