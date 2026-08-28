@@ -170,8 +170,14 @@
 
 ## 2026-08-27 — Tema y contraste en landing
 
-- La landing dispone de un único control de tema por icono en su encabezado: alterna claro, oscuro y sistema sin depender de un texto visible. Se apoya en `useAppearance`, que persiste y aplica la preferencia existente.
+- La landing dispone de un único control de tema por icono en su encabezado: alterna claro y oscuro sin depender de un texto visible. Se apoya en `useAppearance`, que persiste y aplica la preferencia explícita.
 - Las superficies oscuras no reutilizan `background` como color de texto: se usan tokens inversos globales para que el contraste no dependa del modo activo.
+
+## 2026-08-27 — Tema binario con transición expansiva
+
+- La preferencia global de apariencia queda reducida a `light` y `dark`; el valor heredado `system` se migra una sola vez al tema efectivo del dispositivo y se persiste como elección explícita.
+- El cambio iniciado desde un control de tema revela la nueva apariencia mediante una onda circular originada en el botón. La implementación usa View Transitions como mejora progresiva y aplica el cambio inmediato cuando la API no está disponible o el usuario solicita movimiento reducido.
+- Tanto el botón compacto como el selector de ajustes consumen el mismo contrato de apariencia, evitando estados distintos entre vistas web y el contenedor Capacitor.
 
 ## 2026-08-27 — Autodespliegue directo en Dokploy
 

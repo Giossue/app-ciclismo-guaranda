@@ -1,4 +1,4 @@
-import { Monitor, Moon, Sun } from 'lucide-react';
+import { Moon, Sun } from 'lucide-react';
 import type { ComponentProps } from 'react';
 import { Button } from '@/components/ui/button';
 import {
@@ -15,7 +15,6 @@ const appearanceModes: {
 }[] = [
     { value: 'light', label: 'claro' },
     { value: 'dark', label: 'oscuro' },
-    { value: 'system', label: 'del sistema' },
 ];
 
 type Props = Pick<ComponentProps<typeof Button>, 'className' | 'variant'>;
@@ -31,8 +30,7 @@ export default function AppearanceCycleButton({
     const safeIndex = currentIndex === -1 ? 0 : currentIndex;
     const current = appearanceModes[safeIndex];
     const next = appearanceModes[(safeIndex + 1) % appearanceModes.length];
-    const Icon =
-        appearance === 'system' ? Monitor : appearance === 'dark' ? Sun : Moon;
+    const Icon = appearance === 'dark' ? Sun : Moon;
 
     return (
         <Tooltip>
@@ -43,7 +41,9 @@ export default function AppearanceCycleButton({
                     size="icon"
                     className={className}
                     aria-label={`Tema actual: ${current.label}. Cambiar a tema ${next.label}.`}
-                    onClick={() => updateAppearance(next.value)}
+                    onClick={(event) =>
+                        updateAppearance(next.value, event.currentTarget)
+                    }
                 >
                     <Icon />
                 </Button>

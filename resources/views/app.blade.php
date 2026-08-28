@@ -1,21 +1,27 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @class(['dark' => ($appearance ?? 'system') == 'dark'])>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @class(['dark' => ($appearance ?? null) === 'dark'])>
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        {{-- Inline script to detect system dark mode preference and apply it immediately --}}
+        {{-- Resuelve y persiste un tema explícito antes de pintar la interfaz. --}}
         <script>
             (function() {
-                const appearance = '{{ $appearance ?? "system" }}';
+                const storedAppearance = localStorage.getItem('appearance');
+                const serverAppearance = @json($appearance ?? null);
+                const isExplicitTheme = (value) => value === 'light' || value === 'dark';
+                const appearance = isExplicitTheme(storedAppearance)
+                    ? storedAppearance
+                    : isExplicitTheme(serverAppearance)
+                      ? serverAppearance
+                      : window.matchMedia('(prefers-color-scheme: dark)').matches
+                        ? 'dark'
+                        : 'light';
 
-                if (appearance === 'system') {
-                    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-                    if (prefersDark) {
-                        document.documentElement.classList.add('dark');
-                    }
-                }
+                document.documentElement.classList.toggle('dark', appearance === 'dark');
+                document.documentElement.style.colorScheme = appearance;
+                localStorage.setItem('appearance', appearance);
+                document.cookie = `appearance=${appearance};path=/;max-age=31536000;SameSite=Lax`;
             })();
         </script>
 

@@ -368,6 +368,6 @@ Notas:
 
 ## Correcciones de landing 2026-08-27
 
-- El encabezado incorpora un botón de icono permanente que alterna, en orden, tema claro, oscuro y del sistema; conserva la preferencia mediante el hook de apariencia existente.
-- El hero usa tokens semánticos de contenido inverso para conservar contraste sobre su superficie oscura en los tres modos.
+- El encabezado incorpora un botón de icono permanente que alterna únicamente entre tema claro y oscuro; conserva la preferencia explícita mediante el hook de apariencia y revela el nuevo tema con una onda circular que nace en el control.
+- El hero usa tokens semánticos de contenido inverso para conservar contraste sobre su superficie oscura en ambos modos.
 - Las tarjetas siguen una estructura homogénea de icono, etiqueta, título y descripción; se retiraron el icono de escudo redundante, las notas de pie y etiquetas decorativas del hero.

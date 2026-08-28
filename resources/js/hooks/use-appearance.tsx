@@ -1,16 +1,32 @@
 import { useSyncExternalStore } from 'react';
 
 export type ResolvedAppearance = 'light' | 'dark';
-export type Appearance = ResolvedAppearance | 'system';
+export type Appearance = ResolvedAppearance;
 
 export type UseAppearanceReturn = {
     readonly appearance: Appearance;
     readonly resolvedAppearance: ResolvedAppearance;
-    readonly updateAppearance: (mode: Appearance) => void;
+    readonly updateAppearance: (
+        mode: Appearance,
+        origin?: HTMLElement | null,
+    ) => void;
 };
 
 const listeners = new Set<() => void>();
-let currentAppearance: Appearance = 'system';
+let currentAppearance: Appearance = 'light';
+
+type ViewTransition = {
+    ready: Promise<void>;
+    finished: Promise<void>;
+};
+
+type ViewTransitionDocument = Document & {
+    startViewTransition?: (update: () => void) => ViewTransition;
+};
+
+type ViewTransitionAnimationOptions = KeyframeAnimationOptions & {
+    pseudoElement: string;
+};
 
 const prefersDark = (): boolean => {
     if (typeof window === 'undefined') {
@@ -31,14 +47,17 @@ const setCookie = (name: string, value: string, days = 365): void => {
 
 const getStoredAppearance = (): Appearance => {
     if (typeof window === 'undefined') {
-        return 'system';
+        return 'light';
     }
 
-    return (localStorage.getItem('appearance') as Appearance) || 'system';
-};
+    const storedAppearance = localStorage.getItem('appearance');
 
-const isDarkMode = (appearance: Appearance): boolean => {
-    return appearance === 'dark' || (appearance === 'system' && prefersDark());
+    if (storedAppearance === 'light' || storedAppearance === 'dark') {
+        return storedAppearance;
+    }
+
+    // Migra una preferencia antigua "system" al tema actual una sola vez.
+    return prefersDark() ? 'dark' : 'light';
 };
 
 const applyTheme = (appearance: Appearance): void => {
@@ -46,7 +65,7 @@ const applyTheme = (appearance: Appearance): void => {
         return;
     }
 
-    const isDark = isDarkMode(appearance);
+    const isDark = appearance === 'dark';
 
     document.documentElement.classList.toggle('dark', isDark);
     document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
@@ -60,56 +79,96 @@ const subscribe = (callback: () => void) => {
 
 const notify = (): void => listeners.forEach((listener) => listener());
 
-const mediaQuery = (): MediaQueryList | null => {
-    if (typeof window === 'undefined') {
-        return null;
-    }
-
-    return window.matchMedia('(prefers-color-scheme: dark)');
-};
-
-const handleSystemThemeChange = (): void => applyTheme(currentAppearance);
-
 export function initializeTheme(): void {
     if (typeof window === 'undefined') {
         return;
     }
 
-    if (!localStorage.getItem('appearance')) {
-        localStorage.setItem('appearance', 'system');
-        setCookie('appearance', 'system');
-    }
-
     currentAppearance = getStoredAppearance();
+    localStorage.setItem('appearance', currentAppearance);
+    setCookie('appearance', currentAppearance);
     applyTheme(currentAppearance);
-
-    // Set up system theme change listener
-    mediaQuery()?.addEventListener('change', handleSystemThemeChange);
 }
 
 export function useAppearance(): UseAppearanceReturn {
     const appearance: Appearance = useSyncExternalStore(
         subscribe,
         () => currentAppearance,
-        () => 'system',
+        () => 'light',
     );
 
-    const resolvedAppearance: ResolvedAppearance = isDarkMode(appearance)
-        ? 'dark'
-        : 'light';
+    const updateAppearance = (
+        mode: Appearance,
+        origin?: HTMLElement | null,
+    ): void => {
+        if (mode === currentAppearance) {
+            return;
+        }
 
-    const updateAppearance = (mode: Appearance): void => {
-        currentAppearance = mode;
+        const applyAppearance = (): void => {
+            currentAppearance = mode;
+            localStorage.setItem('appearance', mode);
+            setCookie('appearance', mode);
+            applyTheme(mode);
+            notify();
+        };
 
-        // Store in localStorage for client-side persistence...
-        localStorage.setItem('appearance', mode);
+        const transitionDocument = document as ViewTransitionDocument;
+        const reduceMotion = window.matchMedia(
+            '(prefers-reduced-motion: reduce)',
+        ).matches;
 
-        // Store in cookie for SSR...
-        setCookie('appearance', mode);
+        if (
+            !origin ||
+            !transitionDocument.startViewTransition ||
+            reduceMotion
+        ) {
+            applyAppearance();
 
-        applyTheme(mode);
-        notify();
+            return;
+        }
+
+        const bounds = origin.getBoundingClientRect();
+        const x = bounds.left + bounds.width / 2;
+        const y = bounds.top + bounds.height / 2;
+        const radius = Math.hypot(
+            Math.max(x, window.innerWidth - x),
+            Math.max(y, window.innerHeight - y),
+        );
+        const root = document.documentElement;
+
+        root.classList.add('theme-transitioning');
+
+        const transition =
+            transitionDocument.startViewTransition(applyAppearance);
+
+        void transition.ready
+            .then(() => {
+                root.animate(
+                    {
+                        clipPath: [
+                            `circle(0 at ${x}px ${y}px)`,
+                            `circle(${radius}px at ${x}px ${y}px)`,
+                        ],
+                    },
+                    {
+                        duration: 700,
+                        easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
+                        fill: 'both',
+                        pseudoElement: '::view-transition-new(root)',
+                    } satisfies ViewTransitionAnimationOptions,
+                );
+            })
+            .catch(() => undefined);
+
+        void transition.finished.finally(() => {
+            root.classList.remove('theme-transitioning');
+        });
     };
 
-    return { appearance, resolvedAppearance, updateAppearance } as const;
+    return {
+        appearance,
+        resolvedAppearance: appearance,
+        updateAppearance,
+    } as const;
 }

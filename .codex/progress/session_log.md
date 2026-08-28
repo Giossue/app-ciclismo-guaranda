@@ -505,6 +505,13 @@
 
 ## 2026-08-27 — Correcciones de jerarquía en landing
 
-- Se añadió al encabezado de la landing un botón de icono que cicla claro, oscuro y sistema con la preferencia persistente existente.
+- Se añadió al encabezado de la landing un botón de icono que cicla claro y oscuro con una preferencia persistente explícita.
 - Se corrigió el contraste del hero oscuro mediante tokens semánticos inversos, se eliminó el contenedor visual del logo, las etiquetas decorativas y las notas inferiores.
 - La tarjeta de preparación se compuso con la misma estructura de icono, etiqueta, título y descripción del resto, sin icono de escudo adicional.
+
+## 2026-08-27 — Transición global de tema
+
+- Se eliminó la opción `system` del hook, el botón cíclico y el selector de ajustes; valores heredados se convierten al tema efectivo del dispositivo sin perder la preferencia del usuario existente.
+- El nuevo tema se expande desde el control pulsado mediante una revelación circular de 700 ms. Navegadores sin View Transitions y usuarios con movimiento reducido reciben un cambio inmediato y funcional.
+- Se mantuvo el preprocesado de tema en Blade para evitar destellos al cargar y se unificó el selector de ajustes con `ToggleGroup` de shadcn.
+- Se verificó visualmente la onda claro/oscuro en viewport móvil y de escritorio, además de la migración de `system` y el comportamiento con movimiento reducido.
