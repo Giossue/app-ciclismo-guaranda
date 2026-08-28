@@ -1206,7 +1206,7 @@ export default function RouteForm({
                             </div>
                         </CardContent>
                         <Separator />
-                        <CardFooter className="sticky bottom-0 flex flex-col items-stretch gap-3 border-t bg-card/95 sm:flex-row sm:items-center sm:justify-between">
+                        <CardFooter className="flex flex-col items-stretch gap-3 border-t sm:flex-row sm:items-center sm:justify-between">
                             {isEdit ? (
                                 <Alert className="sm:max-w-md">
                                     <AlertTitle>
@@ -1223,38 +1223,43 @@ export default function RouteForm({
                                     La ruta iniciará en versión 1.
                                 </div>
                             )}
-
-                            <div className="flex flex-wrap gap-2">
-                                {onCancel ? (
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        onClick={onCancel}
-                                    >
-                                        Cancelar
-                                    </Button>
-                                ) : (
-                                    <Button variant="outline" asChild>
-                                        <Link
-                                            href={RouteController.index.url()}
-                                            prefetch
-                                        >
-                                            Cancelar
-                                        </Link>
-                                    </Button>
-                                )}
-                                <Button
-                                    disabled={
-                                        processing ||
-                                        isCompressing ||
-                                        !requiredExperience
-                                    }
-                                >
-                                    {isEdit ? 'Guardar cambios' : 'Crear ruta'}
-                                </Button>
-                            </div>
                         </CardFooter>
                     </Card>
+
+                    {/*
+                     * Hija directa del formulario, no de la última tarjeta: así
+                     * el `sticky` abarca todo el alto y las acciones quedan
+                     * visibles desde el primer campo.
+                     */}
+                    <div className="sticky bottom-0 z-10 -mx-5 flex flex-wrap justify-end gap-2 border-t bg-popover/95 px-5 py-3 backdrop-blur">
+                        {onCancel ? (
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={onCancel}
+                            >
+                                Cancelar
+                            </Button>
+                        ) : (
+                            <Button variant="outline" asChild>
+                                <Link
+                                    href={RouteController.index.url()}
+                                    prefetch
+                                >
+                                    Cancelar
+                                </Link>
+                            </Button>
+                        )}
+                        <Button
+                            disabled={
+                                processing ||
+                                isCompressing ||
+                                !requiredExperience
+                            }
+                        >
+                            {isEdit ? 'Guardar cambios' : 'Crear ruta'}
+                        </Button>
+                    </div>
                 </div>
             )}
         </Form>
