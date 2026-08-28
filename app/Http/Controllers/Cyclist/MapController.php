@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Cyclist;
 use App\Http\Controllers\Controller;
 use App\Models\CyclingRoute;
 use App\Models\FavoriteRoute;
+use App\Models\IncidentType;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -54,6 +55,7 @@ class MapController extends Controller
                 ))
                 ->values(),
             'selectedRouteSlug' => $selectedRouteSlug,
+            'incidentTypes' => IncidentType::query()->orderBy('id')->get(['id', 'name']),
         ]);
     }
 

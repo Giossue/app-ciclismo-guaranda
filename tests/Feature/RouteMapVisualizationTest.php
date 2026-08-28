@@ -183,6 +183,8 @@ test('cyclist map explorer only exposes active routes and its selected route', f
             ->where('routes.0.points_of_interest.0.images.0.image_path', 'pois/mirador-prueba.jpg')
             ->where('routes.0.incidents.0.type.name', 'Obstáculo')
             ->where('routes.0.is_favorite', true)
+            ->has('incidentTypes', 6)
+            ->where('incidentTypes.1.name', 'Obstáculo')
             ->where('selectedRouteSlug', $activeRoute->slug));
 
     $this->actingAs($cyclist)

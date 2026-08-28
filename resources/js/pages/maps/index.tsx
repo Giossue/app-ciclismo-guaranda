@@ -12,22 +12,29 @@ import { useEffect, useState } from 'react';
 import FavoriteRouteController from '@/actions/App/Http/Controllers/Cyclist/FavoriteRouteController';
 import ImageGallery from '@/components/image-gallery';
 import RouteMap from '@/components/routes/client-only-route-map';
+import { IncidentReportSheet } from '@/components/routes/incident-report-sheet';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { mediaUrl } from '@/lib/media';
 import { index as mapsIndex } from '@/routes/maps';
 import { show as routeShow } from '@/routes/routes';
-import type { MapRouteItem } from '@/types';
+import type { CatalogOption, MapRouteItem } from '@/types';
 
 type MapPoi = MapRouteItem['points_of_interest'][number];
 
 type Props = {
     routes: MapRouteItem[];
     selectedRouteSlug: string | null;
+    incidentTypes: CatalogOption[];
 };
 
-export default function MapsIndex({ routes, selectedRouteSlug }: Props) {
+export default function MapsIndex({
+    routes,
+    selectedRouteSlug,
+    incidentTypes,
+}: Props) {
     const [selectedPoi, setSelectedPoi] = useState<MapPoi | null>(null);
+    const [isIncidentSheetOpen, setIsIncidentSheetOpen] = useState(false);
     const selectedRoute = routes.find(
         (route) => route.slug === selectedRouteSlug,
     );
@@ -84,6 +91,11 @@ export default function MapsIndex({ routes, selectedRouteSlug }: Props) {
                 focusSelected={Boolean(selectedRouteSlug)}
                 onRouteSelect={selectRoute}
                 onPoiSelect={(poi) => setSelectedPoi(poi)}
+                onReportIncident={
+                    selectedRoute
+                        ? () => setIsIncidentSheetOpen(true)
+                        : undefined
+                }
                 className="h-full"
             />
 
@@ -91,6 +103,14 @@ export default function MapsIndex({ routes, selectedRouteSlug }: Props) {
                 <MapPoiSheet poi={selectedPoi} onClose={clearSelection} />
             ) : (
                 selectedRoute && <MapRouteSheet route={selectedRoute} />
+            )}
+            {selectedRoute && (
+                <IncidentReportSheet
+                    route={selectedRoute}
+                    types={incidentTypes}
+                    open={isIncidentSheetOpen}
+                    onOpenChange={setIsIncidentSheetOpen}
+                />
             )}
         </>
     );

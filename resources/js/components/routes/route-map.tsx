@@ -201,7 +201,7 @@ export default function RouteMap({
                                 size="icon"
                                 aria-label="Filtrar elementos del mapa"
                                 title="Filtrar mapa"
-                                className="size-14 min-h-14 rounded-full shadow-[var(--elevation-floating)]"
+                                className="rounded-full shadow-[var(--elevation-floating)]"
                             >
                                 <Filter className="size-6" />
                             </Button>
