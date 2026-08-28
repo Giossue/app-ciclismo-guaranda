@@ -607,7 +607,7 @@
 
 ## 2026-08-28 — Alta de POIs en sheet
 
-- El botón “Nuevo POI” conserva el listado administrativo y abre una sheet amplia con los catálogos necesarios cargados bajo demanda. La URL directa anterior redirige a `admin/pois?form=create` y el formulario incorpora `Cancelar` y acción principal en un pie fijo.
+- El botón “Nuevo POI” y la opción “Editar POI” conservan el listado administrativo y abren una sheet amplia con los catálogos necesarios cargados bajo demanda. Las URLs directas anteriores redirigen a `admin/pois?form=create` o `admin/pois?form=edit&poi={id}`; el formulario incorpora `Cancelar` y acción principal en un pie fijo.
 
 ## 2026-08-28 — Tipografía base Arial
 

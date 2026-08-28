@@ -273,7 +273,7 @@
 
 ## 2026-08-28 — Alta de POIs dentro del listado
 
-- Crear un POI es un flujo administrativo que conserva el contexto de búsqueda; se resuelve en una sheet con pie fijo y no en una página independiente. La URL histórica de creación redirige al listado con la sheet abierta para no romper accesos existentes.
+- Crear o editar un POI es un flujo administrativo que conserva el contexto de búsqueda; se resuelve en una sheet con pie fijo y no en una página independiente. Las URLs históricas de creación/edición redirigen al listado con la sheet abierta para no romper accesos existentes.
 
 ## 2026-08-28 — Tipografía Arial como base visual
 

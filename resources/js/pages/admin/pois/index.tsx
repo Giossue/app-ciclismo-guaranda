@@ -1,4 +1,4 @@
-import { Form, Head, Link, router } from '@inertiajs/react';
+import { Form, Head, router } from '@inertiajs/react';
 import { EllipsisVertical, Pencil, Power, RouteIcon } from 'lucide-react';
 import PoiController from '@/actions/App/Http/Controllers/Admin/PoiController';
 import { DataTable } from '@/components/data-table';
@@ -62,8 +62,9 @@ type PoiFormOptions = Omit<
 type Props = {
     categories: CatalogOption[];
     filters: PoiFilters;
-    form: 'create' | null;
+    form: 'create' | 'edit' | null;
     formOptions: PoiFormOptions | null;
+    poiForm: Parameters<typeof PoiForm>[0]['poi'] | null;
     pois: PaginatedPois;
 };
 
@@ -72,6 +73,7 @@ export default function AdminPoisIndex({
     filters,
     form,
     formOptions,
+    poiForm,
     pois,
 }: Props) {
     const changeQuery = (query: DataTableQuery) => {
@@ -79,7 +81,11 @@ export default function AdminPoisIndex({
             PoiController.index.url(),
             {
                 ...compactPoiQuery(query),
-                ...(form === 'create' ? { form } : {}),
+                ...(form === 'edit' && poiForm
+                    ? { form, poi: poiForm.id }
+                    : form === 'create'
+                      ? { form }
+                      : {}),
             },
             {
                 only: ['pois', 'filters'],
@@ -90,10 +96,14 @@ export default function AdminPoisIndex({
         );
     };
 
-    const openPoiForm = () => {
+    const openPoiForm = (mode: 'create' | 'edit', poiId?: number) => {
         router.get(
             PoiController.index.url(),
-            { ...compactPoiQuery(filters), form: 'create' },
+            {
+                ...compactPoiQuery(filters),
+                form: mode,
+                ...(mode === 'edit' && poiId ? { poi: poiId } : {}),
+            },
             {
                 only: ['form', 'formOptions'],
                 preserveScroll: true,
@@ -189,7 +199,12 @@ export default function AdminPoisIndex({
             hideable: false,
             headerClassName: 'w-32 text-right',
             cellClassName: 'text-right',
-            cell: (poi) => <PoiRowActions poi={poi} />,
+            cell: (poi) => (
+                <PoiRowActions
+                    poi={poi}
+                    onEdit={() => openPoiForm('edit', poi.id)}
+                />
+            ),
         },
     ];
 
@@ -205,7 +220,7 @@ export default function AdminPoisIndex({
                     />
                     <PrimaryActionButton
                         label="Nuevo POI"
-                        onClick={openPoiForm}
+                        onClick={() => openPoiForm('create')}
                     />
                 </div>
 
@@ -249,7 +264,7 @@ export default function AdminPoisIndex({
             </div>
 
             <Sheet
-                open={form === 'create'}
+                open={form !== null}
                 onOpenChange={(open) => {
                     if (!open) {
                         closePoiForm();
@@ -261,20 +276,34 @@ export default function AdminPoisIndex({
                     className="top-1/2 right-auto bottom-auto left-1/2 h-[calc(100dvh-1.5rem)] w-[calc(100vw-1.5rem)] max-w-none -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-3xl border p-0 data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom sm:h-[calc(100dvh-4rem)] sm:w-[min(72rem,calc(100vw-4rem))] sm:max-w-[min(72rem,calc(100vw-4rem))]"
                 >
                     <SheetHeader className="shrink-0 border-b bg-popover">
-                        <SheetTitle>Nuevo punto de interés</SheetTitle>
+                        <SheetTitle>
+                            {form === 'edit' && poiForm
+                                ? `Editar ${poiForm.name}`
+                                : 'Nuevo punto de interés'}
+                        </SheetTitle>
                         <SheetDescription>
-                            Crea un POI oficial, su información útil y su
-                            relación con las rutas.
+                            {form === 'edit'
+                                ? 'Actualiza la información útil y su relación con las rutas.'
+                                : 'Crea un POI oficial, su información útil y su relación con las rutas.'}
                         </SheetDescription>
                     </SheetHeader>
 
-                    {formOptions && (
+                    {formOptions && form && (form === 'create' || poiForm) && (
                         <div className="min-h-0 flex-1 overflow-y-auto">
                             <div className="mx-auto w-full max-w-5xl px-5 py-5">
                                 <PoiForm
-                                    key="create"
-                                    mode="create"
+                                    key={
+                                        form === 'edit' && poiForm
+                                            ? `edit-${poiForm.id}`
+                                            : 'create'
+                                    }
+                                    mode={form}
                                     onCancel={closePoiForm}
+                                    poi={
+                                        form === 'edit'
+                                            ? (poiForm ?? undefined)
+                                            : undefined
+                                    }
                                     {...formOptions}
                                 />
                             </div>
@@ -302,7 +331,13 @@ function compactPoiQuery(query: DataTableQuery): DataTableQuery {
     ) as DataTableQuery;
 }
 
-function PoiRowActions({ poi }: { poi: ManagedPoi }) {
+function PoiRowActions({
+    poi,
+    onEdit,
+}: {
+    poi: ManagedPoi;
+    onEdit: () => void;
+}) {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -317,11 +352,9 @@ function PoiRowActions({ poi }: { poi: ManagedPoi }) {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
                 <DropdownMenuGroup>
-                    <DropdownMenuItem asChild>
-                        <Link href={PoiController.edit(poi.id)} prefetch>
-                            <Pencil />
-                            Editar POI
-                        </Link>
+                    <DropdownMenuItem onSelect={onEdit}>
+                        <Pencil />
+                        Editar POI
                     </DropdownMenuItem>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />

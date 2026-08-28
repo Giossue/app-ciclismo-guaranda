@@ -85,6 +85,14 @@ test('administrator can view poi management pages', function () {
     $this->withoutVite();
 
     $admin = User::factory()->administrator()->create();
+    $category = PoiCategory::query()->where('name', 'comida')->firstOrFail();
+    $poi = PointOfInterest::query()->create([
+        'poi_category_id' => $category->id,
+        'name' => 'POI para editar en sheet',
+        'latitude' => -1.405,
+        'longitude' => -79.021,
+        'active' => true,
+    ]);
 
     $this->actingAs($admin)
         ->get(route('admin.pois.index'))
@@ -107,6 +115,25 @@ test('administrator can view poi management pages', function () {
             ->has('formOptions.categories'));
 
     $this->actingAs($admin)
+        ->get(route('admin.pois.edit', $poi))
+        ->assertRedirect(route('admin.pois.index', [
+            'form' => 'edit',
+            'poi' => $poi->id,
+        ]));
+
+    $this->actingAs($admin)
+        ->get(route('admin.pois.index', [
+            'form' => 'edit',
+            'poi' => $poi->id,
+        ]))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('admin/pois/index')
+            ->where('form', 'edit')
+            ->where('poiForm.id', $poi->id)
+            ->has('formOptions.categories'));
+
+    $this->actingAs($admin)
         ->get(route('admin.pois.suggestions.index'))
         ->assertOk();
 
@@ -117,6 +144,14 @@ test('administrator can view poi management pages', function () {
 
 test('cyclist can not access poi administration', function () {
     $cyclist = User::factory()->cyclist()->create();
+    $category = PoiCategory::query()->where('name', 'comida')->firstOrFail();
+    $poi = PointOfInterest::query()->create([
+        'poi_category_id' => $category->id,
+        'name' => 'POI no autorizado',
+        'latitude' => -1.405,
+        'longitude' => -79.021,
+        'active' => true,
+    ]);
 
     $this->actingAs($cyclist)
         ->get(route('admin.pois.index'))
@@ -128,6 +163,17 @@ test('cyclist can not access poi administration', function () {
 
     $this->actingAs($cyclist)
         ->get(route('admin.pois.create'))
+        ->assertForbidden();
+
+    $this->actingAs($cyclist)
+        ->get(route('admin.pois.index', [
+            'form' => 'edit',
+            'poi' => $poi->id,
+        ]))
+        ->assertForbidden();
+
+    $this->actingAs($cyclist)
+        ->get(route('admin.pois.edit', $poi))
         ->assertForbidden();
 
     $this->actingAs($cyclist)
@@ -279,4 +325,36 @@ test('administrator can disable poi with soft delete', function () {
 
     expect($poi->active)->toBeFalse()
         ->and($poi->trashed())->toBeTrue();
+});
+
+test('administrator can open a disabled POI in the edit sheet', function () {
+    $this->withoutVite();
+
+    $admin = User::factory()->administrator()->create();
+    $category = PoiCategory::query()->where('name', 'comida')->firstOrFail();
+    $poi = PointOfInterest::query()->create([
+        'poi_category_id' => $category->id,
+        'name' => 'POI inactivo para editar',
+        'latitude' => -1.405,
+        'longitude' => -79.021,
+        'active' => false,
+    ]);
+    $poi->delete();
+
+    $this->actingAs($admin)
+        ->get(route('admin.pois.edit', $poi))
+        ->assertRedirect(route('admin.pois.index', [
+            'form' => 'edit',
+            'poi' => $poi->id,
+        ]));
+
+    $this->actingAs($admin)
+        ->get(route('admin.pois.index', [
+            'form' => 'edit',
+            'poi' => $poi->id,
+        ]))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('poiForm.id', $poi->id)
+            ->where('poiForm.active', false));
 });

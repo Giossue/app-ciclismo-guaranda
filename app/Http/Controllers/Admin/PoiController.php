@@ -43,8 +43,21 @@ class PoiController extends Controller
         $status = $filters['status'] ?? null;
         $perPage = (int) ($filters['per_page'] ?? 15);
 
+        $poiForm = null;
+
         if ($form === 'create') {
             $this->authorize('create', PointOfInterest::class);
+        }
+
+        if ($form === 'edit') {
+            $poi = PointOfInterest::query()
+                ->withTrashed()
+                ->findOrFail((int) $filters['poi']);
+
+            $this->authorize('update', $poi);
+
+            $this->loadFormRelations($poi);
+            $poiForm = $this->serializeForm($poi);
         }
 
         $pois = PointOfInterest::query()
@@ -86,7 +99,8 @@ class PoiController extends Controller
                 'per_page' => $perPage,
             ],
             'form' => $form,
-            'formOptions' => $form === 'create' ? $this->catalogProps() : null,
+            'formOptions' => $form === null ? null : $this->catalogProps(),
+            'poiForm' => $poiForm,
         ]);
     }
 
@@ -112,25 +126,13 @@ class PoiController extends Controller
         return to_route('admin.pois.index');
     }
 
-    public function edit(PointOfInterest $poi): Response
+    public function edit(PointOfInterest $poi): RedirectResponse
     {
         $this->authorize('update', $poi);
 
-        $poi->load([
-            'category',
-            'routes',
-            'hours',
-            'images',
-            'foodDetail',
-            'lodgingDetail',
-            'storeDetail',
-            'workshopDetail.services',
-            'healthDetail',
-        ]);
-
-        return Inertia::render('admin/pois/edit', [
-            ...$this->catalogProps(),
-            'poi' => $this->serializeForm($poi),
+        return to_route('admin.pois.index', [
+            'form' => 'edit',
+            'poi' => $poi->id,
         ]);
     }
 
@@ -203,6 +205,21 @@ class PoiController extends Controller
             'workshopServices' => WorkshopService::query()->orderBy('name')->get(['id', 'name']),
             'healthCenterTypes' => HealthCenterType::query()->orderBy('name')->get(['id', 'name']),
         ];
+    }
+
+    private function loadFormRelations(PointOfInterest $poi): void
+    {
+        $poi->load([
+            'category',
+            'routes',
+            'hours',
+            'images',
+            'foodDetail',
+            'lodgingDetail',
+            'storeDetail',
+            'workshopDetail.services',
+            'healthDetail',
+        ]);
     }
 
     /**

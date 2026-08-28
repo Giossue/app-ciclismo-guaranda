@@ -172,4 +172,4 @@ Después de esa prueba manual, marcar Fase 12 y Fase 14 como `Completado` si tod
 
 ## Alta administrativa de POIs 2026-08-28
 
-- La creación de POIs se abre en una sheet amplia sobre el listado y preserva filtros/paginación; la ruta histórica `/admin/pois/create` redirige de forma compatible al mismo flujo.
+- La creación y edición de POIs se abren en una sheet amplia sobre el listado y preservan filtros/paginación; las rutas históricas `/admin/pois/create` y `/admin/pois/{poi}/edit` redirigen de forma compatible al mismo flujo.
