@@ -37,6 +37,7 @@ Crear la base del panel administrador mobile first para gestionar el sistema.
 - Se agregó `/admin` como redirección al dashboard administrativo.
 - Se agregaron páginas base/placeholder funcionales para módulos administrativos pendientes.
 - Se mantuvo `/admin/users` como módulo funcional creado en fase 02.
+- Se incorporó la bandeja administrativa bajo `/admin/notifications`; su acceso y sus mutaciones están separados de la bandeja de ciclista.
 - Todas las rutas admin siguen protegidas por `auth`, `verified` y middleware `admin`.
 - Se usaron componentes shadcn/ui existentes: `Card`, `Badge`, `Alert`, `Button`, `Separator`.
 - Se regeneró Wayfinder para nuevas rutas/controladores.

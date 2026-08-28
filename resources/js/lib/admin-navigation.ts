@@ -15,6 +15,7 @@ import PoiController from '@/actions/App/Http/Controllers/Admin/PoiController';
 import PoiReportController from '@/actions/App/Http/Controllers/Admin/PoiReportController';
 import PoiSuggestionController from '@/actions/App/Http/Controllers/Admin/PoiSuggestionController';
 import SystemSettingsController from '@/actions/App/Http/Controllers/Admin/SystemSettingsController';
+import { index as notificationsIndex } from '@/routes/admin/notifications';
 import type { NavItem } from '@/types';
 
 export const adminNavItems: NavItem[] = [
@@ -25,7 +26,7 @@ export const adminNavItems: NavItem[] = [
     },
     {
         title: 'Notificaciones',
-        href: '/notifications',
+        href: notificationsIndex.url(),
         icon: Bell,
     },
     {

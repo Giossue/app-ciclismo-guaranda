@@ -12,10 +12,18 @@ use Inertia\Response;
 
 class AppNotificationController extends Controller
 {
-    public function index(Request $request): Response
+    public function index(Request $request): Response|RedirectResponse
     {
-        $user = $request->user();
-        abort_unless($user instanceof User, 403);
+        if ($request->user()?->isAdministrator()) {
+            return to_route('admin.notifications.index');
+        }
+
+        return $this->renderIndex($request, 'notifications/index');
+    }
+
+    protected function renderIndex(Request $request, string $component): Response
+    {
+        $user = $this->notificationUser($request);
 
         $onlyUnread = $request->boolean('unread');
 
@@ -27,7 +35,7 @@ class AppNotificationController extends Controller
             ->withQueryString()
             ->through(fn (AppNotification $notification): array => $this->serializeNotification($notification));
 
-        return Inertia::render('notifications/index', [
+        return Inertia::render($component, [
             'notifications' => $notifications,
             'onlyUnread' => $onlyUnread,
             'unreadCount' => AppNotification::query()
@@ -39,7 +47,7 @@ class AppNotificationController extends Controller
 
     public function markAsRead(Request $request, AppNotification $notification): RedirectResponse
     {
-        abort_unless($notification->user_id === $request->user()?->id, 403);
+        abort_unless($notification->user_id === $this->notificationUser($request)->id, 403);
 
         if (! $notification->read) {
             $notification->forceFill([
@@ -55,8 +63,7 @@ class AppNotificationController extends Controller
 
     public function markAllAsRead(Request $request): RedirectResponse
     {
-        $user = $request->user();
-        abort_unless($user instanceof User, 403);
+        $user = $this->notificationUser($request);
 
         AppNotification::query()
             ->where('user_id', $user->id)
@@ -90,5 +97,14 @@ class AppNotificationController extends Controller
             'read_at' => $readAt instanceof DateTimeInterface ? $readAt->format(DATE_ATOM) : null,
             'created_at' => $createdAt instanceof DateTimeInterface ? $createdAt->format(DATE_ATOM) : null,
         ];
+    }
+
+    protected function notificationUser(Request $request): User
+    {
+        $user = $request->user();
+
+        abort_unless($user instanceof User && $user->isCyclist(), 403);
+
+        return $user;
     }
 }

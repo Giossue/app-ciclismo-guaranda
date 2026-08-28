@@ -1,5 +1,6 @@
 import { Bell, Bot, Heart, Route } from 'lucide-react';
 import { adminNavItems } from '@/lib/admin-navigation';
+import { index as notificationsIndex } from '@/routes/notifications';
 import type { Auth, NavItem } from '@/types';
 
 const cyclistNavItems: NavItem[] = [
@@ -15,7 +16,7 @@ const cyclistNavItems: NavItem[] = [
     },
     {
         title: 'Notificaciones',
-        href: '/notifications',
+        href: notificationsIndex.url(),
         icon: Bell,
     },
     {

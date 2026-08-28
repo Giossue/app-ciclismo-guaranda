@@ -4,6 +4,11 @@ import type { AppNotification } from '@/components/notification-item';
 import { NotificationItem } from '@/components/notification-item';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import {
+    index as notificationsIndex,
+    read as notificationsRead,
+    readAll as notificationsReadAll,
+} from '@/routes/notifications';
 
 type PaginatedNotifications = {
     data: AppNotification[];
@@ -16,10 +21,17 @@ type PaginatedNotifications = {
     next_page_url: string | null;
 };
 
-type Props = {
+export type NotificationsIndexProps = {
     notifications: PaginatedNotifications;
     onlyUnread: boolean;
     unreadCount: number;
+};
+
+export type NotificationRoutes = {
+    all: string;
+    unread: string;
+    markAllAsRead: string;
+    markAsRead: (notificationId: number) => string;
 };
 
 type NotificationGroup = {
@@ -28,11 +40,12 @@ type NotificationGroup = {
     items: AppNotification[];
 };
 
-export default function NotificationsIndex({
+export function NotificationsIndex({
     notifications,
     onlyUnread,
     unreadCount,
-}: Props) {
+    notificationRoutes,
+}: NotificationsIndexProps & { notificationRoutes: NotificationRoutes }) {
     const groups = groupByDay(notifications.data);
 
     return (
@@ -47,11 +60,14 @@ export default function NotificationsIndex({
                     </p>
 
                     <div className="flex w-max gap-2">
-                        <FilterTab href="/notifications" active={!onlyUnread}>
+                        <FilterTab
+                            href={notificationRoutes.all}
+                            active={!onlyUnread}
+                        >
                             Todas
                         </FilterTab>
                         <FilterTab
-                            href="/notifications?unread=1"
+                            href={notificationRoutes.unread}
                             active={onlyUnread}
                         >
                             No leídas
@@ -61,7 +77,7 @@ export default function NotificationsIndex({
                     {unreadCount > 0 && (
                         <Button variant="outline" size="sm" asChild>
                             <Link
-                                href="/notifications/read-all"
+                                href={notificationRoutes.markAllAsRead}
                                 method="patch"
                                 as="button"
                                 preserveScroll
@@ -94,6 +110,9 @@ export default function NotificationsIndex({
                                     <NotificationItem
                                         notification={notification}
                                         timeLabel="time"
+                                        markAsReadHref={notificationRoutes.markAsRead(
+                                            notification.id,
+                                        )}
                                     />
                                 </li>
                             ))}
@@ -230,11 +249,29 @@ function formatDayLabel(value: string | null): string {
     return label.charAt(0).toUpperCase() + label.slice(1);
 }
 
-NotificationsIndex.layout = {
+const cyclistNotificationRoutes: NotificationRoutes = {
+    all: notificationsIndex.url(),
+    unread: notificationsIndex.url({ query: { unread: 1 } }),
+    markAllAsRead: notificationsReadAll.url(),
+    markAsRead: (notificationId) => notificationsRead.url(notificationId),
+};
+
+export default function CyclistNotificationsIndex(
+    props: NotificationsIndexProps,
+) {
+    return (
+        <NotificationsIndex
+            {...props}
+            notificationRoutes={cyclistNotificationRoutes}
+        />
+    );
+}
+
+CyclistNotificationsIndex.layout = {
     breadcrumbs: [
         {
             title: 'Notificaciones',
-            href: '/notifications',
+            href: notificationsIndex.url(),
         },
     ],
 };

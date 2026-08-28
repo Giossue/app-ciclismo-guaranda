@@ -304,3 +304,8 @@
 
 - `Administrador` y `Ciclista` son los valores canónicos de autorización y navegación.
 - Cuando coexiste el rol heredado en minúscula, la migración mueve primero todos los `usuarios.role_id` al registro canónico y después elimina el duplicado. La consolidación no intenta recrear duplicados al revertir porque no puede recuperar qué usuarios pertenecían originalmente a cada fila.
+
+## 2026-08-28 — Bandejas de notificaciones separadas por rol
+
+- La ruta visible y las mutaciones del administrador viven bajo `/admin/notifications`; las de ciclista permanecen bajo `/notifications`.
+- Ambas bandejas reutilizan `notificaciones_app` y exigen que cada fila pertenezca al usuario autenticado. Separar tablas no aporta autorización adicional y sí duplicaría datos.

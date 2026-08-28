@@ -12,9 +12,22 @@ import {
     SheetTitle,
 } from '@/components/ui/sheet';
 import { Skeleton } from '@/components/ui/skeleton';
+import { isAdmin } from '@/lib/navigation';
 import { cn } from '@/lib/utils';
+import {
+    index as adminNotificationsIndex,
+    read as adminNotificationsRead,
+    readAll as adminNotificationsReadAll,
+} from '@/routes/admin/notifications';
+import {
+    index as notificationsIndex,
+    read as notificationsRead,
+    readAll as notificationsReadAll,
+} from '@/routes/notifications';
+import type { Auth } from '@/types';
 
 type PageProps = {
+    auth: Auth;
     notificationCenter?: {
         unread_count?: number;
         latest?: AppNotification[];
@@ -31,11 +44,24 @@ type Props = {
  * al abrir el panel.
  */
 export function NotificationBellLink({ className }: Props) {
-    const { notificationCenter } = usePage<PageProps>().props;
+    const { auth, notificationCenter } = usePage<PageProps>().props;
     const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const unreadCount = notificationCenter?.unread_count ?? 0;
     const latest = notificationCenter?.latest;
+    const notificationRoutes = isAdmin(auth)
+        ? {
+              all: adminNotificationsIndex.url(),
+              markAllAsRead: adminNotificationsReadAll.url(),
+              markAsRead: (notificationId: number) =>
+                  adminNotificationsRead.url(notificationId),
+          }
+        : {
+              all: notificationsIndex.url(),
+              markAllAsRead: notificationsReadAll.url(),
+              markAsRead: (notificationId: number) =>
+                  notificationsRead.url(notificationId),
+          };
 
     const openPanel = () => {
         setOpen(true);
@@ -102,6 +128,9 @@ export function NotificationBellLink({ className }: Props) {
                                             notification={notification}
                                             timeLabel="relative"
                                             onNavigate={() => setOpen(false)}
+                                            markAsReadHref={notificationRoutes.markAsRead(
+                                                notification.id,
+                                            )}
                                         />
                                     </li>
                                 ))}
@@ -118,7 +147,7 @@ export function NotificationBellLink({ className }: Props) {
                         {unreadCount > 0 && (
                             <Button variant="outline" size="sm" asChild>
                                 <Link
-                                    href="/notifications/read-all"
+                                    href={notificationRoutes.markAllAsRead}
                                     method="patch"
                                     as="button"
                                     preserveScroll
@@ -130,7 +159,7 @@ export function NotificationBellLink({ className }: Props) {
                         )}
                         <Button size="sm" asChild>
                             <Link
-                                href="/notifications"
+                                href={notificationRoutes.all}
                                 prefetch
                                 onClick={() => setOpen(false)}
                             >

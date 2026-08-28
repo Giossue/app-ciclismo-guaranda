@@ -637,3 +637,8 @@
 
 - La migración pendiente de capitalización ahora tolera roles duplicados heredados: migra `usuarios.role_id` antes de borrar el catálogo minúsculo.
 - Se validó el caso de administrador y ciclista duplicados, además de que `/notifications` recibe el rol admin canónico en sus props Inertia.
+
+## 2026-08-28 — Separación administrativa de notificaciones
+
+- Se creó el módulo protegido `/admin/notifications`, con página Inertia y endpoints propios para listar y marcar notificaciones del administrador.
+- La campana, la navegación y las acciones de notificación seleccionan rutas tipadas de Wayfinder por rol. Un admin que conserve un enlace histórico a `/notifications` se redirige a su módulo administrativo.

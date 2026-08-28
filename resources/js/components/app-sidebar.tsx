@@ -25,7 +25,7 @@ export function AppSidebar() {
     const { isMobile } = useSidebar();
     const navItems = mainNavItems(auth);
     const sidebarNavItems = navItems.filter(
-        (item) => item.href !== '/notifications',
+        (item) => item.title !== 'Notificaciones',
     );
     const startPath = homePath(auth);
 

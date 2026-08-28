@@ -53,7 +53,7 @@ export function AppMobileNav() {
                                         )}
                                     />
                                 )}
-                                {item.href === '/notifications' &&
+                                {item.title === 'Notificaciones' &&
                                     unreadCount > 0 && (
                                         <span
                                             aria-hidden="true"

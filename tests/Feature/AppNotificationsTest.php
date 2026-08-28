@@ -69,15 +69,64 @@ test('authenticated user can list only own app notifications', function () {
             ->where('notifications.data.0.title', 'Tu incidencia fue revisada'));
 });
 
-test('administrator retains the canonical role in the notifications page props', function () {
+test('administrator is redirected to the separated admin notifications module', function () {
     $administrator = User::factory()->administrator()->create();
 
     $this->actingAs($administrator)
         ->get(route('notifications.index'))
+        ->assertRedirect(route('admin.notifications.index'));
+
+    $this->actingAs($administrator)
+        ->get(route('admin.notifications.index'))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
-            ->component('notifications/index')
+            ->component('admin/notifications/index')
             ->where('auth.user.role.name', 'Administrador'));
+});
+
+test('administrator can list and mark only own notifications in the admin module', function () {
+    $administrator = User::factory()->administrator()->create();
+    $otherAdministrator = User::factory()->administrator()->create();
+
+    $ownNotification = AppNotification::query()->create([
+        'user_id' => $administrator->id,
+        'type' => 'incident_reported',
+        'title' => 'Incidencia pendiente',
+        'message' => 'Requiere revisión.',
+    ]);
+    $otherNotification = AppNotification::query()->create([
+        'user_id' => $otherAdministrator->id,
+        'type' => 'incident_reported',
+        'title' => 'Incidencia ajena',
+        'message' => 'No debe aparecer.',
+    ]);
+
+    $this->actingAs($administrator)
+        ->get(route('admin.notifications.index'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('admin/notifications/index')
+            ->has('notifications.data', 1)
+            ->where('notifications.data.0.id', $ownNotification->id));
+
+    $this->actingAs($administrator)
+        ->patch(route('admin.notifications.read', $otherNotification))
+        ->assertForbidden();
+
+    $this->actingAs($administrator)
+        ->patch(route('admin.notifications.read', $ownNotification))
+        ->assertRedirect();
+
+    expect($ownNotification->fresh()?->read)->toBeTrue()
+        ->and($otherNotification->fresh()?->read)->toBeFalse();
+});
+
+test('cyclist can not access the admin notifications module', function () {
+    $cyclist = User::factory()->cyclist()->create();
+
+    $this->actingAs($cyclist)
+        ->get(route('admin.notifications.index'))
+        ->assertForbidden();
 });
 
 test('authenticated user can filter unread notifications and mark them as read', function () {

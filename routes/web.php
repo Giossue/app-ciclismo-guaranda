@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\CatalogController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\IncidentController as AdminIncidentController;
+use App\Http\Controllers\Admin\NotificationController as AdminNotificationController;
 use App\Http\Controllers\Admin\PoiController as AdminPoiController;
 use App\Http\Controllers\Admin\PoiReportController as AdminPoiReportController;
 use App\Http\Controllers\Admin\PoiSuggestionController as AdminPoiSuggestionController;
@@ -71,6 +72,9 @@ Route::middleware(['auth', 'verified', 'admin'])
     ->group(function () {
         Route::redirect('/', '/admin/dashboard')->name('index');
         Route::get('dashboard', DashboardController::class)->name('dashboard');
+        Route::get('notifications', [AdminNotificationController::class, 'index'])->name('notifications.index');
+        Route::patch('notifications/read-all', [AdminNotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
+        Route::patch('notifications/{notification}/read', [AdminNotificationController::class, 'markAsRead'])->name('notifications.read');
 
         Route::post('routes/elevation-preview', RouteElevationController::class)->middleware('throttle:20,1')->name('routes.elevation-preview');
         Route::post('routes/routing-preview', RouteRoutingController::class)->middleware('throttle:20,1')->name('routes.routing-preview');

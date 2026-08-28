@@ -38,11 +38,13 @@ export function NotificationItem({
     notification,
     onNavigate,
     timeLabel,
+    markAsReadHref,
 }: {
     notification: AppNotification;
     onNavigate?: () => void;
     /** 'time' muestra la hora; 'relative' muestra «hace un momento». */
     timeLabel?: 'time' | 'relative';
+    markAsReadHref: string;
 }) {
     const Icon = notificationIcons[notification.type] ?? Bell;
     const typeLabel = notificationLabels[notification.type] ?? 'Aviso';
@@ -105,7 +107,7 @@ export function NotificationItem({
 
     return (
         <Link
-            href={notification.link ?? `/notifications/${notification.id}/read`}
+            href={notification.link ?? markAsReadHref}
             method={notification.link ? 'get' : 'patch'}
             as={notification.link ? 'a' : 'button'}
             preserveScroll={!notification.link}
