@@ -79,6 +79,7 @@ class FavoriteRouteController extends Controller
                 'name' => $route->name,
                 'slug' => $route->slug,
                 'description' => Str::limit($route->description, 180),
+                'main_image_path' => $route->main_image_path,
                 'start_name' => $route->start_name,
                 'end_name' => $route->end_name,
                 'route_version' => $route->route_version,

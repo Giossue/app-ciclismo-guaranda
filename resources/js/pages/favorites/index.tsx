@@ -1,6 +1,10 @@
-import { Form, Head, Link, usePage } from '@inertiajs/react';
-import { Bike, Clock, HeartOff, MapPinned, Star } from 'lucide-react';
+import { Form, Head, Link } from '@inertiajs/react';
+import { HeartOff, ImageIcon, Star } from 'lucide-react';
 import FavoriteRouteController from '@/actions/App/Http/Controllers/Cyclist/FavoriteRouteController';
+import CyclistRouteController from '@/actions/App/Http/Controllers/Cyclist/RouteController';
+import { CatalogPagination } from '@/components/catalog-pagination';
+import Heading from '@/components/heading';
+import ImageWithFallback from '@/components/image-with-fallback';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -11,6 +15,15 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import {
+    Empty,
+    EmptyContent,
+    EmptyDescription,
+    EmptyHeader,
+    EmptyMedia,
+    EmptyTitle,
+} from '@/components/ui/empty';
+import { mediaUrl } from '@/lib/media';
 import type { CatalogOption, RouteMetric } from '@/types';
 
 type FavoriteRouteItem = {
@@ -19,6 +32,7 @@ type FavoriteRouteItem = {
         name: string;
         slug: string;
         description: string;
+        main_image_path: string | null;
         start_name: string;
         end_name: string;
         route_version: number;
@@ -34,8 +48,11 @@ type FavoriteRouteItem = {
 };
 
 type PaginatedFavorites = {
+    current_page: number;
     data: FavoriteRouteItem[];
     from: number | null;
+    last_page: number;
+    per_page: number;
     to: number | null;
     total: number;
 };
@@ -45,143 +62,176 @@ type Props = {
 };
 
 export default function FavoritesIndex({ favorites }: Props) {
-    const { auth } = usePage<any>().props;
-
     return (
         <>
             <Head title="Favoritas" />
 
-            <div className="ueb-page flex flex-col gap-5 md:w-full">
-                {/* Welcoming Header & Notifications Button */}
-                <div className="flex items-center justify-between border-b border-border/40 py-2">
-                    <div className="flex flex-col gap-0.5">
-                        <span className="font-black tracking-widest text-[var(--fs-caption)] text-muted-foreground uppercase">
-                            Hola, {auth?.user?.name ?? 'Ciclista'}
-                        </span>
-                        <h1 className="text-2xl font-black tracking-tight text-foreground">
-                            Favoritas
-                        </h1>
+            <div className="flex w-full flex-col gap-6">
+                <Heading
+                    title="Rutas favoritas"
+                    description="Encuentra rápidamente las rutas que guardaste para tu próxima salida."
+                />
+
+                {favorites.data.length > 0 ? (
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                        {favorites.data.map((favorite) =>
+                            favorite.route ? (
+                                <FavoriteCard
+                                    key={favorite.route.id}
+                                    favorite={favorite}
+                                />
+                            ) : null,
+                        )}
                     </div>
-                </div>
-
-                {/* Favorites List */}
-                <div className="grid gap-4">
-                    {favorites.data.map((favorite) =>
-                        favorite.route ? (
-                            <Card
-                                key={favorite.route.id}
-                                className="group overflow-hidden rounded-3xl border-border bg-card transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-[0_8px_24px_var(--shadow)]"
-                            >
-                                <CardHeader className="gap-2">
-                                    <div className="z-10 flex flex-wrap gap-1.5">
-                                        <Badge>
-                                            <Star data-icon="inline-start" />
-                                            Favorita
-                                        </Badge>
-                                        {favorite.route.category && (
-                                            <Badge variant="outline">
-                                                {favorite.route.category.name}
-                                            </Badge>
-                                        )}
-                                        {favorite.route.difficulty && (
-                                            <Badge variant="outline">
-                                                {favorite.route.difficulty.name}
-                                            </Badge>
-                                        )}
-                                    </div>
-                                    <CardTitle className="text-lg font-black text-foreground transition-colors duration-250 group-hover:text-link">
-                                        {favorite.route.name}
-                                    </CardTitle>
-                                    <CardDescription className="line-clamp-2 text-xs leading-relaxed text-muted-foreground">
-                                        {favorite.route.description}
-                                    </CardDescription>
-                                </CardHeader>
-
-                                <CardContent className="grid gap-2 text-xs text-foreground sm:grid-cols-3">
-                                    <div className="flex items-center gap-2 rounded-xl border border-border bg-secondary p-2.5">
-                                        <MapPinned className="size-4 shrink-0 text-muted-foreground" />
-                                        <span className="line-clamp-1 font-bold text-muted-foreground">
-                                            {favorite.route.start_name} →{' '}
-                                            {favorite.route.end_name}
-                                        </span>
-                                    </div>
-                                    {favorite.route.metric && (
-                                        <>
-                                            <div className="flex items-center gap-2 rounded-xl border border-border bg-secondary p-2.5">
-                                                <Bike className="size-4 shrink-0 text-primary" />
-                                                <span className="font-bold text-foreground">
-                                                    {favorite.route.metric.distance_km.toLocaleString()}{' '}
-                                                    km
-                                                </span>
-                                            </div>
-                                            <div className="flex items-center gap-2 rounded-xl border border-border bg-secondary p-2.5">
-                                                <Clock className="size-4 shrink-0 text-primary" />
-                                                <span className="font-bold text-foreground">
-                                                    {
-                                                        favorite.route.metric
-                                                            .estimated_time_minutes
-                                                    }{' '}
-                                                    min
-                                                </span>
-                                            </div>
-                                        </>
-                                    )}
-                                </CardContent>
-
-                                <CardFooter className="mt-2 grid gap-3 sm:grid-cols-2">
-                                    <Button asChild className="w-full">
-                                        <Link
-                                            href={`/routes/${favorite.route.slug}`}
-                                            prefetch
-                                        >
-                                            Ver ruta
-                                        </Link>
-                                    </Button>
-                                    <Form
-                                        {...FavoriteRouteController.destroy.form(
-                                            favorite.route.slug,
-                                        )}
-                                        options={{ preserveScroll: true }}
-                                        className="w-full"
-                                    >
-                                        {({ processing }) => (
-                                            <Button
-                                                variant="secondary"
-                                                disabled={processing}
-                                                className="w-full"
-                                            >
-                                                <HeartOff className="size-4 shrink-0" />
-                                                <span>Quitar</span>
-                                            </Button>
-                                        )}
-                                    </Form>
-                                </CardFooter>
-                            </Card>
-                        ) : null,
-                    )}
-                </div>
-
-                {/* Empty State */}
-                {favorites.data.length === 0 && (
-                    <div className="flex flex-col items-center gap-2 py-8 text-center">
-                        <div className="mb-2 flex size-14 items-center justify-center rounded-2xl bg-border/50 text-muted-foreground/60">
-                            <HeartOff className="size-4" />
-                        </div>
-                        <h2 className="text-base font-bold text-foreground">
-                            No tienes favoritas
-                        </h2>
-                        <p className="mx-auto max-w-[240px] text-xs leading-relaxed text-muted-foreground">
-                            Guarda una ruta para verla aquí.
-                        </p>
-                    </div>
+                ) : (
+                    <Empty className="min-h-72 border border-dashed">
+                        <EmptyHeader>
+                            <EmptyMedia variant="icon">
+                                <HeartOff />
+                            </EmptyMedia>
+                            <EmptyTitle>No tienes rutas favoritas</EmptyTitle>
+                            <EmptyDescription>
+                                Guarda una ruta para encontrarla rápidamente
+                                antes de tu próxima salida.
+                            </EmptyDescription>
+                        </EmptyHeader>
+                        <EmptyContent>
+                            <Button asChild variant="outline" size="sm">
+                                <Link
+                                    href={CyclistRouteController.index.url()}
+                                    prefetch
+                                >
+                                    Explorar rutas
+                                </Link>
+                            </Button>
+                        </EmptyContent>
+                    </Empty>
                 )}
 
-                <div className="pl-1 text-xs font-bold text-muted-foreground">
-                    {favorites.from ?? 0}-{favorites.to ?? 0} de{' '}
-                    {favorites.total} favoritas.
-                </div>
+                <CatalogPagination
+                    pagination={favorites}
+                    itemLabel="favoritas"
+                    buildPageUrl={(page) =>
+                        FavoriteRouteController.index.url({ query: { page } })
+                    }
+                />
             </div>
         </>
+    );
+}
+
+function FavoriteCard({ favorite }: { favorite: FavoriteRouteItem }) {
+    const route = favorite.route;
+
+    if (!route) {
+        return null;
+    }
+
+    const routeUrl = CyclistRouteController.show.url(route.slug);
+
+    return (
+        <Card className="group h-full gap-0 overflow-hidden py-0 transition-[border-color,transform] duration-200 hover:-translate-y-0.5 hover:border-primary">
+            <Link
+                href={routeUrl}
+                prefetch
+                className="relative block aspect-[16/9] overflow-hidden bg-muted"
+                aria-label={`Ver ${route.name}`}
+            >
+                <ImageWithFallback
+                    src={mediaUrl(route.main_image_path)}
+                    alt={`Vista de ${route.name}`}
+                    className="size-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                    fallback={
+                        <div className="flex size-full items-center justify-center text-muted-foreground">
+                            <ImageIcon />
+                            <span className="sr-only">
+                                Esta ruta no tiene imagen principal
+                            </span>
+                        </div>
+                    }
+                />
+                <Badge className="absolute top-3 left-3">
+                    <Star data-icon="inline-start" />
+                    Favorita
+                </Badge>
+            </Link>
+
+            <CardHeader className="gap-2 pt-4">
+                <div className="flex flex-wrap gap-2">
+                    {route.category && (
+                        <Badge variant="outline">{route.category.name}</Badge>
+                    )}
+                    {route.difficulty && (
+                        <Badge variant="outline">{route.difficulty.name}</Badge>
+                    )}
+                </div>
+                <CardTitle className="line-clamp-2 text-lg">
+                    <Link
+                        href={routeUrl}
+                        prefetch
+                        className="transition-colors hover:text-link"
+                    >
+                        {route.name}
+                    </Link>
+                </CardTitle>
+                <CardDescription className="line-clamp-2">
+                    {route.start_name} → {route.end_name}
+                </CardDescription>
+            </CardHeader>
+
+            <CardContent className="mt-auto grid grid-cols-2 gap-3 pb-4 text-sm">
+                <RouteMetric
+                    label="Distancia"
+                    value={
+                        route.metric
+                            ? `${route.metric.distance_km.toLocaleString()} km`
+                            : 'Sin dato'
+                    }
+                />
+                <RouteMetric
+                    label="Tiempo"
+                    value={
+                        route.metric
+                            ? `${route.metric.estimated_time_minutes} min`
+                            : 'Sin dato'
+                    }
+                />
+            </CardContent>
+
+            <CardFooter className="grid grid-cols-2 gap-2 border-t py-3">
+                <Button asChild variant="outline" className="w-full">
+                    <Link href={routeUrl} prefetch>
+                        Ver ruta
+                    </Link>
+                </Button>
+                <Form
+                    {...FavoriteRouteController.destroy.form(route.slug)}
+                    options={{ preserveScroll: true }}
+                    className="w-full"
+                >
+                    {({ processing }) => (
+                        <Button
+                            type="submit"
+                            variant="secondary"
+                            disabled={processing}
+                            className="w-full"
+                        >
+                            <HeartOff data-icon="inline-start" />
+                            {processing ? 'Quitando…' : 'Quitar'}
+                        </Button>
+                    )}
+                </Form>
+            </CardFooter>
+        </Card>
+    );
+}
+
+function RouteMetric({ label, value }: { label: string; value: string }) {
+    return (
+        <div className="flex min-w-0 flex-col gap-0.5">
+            <span className="text-xs text-muted-foreground">{label}</span>
+            <span className="truncate font-bold text-foreground">{value}</span>
+        </div>
     );
 }
 
@@ -189,7 +239,7 @@ FavoritesIndex.layout = {
     breadcrumbs: [
         {
             title: 'Favoritas',
-            href: '/favorites',
+            href: FavoriteRouteController.index.url(),
         },
     ],
 };
