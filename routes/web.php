@@ -32,34 +32,43 @@ Route::inertia('/', 'welcome')->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', DashboardRedirectController::class)->name('dashboard');
-    Route::get('notifications', [AppNotificationController::class, 'index'])->name('notifications.index');
-    Route::patch('notifications/read-all', [AppNotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
-    Route::patch('notifications/{notification}/read', [AppNotificationController::class, 'markAsRead'])->name('notifications.read');
-    Route::get('chat', [ChatController::class, 'index'])->name('chat.index');
-    Route::post('chat/messages', [ChatController::class, 'store'])->middleware('throttle:12,1')->name('chat.messages.store');
-    Route::delete('chat/conversations/{conversation}', [ChatController::class, 'destroy'])->name('chat.conversations.destroy');
-    Route::get('routes', [CyclistRouteController::class, 'index'])->name('routes.index');
-    Route::get('favorites', [FavoriteRouteController::class, 'index'])->name('favorites.index');
-    Route::get('routes/{route:slug}', [CyclistRouteController::class, 'show'])->name('routes.show');
-    Route::get('routes/{route:slug}/offline-package', [OfflineRouteController::class, 'show'])->name('routes.offline-package.show');
-    Route::post('routes/{route:slug}/downloads', [OfflineRouteController::class, 'store'])->name('routes.downloads.store');
-    Route::post('routes/{route:slug}/favorite', [FavoriteRouteController::class, 'store'])->name('routes.favorite.store');
-    Route::delete('routes/{route:slug}/favorite', [FavoriteRouteController::class, 'destroy'])->name('routes.favorite.destroy');
-    Route::post('routes/{route:slug}/ratings', [RouteRatingController::class, 'store'])->name('routes.ratings.store');
-    Route::patch('route-ratings/{rating}', [RouteRatingController::class, 'update'])->name('route-ratings.update');
-    Route::delete('route-ratings/{rating}', [RouteRatingController::class, 'destroy'])->name('route-ratings.destroy');
-    Route::post('sync/offline-events', [SyncController::class, 'store'])->name('sync.offline-events.store');
-    Route::post('routes/{route:slug}/tracks', [CyclistTrackController::class, 'store'])->name('tracks.store');
-    Route::get('tracks/{track}', [CyclistTrackController::class, 'show'])->name('tracks.show');
-    Route::post('tracks/{track}/points', [CyclistTrackController::class, 'point'])->name('tracks.points.store');
-    Route::patch('tracks/{track}/pause', [CyclistTrackController::class, 'pause'])->name('tracks.pause');
-    Route::patch('tracks/{track}/resume', [CyclistTrackController::class, 'resume'])->name('tracks.resume');
-    Route::patch('tracks/{track}/finish', [CyclistTrackController::class, 'finish'])->name('tracks.finish');
-    Route::patch('tracks/{track}/cancel', [CyclistTrackController::class, 'cancel'])->name('tracks.cancel');
-    Route::get('tracks/{track}/export', [CyclistTrackController::class, 'export'])->name('tracks.export');
-    Route::post('incidents', [CyclistIncidentController::class, 'store'])->name('incidents.store');
-    Route::post('pois/suggestions', [PoiSuggestionController::class, 'store'])->name('pois.suggestions.store');
-    Route::post('pois/{poi}/reports', [PoiReportController::class, 'store'])->name('pois.reports.store');
+
+    Route::prefix('user')->group(function () {
+        Route::get('notifications', [AppNotificationController::class, 'index'])->name('notifications.index');
+        Route::patch('notifications/read-all', [AppNotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
+        Route::patch('notifications/{notification}/read', [AppNotificationController::class, 'markAsRead'])->name('notifications.read');
+        Route::get('chat', [ChatController::class, 'index'])->name('chat.index');
+        Route::post('chat/messages', [ChatController::class, 'store'])->middleware('throttle:12,1')->name('chat.messages.store');
+        Route::delete('chat/conversations/{conversation}', [ChatController::class, 'destroy'])->name('chat.conversations.destroy');
+        Route::get('routes', [CyclistRouteController::class, 'index'])->name('routes.index');
+        Route::get('favorites', [FavoriteRouteController::class, 'index'])->name('favorites.index');
+        Route::get('routes/{route:slug}', [CyclistRouteController::class, 'show'])->name('routes.show');
+        Route::get('routes/{route:slug}/offline-package', [OfflineRouteController::class, 'show'])->name('routes.offline-package.show');
+        Route::post('routes/{route:slug}/downloads', [OfflineRouteController::class, 'store'])->name('routes.downloads.store');
+        Route::post('routes/{route:slug}/favorite', [FavoriteRouteController::class, 'store'])->name('routes.favorite.store');
+        Route::delete('routes/{route:slug}/favorite', [FavoriteRouteController::class, 'destroy'])->name('routes.favorite.destroy');
+        Route::post('routes/{route:slug}/ratings', [RouteRatingController::class, 'store'])->name('routes.ratings.store');
+        Route::patch('route-ratings/{rating}', [RouteRatingController::class, 'update'])->name('route-ratings.update');
+        Route::delete('route-ratings/{rating}', [RouteRatingController::class, 'destroy'])->name('route-ratings.destroy');
+        Route::post('sync/offline-events', [SyncController::class, 'store'])->name('sync.offline-events.store');
+        Route::post('routes/{route:slug}/tracks', [CyclistTrackController::class, 'store'])->name('tracks.store');
+        Route::get('tracks/{track}', [CyclistTrackController::class, 'show'])->name('tracks.show');
+        Route::post('tracks/{track}/points', [CyclistTrackController::class, 'point'])->name('tracks.points.store');
+        Route::patch('tracks/{track}/pause', [CyclistTrackController::class, 'pause'])->name('tracks.pause');
+        Route::patch('tracks/{track}/resume', [CyclistTrackController::class, 'resume'])->name('tracks.resume');
+        Route::patch('tracks/{track}/finish', [CyclistTrackController::class, 'finish'])->name('tracks.finish');
+        Route::patch('tracks/{track}/cancel', [CyclistTrackController::class, 'cancel'])->name('tracks.cancel');
+        Route::get('tracks/{track}/export', [CyclistTrackController::class, 'export'])->name('tracks.export');
+        Route::post('incidents', [CyclistIncidentController::class, 'store'])->name('incidents.store');
+        Route::post('pois/suggestions', [PoiSuggestionController::class, 'store'])->name('pois.suggestions.store');
+        Route::post('pois/{poi}/reports', [PoiReportController::class, 'store'])->name('pois.reports.store');
+    });
+
+    Route::redirect('routes', '/user/routes');
+    Route::redirect('favorites', '/user/favorites');
+    Route::redirect('notifications', '/user/notifications');
+    Route::redirect('chat', '/user/chat');
+    Route::redirect('user', '/user/routes');
 });
 
 Route::middleware(['auth', 'verified', 'admin'])

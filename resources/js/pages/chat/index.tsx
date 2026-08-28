@@ -48,6 +48,7 @@ import {
     stopSpeaking,
 } from '@/lib/native/speech';
 import { cn } from '@/lib/utils';
+import { index as chatIndex } from '@/routes/chat';
 import type { Auth } from '@/types';
 
 type ChatMessage = {
@@ -210,7 +211,7 @@ export default function ChatIndex({
                         className="size-9 shrink-0 rounded-xl p-0"
                     >
                         <Link
-                            href="/chat?new=1"
+                            href={chatIndex.url({ query: { new: 1 } })}
                             replace
                             prefetch
                             aria-label="Nueva consulta"
@@ -483,7 +484,11 @@ function HistorySheet({
 
                 <div className="flex flex-1 flex-col gap-3 overflow-y-auto p-4">
                     <Button variant="outline" asChild className="justify-start">
-                        <Link href="/chat?new=1" replace prefetch>
+                        <Link
+                            href={chatIndex.url({ query: { new: 1 } })}
+                            replace
+                            prefetch
+                        >
                             <Plus data-icon="inline-start" />
                             Nueva consulta
                         </Link>
@@ -803,7 +808,7 @@ ChatIndex.layout = {
     breadcrumbs: [
         {
             title: 'Asistente',
-            href: '/chat',
+            href: chatIndex.url(),
         },
     ],
 };

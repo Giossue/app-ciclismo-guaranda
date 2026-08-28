@@ -2,6 +2,7 @@
 
 use App\Models\AppNotification;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -17,7 +18,7 @@ test('bell panel loads the latest notifications on demand', function () {
         'type' => 'incident_reviewed',
         'title' => 'Tu incidencia fue revisada',
         'message' => 'La incidencia cambió de estado.',
-        'link' => '/routes/ruta-de-prueba',
+        'link' => '/user/routes/ruta-de-prueba',
     ]);
 
     // Sin pedirla, la lista no viaja: es un prop opcional.
@@ -38,7 +39,7 @@ test('bell panel loads the latest notifications on demand', function () {
         ->get(route('notifications.index'))
         ->assertOk()
         ->assertJsonCount(1, 'props.notificationCenter.latest')
-        ->assertJsonPath('props.notificationCenter.latest.0.link', '/routes/ruta-de-prueba');
+        ->assertJsonPath('props.notificationCenter.latest.0.link', '/user/routes/ruta-de-prueba');
 });
 
 test('authenticated user can list only own app notifications', function () {
@@ -67,6 +68,22 @@ test('authenticated user can list only own app notifications', function () {
             ->where('unreadCount', 1)
             ->has('notifications.data', 1)
             ->where('notifications.data.0.title', 'Tu incidencia fue revisada'));
+});
+
+test('user with a legacy non-admin role can access own notifications', function () {
+    $legacyRoleId = DB::table('roles_usuario')->insertGetId([
+        'name' => 'ciclista',
+        'description' => 'Rol heredado.',
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+    $user = User::factory()->create(['role_id' => $legacyRoleId]);
+
+    $this->actingAs($user)
+        ->get(route('notifications.index'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('notifications/index'));
 });
 
 test('administrator is redirected to the separated admin notifications module', function () {

@@ -70,6 +70,7 @@ import type {
     OfflineRouteRecord,
 } from '@/lib/offline/local-database';
 import { syncPendingOfflineEvents } from '@/lib/offline/sync-client';
+import { index as routesIndex } from '@/routes/routes';
 import type {
     ActiveTrack,
     CatalogOption,
@@ -347,7 +348,11 @@ function RouteHeader({ route }: { route: CyclingRouteMapItem }) {
                     variant="overlay"
                     className="absolute top-3 left-3 z-[5] size-9"
                 >
-                    <Link href="/routes" prefetch aria-label="Volver a rutas">
+                    <Link
+                        href={routesIndex.url()}
+                        prefetch
+                        aria-label="Volver a rutas"
+                    >
                         <ArrowLeft className="size-4" />
                     </Link>
                 </Button>
@@ -1985,11 +1990,11 @@ RoutesShow.layout = {
     breadcrumbs: [
         {
             title: 'Rutas',
-            href: '/routes',
+            href: routesIndex.url(),
         },
         {
             title: 'Detalle',
-            href: '/routes',
+            href: routesIndex.url(),
         },
     ],
 };

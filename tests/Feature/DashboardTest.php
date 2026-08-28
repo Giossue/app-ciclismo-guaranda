@@ -14,3 +14,11 @@ test('authenticated users are redirected to the cyclist home', function () {
     $response = $this->get(route('dashboard'));
     $response->assertRedirect(route('routes.index'));
 });
+
+test('legacy cyclist entry points redirect to the user namespace', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->get('/routes')
+        ->assertRedirect(route('routes.index'));
+});

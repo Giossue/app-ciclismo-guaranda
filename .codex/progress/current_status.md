@@ -118,7 +118,7 @@ Después de esa prueba manual, marcar Fase 12 y Fase 14 como `Completado` si tod
 - No se agregaron tablas; se reutilizan rutas, geometría, métricas, POIs, incidencias y recorridos existentes.
 - Ubicación transitoria desde chat implementada; pendiente contrato/render de cards y TTS local.
 - Chat n8n: búsqueda de rutas ahora tiene fallback a rutas activas si una consulta genérica no coincide; el chat puede enviar ubicación transitoria al webhook sin guardarla en el historial local.
-- Notificaciones internas web/app implementadas sobre `notificaciones_app`: campana global, contador, pantalla `/notifications` y marcado como leído sin eliminación. Sigue pendiente validar permisos/notificaciones nativas en Android real.
+- Notificaciones internas web/app implementadas sobre `notificaciones_app`: campana global, contador, pantalla `/user/notifications` para ciclistas y `/admin/notifications` para administradores, con marcado como leído sin eliminación. Sigue pendiente validar permisos/notificaciones nativas en Android real.
 
 ## Fase 16 refactor frontend mobile first 2026-07-01
 

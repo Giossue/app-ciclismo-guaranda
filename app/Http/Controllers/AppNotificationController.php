@@ -103,7 +103,7 @@ class AppNotificationController extends Controller
     {
         $user = $request->user();
 
-        abort_unless($user instanceof User && $user->isCyclist(), 403);
+        abort_unless($user instanceof User && ! $user->isAdministrator(), 403);
 
         return $user;
     }

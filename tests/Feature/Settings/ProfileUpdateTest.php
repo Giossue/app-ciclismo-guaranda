@@ -18,6 +18,14 @@ test('profile page is displayed', function () {
     $response->assertOk();
 });
 
+test('legacy profile URL redirects to the user namespace', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->get('/account/profile')
+        ->assertRedirect(route('profile.edit'));
+});
+
 test('profile information can be updated', function () {
     $user = User::factory()->create();
     $gender = Gender::query()->where('name', 'Femenino')->firstOrFail();

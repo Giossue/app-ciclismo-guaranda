@@ -12,6 +12,7 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import { index as routesIndex, show as routesShow } from '@/routes/routes';
 import type { ActiveTrack, CatalogOption } from '@/types';
 
 type TrackPoint = {
@@ -52,7 +53,10 @@ export default function TracksShow({ track }: Props) {
                     />
                     {track.route && (
                         <Button variant="outline" asChild>
-                            <Link href={`/routes/${track.route.slug}`} prefetch>
+                            <Link
+                                href={routesShow.url(track.route.slug)}
+                                prefetch
+                            >
                                 Volver
                             </Link>
                         </Button>
@@ -256,7 +260,7 @@ TracksShow.layout = {
     breadcrumbs: [
         {
             title: 'Recorrido',
-            href: '/routes',
+            href: routesIndex.url(),
         },
     ],
 };

@@ -642,3 +642,8 @@
 
 - Se creó el módulo protegido `/admin/notifications`, con página Inertia y endpoints propios para listar y marcar notificaciones del administrador.
 - La campana, la navegación y las acciones de notificación seleccionan rutas tipadas de Wayfinder por rol. Un admin que conserve un enlace histórico a `/notifications` se redirige a su módulo administrativo.
+
+## 2026-08-28 — Refactor de URLs de ciclista
+
+- La experiencia ciclista quedó bajo `/user/*`, incluido el destino poslogin `/user/routes`, perfil y seguridad. Las rutas históricas GET principales redirigen sin romper marcadores.
+- Se retiró la comprobación literal de `Ciclista` de la bandeja de usuario: una sesión autenticada que no es administrador conserva acceso únicamente a sus propias notificaciones, incluso con un rol legado pendiente de normalización.

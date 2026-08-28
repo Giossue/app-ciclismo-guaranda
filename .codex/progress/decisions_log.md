@@ -307,5 +307,10 @@
 
 ## 2026-08-28 — Bandejas de notificaciones separadas por rol
 
-- La ruta visible y las mutaciones del administrador viven bajo `/admin/notifications`; las de ciclista permanecen bajo `/notifications`.
+- La ruta visible y las mutaciones del administrador viven bajo `/admin/notifications`; las de ciclista viven bajo `/user/notifications`.
 - Ambas bandejas reutilizan `notificaciones_app` y exigen que cada fila pertenezca al usuario autenticado. Separar tablas no aporta autorización adicional y sí duplicaría datos.
+
+## 2026-08-28 — Namespace de la experiencia ciclista
+
+- Las rutas web del ciclista usan el prefijo `/user`: rutas, favoritas, notificaciones, asistente, recorridos, sync, incidencias, POIs, perfil y seguridad.
+- Los nombres de ruta Laravel se conservan para mantener compatibles controladores, Fortify, Wayfinder y APKs; los accesos GET históricos redirigen al namespace nuevo.

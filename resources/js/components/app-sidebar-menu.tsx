@@ -6,6 +6,8 @@ import { useSidebar } from '@/components/ui/sidebar';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
 import { cn } from '@/lib/utils';
+import { edit as profileEdit } from '@/routes/profile';
+import { edit as securityEdit } from '@/routes/security';
 import type { Auth, NavItem } from '@/types';
 
 type PageProps = {
@@ -23,13 +25,13 @@ const accountItems: AccountItem[] = [
     {
         title: 'Perfil',
         description: 'Datos de tu cuenta',
-        href: '/account/profile',
+        href: profileEdit.url(),
         icon: UserRound,
     },
     {
         title: 'Seguridad',
         description: 'Contraseña y acceso',
-        href: '/account/security',
+        href: securityEdit.url(),
         icon: ShieldCheck,
     },
 ];
