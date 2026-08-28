@@ -1,6 +1,8 @@
 import { Form, Link } from '@inertiajs/react';
 import {
     ChevronDown,
+    ChevronLeft,
+    ChevronRight,
     ImageIcon,
     MapPin,
     Mountain,
@@ -44,6 +46,7 @@ import {
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { mediaUrl } from '@/lib/media';
 import { cn } from '@/lib/utils';
 import type { CatalogOption } from '@/types';
@@ -107,7 +110,6 @@ type Props = {
     categories: CatalogOption[];
     difficulties: CatalogOption[];
     transportModes: CatalogOption[];
-    routingEngines: CatalogOption[];
     poiCategories: CatalogOption[];
     pois: RoutePoiOption[];
     defaults?: RouteDefaults;
@@ -150,13 +152,21 @@ const experienceOptions = [
     },
 ];
 
+const routeStepLabels = ['Datos', 'Mapa', 'Detalles', 'Publicar'] as const;
+
+const routeStepDescriptions = [
+    'Describe y clasifica la ruta.',
+    'Elige el inicio y el final en el mapa.',
+    'Completa medidas, desnivel e imágenes.',
+    'Añade indicaciones y puntos de interés.',
+] as const;
+
 export default function RouteForm({
     mode,
     statuses,
     categories,
     difficulties,
     transportModes,
-    routingEngines,
     poiCategories,
     pois,
     defaults,
@@ -211,8 +221,8 @@ export default function RouteForm({
     const [newPois, setNewPois] = useState<NewRoutePoi[]>([]);
     const [activePoiKey, setActivePoiKey] = useState<string | null>(null);
     const [isCompressing, setIsCompressing] = useState(false);
-    const [showRouteExtras, setShowRouteExtras] = useState(false);
     const [showPois, setShowPois] = useState((route?.poi_ids.length ?? 0) > 0);
+    const [activeStep, setActiveStep] = useState<1 | 2 | 3 | 4>(1);
     const requiredExperience = useMemo(
         () => selectedExperience.join('\n'),
         [selectedExperience],
@@ -432,930 +442,949 @@ export default function RouteForm({
         >
             {({ processing, errors }) => (
                 <div className="flex flex-col gap-5">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>1. Identidad de la ruta</CardTitle>
-                            <CardDescription>
-                                Define cómo se presentará y clasifica el
-                                recorrido.
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="grid gap-4 sm:grid-cols-2">
-                            <div className="grid gap-2 sm:col-span-2">
-                                <Label htmlFor="name">Nombre</Label>
-                                <Input
-                                    id="name"
-                                    name="name"
-                                    defaultValue={route?.name ?? ''}
-                                    placeholder="Ej. Ruta Salinas de Bolívar"
-                                    required
-                                    aria-invalid={Boolean(errors.name)}
-                                />
-                                <InputError message={errors.name} />
-                            </div>
-
-                            <div className="grid gap-2 sm:col-span-2">
-                                <Label htmlFor="description">Descripción</Label>
-                                <Textarea
-                                    id="description"
-                                    name="description"
-                                    defaultValue={route?.description ?? ''}
-                                    placeholder="Describe el recorrido, atractivos, tipo de terreno y recomendaciones generales."
-                                    required
-                                    aria-invalid={Boolean(errors.description)}
-                                />
-                                <InputError message={errors.description} />
-                            </div>
-
-                            <CatalogSelect
-                                id="route_status_id"
-                                name="route_status_id"
-                                label="Estado"
-                                placeholder="Selecciona estado"
-                                options={statuses}
-                                defaultValue={
-                                    route?.route_status_id ??
-                                    defaults?.route_status_id
-                                }
-                                error={errors.route_status_id}
-                                description={
-                                    !isEdit
-                                        ? 'Se guarda como borrador y no será visible para ciclistas hasta publicarla.'
-                                        : undefined
-                                }
-                            />
-
-                            <CatalogSelect
-                                id="route_category_id"
-                                name="route_category_id"
-                                label="Categoría"
-                                placeholder="Selecciona categoría"
-                                options={categories}
-                                defaultValue={route?.route_category_id}
-                                error={errors.route_category_id}
-                            />
-
-                            <CatalogSelect
-                                id="route_difficulty_id"
-                                name="route_difficulty_id"
-                                label="Dificultad"
-                                placeholder="Selecciona dificultad"
-                                options={difficulties}
-                                defaultValue={route?.route_difficulty_id}
-                                error={errors.route_difficulty_id}
-                            />
-
-                            <div className="grid gap-2">
-                                <Label htmlFor="road_type">Tipo de vía</Label>
-                                <Input
-                                    id="road_type"
-                                    name="road_type"
-                                    defaultValue={route?.road_type ?? ''}
-                                    placeholder="Asfalto, lastre, sendero, empedrado..."
-                                    required
-                                    aria-invalid={Boolean(errors.road_type)}
-                                />
-                                <InputError message={errors.road_type} />
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>2. Crea el recorrido</CardTitle>
-                            <CardDescription>
-                                Elige inicio y final; la ruta en bicicleta se
-                                genera automáticamente y sigue siendo editable.
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="grid gap-4 sm:grid-cols-2">
-                            <div className="grid gap-2">
-                                <Label htmlFor="start_name">
-                                    Nombre del inicio
-                                </Label>
-                                <Input
-                                    id="start_name"
-                                    name="start_name"
-                                    value={startPoint.name}
-                                    onChange={(event) =>
-                                        setStartPoint((current) => ({
-                                            ...current,
-                                            name: event.currentTarget.value,
-                                        }))
-                                    }
-                                    placeholder="Ej. Parque central de Salinas"
-                                    required
-                                    aria-invalid={Boolean(errors.start_name)}
-                                />
-                                <InputError message={errors.start_name} />
-                            </div>
-
-                            <div className="grid gap-2">
-                                <Label htmlFor="end_name">
-                                    Nombre del final
-                                </Label>
-                                <Input
-                                    id="end_name"
-                                    name="end_name"
-                                    value={endPoint.name}
-                                    onChange={(event) =>
-                                        setEndPoint((current) => ({
-                                            ...current,
-                                            name: event.currentTarget.value,
-                                        }))
-                                    }
-                                    placeholder="Ej. Mirador comunitario"
-                                    required
-                                    aria-invalid={Boolean(errors.end_name)}
-                                />
-                                <InputError message={errors.end_name} />
-                            </div>
-
-                            <RouteGeometryEditor
-                                initialGeojson={routeGeojson}
-                                startLatitude={startPoint.latitude}
-                                startLongitude={startPoint.longitude}
-                                endLatitude={endPoint.latitude}
-                                endLongitude={endPoint.longitude}
-                                errors={errors}
-                                onDistanceChange={setDistanceKm}
-                                distanceOverride={generatedDistanceKm}
-                                onGeojsonChange={setRouteGeojson}
-                                poiDrafts={newPois}
-                                activePoiKey={activePoiKey}
-                                onPoiLocationChange={updateNewPoiLocation}
-                                onEndpointChange={updateEndpoint}
-                                onGenerateRoute={generateRoute}
-                                isGeneratingRoute={isGeneratingRoute}
-                                routePreviewMessage={routePreviewMessage}
-                            />
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>3. Información útil</CardTitle>
-                            <CardDescription>
-                                Completa los datos que verá el ciclista y la
-                                portada de la ruta.
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="grid gap-4 sm:grid-cols-2">
-                            <CatalogSelect
-                                id="transport_mode_id"
-                                name="transport_mode_id"
-                                label="Medio de transporte"
-                                placeholder="Selecciona medio"
-                                options={transportModes}
-                                defaultValue={
-                                    route?.transport_mode_id ??
-                                    defaults?.transport_mode_id
-                                }
-                                error={errors.transport_mode_id}
-                            />
-
-                            <NumberField
-                                id="distance_km"
-                                name="distance_km"
-                                label="Distancia (km)"
-                                value={distanceKm}
-                                onChange={setDistanceKm}
-                                error={errors.distance_km}
-                                step="0.001"
-                                min="0.001"
-                            />
-
-                            <NumberField
-                                id="estimated_time_minutes"
-                                name="estimated_time_minutes"
-                                label="Tiempo estimado (min)"
-                                value={estimatedTimeMinutes}
-                                onChange={setEstimatedTimeMinutes}
-                                error={errors.estimated_time_minutes}
-                                step="1"
-                                min="1"
-                                placeholder="Ej. 95"
-                            />
-
-                            <NumberField
-                                id="positive_elevation_m"
-                                name="positive_elevation_m"
-                                label="Desnivel positivo (m)"
-                                value={positiveElevation}
-                                onChange={setPositiveElevation}
-                                error={errors.positive_elevation_m}
-                                step="0.01"
-                                min="0"
-                                placeholder="Ej. 430.5"
-                            />
-
-                            <NumberField
-                                id="negative_elevation_m"
-                                name="negative_elevation_m"
-                                label="Desnivel negativo (m)"
-                                value={negativeElevation}
-                                onChange={setNegativeElevation}
-                                error={errors.negative_elevation_m}
-                                step="0.01"
-                                min="0"
-                                placeholder="Ej. 210.25"
-                            />
-
-                            <div className="flex flex-col gap-2 rounded-2xl border border-primary/10 bg-secondary/20 p-4 sm:col-span-2">
-                                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                                    <div className="flex items-start gap-2 text-sm text-muted-foreground">
-                                        <Mountain className="mt-0.5 size-4 shrink-0" />
-                                        <span>
-                                            Usa OpenTopoData para calcular el
-                                            desnivel desde el trazado. Puedes
-                                            ajustar los valores manualmente si
-                                            tienes medición oficial.
-                                        </span>
-                                    </div>
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        onClick={calculateElevation}
-                                        disabled={
-                                            isCalculatingElevation ||
-                                            !routeGeojson
-                                        }
-                                    >
-                                        {isCalculatingElevation
-                                            ? 'Calculando...'
-                                            : 'Calcular desnivel'}
-                                    </Button>
-                                </div>
-                                {elevationMessage && (
-                                    <p className="text-sm text-muted-foreground">
-                                        {elevationMessage}
-                                    </p>
-                                )}
-                            </div>
-
-                            <div className="grid gap-3 sm:col-span-2">
-                                <Label htmlFor="main_image">
-                                    Imagen principal
-                                </Label>
-                                {route?.main_image_path && (
-                                    <input
-                                        type="hidden"
-                                        name="main_image_path"
-                                        value={route.main_image_path}
-                                    />
-                                )}
-                                {route?.main_image_path && (
-                                    <div className="overflow-hidden rounded-2xl border bg-muted/30">
-                                        <ImageWithFallback
-                                            src={mediaUrl(
-                                                route.main_image_path,
-                                            )}
-                                            alt={`Imagen actual de ${route.name}`}
-                                            className="h-44 w-full object-cover"
-                                            fallback={
-                                                <div className="flex h-44 w-full flex-col items-center justify-center gap-2 bg-muted text-muted-foreground">
-                                                    <ImageIcon className="size-4" />
-                                                    <span className="text-xs">
-                                                        La portada guardada no
-                                                        existe. Sube una nueva.
-                                                    </span>
-                                                </div>
-                                            }
-                                        />
-                                    </div>
-                                )}
-                                <ImageFileInput
-                                    id="main_image"
-                                    name="main_image"
-                                    required={
-                                        !isEdit && !route?.main_image_path
-                                    }
-                                    invalid={Boolean(
-                                        errors.main_image ??
-                                        errors.main_image_path,
-                                    )}
-                                    onProcessingChange={setIsCompressing}
-                                />
-                                <p className="text-xs text-muted-foreground">
-                                    Formatos de imagen. Si supera 5 MB se
-                                    optimiza automáticamente. En edición, sube
-                                    otra imagen solo si quieres reemplazar la
-                                    portada.
+                    <div className="flex flex-col gap-3 rounded-2xl border bg-muted/20 p-3">
+                        <div className="flex items-center justify-between gap-3">
+                            <div>
+                                <p className="text-sm font-semibold">
+                                    Paso {activeStep} de 4
                                 </p>
-                                <InputError message={errors.main_image} />
-                                <InputError message={errors.main_image_path} />
+                                <p className="text-sm text-muted-foreground">
+                                    {routeStepDescriptions[activeStep - 1]}
+                                </p>
                             </div>
-
-                            <Collapsible
-                                open={
-                                    showRouteExtras ||
-                                    Boolean(
-                                        errors.routing_engine_id ??
-                                        errors.additional_images ??
-                                        errors.additional_images_text,
-                                    )
+                        </div>
+                        <ToggleGroup
+                            type="single"
+                            value={String(activeStep)}
+                            onValueChange={(value) => {
+                                if (value) {
+                                    setActiveStep(
+                                        Number(value) as 1 | 2 | 3 | 4,
+                                    );
                                 }
-                                onOpenChange={setShowRouteExtras}
-                                className="sm:col-span-2"
-                            >
-                                <CollapsibleTrigger asChild>
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        className="w-full justify-between"
-                                    >
-                                        Detalles complementarios
-                                        <ChevronDown data-icon="inline-end" />
-                                    </Button>
-                                </CollapsibleTrigger>
-                                <CollapsibleContent
-                                    forceMount
-                                    className={cn(
-                                        'pt-4',
-                                        !showRouteExtras &&
-                                            !errors.routing_engine_id &&
-                                            !errors.additional_images &&
-                                            !errors.additional_images_text &&
-                                            'hidden',
-                                    )}
+                            }}
+                            variant="outline"
+                            size="sm"
+                            className="grid w-full grid-cols-4"
+                            aria-label="Pasos para crear una ruta"
+                        >
+                            {routeStepLabels.map((label, index) => (
+                                <ToggleGroupItem
+                                    key={label}
+                                    value={String(index + 1)}
+                                    aria-label={`Paso ${index + 1}: ${label}`}
+                                    className="min-w-0 px-2 text-xs sm:text-sm"
                                 >
-                                    <div className="grid gap-4 sm:grid-cols-2">
-                                        <CatalogSelect
-                                            id="routing_engine_id"
-                                            name="routing_engine_id"
-                                            label="Motor de enrutamiento"
-                                            placeholder="Selecciona motor"
-                                            options={routingEngines}
-                                            defaultValue={
-                                                route?.routing_engine_id ??
-                                                defaults?.routing_engine_id
-                                            }
-                                            error={errors.routing_engine_id}
-                                        />
+                                    <span className="sm:hidden">
+                                        {index + 1}
+                                    </span>
+                                    <span className="hidden truncate sm:inline">
+                                        {index + 1}. {label}
+                                    </span>
+                                </ToggleGroupItem>
+                            ))}
+                        </ToggleGroup>
+                    </div>
 
-                                        <div className="grid gap-2 sm:col-span-2">
-                                            <Label htmlFor="additional_images">
-                                                Imágenes adicionales
-                                            </Label>
-                                            <ImageFileInput
-                                                id="additional_images"
-                                                name="additional_images[]"
-                                                multiple
-                                                maxFiles={8}
-                                                invalid={Boolean(
-                                                    errors.additional_images,
-                                                )}
-                                                onProcessingChange={
-                                                    setIsCompressing
-                                                }
-                                            />
-                                            <p className="text-xs text-muted-foreground">
-                                                Puedes seleccionar varias fotos
-                                                del trayecto (hasta 8). Cada una
-                                                se optimiza a 5 MB o menos
-                                                automáticamente.
-                                            </p>
-                                            <InputError
-                                                message={
-                                                    errors.additional_images
-                                                }
-                                            />
-                                            <InputError
-                                                message={
-                                                    errors[
-                                                        'additional_images.0'
-                                                    ]
-                                                }
-                                            />
-                                        </div>
-
-                                        <div className="grid gap-2 sm:col-span-2">
-                                            <Label htmlFor="additional_images_text">
-                                                Imágenes ya existentes o URLs
-                                                internas
-                                            </Label>
-                                            <Textarea
-                                                id="additional_images_text"
-                                                name="additional_images_text"
-                                                defaultValue={
-                                                    route?.additional_images_text ??
-                                                    ''
-                                                }
-                                                placeholder={
-                                                    'routes/mirador.jpg|Mirador principal\nroutes/descanso.jpg|Punto de descanso'
-                                                }
-                                                aria-invalid={Boolean(
-                                                    errors.additional_images_text,
-                                                )}
-                                            />
-                                            <InputError
-                                                message={
-                                                    errors.additional_images_text
-                                                }
-                                            />
-                                        </div>
-                                    </div>
-                                </CollapsibleContent>
-                            </Collapsible>
-                        </CardContent>
-                    </Card>
-
-                    <Collapsible open={showPois} onOpenChange={setShowPois}>
+                    <div
+                        className={cn(activeStep !== 1 && 'hidden')}
+                        aria-hidden={activeStep !== 1}
+                    >
                         <Card>
-                            <CardHeader className="flex flex-row items-start justify-between gap-4">
-                                <div className="flex flex-col gap-1">
-                                    <CardTitle>
-                                        Paradas y puntos de interés
-                                    </CardTitle>
-                                    <CardDescription>
-                                        Opcional. Añade solo los lugares que
-                                        ayuden al ciclista durante el recorrido.
-                                    </CardDescription>
-                                </div>
-                                <CollapsibleTrigger asChild>
-                                    <Button type="button" variant="outline">
-                                        {showPois ? 'Ocultar' : 'Añadir POIs'}
-                                        <ChevronDown data-icon="inline-end" />
-                                    </Button>
-                                </CollapsibleTrigger>
+                            <CardHeader>
+                                <CardTitle>Datos principales</CardTitle>
+                                <CardDescription>
+                                    Define cómo se presentará y clasifica el
+                                    recorrido.
+                                </CardDescription>
                             </CardHeader>
-                            <CollapsibleContent
-                                forceMount
-                                className={cn(!showPois && 'hidden')}
-                            >
-                                <CardContent className="grid gap-4">
-                                    {selectedPoiIds.map((id) => (
-                                        <input
-                                            key={id}
-                                            type="hidden"
-                                            name="poi_ids[]"
-                                            value={id}
-                                        />
-                                    ))}
-
-                                    <div className="grid gap-3 rounded-2xl border bg-muted/20 p-3">
-                                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                                            <div className="grid gap-1">
-                                                <h3 className="text-sm font-semibold">
-                                                    Crear puntos para esta ruta
-                                                </h3>
-                                                <p className="text-xs text-muted-foreground">
-                                                    Marca el lugar con
-                                                    coordenadas. Si el POI sirve
-                                                    para otras rutas, quedará
-                                                    disponible para
-                                                    reutilizarlo.
-                                                </p>
-                                            </div>
-                                            <Button
-                                                type="button"
-                                                variant="outline"
-                                                onClick={addNewPoi}
-                                            >
-                                                <Plus data-icon="inline-start" />
-                                                Agregar punto
-                                            </Button>
-                                        </div>
-
-                                        {newPois.length === 0 && (
-                                            <p className="rounded-xl border bg-card p-3 text-sm text-muted-foreground">
-                                                Aún no agregas puntos propios a
-                                                esta ruta.
-                                            </p>
-                                        )}
-
-                                        {newPois.map((poi, index) => (
-                                            <div
-                                                key={poi.key}
-                                                className="grid gap-3 rounded-2xl border bg-card p-3"
-                                            >
-                                                <div className="flex items-center justify-between gap-2">
-                                                    <strong className="text-sm">
-                                                        Punto {index + 1}
-                                                    </strong>
-                                                    <Button
-                                                        type="button"
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        onClick={() =>
-                                                            removeNewPoi(
-                                                                poi.key,
-                                                            )
-                                                        }
-                                                        aria-label="Quitar punto"
-                                                    >
-                                                        <Trash2 className="size-4" />
-                                                    </Button>
-                                                </div>
-
-                                                <input
-                                                    type="hidden"
-                                                    name={`new_pois[${index}][latitude]`}
-                                                    value={poi.latitude}
-                                                />
-                                                <input
-                                                    type="hidden"
-                                                    name={`new_pois[${index}][longitude]`}
-                                                    value={poi.longitude}
-                                                />
-
-                                                <div className="grid gap-3 md:grid-cols-2">
-                                                    <div className="grid gap-2">
-                                                        <Label
-                                                            htmlFor={`new_pois_${index}_name`}
-                                                        >
-                                                            Nombre
-                                                        </Label>
-                                                        <Input
-                                                            id={`new_pois_${index}_name`}
-                                                            name={`new_pois[${index}][name]`}
-                                                            value={poi.name}
-                                                            onChange={(event) =>
-                                                                updateNewPoi(
-                                                                    poi.key,
-                                                                    'name',
-                                                                    event
-                                                                        .currentTarget
-                                                                        .value,
-                                                                )
-                                                            }
-                                                            placeholder="Ej. Mirador del valle"
-                                                            required
-                                                        />
-                                                        <InputError
-                                                            message={
-                                                                errors[
-                                                                    `new_pois.${index}.name`
-                                                                ]
-                                                            }
-                                                        />
-                                                    </div>
-
-                                                    <div className="grid gap-2">
-                                                        <Label
-                                                            htmlFor={`new_pois_${index}_category`}
-                                                        >
-                                                            Categoría
-                                                        </Label>
-                                                        <Select
-                                                            name={`new_pois[${index}][poi_category_id]`}
-                                                            value={
-                                                                poi.poi_category_id
-                                                            }
-                                                            onValueChange={(
-                                                                value,
-                                                            ) =>
-                                                                updateNewPoi(
-                                                                    poi.key,
-                                                                    'poi_category_id',
-                                                                    value,
-                                                                )
-                                                            }
-                                                            required
-                                                        >
-                                                            <SelectTrigger
-                                                                id={`new_pois_${index}_category`}
-                                                                className="w-full"
-                                                            >
-                                                                <SelectValue placeholder="Selecciona categoría" />
-                                                            </SelectTrigger>
-                                                            <SelectContent>
-                                                                <SelectGroup>
-                                                                    {poiCategories.map(
-                                                                        (
-                                                                            category,
-                                                                        ) => (
-                                                                            <SelectItem
-                                                                                key={
-                                                                                    category.id
-                                                                                }
-                                                                                value={String(
-                                                                                    category.id,
-                                                                                )}
-                                                                            >
-                                                                                {
-                                                                                    category.name
-                                                                                }
-                                                                            </SelectItem>
-                                                                        ),
-                                                                    )}
-                                                                </SelectGroup>
-                                                            </SelectContent>
-                                                        </Select>
-                                                        <InputError
-                                                            message={
-                                                                errors[
-                                                                    `new_pois.${index}.poi_category_id`
-                                                                ]
-                                                            }
-                                                        />
-                                                    </div>
-
-                                                    <div className="grid gap-2 md:col-span-2">
-                                                        <Button
-                                                            type="button"
-                                                            variant={
-                                                                activePoiKey ===
-                                                                poi.key
-                                                                    ? 'secondary'
-                                                                    : 'outline'
-                                                            }
-                                                            onClick={() =>
-                                                                setActivePoiKey(
-                                                                    poi.key,
-                                                                )
-                                                            }
-                                                        >
-                                                            <MapPin data-icon="inline-start" />
-                                                            {poi.latitude &&
-                                                            poi.longitude
-                                                                ? 'Cambiar ubicación en mapa'
-                                                                : 'Marcar ubicación en mapa'}
-                                                        </Button>
-                                                        <p className="text-xs text-muted-foreground">
-                                                            {poi.latitude &&
-                                                            poi.longitude
-                                                                ? `Ubicado en ${Number(poi.latitude).toFixed(5)}, ${Number(poi.longitude).toFixed(5)}`
-                                                                : 'Pulsa el botón y toca el mapa para ubicar este punto.'}
-                                                        </p>
-                                                        <InputError
-                                                            message={
-                                                                errors[
-                                                                    `new_pois.${index}.latitude`
-                                                                ] ??
-                                                                errors[
-                                                                    `new_pois.${index}.longitude`
-                                                                ]
-                                                            }
-                                                        />
-                                                    </div>
-
-                                                    <div className="grid gap-2 md:col-span-2">
-                                                        <Label
-                                                            htmlFor={`new_pois_${index}_description`}
-                                                        >
-                                                            Descripción opcional
-                                                        </Label>
-                                                        <Input
-                                                            id={`new_pois_${index}_description`}
-                                                            name={`new_pois[${index}][description]`}
-                                                            value={
-                                                                poi.description
-                                                            }
-                                                            onChange={(event) =>
-                                                                updateNewPoi(
-                                                                    poi.key,
-                                                                    'description',
-                                                                    event
-                                                                        .currentTarget
-                                                                        .value,
-                                                                )
-                                                            }
-                                                            placeholder="Detalle breve visible para el ciclista"
-                                                        />
-                                                        <InputError
-                                                            message={
-                                                                errors[
-                                                                    `new_pois.${index}.description`
-                                                                ]
-                                                            }
-                                                        />
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-
-                                    <Separator />
-
-                                    <div className="grid gap-2">
-                                        <div className="grid gap-1">
-                                            <h3 className="text-sm font-semibold">
-                                                Reutilizar puntos existentes
-                                            </h3>
-                                            <p className="text-xs text-muted-foreground">
-                                                Úsalo solo cuando el lugar ya
-                                                exista y pertenezca también a
-                                                esta ruta.
-                                            </p>
-                                        </div>
-
-                                        {pois.length > 0 ? (
-                                            <div className="grid gap-2 md:grid-cols-2">
-                                                {pois.map((poi) => {
-                                                    const checked =
-                                                        selectedPoiIds.includes(
-                                                            String(poi.id),
-                                                        );
-
-                                                    return (
-                                                        <label
-                                                            key={poi.id}
-                                                            className={cn(
-                                                                'flex cursor-pointer items-start gap-3 rounded-2xl border p-3 transition-colors',
-                                                                checked
-                                                                    ? 'border-primary bg-primary/5'
-                                                                    : 'bg-card hover:bg-muted/40',
-                                                            )}
-                                                        >
-                                                            <Checkbox
-                                                                checked={
-                                                                    checked
-                                                                }
-                                                                onCheckedChange={(
-                                                                    value,
-                                                                ) =>
-                                                                    togglePoi(
-                                                                        poi.id,
-                                                                        value ===
-                                                                            true,
-                                                                    )
-                                                                }
-                                                            />
-                                                            <span className="grid gap-1">
-                                                                <span className="text-sm font-semibold">
-                                                                    {poi.name}
-                                                                </span>
-                                                                <span className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                                                                    {poi
-                                                                        .category
-                                                                        ?.name ??
-                                                                        'Sin categoría'}
-                                                                    <span>
-                                                                        {poi.latitude.toFixed(
-                                                                            5,
-                                                                        )}
-                                                                        ,{' '}
-                                                                        {poi.longitude.toFixed(
-                                                                            5,
-                                                                        )}
-                                                                    </span>
-                                                                </span>
-                                                            </span>
-                                                        </label>
-                                                    );
-                                                })}
-                                            </div>
-                                        ) : (
-                                            <Alert>
-                                                <MapPin />
-                                                <AlertTitle>
-                                                    No hay puntos reutilizables
-                                                </AlertTitle>
-                                                <AlertDescription>
-                                                    Puedes crear los puntos
-                                                    propios de esta ruta en la
-                                                    sección superior.
-                                                </AlertDescription>
-                                            </Alert>
-                                        )}
-                                    </div>
-
-                                    <InputError message={errors.poi_ids} />
-                                    <InputError message={errors['poi_ids.0']} />
-                                </CardContent>
-                            </CollapsibleContent>
-                        </Card>
-                    </Collapsible>
-
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>4. Indicaciones al ciclista</CardTitle>
-                            <CardDescription>
-                                Escribe un ítem por línea para mostrarlos como
-                                listas en la app móvil.
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="grid gap-4 sm:grid-cols-2">
-                            <div className="grid gap-3 sm:col-span-2">
-                                <div className="grid gap-1">
-                                    <Label>Experiencia requerida</Label>
-                                    <p className="text-sm text-muted-foreground">
-                                        Elige las condiciones que debe conocer
-                                        la persona antes de salir.
-                                    </p>
+                            <CardContent className="grid gap-4 sm:grid-cols-2">
+                                <div className="grid gap-2 sm:col-span-2">
+                                    <Label htmlFor="name">Nombre</Label>
+                                    <Input
+                                        id="name"
+                                        name="name"
+                                        defaultValue={route?.name ?? ''}
+                                        placeholder="Ej. Ruta Salinas de Bolívar"
+                                        required
+                                        aria-invalid={Boolean(errors.name)}
+                                    />
+                                    <InputError message={errors.name} />
                                 </div>
+
+                                <div className="grid gap-2 sm:col-span-2">
+                                    <Label htmlFor="description">
+                                        Descripción
+                                    </Label>
+                                    <Textarea
+                                        id="description"
+                                        name="description"
+                                        defaultValue={route?.description ?? ''}
+                                        placeholder="Describe el recorrido, atractivos, tipo de terreno y recomendaciones generales."
+                                        required
+                                        aria-invalid={Boolean(
+                                            errors.description,
+                                        )}
+                                    />
+                                    <InputError message={errors.description} />
+                                </div>
+
+                                <CatalogSelect
+                                    id="route_status_id"
+                                    name="route_status_id"
+                                    label="Estado"
+                                    placeholder="Selecciona estado"
+                                    options={statuses}
+                                    defaultValue={
+                                        route?.route_status_id ??
+                                        defaults?.route_status_id
+                                    }
+                                    error={errors.route_status_id}
+                                    description={
+                                        !isEdit
+                                            ? 'Se guarda como borrador y no será visible para ciclistas hasta publicarla.'
+                                            : undefined
+                                    }
+                                />
+
+                                <CatalogSelect
+                                    id="route_category_id"
+                                    name="route_category_id"
+                                    label="Categoría"
+                                    placeholder="Selecciona categoría"
+                                    options={categories}
+                                    defaultValue={route?.route_category_id}
+                                    error={errors.route_category_id}
+                                />
+
+                                <CatalogSelect
+                                    id="route_difficulty_id"
+                                    name="route_difficulty_id"
+                                    label="Dificultad"
+                                    placeholder="Selecciona dificultad"
+                                    options={difficulties}
+                                    defaultValue={route?.route_difficulty_id}
+                                    error={errors.route_difficulty_id}
+                                />
+
+                                <div className="grid gap-2">
+                                    <Label htmlFor="road_type">
+                                        Tipo de vía
+                                    </Label>
+                                    <Input
+                                        id="road_type"
+                                        name="road_type"
+                                        defaultValue={route?.road_type ?? ''}
+                                        placeholder="Asfalto, lastre, sendero, empedrado..."
+                                        required
+                                        aria-invalid={Boolean(errors.road_type)}
+                                    />
+                                    <InputError message={errors.road_type} />
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+
+                    <div
+                        className={cn(activeStep !== 2 && 'hidden')}
+                        aria-hidden={activeStep !== 2}
+                    >
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Traza el recorrido</CardTitle>
+                                <CardDescription>
+                                    Elige inicio y final; la ruta en bicicleta
+                                    se genera automáticamente y sigue siendo
+                                    editable.
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="grid gap-4 sm:grid-cols-2">
+                                <div className="grid gap-2">
+                                    <Label htmlFor="start_name">
+                                        Nombre del inicio
+                                    </Label>
+                                    <Input
+                                        id="start_name"
+                                        name="start_name"
+                                        value={startPoint.name}
+                                        onChange={(event) =>
+                                            setStartPoint((current) => ({
+                                                ...current,
+                                                name: event.currentTarget.value,
+                                            }))
+                                        }
+                                        placeholder="Ej. Parque central de Salinas"
+                                        required
+                                        aria-invalid={Boolean(
+                                            errors.start_name,
+                                        )}
+                                    />
+                                    <InputError message={errors.start_name} />
+                                </div>
+
+                                <div className="grid gap-2">
+                                    <Label htmlFor="end_name">
+                                        Nombre del final
+                                    </Label>
+                                    <Input
+                                        id="end_name"
+                                        name="end_name"
+                                        value={endPoint.name}
+                                        onChange={(event) =>
+                                            setEndPoint((current) => ({
+                                                ...current,
+                                                name: event.currentTarget.value,
+                                            }))
+                                        }
+                                        placeholder="Ej. Mirador comunitario"
+                                        required
+                                        aria-invalid={Boolean(errors.end_name)}
+                                    />
+                                    <InputError message={errors.end_name} />
+                                </div>
+
+                                <RouteGeometryEditor
+                                    initialGeojson={routeGeojson}
+                                    startLatitude={startPoint.latitude}
+                                    startLongitude={startPoint.longitude}
+                                    endLatitude={endPoint.latitude}
+                                    endLongitude={endPoint.longitude}
+                                    errors={errors}
+                                    onDistanceChange={setDistanceKm}
+                                    distanceOverride={generatedDistanceKm}
+                                    onGeojsonChange={setRouteGeojson}
+                                    poiDrafts={newPois}
+                                    activePoiKey={activePoiKey}
+                                    onPoiLocationChange={updateNewPoiLocation}
+                                    onEndpointChange={updateEndpoint}
+                                    onGenerateRoute={generateRoute}
+                                    isGeneratingRoute={isGeneratingRoute}
+                                    routePreviewMessage={routePreviewMessage}
+                                    isVisible={activeStep === 2}
+                                />
+                            </CardContent>
+                        </Card>
+                    </div>
+
+                    <div
+                        className={cn(activeStep !== 3 && 'hidden')}
+                        aria-hidden={activeStep !== 3}
+                    >
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Información de la ruta</CardTitle>
+                                <CardDescription>
+                                    Completa los datos que verá el ciclista y la
+                                    portada de la ruta.
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="grid gap-4 sm:grid-cols-2">
+                                <CatalogSelect
+                                    id="transport_mode_id"
+                                    name="transport_mode_id"
+                                    label="Medio de transporte"
+                                    placeholder="Selecciona medio"
+                                    options={transportModes}
+                                    defaultValue={
+                                        route?.transport_mode_id ??
+                                        defaults?.transport_mode_id
+                                    }
+                                    error={errors.transport_mode_id}
+                                />
+
+                                <NumberField
+                                    id="distance_km"
+                                    name="distance_km"
+                                    label="Distancia (km)"
+                                    value={distanceKm}
+                                    onChange={setDistanceKm}
+                                    error={errors.distance_km}
+                                    step="0.001"
+                                    min="0.001"
+                                />
+
+                                <NumberField
+                                    id="estimated_time_minutes"
+                                    name="estimated_time_minutes"
+                                    label="Tiempo estimado (min)"
+                                    value={estimatedTimeMinutes}
+                                    onChange={setEstimatedTimeMinutes}
+                                    error={errors.estimated_time_minutes}
+                                    step="1"
+                                    min="1"
+                                    placeholder="Ej. 95"
+                                />
+
+                                <NumberField
+                                    id="positive_elevation_m"
+                                    name="positive_elevation_m"
+                                    label="Desnivel positivo (m)"
+                                    value={positiveElevation}
+                                    onChange={setPositiveElevation}
+                                    error={errors.positive_elevation_m}
+                                    step="0.01"
+                                    min="0"
+                                    placeholder="Ej. 430.5"
+                                />
+
+                                <NumberField
+                                    id="negative_elevation_m"
+                                    name="negative_elevation_m"
+                                    label="Desnivel negativo (m)"
+                                    value={negativeElevation}
+                                    onChange={setNegativeElevation}
+                                    error={errors.negative_elevation_m}
+                                    step="0.01"
+                                    min="0"
+                                    placeholder="Ej. 210.25"
+                                />
+
+                                <div className="flex flex-col gap-2 rounded-2xl border border-primary/10 bg-secondary/20 p-4 sm:col-span-2">
+                                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                                        <div className="flex items-start gap-2 text-sm text-muted-foreground">
+                                            <Mountain className="mt-0.5 size-4 shrink-0" />
+                                            <span>
+                                                Usa OpenTopoData para calcular
+                                                el desnivel desde el trazado.
+                                                Puedes ajustar los valores
+                                                manualmente si tienes medición
+                                                oficial.
+                                            </span>
+                                        </div>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            onClick={calculateElevation}
+                                            disabled={
+                                                isCalculatingElevation ||
+                                                !routeGeojson
+                                            }
+                                        >
+                                            {isCalculatingElevation
+                                                ? 'Calculando...'
+                                                : 'Calcular desnivel'}
+                                        </Button>
+                                    </div>
+                                    {elevationMessage && (
+                                        <p className="text-sm text-muted-foreground">
+                                            {elevationMessage}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div className="grid gap-3 sm:col-span-2">
+                                    <Label htmlFor="main_image">
+                                        Imagen principal
+                                    </Label>
+                                    {route?.main_image_path && (
+                                        <input
+                                            type="hidden"
+                                            name="main_image_path"
+                                            value={route.main_image_path}
+                                        />
+                                    )}
+                                    {route?.main_image_path && (
+                                        <div className="overflow-hidden rounded-2xl border bg-muted/30">
+                                            <ImageWithFallback
+                                                src={mediaUrl(
+                                                    route.main_image_path,
+                                                )}
+                                                alt={`Imagen actual de ${route.name}`}
+                                                className="h-44 w-full object-cover"
+                                                fallback={
+                                                    <div className="flex h-44 w-full flex-col items-center justify-center gap-2 bg-muted text-muted-foreground">
+                                                        <ImageIcon className="size-4" />
+                                                        <span className="text-xs">
+                                                            La portada guardada
+                                                            no existe. Sube una
+                                                            nueva.
+                                                        </span>
+                                                    </div>
+                                                }
+                                            />
+                                        </div>
+                                    )}
+                                    <ImageFileInput
+                                        id="main_image"
+                                        name="main_image"
+                                        required={
+                                            !isEdit && !route?.main_image_path
+                                        }
+                                        invalid={Boolean(
+                                            errors.main_image ??
+                                            errors.main_image_path,
+                                        )}
+                                        onProcessingChange={setIsCompressing}
+                                    />
+                                    <p className="text-xs text-muted-foreground">
+                                        Formatos de imagen. Si supera 5 MB se
+                                        optimiza automáticamente. En edición,
+                                        sube otra imagen solo si quieres
+                                        reemplazar la portada.
+                                    </p>
+                                    <InputError message={errors.main_image} />
+                                    <InputError
+                                        message={errors.main_image_path}
+                                    />
+                                </div>
+
                                 <input
                                     type="hidden"
-                                    name="required_experience"
-                                    value={requiredExperience}
+                                    name="routing_engine_id"
+                                    value={
+                                        route?.routing_engine_id ??
+                                        defaults?.routing_engine_id ??
+                                        ''
+                                    }
                                 />
-                                <div className="grid gap-2 md:grid-cols-2">
-                                    {experienceOptions.map((option) => {
-                                        const checked =
-                                            selectedExperience.includes(
-                                                option.value,
+                                <div className="grid gap-2 sm:col-span-2">
+                                    <Label htmlFor="additional_images">
+                                        Imágenes adicionales
+                                    </Label>
+                                    <ImageFileInput
+                                        id="additional_images"
+                                        name="additional_images[]"
+                                        multiple
+                                        maxFiles={8}
+                                        invalid={Boolean(
+                                            errors.additional_images,
+                                        )}
+                                        onProcessingChange={setIsCompressing}
+                                    />
+                                    <p className="text-xs text-muted-foreground">
+                                        Puedes seleccionar hasta 8 fotos del
+                                        trayecto. Cada una se optimiza a 5 MB o
+                                        menos automáticamente.
+                                    </p>
+                                    <InputError
+                                        message={errors.additional_images}
+                                    />
+                                    <InputError
+                                        message={errors['additional_images.0']}
+                                    />
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+
+                    <div
+                        className={cn(activeStep !== 4 && 'hidden')}
+                        aria-hidden={activeStep !== 4}
+                    >
+                        <Collapsible open={showPois} onOpenChange={setShowPois}>
+                            <Card>
+                                <CardHeader className="flex flex-row items-start justify-between gap-4">
+                                    <div className="flex flex-col gap-1">
+                                        <CardTitle>
+                                            Paradas y puntos de interés
+                                        </CardTitle>
+                                        <CardDescription>
+                                            Opcional. Añade solo los lugares que
+                                            ayuden al ciclista durante el
+                                            recorrido.
+                                        </CardDescription>
+                                    </div>
+                                    <CollapsibleTrigger asChild>
+                                        <Button type="button" variant="outline">
+                                            {showPois
+                                                ? 'Ocultar'
+                                                : 'Añadir POIs'}
+                                            <ChevronDown data-icon="inline-end" />
+                                        </Button>
+                                    </CollapsibleTrigger>
+                                </CardHeader>
+                                <CollapsibleContent
+                                    forceMount
+                                    className={cn(!showPois && 'hidden')}
+                                >
+                                    <CardContent className="grid gap-4">
+                                        {selectedPoiIds.map((id) => (
+                                            <input
+                                                key={id}
+                                                type="hidden"
+                                                name="poi_ids[]"
+                                                value={id}
+                                            />
+                                        ))}
+
+                                        <div className="grid gap-3 rounded-2xl border bg-muted/20 p-3">
+                                            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                                                <div className="grid gap-1">
+                                                    <h3 className="text-sm font-semibold">
+                                                        Crear puntos para esta
+                                                        ruta
+                                                    </h3>
+                                                    <p className="text-xs text-muted-foreground">
+                                                        Marca el lugar con
+                                                        coordenadas. Si el POI
+                                                        sirve para otras rutas,
+                                                        quedará disponible para
+                                                        reutilizarlo.
+                                                    </p>
+                                                </div>
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    onClick={addNewPoi}
+                                                >
+                                                    <Plus data-icon="inline-start" />
+                                                    Agregar punto
+                                                </Button>
+                                            </div>
+
+                                            {newPois.length === 0 && (
+                                                <p className="rounded-xl border bg-card p-3 text-sm text-muted-foreground">
+                                                    Aún no agregas puntos
+                                                    propios a esta ruta.
+                                                </p>
+                                            )}
+
+                                            {newPois.map((poi, index) => (
+                                                <div
+                                                    key={poi.key}
+                                                    className="grid gap-3 rounded-2xl border bg-card p-3"
+                                                >
+                                                    <div className="flex items-center justify-between gap-2">
+                                                        <strong className="text-sm">
+                                                            Punto {index + 1}
+                                                        </strong>
+                                                        <Button
+                                                            type="button"
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            onClick={() =>
+                                                                removeNewPoi(
+                                                                    poi.key,
+                                                                )
+                                                            }
+                                                            aria-label="Quitar punto"
+                                                        >
+                                                            <Trash2 className="size-4" />
+                                                        </Button>
+                                                    </div>
+
+                                                    <input
+                                                        type="hidden"
+                                                        name={`new_pois[${index}][latitude]`}
+                                                        value={poi.latitude}
+                                                    />
+                                                    <input
+                                                        type="hidden"
+                                                        name={`new_pois[${index}][longitude]`}
+                                                        value={poi.longitude}
+                                                    />
+
+                                                    <div className="grid gap-3 md:grid-cols-2">
+                                                        <div className="grid gap-2">
+                                                            <Label
+                                                                htmlFor={`new_pois_${index}_name`}
+                                                            >
+                                                                Nombre
+                                                            </Label>
+                                                            <Input
+                                                                id={`new_pois_${index}_name`}
+                                                                name={`new_pois[${index}][name]`}
+                                                                value={poi.name}
+                                                                onChange={(
+                                                                    event,
+                                                                ) =>
+                                                                    updateNewPoi(
+                                                                        poi.key,
+                                                                        'name',
+                                                                        event
+                                                                            .currentTarget
+                                                                            .value,
+                                                                    )
+                                                                }
+                                                                placeholder="Ej. Mirador del valle"
+                                                                required
+                                                            />
+                                                            <InputError
+                                                                message={
+                                                                    errors[
+                                                                        `new_pois.${index}.name`
+                                                                    ]
+                                                                }
+                                                            />
+                                                        </div>
+
+                                                        <div className="grid gap-2">
+                                                            <Label
+                                                                htmlFor={`new_pois_${index}_category`}
+                                                            >
+                                                                Categoría
+                                                            </Label>
+                                                            <Select
+                                                                name={`new_pois[${index}][poi_category_id]`}
+                                                                value={
+                                                                    poi.poi_category_id
+                                                                }
+                                                                onValueChange={(
+                                                                    value,
+                                                                ) =>
+                                                                    updateNewPoi(
+                                                                        poi.key,
+                                                                        'poi_category_id',
+                                                                        value,
+                                                                    )
+                                                                }
+                                                                required
+                                                            >
+                                                                <SelectTrigger
+                                                                    id={`new_pois_${index}_category`}
+                                                                    className="w-full"
+                                                                >
+                                                                    <SelectValue placeholder="Selecciona categoría" />
+                                                                </SelectTrigger>
+                                                                <SelectContent>
+                                                                    <SelectGroup>
+                                                                        {poiCategories.map(
+                                                                            (
+                                                                                category,
+                                                                            ) => (
+                                                                                <SelectItem
+                                                                                    key={
+                                                                                        category.id
+                                                                                    }
+                                                                                    value={String(
+                                                                                        category.id,
+                                                                                    )}
+                                                                                >
+                                                                                    {
+                                                                                        category.name
+                                                                                    }
+                                                                                </SelectItem>
+                                                                            ),
+                                                                        )}
+                                                                    </SelectGroup>
+                                                                </SelectContent>
+                                                            </Select>
+                                                            <InputError
+                                                                message={
+                                                                    errors[
+                                                                        `new_pois.${index}.poi_category_id`
+                                                                    ]
+                                                                }
+                                                            />
+                                                        </div>
+
+                                                        <div className="grid gap-2 md:col-span-2">
+                                                            <Button
+                                                                type="button"
+                                                                variant={
+                                                                    activePoiKey ===
+                                                                    poi.key
+                                                                        ? 'secondary'
+                                                                        : 'outline'
+                                                                }
+                                                                onClick={() =>
+                                                                    setActivePoiKey(
+                                                                        poi.key,
+                                                                    )
+                                                                }
+                                                            >
+                                                                <MapPin data-icon="inline-start" />
+                                                                {poi.latitude &&
+                                                                poi.longitude
+                                                                    ? 'Cambiar ubicación en mapa'
+                                                                    : 'Marcar ubicación en mapa'}
+                                                            </Button>
+                                                            <p className="text-xs text-muted-foreground">
+                                                                {poi.latitude &&
+                                                                poi.longitude
+                                                                    ? `Ubicado en ${Number(poi.latitude).toFixed(5)}, ${Number(poi.longitude).toFixed(5)}`
+                                                                    : 'Pulsa el botón y toca el mapa para ubicar este punto.'}
+                                                            </p>
+                                                            <InputError
+                                                                message={
+                                                                    errors[
+                                                                        `new_pois.${index}.latitude`
+                                                                    ] ??
+                                                                    errors[
+                                                                        `new_pois.${index}.longitude`
+                                                                    ]
+                                                                }
+                                                            />
+                                                        </div>
+
+                                                        <div className="grid gap-2 md:col-span-2">
+                                                            <Label
+                                                                htmlFor={`new_pois_${index}_description`}
+                                                            >
+                                                                Descripción
+                                                                opcional
+                                                            </Label>
+                                                            <Input
+                                                                id={`new_pois_${index}_description`}
+                                                                name={`new_pois[${index}][description]`}
+                                                                value={
+                                                                    poi.description
+                                                                }
+                                                                onChange={(
+                                                                    event,
+                                                                ) =>
+                                                                    updateNewPoi(
+                                                                        poi.key,
+                                                                        'description',
+                                                                        event
+                                                                            .currentTarget
+                                                                            .value,
+                                                                    )
+                                                                }
+                                                                placeholder="Detalle breve visible para el ciclista"
+                                                            />
+                                                            <InputError
+                                                                message={
+                                                                    errors[
+                                                                        `new_pois.${index}.description`
+                                                                    ]
+                                                                }
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        <Separator />
+
+                                        <div className="grid gap-2">
+                                            <div className="grid gap-1">
+                                                <h3 className="text-sm font-semibold">
+                                                    Reutilizar puntos existentes
+                                                </h3>
+                                                <p className="text-xs text-muted-foreground">
+                                                    Úsalo solo cuando el lugar
+                                                    ya exista y pertenezca
+                                                    también a esta ruta.
+                                                </p>
+                                            </div>
+
+                                            {pois.length > 0 ? (
+                                                <div className="grid gap-2 md:grid-cols-2">
+                                                    {pois.map((poi) => {
+                                                        const checked =
+                                                            selectedPoiIds.includes(
+                                                                String(poi.id),
+                                                            );
+
+                                                        return (
+                                                            <label
+                                                                key={poi.id}
+                                                                className={cn(
+                                                                    'flex cursor-pointer items-start gap-3 rounded-2xl border p-3 transition-colors',
+                                                                    checked
+                                                                        ? 'border-primary bg-primary/5'
+                                                                        : 'bg-card hover:bg-muted/40',
+                                                                )}
+                                                            >
+                                                                <Checkbox
+                                                                    checked={
+                                                                        checked
+                                                                    }
+                                                                    onCheckedChange={(
+                                                                        value,
+                                                                    ) =>
+                                                                        togglePoi(
+                                                                            poi.id,
+                                                                            value ===
+                                                                                true,
+                                                                        )
+                                                                    }
+                                                                />
+                                                                <span className="grid gap-1">
+                                                                    <span className="text-sm font-semibold">
+                                                                        {
+                                                                            poi.name
+                                                                        }
+                                                                    </span>
+                                                                    <span className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                                                                        {poi
+                                                                            .category
+                                                                            ?.name ??
+                                                                            'Sin categoría'}
+                                                                        <span>
+                                                                            {poi.latitude.toFixed(
+                                                                                5,
+                                                                            )}
+                                                                            ,{' '}
+                                                                            {poi.longitude.toFixed(
+                                                                                5,
+                                                                            )}
+                                                                        </span>
+                                                                    </span>
+                                                                </span>
+                                                            </label>
+                                                        );
+                                                    })}
+                                                </div>
+                                            ) : (
+                                                <Alert>
+                                                    <MapPin />
+                                                    <AlertTitle>
+                                                        No hay puntos
+                                                        reutilizables
+                                                    </AlertTitle>
+                                                    <AlertDescription>
+                                                        Puedes crear los puntos
+                                                        propios de esta ruta en
+                                                        la sección superior.
+                                                    </AlertDescription>
+                                                </Alert>
+                                            )}
+                                        </div>
+
+                                        <InputError message={errors.poi_ids} />
+                                        <InputError
+                                            message={errors['poi_ids.0']}
+                                        />
+                                    </CardContent>
+                                </CollapsibleContent>
+                            </Card>
+                        </Collapsible>
+
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Indicaciones al ciclista</CardTitle>
+                                <CardDescription>
+                                    Escribe un ítem por línea para mostrarlos
+                                    como listas en la app móvil.
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="grid gap-4 sm:grid-cols-2">
+                                <div className="grid gap-3 sm:col-span-2">
+                                    <div className="grid gap-1">
+                                        <Label>Experiencia requerida</Label>
+                                        <p className="text-sm text-muted-foreground">
+                                            Elige las condiciones que debe
+                                            conocer la persona antes de salir.
+                                        </p>
+                                    </div>
+                                    <input
+                                        type="hidden"
+                                        name="required_experience"
+                                        value={requiredExperience}
+                                    />
+                                    <div className="grid gap-2 md:grid-cols-2">
+                                        {experienceOptions.map((option) => {
+                                            const checked =
+                                                selectedExperience.includes(
+                                                    option.value,
+                                                );
+
+                                            return (
+                                                <label
+                                                    key={option.value}
+                                                    className={cn(
+                                                        'flex cursor-pointer items-start gap-3 rounded-xl border p-3 transition-colors',
+                                                        checked
+                                                            ? 'border-primary bg-primary/5'
+                                                            : 'bg-card hover:bg-muted/40',
+                                                    )}
+                                                >
+                                                    <Checkbox
+                                                        checked={checked}
+                                                        onCheckedChange={(
+                                                            value,
+                                                        ) =>
+                                                            toggleExperience(
+                                                                option.value,
+                                                                value === true,
+                                                            )
+                                                        }
+                                                    />
+                                                    <span className="grid gap-1">
+                                                        <span className="text-sm font-normal">
+                                                            {option.label}
+                                                        </span>
+                                                        <span className="text-xs text-muted-foreground">
+                                                            {option.description}
+                                                        </span>
+                                                    </span>
+                                                </label>
                                             );
-
-                                        return (
-                                            <label
-                                                key={option.value}
-                                                className={cn(
-                                                    'flex cursor-pointer items-start gap-3 rounded-xl border p-3 transition-colors',
-                                                    checked
-                                                        ? 'border-primary bg-primary/5'
-                                                        : 'bg-card hover:bg-muted/40',
-                                                )}
-                                            >
-                                                <Checkbox
-                                                    checked={checked}
-                                                    onCheckedChange={(value) =>
-                                                        toggleExperience(
-                                                            option.value,
-                                                            value === true,
-                                                        )
-                                                    }
-                                                />
-                                                <span className="grid gap-1">
-                                                    <span className="text-sm font-normal">
-                                                        {option.label}
-                                                    </span>
-                                                    <span className="text-xs text-muted-foreground">
-                                                        {option.description}
-                                                    </span>
-                                                </span>
-                                            </label>
-                                        );
-                                    })}
+                                        })}
+                                    </div>
+                                    <InputError
+                                        message={errors.required_experience}
+                                    />
                                 </div>
-                                <InputError
-                                    message={errors.required_experience}
-                                />
-                            </div>
 
-                            <div className="grid gap-2">
-                                <Label htmlFor="recommendations_text">
-                                    Recomendaciones
-                                </Label>
-                                <Textarea
-                                    id="recommendations_text"
-                                    name="recommendations_text"
-                                    defaultValue={
-                                        route?.recommendations_text ?? ''
-                                    }
-                                    placeholder={
-                                        'Llevar hidratación\nUsar casco y luces\nRevisar frenos antes de iniciar'
-                                    }
-                                    required
-                                    aria-invalid={Boolean(
-                                        errors.recommendations_text,
-                                    )}
-                                />
-                                <InputError
-                                    message={errors.recommendations_text}
-                                />
-                            </div>
-
-                            <div className="grid gap-2">
-                                <Label htmlFor="observations_text">
-                                    Observaciones
-                                </Label>
-                                <Textarea
-                                    id="observations_text"
-                                    name="observations_text"
-                                    defaultValue={
-                                        route?.observations_text ?? ''
-                                    }
-                                    placeholder={
-                                        'Tramo con neblina frecuente\nEvitar lluvia intensa'
-                                    }
-                                    required
-                                    aria-invalid={Boolean(
-                                        errors.observations_text,
-                                    )}
-                                />
-                                <InputError
-                                    message={errors.observations_text}
-                                />
-                            </div>
-                        </CardContent>
-                        <Separator />
-                        <CardFooter className="flex flex-col items-stretch gap-3 border-t sm:flex-row sm:items-center sm:justify-between">
-                            {isEdit ? (
-                                <Alert className="sm:max-w-md">
-                                    <AlertTitle>
-                                        Versión actual {route.route_version}
-                                    </AlertTitle>
-                                    <AlertDescription>
-                                        Si cambias datos relevantes, la ruta
-                                        incrementará su versión automáticamente.
-                                    </AlertDescription>
-                                </Alert>
-                            ) : (
-                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                    <ImageIcon className="size-4" />
-                                    La ruta iniciará en versión 1.
+                                <div className="grid gap-2">
+                                    <Label htmlFor="recommendations_text">
+                                        Recomendaciones
+                                    </Label>
+                                    <Textarea
+                                        id="recommendations_text"
+                                        name="recommendations_text"
+                                        defaultValue={
+                                            route?.recommendations_text ?? ''
+                                        }
+                                        placeholder={
+                                            'Llevar hidratación\nUsar casco y luces\nRevisar frenos antes de iniciar'
+                                        }
+                                        required
+                                        aria-invalid={Boolean(
+                                            errors.recommendations_text,
+                                        )}
+                                    />
+                                    <InputError
+                                        message={errors.recommendations_text}
+                                    />
                                 </div>
-                            )}
-                        </CardFooter>
-                    </Card>
+
+                                <div className="grid gap-2">
+                                    <Label htmlFor="observations_text">
+                                        Observaciones
+                                    </Label>
+                                    <Textarea
+                                        id="observations_text"
+                                        name="observations_text"
+                                        defaultValue={
+                                            route?.observations_text ?? ''
+                                        }
+                                        placeholder={
+                                            'Tramo con neblina frecuente\nEvitar lluvia intensa'
+                                        }
+                                        required
+                                        aria-invalid={Boolean(
+                                            errors.observations_text,
+                                        )}
+                                    />
+                                    <InputError
+                                        message={errors.observations_text}
+                                    />
+                                </div>
+                            </CardContent>
+                            <Separator />
+                            <CardFooter className="flex flex-col items-stretch gap-3 border-t sm:flex-row sm:items-center sm:justify-between">
+                                {isEdit ? (
+                                    <Alert className="sm:max-w-md">
+                                        <AlertTitle>
+                                            Versión actual {route.route_version}
+                                        </AlertTitle>
+                                        <AlertDescription>
+                                            Si cambias datos relevantes, la ruta
+                                            incrementará su versión
+                                            automáticamente.
+                                        </AlertDescription>
+                                    </Alert>
+                                ) : (
+                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                        <ImageIcon className="size-4" />
+                                        La ruta iniciará en versión 1.
+                                    </div>
+                                )}
+                            </CardFooter>
+                        </Card>
+                    </div>
 
                     {/*
                      * Hija directa del formulario, no de la última tarjeta: así
                      * el `sticky` abarca todo el alto y las acciones quedan
                      * visibles desde el primer campo.
                      */}
-                    <div className="sticky bottom-0 z-10 -mx-5 flex flex-wrap justify-end gap-2 border-t bg-popover/95 px-5 py-3 backdrop-blur">
+                    <div className="sticky bottom-0 z-10 -mx-5 flex flex-wrap justify-between gap-2 border-t bg-popover/95 px-5 py-3 backdrop-blur">
                         {onCancel ? (
                             <Button
                                 type="button"
@@ -1374,15 +1403,45 @@ export default function RouteForm({
                                 </Link>
                             </Button>
                         )}
-                        <Button
-                            disabled={
-                                processing ||
-                                isCompressing ||
-                                !requiredExperience
-                            }
-                        >
-                            {isEdit ? 'Guardar cambios' : 'Crear ruta'}
-                        </Button>
+                        <div className="flex flex-wrap gap-2">
+                            {activeStep > 1 && (
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() =>
+                                        setActiveStep(
+                                            (activeStep - 1) as 1 | 2 | 3,
+                                        )
+                                    }
+                                >
+                                    <ChevronLeft data-icon="inline-start" />
+                                    Anterior
+                                </Button>
+                            )}
+                            {activeStep < 4 ? (
+                                <Button
+                                    type="button"
+                                    onClick={() =>
+                                        setActiveStep(
+                                            (activeStep + 1) as 2 | 3 | 4,
+                                        )
+                                    }
+                                >
+                                    Siguiente
+                                    <ChevronRight data-icon="inline-end" />
+                                </Button>
+                            ) : (
+                                <Button
+                                    disabled={
+                                        processing ||
+                                        isCompressing ||
+                                        !requiredExperience
+                                    }
+                                >
+                                    {isEdit ? 'Guardar cambios' : 'Crear ruta'}
+                                </Button>
+                            )}
+                        </div>
                     </div>
                 </div>
             )}

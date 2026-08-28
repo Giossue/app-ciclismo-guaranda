@@ -163,3 +163,9 @@ Después de esa prueba manual, marcar Fase 12 y Fase 14 como `Completado` si tod
 - Se desplegó y comprobó OSRM de Ecuador en Dokploy como servicio interno con perfil de bicicleta: Laravel resolvió una ruta por `http://osrm:5000` desde su propio contenedor.
 - El alta/edición administrativa permite elegir inicio y final con el buscador/mapa, generar un trazado de bicicleta y conservar el dibujo manual como corrección opcional.
 - Laravel expone una vista previa protegida, validada y limitada; no guarda datos ni expone la URL interna ni errores crudos del motor.
+
+## Editor guiado de rutas 2026-08-28
+
+- La hoja administrativa de rutas pasa a un cuadro centrado con encabezado y acciones estables; solo el contenido se desplaza.
+- El formulario se divide en cuatro pasos de lenguaje operativo: Datos, Mapa, Detalles y Publicar. Se eliminó de la interfaz el selector técnico de motor de enrutamiento, preservando su valor interno por defecto.
+- El editor de Leaflet invalida su tamaño al hacerse visible y el interruptor de capas comunica claramente “Ver satélite”/“Ver mapa”.

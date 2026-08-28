@@ -596,3 +596,10 @@
 - La prueba aislada detectó cabeceras de proxy vacías que causaban 500 en el healthcheck interno; Nginx ahora omite esas cabeceras cuando no existen.
 - Validaciones aprobadas: sintaxis shell, `php-fpm -t`, `nginx -t`, `git diff --check`, compilación limpia de la imagen y arranque real de PHP-FPM + Nginx + Inertia SSR bajo Supervisor. `/up` respondió 200 y Docker reportó `healthy`; al retrasar PHP-FPM dos segundos, el puerto permaneció cerrado y luego pasó directamente a 200, sin exponer ningún 502.
 - Después de actualizar `main` a `1edd9d8`, se verificó la compatibilidad con la integración OSRM: pruebas focalizadas, PHPStan de clases nuevas, TypeScript, ESLint, Prettier, auditoría SSR, build SSR, caché de rutas e imagen Docker combinada aprobados. El contenedor final inició PHP-FPM, Nginx y SSR y quedó `healthy`.
+
+## 2026-08-28 — Refinamiento del editor administrativo de rutas
+
+- Se centró el cuadro de alta/edición, se mantuvieron sus acciones fijas y se convirtió el formulario en cuatro pasos: Datos, Mapa, Detalles y Publicar.
+- Se ocultó el selector técnico de enrutamiento preservando el valor por defecto, y se corrigió la actualización del tamaño de Leaflet cuando el paso de mapa se hace visible.
+- Se aclaró el conmutador OpenStreetMap/Esri World Imagery como “Ver satélite”/“Ver mapa”.
+- Validaciones ejecutadas: TypeScript, ESLint, Prettier, build Vite, build SSR, Pest focalizado de enrutamiento, auditoría SSR y `git diff --check`.

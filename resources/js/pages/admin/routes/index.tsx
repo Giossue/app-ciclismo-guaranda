@@ -356,12 +356,11 @@ export default function AdminRoutesIndex({
                     }
                 }}
             >
-                {/* El editor de trazado y las galerías necesitan todo el ancho. */}
                 <SheetContent
                     side="right"
-                    className="w-full max-w-none overflow-y-auto border-0 sm:max-w-none"
+                    className="top-1/2 right-auto bottom-auto left-1/2 h-[calc(100dvh-1.5rem)] w-[calc(100vw-1.5rem)] max-w-6xl -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-3xl border p-0 data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom sm:h-[calc(100dvh-4rem)]"
                 >
-                    <SheetHeader>
+                    <SheetHeader className="shrink-0 border-b bg-popover">
                         <SheetTitle>
                             {form === 'edit' && routeForm
                                 ? `Editar ${routeForm.name}`
@@ -375,30 +374,31 @@ export default function AdminRoutesIndex({
                     </SheetHeader>
 
                     {formOptions && (
-                        <div className="px-5 pb-5">
-                            <RouteForm
-                                key={
-                                    form === 'edit' && routeForm
-                                        ? `edit-${routeForm.id}`
-                                        : 'create'
-                                }
-                                mode={form === 'edit' ? 'edit' : 'create'}
-                                onCancel={closeRouteForm}
-                                route={
-                                    form === 'edit'
-                                        ? (routeForm ?? undefined)
-                                        : undefined
-                                }
-                                statuses={formOptions.statuses}
-                                categories={formOptions.categories}
-                                difficulties={formOptions.difficulties}
-                                transportModes={formOptions.transportModes}
-                                routingEngines={formOptions.routingEngines}
-                                poiCategories={formOptions.poiCategories}
-                                pois={formOptions.pois}
-                                defaults={formOptions.defaults}
-                                defaultGeojson={formOptions.defaultGeojson}
-                            />
+                        <div className="min-h-0 flex-1 overflow-y-auto">
+                            <div className="mx-auto w-full max-w-5xl px-5 py-5">
+                                <RouteForm
+                                    key={
+                                        form === 'edit' && routeForm
+                                            ? `edit-${routeForm.id}`
+                                            : 'create'
+                                    }
+                                    mode={form === 'edit' ? 'edit' : 'create'}
+                                    onCancel={closeRouteForm}
+                                    route={
+                                        form === 'edit'
+                                            ? (routeForm ?? undefined)
+                                            : undefined
+                                    }
+                                    statuses={formOptions.statuses}
+                                    categories={formOptions.categories}
+                                    difficulties={formOptions.difficulties}
+                                    transportModes={formOptions.transportModes}
+                                    poiCategories={formOptions.poiCategories}
+                                    pois={formOptions.pois}
+                                    defaults={formOptions.defaults}
+                                    defaultGeojson={formOptions.defaultGeojson}
+                                />
+                            </div>
                         </div>
                     )}
                 </SheetContent>

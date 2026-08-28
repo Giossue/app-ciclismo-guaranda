@@ -54,6 +54,7 @@ export type RouteGeometryEditorProps = {
     onGenerateRoute?: () => void;
     isGeneratingRoute?: boolean;
     routePreviewMessage?: string | null;
+    isVisible?: boolean;
 };
 
 type GeometryState = {
@@ -118,6 +119,7 @@ export default function RouteGeometryEditor({
     onGenerateRoute,
     isGeneratingRoute = false,
     routePreviewMessage,
+    isVisible = true,
 }: RouteGeometryEditorProps) {
     const initialLine = useMemo(
         () => parseLineString(initialGeojson),
@@ -232,7 +234,7 @@ export default function RouteGeometryEditor({
                     }
                 >
                     <Layers data-icon="inline-start" />
-                    {activeLayer.label}
+                    {mapLayer === 'standard' ? 'Ver satélite' : 'Ver mapa'}
                 </Button>
             </div>
 
@@ -248,6 +250,7 @@ export default function RouteGeometryEditor({
                         attribution={activeLayer.attribution}
                         url={activeLayer.url}
                     />
+                    <MapSizeInvalidator isVisible={isVisible} />
                     <DrawToolbar
                         initialLatLngs={initialLatLngs}
                         onChange={setGeometry}
@@ -390,6 +393,30 @@ export default function RouteGeometryEditor({
             </div>
         </div>
     );
+}
+
+function MapSizeInvalidator({ isVisible }: { isVisible: boolean }) {
+    const map = useMap();
+
+    useEffect(() => {
+        if (!isVisible) {
+            return;
+        }
+
+        const animationFrame = requestAnimationFrame(() => {
+            map.invalidateSize({ pan: false });
+        });
+        const timeout = window.setTimeout(() => {
+            map.invalidateSize({ pan: false });
+        }, 250);
+
+        return () => {
+            cancelAnimationFrame(animationFrame);
+            window.clearTimeout(timeout);
+        };
+    }, [isVisible, map]);
+
+    return null;
 }
 
 function PoiPlacementLayer({

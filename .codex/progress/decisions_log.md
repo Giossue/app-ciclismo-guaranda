@@ -263,3 +263,9 @@
 - Nginx no publica la aplicación hasta que PHP-FPM acepta conexiones en `127.0.0.1:9000`; esto evita respuestas 502 durante la carrera de arranque del contenedor.
 - La imagen declara `HEALTHCHECK` contra `/up` y Dokploy debe esperar el estado `healthy` antes de enviar tráfico al contenedor nuevo.
 - Las cabeceras `X-Forwarded-Host` y `X-Forwarded-Proto` se entregan a PHP solo cuando el proxy realmente las envía; un chequeo interno sin dichas cabeceras no debe producir un 500.
+
+## 2026-08-28 — Editor de rutas guiado y sin jerga técnica
+
+- La creación/edición de rutas se presenta como un flujo de cuatro pasos dentro de un cuadro centrado, porque la captura completa de una ruta es demasiado extensa para una hoja lateral convencional.
+- El valor de `routing_engine_id` permanece interno y se envía con el valor por defecto existente; el administrador no debe elegir el motor que genera el trazado.
+- La capa satelital se mantiene mediante Esri World Imagery como conmutador visual del editor, sin claves ni llamadas desde el backend.
