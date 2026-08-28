@@ -74,7 +74,12 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
             <SidebarGroupContent>
                 <SidebarMenu className="gap-1">
                     {items.map((item) => {
-                        const itemPending = pending(item);
+                        const itemPending =
+                            pending(item) +
+                            (item.children?.reduce(
+                                (total, child) => total + pending(child),
+                                0,
+                            ) ?? 0);
                         const active = Boolean(
                             isCurrentOrParentUrl(item.href) ||
                             item.children?.some((child) =>
