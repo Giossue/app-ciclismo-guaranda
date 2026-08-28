@@ -21,6 +21,7 @@ use App\Models\WorkshopService;
 use App\Models\WorkshopSpecialty;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Relations\Pivot;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -37,6 +38,7 @@ class PoiController extends Controller
 
         $pois = PointOfInterest::query()
             ->withTrashed()
+            ->select(['id', 'poi_category_id', 'name', 'description', 'latitude', 'longitude', 'active', 'deleted_at'])
             ->with(['category:id,name', 'routes:id,name,slug'])
             ->withCount(['routes', 'reports'])
             ->latest('id')
@@ -74,10 +76,11 @@ class PoiController extends Controller
     public function store(StorePoiRequest $request): RedirectResponse
     {
         $payload = $request->validated();
+        $postgisAvailable = $this->postgisIsAvailable();
 
-        DB::transaction(function () use ($payload): void {
+        DB::transaction(function () use ($payload, $postgisAvailable): void {
             $poi = PointOfInterest::query()->create($this->poiAttributes($payload));
-            $this->syncPoiPayload($poi, $payload);
+            $this->syncPoiPayload($poi, $payload, $postgisAvailable);
         });
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('POI creado.')]);
@@ -111,8 +114,9 @@ class PoiController extends Controller
     {
         $payload = $request->validated();
         $reactivating = $poi->trashed() && (bool) ($payload['active'] ?? false);
+        $postgisAvailable = $this->postgisIsAvailable();
 
-        DB::transaction(function () use ($payload, $poi): void {
+        DB::transaction(function () use ($payload, $poi, $postgisAvailable): void {
             $poi->fill($this->poiAttributes($payload));
 
             if ($poi->trashed() && (bool) ($payload['active'] ?? false)) {
@@ -122,7 +126,7 @@ class PoiController extends Controller
                 $poi->save();
             }
 
-            $this->syncPoiPayload($poi, $payload);
+            $this->syncPoiPayload($poi, $payload, $postgisAvailable);
         });
 
         Inertia::flash('toast', $reactivating
@@ -199,20 +203,20 @@ class PoiController extends Controller
     /**
      * @param  array<string, mixed>  $payload
      */
-    private function syncPoiPayload(PointOfInterest $poi, array $payload): void
+    private function syncPoiPayload(PointOfInterest $poi, array $payload, bool $postgisAvailable): void
     {
-        $poi->refresh()->load('category');
+        $poi->load('category');
 
-        $this->syncPostgisPoint($poi);
+        $this->syncPostgisPoint($poi, $postgisAvailable);
         $this->syncHours($poi, $payload['hours_text'] ?? null);
         $this->syncImages($poi, $payload['images_text'] ?? null, $payload['images'] ?? []);
         $this->syncRoutes($poi, $payload['route_links_text'] ?? null);
         $this->syncCategoryDetails($poi, $payload);
     }
 
-    private function syncPostgisPoint(PointOfInterest $poi): void
+    private function syncPostgisPoint(PointOfInterest $poi, bool $postgisAvailable): void
     {
-        if (DB::getDriverName() !== 'pgsql' || ! Schema::hasColumn('puntos_interes', 'geom')) {
+        if (! $postgisAvailable) {
             return;
         }
 
@@ -220,6 +224,19 @@ class PoiController extends Controller
             'UPDATE puntos_interes SET geom = ST_SetSRID(ST_MakePoint(?, ?), 4326) WHERE id = ?',
             [(float) $poi->longitude, (float) $poi->latitude, $poi->id]
         );
+    }
+
+    private function postgisIsAvailable(): bool
+    {
+        if (DB::getDriverName() !== 'pgsql' || ! Schema::hasColumn('puntos_interes', 'geom')) {
+            return false;
+        }
+
+        try {
+            return DB::selectOne('SELECT PostGIS_Lib_Version() AS version') !== null;
+        } catch (QueryException) {
+            return false;
+        }
     }
 
     private function syncHours(PointOfInterest $poi, mixed $hoursText): void

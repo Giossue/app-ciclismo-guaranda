@@ -21,6 +21,20 @@ class IncidentController extends Controller
         $this->authorize('viewAny', Incident::class);
 
         $incidents = Incident::query()
+            ->select([
+                'id',
+                'user_id',
+                'route_id',
+                'incident_type_id',
+                'incident_status_id',
+                'title',
+                'description',
+                'latitude',
+                'longitude',
+                'reported_at',
+                'resolved_at',
+                'admin_response',
+            ])
             ->with(['route:id,name,slug', 'type:id,name', 'status:id,name', 'user:id,name,last_name,email', 'files'])
             ->latest('reported_at')
             ->paginate(12)

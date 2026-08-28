@@ -13,6 +13,35 @@ class Incident extends Model
     protected $guarded = ['id'];
 
     /**
+     * @return list<string>
+     */
+    private function routeBindingColumns(): array
+    {
+        return [
+            'id',
+            'user_id',
+            'route_id',
+            'incident_type_id',
+            'incident_status_id',
+            'title',
+            'description',
+            'latitude',
+            'longitude',
+            'reported_at',
+            'resolved_at',
+            'admin_response',
+            'created_at',
+            'updated_at',
+        ];
+    }
+
+    public function resolveRouteBindingQuery($query, $value, $field = null)
+    {
+        return parent::resolveRouteBindingQuery($query, $value, $field)
+            ->select($this->routeBindingColumns());
+    }
+
+    /**
      * @return BelongsTo<User, $this>
      */
     public function user(): BelongsTo

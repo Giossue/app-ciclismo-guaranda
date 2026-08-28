@@ -14,6 +14,7 @@ use App\Models\RouteGeometry;
 use App\Models\RouteStatus;
 use App\Models\RoutingEngine;
 use App\Models\TransportMode;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\UploadedFile;
@@ -60,8 +61,9 @@ class RouteController extends Controller
     public function store(StoreRouteRequest $request): RedirectResponse
     {
         $payload = $this->storeUploadedRouteFiles($request, $request->validated());
+        $postgisAvailable = $this->postgisIsAvailable();
 
-        DB::transaction(function () use ($request, $payload): void {
+        DB::transaction(function () use ($request, $payload, $postgisAvailable): void {
             $route = CyclingRoute::query()->create([
                 ...$this->routeAttributes($payload),
                 'admin_user_id' => $request->user()?->id,
@@ -69,7 +71,7 @@ class RouteController extends Controller
                 'route_version' => 1,
             ]);
 
-            $this->syncRoutePayload($route, $payload);
+            $this->syncRoutePayload($route, $payload, $postgisAvailable);
         });
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Ruta creada.')]);
@@ -81,7 +83,15 @@ class RouteController extends Controller
     {
         $this->authorize('update', $route);
 
-        $route->load(['geometry', 'metrics.routingEngine', 'metrics.transportMode', 'images', 'recommendations', 'observations', 'pointsOfInterest']);
+        $route->load([
+            'geometry:id,route_id,geojson',
+            'metrics.routingEngine',
+            'metrics.transportMode',
+            'images',
+            'recommendations',
+            'observations',
+            'pointsOfInterest:id',
+        ]);
 
         return Inertia::render('admin/routes/edit', [
             ...$this->catalogProps(),
@@ -92,9 +102,10 @@ class RouteController extends Controller
     public function update(UpdateRouteRequest $request, CyclingRoute $route): RedirectResponse
     {
         $payload = $this->storeUploadedRouteFiles($request, $request->validated());
+        $postgisAvailable = $this->postgisIsAvailable();
 
-        DB::transaction(function () use ($payload, $route): void {
-            $route->load(['geometry', 'metrics', 'images', 'recommendations', 'observations', 'pointsOfInterest']);
+        DB::transaction(function () use ($payload, $route, $postgisAvailable): void {
+            $route->load(['geometry:id,route_id,geojson', 'metrics', 'images', 'recommendations', 'observations', 'pointsOfInterest:id']);
             $route->fill([
                 ...$this->routeAttributes($payload),
                 'slug' => $this->uniqueSlug((string) $payload['name'], $route->id),
@@ -106,7 +117,7 @@ class RouteController extends Controller
 
             $route->save();
 
-            $this->syncRoutePayload($route, $payload);
+            $this->syncRoutePayload($route, $payload, $postgisAvailable);
         });
 
         Inertia::flash('toast', ['type' => 'info', 'message' => __('Ruta actualizada.')]);
@@ -185,7 +196,7 @@ class RouteController extends Controller
     /**
      * @param  array<string, mixed>  $payload
      */
-    private function syncRoutePayload(CyclingRoute $route, array $payload): void
+    private function syncRoutePayload(CyclingRoute $route, array $payload, bool $postgisAvailable): void
     {
         /** @var RouteGeometry $geometry */
         $geometry = $route->geometry()->updateOrCreate(
@@ -193,7 +204,7 @@ class RouteController extends Controller
             ['geojson' => $payload['geojson']]
         );
 
-        $this->syncPostgisGeometry($geometry);
+        $this->syncPostgisGeometry($geometry, $postgisAvailable);
 
         $route->metrics()->where('route_version', $route->route_version)->delete();
         $route->metrics()->create([
@@ -230,9 +241,9 @@ class RouteController extends Controller
         $route->pointsOfInterest()->sync($this->poiSyncRowsFromIds($poiIds));
     }
 
-    private function syncPostgisGeometry(RouteGeometry $geometry): void
+    private function syncPostgisGeometry(RouteGeometry $geometry, bool $postgisAvailable): void
     {
-        if (DB::getDriverName() !== 'pgsql' || ! Schema::hasColumn('geometrias_ruta', 'geom')) {
+        if (! $postgisAvailable) {
             return;
         }
 
@@ -240,6 +251,19 @@ class RouteController extends Controller
             'UPDATE geometrias_ruta SET geom = ST_SetSRID(ST_GeomFromGeoJSON(?), 4326) WHERE id = ?',
             [$this->encode($geometry->geojson), $geometry->id]
         );
+    }
+
+    private function postgisIsAvailable(): bool
+    {
+        if (DB::getDriverName() !== 'pgsql' || ! Schema::hasColumn('geometrias_ruta', 'geom')) {
+            return false;
+        }
+
+        try {
+            return DB::selectOne('SELECT PostGIS_Lib_Version() AS version') !== null;
+        } catch (QueryException) {
+            return false;
+        }
     }
 
     /**
