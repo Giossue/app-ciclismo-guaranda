@@ -145,6 +145,7 @@
     --elevation-subtle: 0 2px 6px var(--shadow);
     --elevation-raised: 0 4px 12px var(--shadow);
     --elevation-floating: 0 12px 40px var(--overlay-shadow);
+    --safe-top: env(safe-area-inset-top, 0px);
     --safe-bottom: env(safe-area-inset-bottom, 0px);
     /* Barra inferior al 120% de su medida original (58px) para dar toque cómodo. */
     --bottom-nav-height: 70px;

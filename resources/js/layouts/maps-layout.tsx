@@ -35,7 +35,7 @@ export default function MapsLayout({
                 type="button"
                 variant="overlay"
                 size="icon"
-                className="fixed top-[calc(var(--safe-top)+0.75rem)] right-3 z-[700] rounded-full shadow-[var(--elevation-floating)]"
+                className="fixed top-[calc(var(--safe-top,0px)+0.75rem)] right-3 z-[900] size-12 min-h-12 rounded-full bg-background/95 shadow-[var(--elevation-floating)]"
             >
                 <Link
                     href={cyclistDashboard.url()}
