@@ -1,5 +1,5 @@
 import { Form, Head, Link, router } from '@inertiajs/react';
-import { Pencil, Power, RouteIcon } from 'lucide-react';
+import { Ellipsis, Pencil, Power, RouteIcon } from 'lucide-react';
 import PoiController from '@/actions/App/Http/Controllers/Admin/PoiController';
 import { DataTable } from '@/components/data-table';
 import type { DataTableColumn, DataTableQuery } from '@/components/data-table';
@@ -7,6 +7,14 @@ import Heading from '@/components/heading';
 import { PrimaryActionButton } from '@/components/primary-action-button';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuGroup,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import type { CatalogOption } from '@/types';
 import { PoiModuleNavigation } from './partials/poi-module-navigation';
 
@@ -195,51 +203,62 @@ export default function AdminPoisIndex({ categories, filters, pois }: Props) {
 
 function PoiRowActions({ poi }: { poi: ManagedPoi }) {
     return (
-        <div className="flex justify-end gap-1">
-            <Button variant="ghost" size="icon" asChild>
-                <Link
-                    href={PoiController.edit(poi.id)}
-                    prefetch
-                    aria-label={`Editar ${poi.name}`}
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    aria-label={`Acciones para ${poi.name}`}
                 >
-                    <Pencil />
-                </Link>
-            </Button>
-
-            {poi.active ? (
-                <Form
-                    {...PoiController.destroy.form(poi.id)}
-                    options={{ preserveScroll: true }}
-                >
-                    {({ processing }) => (
-                        <Button
-                            variant="destructive-ghost"
-                            size="icon"
-                            disabled={processing}
-                            aria-label={`Desactivar ${poi.name}`}
-                        >
-                            <Power />
-                        </Button>
-                    )}
-                </Form>
-            ) : (
-                <Form
-                    {...PoiController.restore.form(poi.id)}
-                    options={{ preserveScroll: true }}
-                >
-                    {({ processing }) => (
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            disabled={processing}
-                            aria-label={`Activar ${poi.name}`}
-                        >
-                            <Power />
-                        </Button>
-                    )}
-                </Form>
-            )}
-        </div>
+                    <Ellipsis />
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuGroup>
+                    <DropdownMenuItem asChild>
+                        <Link href={PoiController.edit(poi.id)} prefetch>
+                            <Pencil />
+                            Editar POI
+                        </Link>
+                    </DropdownMenuItem>
+                </DropdownMenuGroup>
+                <DropdownMenuSeparator />
+                {poi.active ? (
+                    <Form
+                        {...PoiController.destroy.form(poi.id)}
+                        options={{ preserveScroll: true }}
+                    >
+                        {({ processing }) => (
+                            <DropdownMenuItem
+                                asChild
+                                variant="destructive"
+                                disabled={processing}
+                            >
+                                <button type="submit" disabled={processing}>
+                                    <Power />
+                                    Desactivar POI
+                                </button>
+                            </DropdownMenuItem>
+                        )}
+                    </Form>
+                ) : (
+                    <Form
+                        {...PoiController.restore.form(poi.id)}
+                        options={{ preserveScroll: true }}
+                    >
+                        {({ processing }) => (
+                            <DropdownMenuItem asChild disabled={processing}>
+                                <button type="submit" disabled={processing}>
+                                    <Power />
+                                    Activar POI
+                                </button>
+                            </DropdownMenuItem>
+                        )}
+                    </Form>
+                )}
+            </DropdownMenuContent>
+        </DropdownMenu>
     );
 }
 

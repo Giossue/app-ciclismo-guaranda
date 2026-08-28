@@ -143,4 +143,4 @@ Después de esa prueba manual, marcar Fase 12 y Fase 14 como `Completado` si tod
 ## Administración de POIs 2026-08-27
 
 - El módulo de POIs separa POIs oficiales, sugerencias y reportes mediante un submenú local; las tres vistas están protegidas para administradores.
-- El listado de POIs oficiales se migró de tarjetas a tabla con búsqueda, filtros, paginación y acciones de edición/activación.
+- El listado de POIs oficiales se migró de tarjetas a tabla con búsqueda, filtros, paginación y un menú de tres puntos para editar o activar/desactivar.
