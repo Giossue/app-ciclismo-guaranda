@@ -45,8 +45,7 @@ export function mobilePrimaryNavItems(auth: Auth): NavItem[] {
     if (!isAdmin(auth)) {
         return [
             cyclistNavItems.find((item) => item.href === mapsIndex.url()),
-            cyclistNavItems.find((item) => item.href === routesIndex.url()),
-            cyclistNavItems.find((item) => item.href === favoritesIndex.url()),
+            cyclistNavItems.find((item) => item.href === chatIndex.url()),
         ].filter((item): item is NavItem => Boolean(item));
     }
 

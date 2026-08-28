@@ -1,12 +1,12 @@
 import { Link } from '@inertiajs/react';
-import { Bot, Heart, Map } from 'lucide-react';
+import { Heart, Map, Route } from 'lucide-react';
 import AppearanceCycleButton from '@/components/appearance-cycle-button';
 import { NotificationBellLink } from '@/components/notification-bell-link';
 import { Button } from '@/components/ui/button';
 import { useCurrentUrl } from '@/hooks/use-current-url';
-import { index as chatIndex } from '@/routes/chat';
 import { index as favoritesIndex } from '@/routes/favorites';
 import { index as mapsIndex } from '@/routes/maps';
+import { index as routesIndex } from '@/routes/routes';
 
 export default function MapsLayout({
     children,
@@ -46,13 +46,15 @@ export default function MapsLayout({
                     <Button
                         asChild
                         variant={
-                            isCurrentUrl(chatIndex.url()) ? 'default' : 'ghost'
+                            isCurrentUrl(routesIndex.url())
+                                ? 'default'
+                                : 'ghost'
                         }
                         size="sm"
                     >
-                        <Link href={chatIndex.url()} prefetch>
-                            <Bot data-icon="inline-start" />
-                            IA
+                        <Link href={routesIndex.url()} prefetch>
+                            <Route data-icon="inline-start" />
+                            Rutas
                         </Link>
                     </Button>
                     <Button
