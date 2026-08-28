@@ -163,7 +163,7 @@ export function DataTable<T>({
                             }
                         />
 
-                        <div className="flex flex-wrap gap-3">
+                        <div className="flex flex-row flex-wrap items-center gap-3">
                             {filters.map((filter) => (
                                 <Select
                                     key={filter.id}
@@ -178,7 +178,7 @@ export function DataTable<T>({
                                     <SelectTrigger
                                         size="sm"
                                         aria-label={filter.label}
-                                        className="min-w-40"
+                                        className="w-auto min-w-36"
                                     >
                                         <SelectValue
                                             placeholder={filter.placeholder}
