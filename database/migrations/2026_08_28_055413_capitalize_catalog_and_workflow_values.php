@@ -33,9 +33,56 @@ return new class extends Migration
     private function renameCatalogValues(array $values): void
     {
         foreach ($values as $table => $renames) {
+            if ($table === 'roles_usuario') {
+                $this->normalizeUserRoles($renames);
+
+                continue;
+            }
+
             foreach ($renames as $from => $to) {
                 $this->renameValue($table, 'name', $from, $to);
             }
+        }
+    }
+
+    /**
+     * @param  array<string, string>  $renames
+     */
+    private function normalizeUserRoles(array $renames): void
+    {
+        foreach ($renames as $from => $to) {
+            DB::transaction(function () use ($from, $to): void {
+                $roles = DB::table('roles_usuario')
+                    ->whereIn('name', [$from, $to])
+                    ->orderBy('id')
+                    ->lockForUpdate()
+                    ->get(['id', 'name'])
+                    ->keyBy('name');
+
+                $legacyRole = $roles->get($from);
+
+                if ($legacyRole === null) {
+                    return;
+                }
+
+                $canonicalRole = $roles->get($to);
+
+                if ($canonicalRole === null) {
+                    DB::table('roles_usuario')
+                        ->where('id', $legacyRole->id)
+                        ->update(['name' => $to]);
+
+                    return;
+                }
+
+                DB::table('usuarios')
+                    ->where('role_id', $legacyRole->id)
+                    ->update(['role_id' => $canonicalRole->id]);
+
+                DB::table('roles_usuario')
+                    ->where('id', $legacyRole->id)
+                    ->delete();
+            });
         }
     }
 

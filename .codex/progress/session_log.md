@@ -632,3 +632,8 @@
 
 - Se preparó una migración reversible para convertir catálogos y estados persistidos a inicial mayúscula, junto con las comparaciones backend/frontend, validaciones, seeders y pruebas afectadas.
 - No se aplicó la migración a producción desde el workspace: quedará aplicada de forma atómica por el despliegue Laravel, sin seeders automáticos.
+
+## 2026-08-28 — Corrección de roles duplicados para navegación
+
+- La migración pendiente de capitalización ahora tolera roles duplicados heredados: migra `usuarios.role_id` antes de borrar el catálogo minúsculo.
+- Se validó el caso de administrador y ciclista duplicados, además de que `/notifications` recibe el rol admin canónico en sus props Inertia.

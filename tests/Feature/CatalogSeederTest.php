@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\User;
 use Database\Seeders\CatalogSeeder;
 use Illuminate\Support\Facades\DB;
 
@@ -68,4 +69,41 @@ it('converts legacy catalog values without changing their identifiers', function
     $this->assertDatabaseHas('categorias_poi', ['name' => 'comida']);
     $this->assertDatabaseHas('estados_recorrido', ['name' => 'en curso']);
     $this->assertDatabaseHas('motores_enrutamiento', ['name' => 'OSRM']);
+});
+
+it('merges duplicate legacy roles while preserving user assignments', function () {
+    $this->seed(CatalogSeeder::class);
+
+    $administratorRoleId = DB::table('roles_usuario')
+        ->where('name', 'Administrador')
+        ->value('id');
+    $cyclistRoleId = DB::table('roles_usuario')
+        ->where('name', 'Ciclista')
+        ->value('id');
+
+    $legacyAdministratorRoleId = DB::table('roles_usuario')->insertGetId([
+        'name' => 'administrador',
+        'description' => 'Rol heredado.',
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+    $legacyCyclistRoleId = DB::table('roles_usuario')->insertGetId([
+        'name' => 'ciclista',
+        'description' => 'Rol heredado.',
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+
+    $legacyAdministrator = User::factory()->create(['role_id' => $legacyAdministratorRoleId]);
+    $legacyCyclist = User::factory()->create(['role_id' => $legacyCyclistRoleId]);
+
+    $migration = require database_path('migrations/2026_08_28_055413_capitalize_catalog_and_workflow_values.php');
+
+    $migration->up();
+    $migration->up();
+
+    $this->assertDatabaseMissing('roles_usuario', ['id' => $legacyAdministratorRoleId]);
+    $this->assertDatabaseMissing('roles_usuario', ['id' => $legacyCyclistRoleId]);
+    $this->assertDatabaseHas('usuarios', ['id' => $legacyAdministrator->id, 'role_id' => $administratorRoleId]);
+    $this->assertDatabaseHas('usuarios', ['id' => $legacyCyclist->id, 'role_id' => $cyclistRoleId]);
 });

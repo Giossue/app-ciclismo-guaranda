@@ -174,3 +174,7 @@ Después de esa prueba manual, marcar Fase 12 y Fase 14 como `Completado` si tod
 ## Alta administrativa de POIs 2026-08-28
 
 - La creación y edición de POIs se abren en una sheet amplia sobre el listado y preservan filtros/paginación; las rutas históricas `/admin/pois/create` y `/admin/pois/{poi}/edit` redirigen de forma compatible al mismo flujo.
+
+## Normalización de roles heredados 2026-08-28
+
+- La migración pendiente `2026_08_28_055413_capitalize_catalog_and_workflow_values` conserva las cuentas si una base contiene a la vez `administrador`/`Administrador` o `ciclista`/`Ciclista`: reasigna `usuarios.role_id` al rol canónico y elimina solamente el duplicado.

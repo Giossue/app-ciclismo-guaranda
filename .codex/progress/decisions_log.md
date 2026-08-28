@@ -299,3 +299,8 @@
 - Los catálogos y estados mostrados a usuarios se almacenan con inicial mayúscula. Se usa una migración de mapeo explícito y reversible, no una conversión masiva de texto, para preservar siglas como `MTB`, `OSRM`, `GPX`, `GeoJSON` y `OpenRouteService`.
 - Los valores de protocolo (`event_type` offline, roles de IA, tipos de notificación/archivo, GeoJSON y filtros URL) siguen siendo identificadores técnicos y no se capitalizan.
 - La cola offline admite temporalmente sus valores previos en minúscula para que datos ya guardados en IndexedDB se sincronicen después de actualizar la app.
+
+## 2026-08-28 — Normalización segura de roles heredados
+
+- `Administrador` y `Ciclista` son los valores canónicos de autorización y navegación.
+- Cuando coexiste el rol heredado en minúscula, la migración mueve primero todos los `usuarios.role_id` al registro canónico y después elimina el duplicado. La consolidación no intenta recrear duplicados al revertir porque no puede recuperar qué usuarios pertenecían originalmente a cada fila.

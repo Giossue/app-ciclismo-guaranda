@@ -69,6 +69,17 @@ test('authenticated user can list only own app notifications', function () {
             ->where('notifications.data.0.title', 'Tu incidencia fue revisada'));
 });
 
+test('administrator retains the canonical role in the notifications page props', function () {
+    $administrator = User::factory()->administrator()->create();
+
+    $this->actingAs($administrator)
+        ->get(route('notifications.index'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('notifications/index')
+            ->where('auth.user.role.name', 'Administrador'));
+});
+
 test('authenticated user can filter unread notifications and mark them as read', function () {
     $user = User::factory()->cyclist()->create();
 
