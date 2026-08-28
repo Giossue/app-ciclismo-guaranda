@@ -1,3 +1,4 @@
+import { router } from '@inertiajs/react';
 import {
     ChevronDown,
     ChevronLeft,
@@ -36,6 +37,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
     Table,
     TableBody,
@@ -102,6 +104,38 @@ type Props<T> = {
     searchPlaceholder?: string;
     title?: string;
 };
+
+/**
+ * Marca la espera de una recarga parcial de Inertia —búsqueda, filtros o
+ * paginación—, que es el único momento en que la tabla espera datos.
+ */
+/** Claves estables para las filas fantasma: tantas como haya en pantalla. */
+function skeletonRows(count: number): string[] {
+    return Array.from(
+        { length: Math.min(Math.max(count, 3), 8) },
+        (_, index) => `skeleton-${index}`,
+    );
+}
+
+function usePartialReload(): boolean {
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        const stopStart = router.on('start', (event) => {
+            if ((event.detail.visit.only?.length ?? 0) > 0) {
+                setLoading(true);
+            }
+        });
+        const stopFinish = router.on('finish', () => setLoading(false));
+
+        return () => {
+            stopStart();
+            stopFinish();
+        };
+    }, []);
+
+    return loading;
+}
 
 /**
  * Barra de búsqueda y filtros. Vive aparte de la tabla para que un listado con
@@ -230,6 +264,7 @@ export function DataTable<T>({
     title,
 }: Props<T>) {
     const [hiddenColumns, setHiddenColumns] = useState<Set<string>>(new Set());
+    const loading = usePartialReload();
     const visibleColumns = useMemo(
         () => columns.filter((column) => !hiddenColumns.has(column.id)),
         [columns, hiddenColumns],
@@ -316,7 +351,18 @@ export function DataTable<T>({
                 </DataTableToolbar>
 
                 <ul className="flex flex-col gap-3 md:hidden">
-                    {data.length > 0 ? (
+                    {loading ? (
+                        skeletonRows(data.length).map((key) => (
+                            <li
+                                key={key}
+                                className="flex flex-col gap-3 rounded-[var(--radius-control)] border bg-card p-3"
+                            >
+                                <Skeleton className="h-4 w-2/3" />
+                                <Skeleton className="h-3 w-1/2" />
+                                <Skeleton className="h-3 w-full" />
+                            </li>
+                        ))
+                    ) : data.length > 0 ? (
                         data.map((row) => (
                             <li
                                 key={getRowId(row)}
@@ -379,7 +425,17 @@ export function DataTable<T>({
                             </TableRow>
                         </TableHeader>
                         <TableBody className="[&_tr:nth-child(even)]:bg-muted/25">
-                            {data.length > 0 ? (
+                            {loading ? (
+                                skeletonRows(data.length).map((key) => (
+                                    <TableRow key={key}>
+                                        {visibleColumns.map((column) => (
+                                            <TableCell key={column.id}>
+                                                <Skeleton className="h-4 w-full" />
+                                            </TableCell>
+                                        ))}
+                                    </TableRow>
+                                ))
+                            ) : data.length > 0 ? (
                                 data.map((row) => (
                                     <TableRow key={getRowId(row)}>
                                         {visibleColumns.map((column) => (
