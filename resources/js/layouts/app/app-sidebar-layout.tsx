@@ -7,10 +7,7 @@ import { AppSidebarHeader } from '@/components/app-sidebar-header';
 import { PullToRefresh } from '@/components/pull-to-refresh';
 import type { AppLayoutProps } from '@/types';
 
-export default function AppSidebarLayout({
-    children,
-    breadcrumbs,
-}: AppLayoutProps) {
+export default function AppSidebarLayout({ children }: AppLayoutProps) {
     // Solo la ruta, sin query: filtrar o paginar no debe reanimar la pantalla.
     const pathname = usePage().url.split('?')[0];
 
@@ -26,7 +23,7 @@ export default function AppSidebarLayout({
                 className="min-w-0"
             >
                 <PullToRefresh />
-                <AppSidebarHeader breadcrumbs={breadcrumbs} />
+                <AppSidebarHeader />
                 <main
                     key={pathname}
                     className="safe-bottom-pad ueb-admin-page flex flex-1 animate-in flex-col gap-[var(--page-gap)] px-[var(--page-pad-x)] pt-[var(--page-pad-y)] duration-150 ease-out fade-in md:pb-[var(--page-pad-y)]"

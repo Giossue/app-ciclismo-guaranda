@@ -1,5 +1,6 @@
 import { Link, usePage } from '@inertiajs/react';
 import { ChevronDown } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import {
     Collapsible,
     CollapsibleContent,
@@ -59,6 +60,7 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
             <SidebarGroupContent>
                 <SidebarMenu className="gap-1">
                     {items.map((item) => {
+                        const itemPending = pending(item);
                         const active = Boolean(
                             isCurrentOrParentUrl(item.href) ||
                             item.children?.some((child) =>
@@ -83,13 +85,18 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
                                             isActive={active}
                                             tooltip={{ children: item.title }}
                                             className={cn(
-                                                'min-h-10 rounded-[var(--radius-control)] font-medium',
-                                                'data-[active=true]:bg-primary/12 data-[active=true]:font-semibold data-[active=true]:text-link',
+                                                'min-h-10 rounded-[var(--radius-control)] font-normal',
+                                                'data-[active=true]:bg-primary/12 data-[active=true]:font-normal data-[active=true]:text-link',
                                             )}
                                         >
                                             <Link
                                                 href={item.href}
                                                 prefetch
+                                                aria-label={
+                                                    itemPending > 0
+                                                        ? `${item.title}: ${itemPending} pendientes`
+                                                        : undefined
+                                                }
                                                 aria-current={
                                                     isCurrentUrl(item.href)
                                                         ? 'page'
@@ -100,9 +107,12 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
                                                 <span>{item.title}</span>
                                             </Link>
                                         </SidebarMenuButton>
-                                        {pending(item) > 0 && (
-                                            <SidebarMenuBadge className="right-8 text-xs">
-                                                {pending(item)}
+                                        {itemPending > 0 && (
+                                            <SidebarMenuBadge
+                                                variant="pending"
+                                                className="right-8"
+                                            >
+                                                {itemPending}
                                             </SidebarMenuBadge>
                                         )}
                                         <CollapsibleTrigger asChild>
@@ -116,6 +126,8 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
                                         <CollapsibleContent className="overflow-hidden data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down">
                                             <SidebarMenuSub>
                                                 {item.children.map((child) => {
+                                                    const childPending =
+                                                        pending(child);
                                                     const childActive =
                                                         toUrl(child.href) ===
                                                         currentChildUrl;
@@ -135,6 +147,12 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
                                                                         child.href
                                                                     }
                                                                     prefetch
+                                                                    aria-label={
+                                                                        childPending >
+                                                                        0
+                                                                            ? `${child.title}: ${childPending} pendientes`
+                                                                            : undefined
+                                                                    }
                                                                     aria-current={
                                                                         childActive
                                                                             ? 'page'
@@ -146,14 +164,16 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
                                                                             child.title
                                                                         }
                                                                     </span>
-                                                                    {pending(
-                                                                        child,
-                                                                    ) > 0 && (
-                                                                        <span className="ml-auto text-xs text-muted-foreground tabular-nums">
-                                                                            {pending(
-                                                                                child,
-                                                                            )}
-                                                                        </span>
+                                                                    {childPending >
+                                                                        0 && (
+                                                                        <Badge
+                                                                            variant="destructive"
+                                                                            className="ml-auto h-5 min-w-5 px-1 py-0 font-medium tracking-normal normal-case"
+                                                                        >
+                                                                            {
+                                                                                childPending
+                                                                            }
+                                                                        </Badge>
                                                                     )}
                                                                 </Link>
                                                             </SidebarMenuSubButton>
@@ -174,14 +194,19 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
                                     isActive={active}
                                     tooltip={{ children: item.title }}
                                     className={cn(
-                                        'min-h-10 rounded-[var(--radius-control)] font-medium',
+                                        'min-h-10 rounded-[var(--radius-control)] font-normal',
                                         // Indicador de ubicación: tinte de marca y texto en --link.
-                                        'data-[active=true]:bg-primary/12 data-[active=true]:font-semibold data-[active=true]:text-link',
+                                        'data-[active=true]:bg-primary/12 data-[active=true]:font-normal data-[active=true]:text-link',
                                     )}
                                 >
                                     <Link
                                         href={item.href}
                                         prefetch
+                                        aria-label={
+                                            itemPending > 0
+                                                ? `${item.title}: ${itemPending} pendientes`
+                                                : undefined
+                                        }
                                         aria-current={
                                             active ? 'page' : undefined
                                         }
@@ -190,9 +215,9 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
                                         <span>{item.title}</span>
                                     </Link>
                                 </SidebarMenuButton>
-                                {pending(item) > 0 && (
-                                    <SidebarMenuBadge className="text-xs">
-                                        {pending(item)}
+                                {itemPending > 0 && (
+                                    <SidebarMenuBadge variant="pending">
+                                        {itemPending}
                                     </SidebarMenuBadge>
                                 )}
                             </SidebarMenuItem>

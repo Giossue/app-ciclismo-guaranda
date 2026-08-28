@@ -16,6 +16,9 @@ const badgeVariants = cva(
                 default: 'border-primary bg-primary text-primary-foreground',
                 // Neutro: metadato, taxonomía, contador informativo o estado apagado.
                 outline: 'border-input bg-input text-muted-foreground',
+                // Rojo: contador de avisos o trabajo pendiente que requiere revisión.
+                destructive:
+                    'border-destructive bg-destructive text-destructive-foreground',
             },
         },
         defaultVariants: {

@@ -3,6 +3,7 @@ import { Bell, CheckCheck } from 'lucide-react';
 import { useState } from 'react';
 import type { AppNotification } from '@/components/notification-item';
 import { NotificationItem } from '@/components/notification-item';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
     Sheet,
@@ -63,9 +64,12 @@ export function NotificationBellLink({ className }: Props) {
             >
                 <Bell className="size-4" />
                 {unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 grid min-w-5 place-items-center rounded-full border border-background bg-primary px-1 leading-5 font-black text-[var(--fs-caption)] text-primary-foreground">
+                    <Badge
+                        variant="destructive"
+                        className="absolute -top-1 -right-1 h-5 min-w-5 border-background px-1 py-0 font-medium tracking-normal normal-case"
+                    >
                         {unreadCount > 9 ? '9+' : unreadCount}
-                    </span>
+                    </Badge>
                 )}
             </Button>
 

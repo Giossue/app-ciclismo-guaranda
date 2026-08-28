@@ -1,15 +1,9 @@
 import AppearanceCycleButton from '@/components/appearance-cycle-button';
-import { Breadcrumbs } from '@/components/breadcrumbs';
 import { NotificationBellLink } from '@/components/notification-bell-link';
 import { Separator } from '@/components/ui/separator';
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import type { BreadcrumbItem as BreadcrumbItemType } from '@/types';
 
-export function AppSidebarHeader({
-    breadcrumbs = [],
-}: {
-    breadcrumbs?: BreadcrumbItemType[];
-}) {
+export function AppSidebarHeader() {
     return (
         <header
             data-slot="app-sidebar-header"
@@ -22,19 +16,13 @@ export function AppSidebarHeader({
                     className="hidden h-4 md:block"
                 />
                 {/*
-                 * En móvil la miga repetiría el título que la propia pantalla
-                 * ya muestra debajo, así que ahí se deja solo la marca.
+                 * Sin miga de pan: repetía el título que cada pantalla muestra
+                 * debajo. En escritorio la marca ya está en el sidebar, así que
+                 * solo se deja en móvil, donde el sidebar no se ve.
                  */}
                 <span className="truncate text-sm text-muted-foreground md:hidden">
                     Guaranda Go
                 </span>
-                <div className="hidden min-w-0 text-sm text-muted-foreground md:block">
-                    {breadcrumbs.length > 0 ? (
-                        <Breadcrumbs breadcrumbs={breadcrumbs} />
-                    ) : (
-                        'Guaranda Go'
-                    )}
-                </div>
             </div>
             <div className="flex items-center gap-1">
                 <NotificationBellLink />
