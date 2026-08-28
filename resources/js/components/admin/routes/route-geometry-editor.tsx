@@ -7,7 +7,7 @@ import 'leaflet-control-geocoder';
 import type { LineString } from 'geojson';
 import L from 'leaflet';
 import { Layers, LocateFixed, MapPinned, RouteIcon } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
     CircleMarker,
     MapContainer,
@@ -38,6 +38,7 @@ export type RouteGeometryEditorProps = {
     endLongitude?: string | number | null;
     errors: Partial<Record<string, string>>;
     onDistanceChange: (distanceKm: string) => void;
+    distanceOverride?: string | null;
     onGeojsonChange?: (geojson: string) => void;
     poiDrafts?: RoutePoiDraft[];
     activePoiKey?: string | null;
@@ -46,6 +47,13 @@ export type RouteGeometryEditorProps = {
         latitude: string,
         longitude: string,
     ) => void;
+    onEndpointChange?: (
+        endpoint: 'start' | 'end',
+        point: { latitude: string; longitude: string; name?: string },
+    ) => void;
+    onGenerateRoute?: () => void;
+    isGeneratingRoute?: boolean;
+    routePreviewMessage?: string | null;
 };
 
 type GeometryState = {
@@ -101,10 +109,15 @@ export default function RouteGeometryEditor({
     endLongitude,
     errors,
     onDistanceChange,
+    distanceOverride,
     onGeojsonChange,
     poiDrafts = [],
     activePoiKey = null,
     onPoiLocationChange,
+    onEndpointChange,
+    onGenerateRoute,
+    isGeneratingRoute = false,
+    routePreviewMessage,
 }: RouteGeometryEditorProps) {
     const initialLine = useMemo(
         () => parseLineString(initialGeojson),
@@ -126,15 +139,29 @@ export default function RouteGeometryEditor({
     );
     const [mapLayer, setMapLayer] = useState<MapLayer>('standard');
     const [locationRequest, setLocationRequest] = useState(0);
+    const [endpointMode, setEndpointMode] = useState<'start' | 'end' | null>(
+        null,
+    );
     const activeLayer =
         mapLayer === 'satellite' ? satelliteLayer : standardLayer;
     const activePoi = poiDrafts.find((poi) => poi.key === activePoiKey);
+    const handleEndpointChange = useCallback<
+        NonNullable<RouteGeometryEditorProps['onEndpointChange']>
+    >(
+        (endpoint, point) => {
+            onEndpointChange?.(endpoint, point);
+            setEndpointMode(null);
+        },
+        [onEndpointChange],
+    );
 
     useEffect(() => {
-        if (geometry.distanceKm !== '') {
-            onDistanceChange(geometry.distanceKm);
+        const distance = distanceOverride ?? geometry.distanceKm;
+
+        if (distance !== '') {
+            onDistanceChange(distance);
         }
-    }, [geometry.distanceKm, onDistanceChange]);
+    }, [distanceOverride, geometry.distanceKm, onDistanceChange]);
 
     useEffect(() => {
         onGeojsonChange?.(geometry.geojson);
@@ -148,10 +175,10 @@ export default function RouteGeometryEditor({
                 <Label>Recorrido en mapa</Label>
                 <Alert>
                     <RouteIcon />
-                    <AlertTitle>Dibuja el trayecto real</AlertTitle>
+                    <AlertTitle>Elige inicio y final</AlertTitle>
                     <AlertDescription>
-                        Dibuja la línea de la ruta. Para puntos de interés,
-                        pulsa “Marcar en mapa” en el punto y toca su ubicación.
+                        Busca ambos lugares o tócalos en el mapa. Generamos un
+                        recorrido en bicicleta que puedes ajustar manualmente.
                     </AlertDescription>
                 </Alert>
                 {activePoi && (
@@ -175,6 +202,24 @@ export default function RouteGeometryEditor({
                 >
                     <LocateFixed data-icon="inline-start" />
                     Usar mi ubicación
+                </Button>
+                <Button
+                    type="button"
+                    variant={endpointMode === 'start' ? 'secondary' : 'outline'}
+                    size="sm"
+                    onClick={() => setEndpointMode('start')}
+                >
+                    <MapPinned data-icon="inline-start" />
+                    Elegir inicio
+                </Button>
+                <Button
+                    type="button"
+                    variant={endpointMode === 'end' ? 'secondary' : 'outline'}
+                    size="sm"
+                    onClick={() => setEndpointMode('end')}
+                >
+                    <MapPinned data-icon="inline-start" />
+                    Elegir final
                 </Button>
                 <Button
                     type="button"
@@ -206,6 +251,12 @@ export default function RouteGeometryEditor({
                     <DrawToolbar
                         initialLatLngs={initialLatLngs}
                         onChange={setGeometry}
+                        endpointMode={endpointMode}
+                        onEndpointChange={handleEndpointChange}
+                    />
+                    <EndpointPickerLayer
+                        endpointMode={activePoiKey ? null : endpointMode}
+                        onEndpointChange={handleEndpointChange}
                     />
                     <PoiPlacementLayer
                         poiDrafts={poiDrafts}
@@ -215,6 +266,54 @@ export default function RouteGeometryEditor({
                     <AdminLocationMarker requestToken={locationRequest} />
                 </MapContainer>
             </div>
+
+            {endpointMode && (
+                <Alert variant="info">
+                    <MapPinned />
+                    <AlertTitle>
+                        Seleccionando{' '}
+                        {endpointMode === 'start' ? 'inicio' : 'final'}
+                    </AlertTitle>
+                    <AlertDescription>
+                        Busca el lugar en el mapa o toca su ubicación exacta.
+                    </AlertDescription>
+                </Alert>
+            )}
+
+            {onGenerateRoute && (
+                <div className="flex flex-col gap-2 rounded-[var(--radius-surface)] border bg-muted/20 p-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex flex-col gap-1">
+                        <p className="text-sm font-semibold">
+                            Generar recorrido en bicicleta
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                            Obtén un primer trazado y corrígelo manualmente solo
+                            si lo necesitas.
+                        </p>
+                    </div>
+                    <Button
+                        type="button"
+                        onClick={onGenerateRoute}
+                        disabled={
+                            isGeneratingRoute ||
+                            !startLatitude ||
+                            !startLongitude ||
+                            !endLatitude ||
+                            !endLongitude
+                        }
+                    >
+                        <RouteIcon data-icon="inline-start" />
+                        {isGeneratingRoute ? 'Generando…' : 'Generar ruta'}
+                    </Button>
+                </div>
+            )}
+
+            {routePreviewMessage && (
+                <Alert variant="info">
+                    <RouteIcon />
+                    <AlertDescription>{routePreviewMessage}</AlertDescription>
+                </Alert>
+            )}
 
             <input type="hidden" name="geojson" value={geometry.geojson} />
             <input
@@ -242,8 +341,8 @@ export default function RouteGeometryEditor({
                 <GeometryMetric
                     label="Distancia trazada"
                     value={
-                        geometry.distanceKm
-                            ? `${Number(geometry.distanceKm).toLocaleString()} km`
+                        (distanceOverride ?? geometry.distanceKm)
+                            ? `${Number(distanceOverride ?? geometry.distanceKm).toLocaleString()} km`
                             : 'Sin trazo'
                     }
                 />
@@ -271,8 +370,8 @@ export default function RouteGeometryEditor({
                     {geometry.pointsCount > 2
                         ? `${geometry.pointsCount} puntos del recorrido`
                         : geometry.pointsCount === 2
-                          ? 'Solo inicio/final: agrega puntos de la vía'
-                          : 'Dibuja mínimo 2 puntos'}
+                          ? 'Inicio y final seleccionados'
+                          : 'Selecciona inicio y final'}
                 </Badge>
                 <Badge variant="outline">
                     <LocateFixed data-icon="inline-start" />
@@ -364,9 +463,13 @@ function PoiPlacementLayer({
 function DrawToolbar({
     initialLatLngs,
     onChange,
+    endpointMode,
+    onEndpointChange,
 }: {
     initialLatLngs?: [number, number][];
     onChange: (geometry: GeometryState) => void;
+    endpointMode: 'start' | 'end' | null;
+    onEndpointChange?: RouteGeometryEditorProps['onEndpointChange'];
 }) {
     const map = useMap();
 
@@ -419,7 +522,11 @@ function DrawToolbar({
 
         geocoder.on('markgeocode', (event: L.LeafletEvent) => {
             const result = event as L.LeafletEvent & {
-                geocode?: { bbox?: L.LatLngBounds; center?: L.LatLng };
+                geocode?: {
+                    bbox?: L.LatLngBounds;
+                    center?: L.LatLng;
+                    name?: string;
+                };
             };
 
             if (result.geocode?.bbox) {
@@ -430,6 +537,18 @@ function DrawToolbar({
 
             if (result.geocode?.center) {
                 map.setView(result.geocode.center, 16);
+
+                if (endpointMode && onEndpointChange) {
+                    onEndpointChange(endpointMode, {
+                        latitude: String(
+                            roundCoordinate(result.geocode.center.lat),
+                        ),
+                        longitude: String(
+                            roundCoordinate(result.geocode.center.lng),
+                        ),
+                        name: result.geocode.name,
+                    });
+                }
             }
         });
 
@@ -466,7 +585,30 @@ function DrawToolbar({
             map.removeControl(drawControl);
             map.removeLayer(editableLayers);
         };
-    }, [initialLatLngs, map, onChange]);
+    }, [endpointMode, initialLatLngs, map, onChange, onEndpointChange]);
+
+    return null;
+}
+
+function EndpointPickerLayer({
+    endpointMode,
+    onEndpointChange,
+}: {
+    endpointMode: 'start' | 'end' | null;
+    onEndpointChange?: RouteGeometryEditorProps['onEndpointChange'];
+}) {
+    useMapEvents({
+        click(event) {
+            if (!endpointMode || !onEndpointChange) {
+                return;
+            }
+
+            onEndpointChange(endpointMode, {
+                latitude: String(roundCoordinate(event.latlng.lat)),
+                longitude: String(roundCoordinate(event.latlng.lng)),
+            });
+        },
+    });
 
     return null;
 }

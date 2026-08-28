@@ -9,6 +9,8 @@ import {
 } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 import RouteController from '@/actions/App/Http/Controllers/Admin/RouteController';
+import RouteElevationController from '@/actions/App/Http/Controllers/Admin/RouteElevationController';
+import RouteRoutingController from '@/actions/App/Http/Controllers/Admin/RouteRoutingController';
 import RouteGeometryEditor from '@/components/admin/routes/client-only-route-geometry-editor';
 import ImageFileInput from '@/components/image-file-input';
 import ImageWithFallback from '@/components/image-with-fallback';
@@ -167,6 +169,12 @@ export default function RouteForm({
         ? RouteController.update.form(route.id)
         : RouteController.store.form();
     const [distanceKm, setDistanceKm] = useState(route?.distance_km ?? '');
+    const [generatedDistanceKm, setGeneratedDistanceKm] = useState<
+        string | null
+    >(null);
+    const [estimatedTimeMinutes, setEstimatedTimeMinutes] = useState(
+        route?.estimated_time_minutes?.toString() ?? '',
+    );
     const [routeGeojson, setRouteGeojson] = useState(
         route?.geojson ?? defaultGeojson ?? '',
     );
@@ -180,6 +188,20 @@ export default function RouteForm({
         null,
     );
     const [isCalculatingElevation, setIsCalculatingElevation] = useState(false);
+    const [isGeneratingRoute, setIsGeneratingRoute] = useState(false);
+    const [routePreviewMessage, setRoutePreviewMessage] = useState<
+        string | null
+    >(null);
+    const [startPoint, setStartPoint] = useState({
+        name: route?.start_name ?? '',
+        latitude: route?.start_latitude ?? '',
+        longitude: route?.start_longitude ?? '',
+    });
+    const [endPoint, setEndPoint] = useState({
+        name: route?.end_name ?? '',
+        latitude: route?.end_latitude ?? '',
+        longitude: route?.end_longitude ?? '',
+    });
     const [selectedExperience, setSelectedExperience] = useState<string[]>(() =>
         defaultExperienceSelection(route?.required_experience),
     );
@@ -260,6 +282,92 @@ export default function RouteForm({
         setActivePoiKey(null);
     };
 
+    const updateEndpoint = useCallback(
+        (
+            endpoint: 'start' | 'end',
+            point: { latitude: string; longitude: string; name?: string },
+        ) => {
+            const update = (current: typeof startPoint) => ({
+                ...current,
+                latitude: point.latitude,
+                longitude: point.longitude,
+                name: point.name || current.name,
+            });
+
+            if (endpoint === 'start') {
+                setStartPoint(update);
+            } else {
+                setEndPoint(update);
+            }
+
+            setRoutePreviewMessage(null);
+        },
+        [],
+    );
+
+    const generateRoute = useCallback(async () => {
+        setRoutePreviewMessage(null);
+
+        if (
+            !startPoint.latitude ||
+            !startPoint.longitude ||
+            !endPoint.latitude ||
+            !endPoint.longitude
+        ) {
+            setRoutePreviewMessage(
+                'Selecciona el inicio y el final en el mapa antes de generar la ruta.',
+            );
+
+            return;
+        }
+
+        setIsGeneratingRoute(true);
+
+        try {
+            const response = await fetch(RouteRoutingController.url(), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json',
+                    ...(csrfToken()
+                        ? { 'X-CSRF-TOKEN': csrfToken() as string }
+                        : {}),
+                },
+                body: JSON.stringify({
+                    waypoints: [startPoint, endPoint],
+                }),
+            });
+            const json = (await response.json()) as {
+                geojson?: { type: 'LineString'; coordinates: number[][] };
+                distance_km?: number;
+                estimated_time_minutes?: number;
+                message?: string;
+            };
+
+            if (!response.ok || !json.geojson) {
+                throw new Error(
+                    json.message ?? 'No se pudo generar el recorrido.',
+                );
+            }
+
+            setRouteGeojson(JSON.stringify(json.geojson));
+            setGeneratedDistanceKm(String(json.distance_km ?? ''));
+            setDistanceKm(String(json.distance_km ?? ''));
+            setEstimatedTimeMinutes(String(json.estimated_time_minutes ?? ''));
+            setRoutePreviewMessage(
+                'Recorrido generado. Revísalo y ajusta el trazado manualmente solo si hace falta.',
+            );
+        } catch (error) {
+            setRoutePreviewMessage(
+                error instanceof Error
+                    ? error.message
+                    : 'No se pudo generar el recorrido.',
+            );
+        } finally {
+            setIsGeneratingRoute(false);
+        }
+    }, [endPoint, startPoint]);
+
     const calculateElevation = useCallback(async () => {
         setElevationMessage(null);
 
@@ -274,7 +382,7 @@ export default function RouteForm({
         setIsCalculatingElevation(true);
 
         try {
-            const response = await fetch('/admin/routes/elevation-preview', {
+            const response = await fetch(RouteElevationController.url(), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -414,10 +522,10 @@ export default function RouteForm({
 
                     <Card>
                         <CardHeader>
-                            <CardTitle>2. Dibuja el recorrido</CardTitle>
+                            <CardTitle>2. Crea el recorrido</CardTitle>
                             <CardDescription>
-                                El inicio, el final y la distancia se obtienen
-                                del trazado en el mapa.
+                                Elige inicio y final; la ruta en bicicleta se
+                                genera automáticamente y sigue siendo editable.
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="grid gap-4 sm:grid-cols-2">
@@ -428,7 +536,13 @@ export default function RouteForm({
                                 <Input
                                     id="start_name"
                                     name="start_name"
-                                    defaultValue={route?.start_name ?? ''}
+                                    value={startPoint.name}
+                                    onChange={(event) =>
+                                        setStartPoint((current) => ({
+                                            ...current,
+                                            name: event.currentTarget.value,
+                                        }))
+                                    }
                                     placeholder="Ej. Parque central de Salinas"
                                     required
                                     aria-invalid={Boolean(errors.start_name)}
@@ -443,7 +557,13 @@ export default function RouteForm({
                                 <Input
                                     id="end_name"
                                     name="end_name"
-                                    defaultValue={route?.end_name ?? ''}
+                                    value={endPoint.name}
+                                    onChange={(event) =>
+                                        setEndPoint((current) => ({
+                                            ...current,
+                                            name: event.currentTarget.value,
+                                        }))
+                                    }
                                     placeholder="Ej. Mirador comunitario"
                                     required
                                     aria-invalid={Boolean(errors.end_name)}
@@ -452,19 +572,22 @@ export default function RouteForm({
                             </div>
 
                             <RouteGeometryEditor
-                                initialGeojson={
-                                    route?.geojson ?? defaultGeojson
-                                }
-                                startLatitude={route?.start_latitude}
-                                startLongitude={route?.start_longitude}
-                                endLatitude={route?.end_latitude}
-                                endLongitude={route?.end_longitude}
+                                initialGeojson={routeGeojson}
+                                startLatitude={startPoint.latitude}
+                                startLongitude={startPoint.longitude}
+                                endLatitude={endPoint.latitude}
+                                endLongitude={endPoint.longitude}
                                 errors={errors}
                                 onDistanceChange={setDistanceKm}
+                                distanceOverride={generatedDistanceKm}
                                 onGeojsonChange={setRouteGeojson}
                                 poiDrafts={newPois}
                                 activePoiKey={activePoiKey}
                                 onPoiLocationChange={updateNewPoiLocation}
+                                onEndpointChange={updateEndpoint}
+                                onGenerateRoute={generateRoute}
+                                isGeneratingRoute={isGeneratingRoute}
+                                routePreviewMessage={routePreviewMessage}
                             />
                         </CardContent>
                     </Card>
@@ -506,7 +629,8 @@ export default function RouteForm({
                                 id="estimated_time_minutes"
                                 name="estimated_time_minutes"
                                 label="Tiempo estimado (min)"
-                                defaultValue={route?.estimated_time_minutes}
+                                value={estimatedTimeMinutes}
+                                onChange={setEstimatedTimeMinutes}
                                 error={errors.estimated_time_minutes}
                                 step="1"
                                 min="1"

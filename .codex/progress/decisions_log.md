@@ -251,3 +251,9 @@
 
 - Leaflet, Leaflet Draw, geocodificación y componentes React Leaflet no se importan desde páginas Inertia ni desde sus dependencias estáticas. Se cargan después de la hidratación con `useEffect`, conservando SSR activo para el resto de cada pantalla.
 - `/up` queda como endpoint mínimo de preparación del contenedor y no depende de la ejecución de SSR; Dokploy debe consultar esa ruta antes de conmutar tráfico.
+
+## 2026-08-27 — OSRM privado como asistente del editor de rutas
+
+- Se adopta OSRM autoalojado para Ecuador y perfil de bicicleta como generador inicial de la geometría administrativa; no se convierte en endpoint público ni se entrega su URL al cliente.
+- El contrato Laravel devuelve solo GeoJSON, distancia y minutos normalizados. El navegador nunca compone una URL de OSRM y las coordenadas pasan por Form Request, policy de creación y rate limit antes de llegar al motor.
+- El editor no depende del motor para guardar: ante `NoRoute`, timeout o caída, el administrador puede ajustar los puntos o dibujar la ruta manualmente.

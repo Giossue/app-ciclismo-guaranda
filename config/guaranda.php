@@ -27,6 +27,14 @@ return [
         ],
     ],
 
+    'routing' => [
+        'osrm' => [
+            'base_url' => env('GUARANDA_GO_OSRM_URL'),
+            'timeout_seconds' => (int) env('GUARANDA_GO_OSRM_TIMEOUT_SECONDS', 5),
+            'connect_timeout_seconds' => (int) env('GUARANDA_GO_OSRM_CONNECT_TIMEOUT_SECONDS', 1),
+        ],
+    ],
+
     'deployment' => [
         'run_seeders' => env('RUN_SEEDERS', 'false'),
         'mobile_server_url' => env('GUARANDA_GO_MOBILE_SERVER_URL'),

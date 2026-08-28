@@ -157,3 +157,9 @@ Después de esa prueba manual, marcar Fase 12 y Fase 14 como `Completado` si tod
 - Se aisló Leaflet, Leaflet Draw, geocodificación y selectores de ubicación en wrappers cargados solo tras montar el navegador; el SSR de `/admin/routes` ya no evalúa `window`.
 - `GET /up` es una respuesta JSON mínima e independiente del SSR, preparada para configurarse como health check de Dokploy.
 - Se añadió `scripts/audit_ssr_browser_usage.py`, que recorre imports estáticos desde cada página Inertia y falla si una dependencia de navegador vuelve a ser alcanzable.
+
+## Enrutamiento interno OSRM 2026-08-27
+
+- Se desplegó y comprobó OSRM de Ecuador en Dokploy como servicio interno con perfil de bicicleta: Laravel resolvió una ruta por `http://osrm:5000` desde su propio contenedor.
+- El alta/edición administrativa permite elegir inicio y final con el buscador/mapa, generar un trazado de bicicleta y conservar el dibujo manual como corrección opcional.
+- Laravel expone una vista previa protegida, validada y limitada; no guarda datos ni expone la URL interna ni errores crudos del motor.

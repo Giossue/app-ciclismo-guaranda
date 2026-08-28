@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\PoiSuggestionController as AdminPoiSuggestionCont
 use App\Http\Controllers\Admin\RatingController as AdminRatingController;
 use App\Http\Controllers\Admin\RouteController as AdminRouteController;
 use App\Http\Controllers\Admin\RouteElevationController;
+use App\Http\Controllers\Admin\RouteRoutingController;
 use App\Http\Controllers\Admin\StatisticsController;
 use App\Http\Controllers\Admin\SystemSettingsController;
 use App\Http\Controllers\Admin\UserController;
@@ -72,6 +73,7 @@ Route::middleware(['auth', 'verified', 'admin'])
         Route::get('dashboard', DashboardController::class)->name('dashboard');
 
         Route::post('routes/elevation-preview', RouteElevationController::class)->middleware('throttle:20,1')->name('routes.elevation-preview');
+        Route::post('routes/routing-preview', RouteRoutingController::class)->middleware('throttle:20,1')->name('routes.routing-preview');
         // Alta y edición se resuelven en una hoja del listado, no en páginas propias.
         Route::resource('routes', AdminRouteController::class)->except(['show', 'create', 'edit']);
         Route::get('pois/suggestions', AdminPoiSuggestionController::class)->name('pois.suggestions.index');

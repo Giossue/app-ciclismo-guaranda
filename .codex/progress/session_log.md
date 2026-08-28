@@ -581,3 +581,10 @@
 - Se creó una prueba de `GET /up` y un endpoint JSON mínimo sin SSR para el health check de Dokploy.
 - Se añadió y ejecutó `scripts/audit_ssr_browser_usage.py`; la cadena estática de todas las páginas Inertia queda libre de dependencias exclusivas del navegador.
 - Validaciones aprobadas: Pint, Pest focalizado (15 pruebas), tipos, ESLint, Prettier, build SSR, chequeo de salud SSR y render SSR real de `/admin/routes` tanto listado como formulario de creación.
+
+## 2026-08-27 — Integración de OSRM para rutas administrativas
+
+- Se verificó desde el contenedor Laravel la conectividad privada con OSRM Ecuador (`200 / Ok`).
+- Se implementó `admin.routes.routing-preview`, boundary `RoutePlanner`/`OsrmRouteService`, configuración por entorno, autorización administrativa, validación de 2–10 puntos, timeouts y mensajes sanitizados de degradación.
+- El formulario de rutas ahora prioriza elegir inicio/final y generar el recorrido; conserva edición manual y usa Wayfinder para las dos vistas previas de elevación/enrutamiento.
+- Validaciones ejecutadas: Pest (17 pruebas focalizadas, 146 aserciones), Pint, TypeScript, ESLint, Prettier, auditoría SSR, build SSR, build Vite y listado de ruta generado.
