@@ -67,7 +67,6 @@ test('administrator can view route management pages', function () {
     $this->withoutVite();
 
     $admin = User::factory()->administrator()->create();
-    $draftStatus = RouteStatus::query()->where('name', 'Borrador')->firstOrFail();
     $bicycle = TransportMode::query()->where('name', 'Bicicleta')->firstOrFail();
     $routingEngine = RoutingEngine::query()->where('active', true)->orderBy('id')->firstOrFail();
 
@@ -85,7 +84,6 @@ test('administrator can view route management pages', function () {
         ->assertInertia(fn (Assert $page) => $page
             ->component('admin/routes/index')
             ->where('form', 'create')
-            ->where('formOptions.defaults.route_status_id', $draftStatus->id)
             ->where('formOptions.defaults.transport_mode_id', $bicycle->id)
             ->where('formOptions.defaults.routing_engine_id', $routingEngine->id));
 });
@@ -269,6 +267,7 @@ test('administrator can create a complete route', function () {
 
     expect($route->admin_user_id)->toBe($admin->id)
         ->and($route->slug)->toBe('ruta-salinas-de-bolivar')
+        ->and($route->status?->name)->toBe('Borrador')
         ->and($route->route_version)->toBe(1)
         ->and($route->geometry()->exists())->toBeTrue()
         ->and($route->metrics()->count())->toBe(1)

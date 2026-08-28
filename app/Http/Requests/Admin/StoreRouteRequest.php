@@ -4,6 +4,7 @@ namespace App\Http\Requests\Admin;
 
 use App\Http\Requests\Admin\Concerns\ValidatesRoutePayload;
 use App\Models\CyclingRoute;
+use App\Models\RouteStatus;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
@@ -23,6 +24,13 @@ class StoreRouteRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->prepareRoutePayloadForValidation();
+
+        $this->merge([
+            'route_status_id' => RouteStatus::query()
+                ->where('name', 'Borrador')
+                ->firstOrFail(['id'])
+                ->id,
+        ]);
     }
 
     /**

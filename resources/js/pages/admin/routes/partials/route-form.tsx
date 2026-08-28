@@ -99,7 +99,6 @@ type NewRoutePoi = {
 };
 
 type RouteDefaults = {
-    route_status_id: number | null;
     transport_mode_id: number | null;
     routing_engine_id: number | null;
 };
@@ -530,24 +529,6 @@ export default function RouteForm({
                                 </div>
 
                                 <CatalogSelect
-                                    id="route_status_id"
-                                    name="route_status_id"
-                                    label="Estado"
-                                    placeholder="Selecciona estado"
-                                    options={statuses}
-                                    defaultValue={
-                                        route?.route_status_id ??
-                                        defaults?.route_status_id
-                                    }
-                                    error={errors.route_status_id}
-                                    description={
-                                        !isEdit
-                                            ? 'Se guarda como borrador y no será visible para ciclistas hasta publicarla.'
-                                            : undefined
-                                    }
-                                />
-
-                                <CatalogSelect
                                     id="route_category_id"
                                     name="route_category_id"
                                     label="Categoría"
@@ -871,6 +852,37 @@ export default function RouteForm({
                         className={cn(activeStep !== 4 && 'hidden')}
                         aria-hidden={activeStep !== 4}
                     >
+                        {isEdit ? (
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Publicación</CardTitle>
+                                    <CardDescription>
+                                        Define cuándo la ruta estará visible
+                                        para ciclistas.
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <CatalogSelect
+                                        id="route_status_id"
+                                        name="route_status_id"
+                                        label="Estado"
+                                        placeholder="Selecciona estado"
+                                        options={statuses}
+                                        defaultValue={route.route_status_id}
+                                        error={errors.route_status_id}
+                                    />
+                                </CardContent>
+                            </Card>
+                        ) : (
+                            <Alert>
+                                <AlertTitle>Se creará como borrador</AlertTitle>
+                                <AlertDescription>
+                                    No será visible para ciclistas hasta que la
+                                    publiques desde la edición de la ruta.
+                                </AlertDescription>
+                            </Alert>
+                        )}
+
                         <Collapsible open={showPois} onOpenChange={setShowPois}>
                             <Card>
                                 <CardHeader className="flex flex-row items-start justify-between gap-4">

@@ -103,7 +103,6 @@ class RouteController extends Controller
                 'formOptions' => [
                     ...$catalogs,
                     'defaults' => [
-                        'route_status_id' => $catalogs['statuses']->firstWhere('name', 'Borrador')?->id,
                         'transport_mode_id' => $catalogs['transportModes']->firstWhere('name', 'Bicicleta')?->id,
                         'routing_engine_id' => $catalogs['routingEngines']->first()?->id,
                     ],

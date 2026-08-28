@@ -11,7 +11,7 @@
 
 ## Estados
 
-- Borrador: solo admin.
+- Borrador: solo admin. Toda ruta nueva se crea en este estado; un administrador puede cambiar su publicación al editarla.
 - Activa: visible para ciclistas.
 - Inactiva: visible solo admin, no se elimina físicamente.
 
