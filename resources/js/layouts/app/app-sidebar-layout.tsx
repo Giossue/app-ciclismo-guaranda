@@ -5,11 +5,21 @@ import { AppShell } from '@/components/app-shell';
 import { AppSidebar } from '@/components/app-sidebar';
 import { AppSidebarHeader } from '@/components/app-sidebar-header';
 import { PullToRefresh } from '@/components/pull-to-refresh';
-import type { AppLayoutProps } from '@/types';
+import { useDisableNativePullToRefresh } from '@/hooks/use-disable-native-pull-to-refresh';
+import { isAdmin } from '@/lib/navigation';
+import type { AppLayoutProps, Auth } from '@/types';
+
+type PageProps = {
+    auth: Auth;
+};
 
 export default function AppSidebarLayout({ children }: AppLayoutProps) {
     // Solo la ruta, sin query: filtrar o paginar no debe reanimar la pantalla.
-    const pathname = usePage().url.split('?')[0];
+    const page = usePage<PageProps>();
+    const pathname = page.url.split('?')[0];
+    const administrator = isAdmin(page.props.auth);
+
+    useDisableNativePullToRefresh(!administrator);
 
     return (
         <AppShell variant="sidebar">
@@ -22,7 +32,7 @@ export default function AppSidebarLayout({ children }: AppLayoutProps) {
                 // hace `body`.
                 className="min-w-0"
             >
-                <PullToRefresh />
+                {administrator && <PullToRefresh />}
                 <AppSidebarHeader />
                 <main
                     key={pathname}

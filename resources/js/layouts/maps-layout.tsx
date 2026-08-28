@@ -1,10 +1,17 @@
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import { Heart, Map, Route } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCurrentUrl } from '@/hooks/use-current-url';
+import { useDisableNativePullToRefresh } from '@/hooks/use-disable-native-pull-to-refresh';
+import { isAdmin } from '@/lib/navigation';
 import { index as favoritesIndex } from '@/routes/favorites';
 import { index as mapsIndex } from '@/routes/maps';
 import { index as routesIndex } from '@/routes/routes';
+import type { Auth } from '@/types';
+
+type PageProps = {
+    auth: Auth;
+};
 
 export default function MapsLayout({
     children,
@@ -12,6 +19,9 @@ export default function MapsLayout({
     children: React.ReactNode;
 }) {
     const { isCurrentUrl } = useCurrentUrl();
+    const { auth } = usePage<PageProps>().props;
+
+    useDisableNativePullToRefresh(!isAdmin(auth));
 
     return (
         <div className="relative h-[100dvh] overflow-hidden bg-background">

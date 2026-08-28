@@ -44,10 +44,7 @@ import { Suggestion, Suggestions } from '@/components/ai-elements/suggestion';
 import ImageWithFallback from '@/components/image-with-fallback';
 import InputError from '@/components/input-error';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import {
-    Avatar,
-    AvatarFallback,
-} from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import {
@@ -264,16 +261,13 @@ export default function ChatIndex({
         }
     };
 
-    const submitMessage = (
-        value: string,
-    ): Promise<void> =>
+    const submitMessage = (value: string): Promise<void> =>
         new Promise((resolve, reject) => {
             const submission: ChatSubmission = {
                 message: value,
                 conversation_id: activeConversation?.id ?? null,
                 route_id: routeId === 'none' ? null : Number(routeId),
-                travel_context:
-                    travelContext === 'none' ? null : travelContext,
+                travel_context: travelContext === 'none' ? null : travelContext,
                 location:
                     location.status === 'ready'
                         ? {
@@ -379,44 +373,43 @@ export default function ChatIndex({
 
                             {agentIsLoading && <AgentLoadingBubble />}
 
-                            {latestMessages.length === 0 &&
-                                !agentIsLoading && (
-                                    <ConversationEmptyState
-                                        className="min-h-72"
-                                        icon={
-                                            <span className="flex size-10 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                                                <Compass className="size-4" />
-                                            </span>
-                                        }
-                                        title="¿Qué quieres descubrir?"
-                                        description="Te ayudo con rutas, comida, actividades, alojamiento y avisos vigentes."
-                                    >
+                            {latestMessages.length === 0 && !agentIsLoading && (
+                                <ConversationEmptyState
+                                    className="min-h-72"
+                                    icon={
                                         <span className="flex size-10 items-center justify-center rounded-full bg-primary text-primary-foreground">
                                             <Compass className="size-4" />
                                         </span>
-                                        <div className="flex max-w-sm flex-col gap-1">
-                                            <h2 className="text-base font-bold text-foreground">
-                                                ¿Qué quieres descubrir?
-                                            </h2>
-                                            <p className="text-sm text-muted-foreground">
-                                                Te ayudo con rutas, comida,
-                                                actividades, alojamiento y avisos
-                                                vigentes.
-                                            </p>
-                                        </div>
-                                        <Suggestions className="max-w-full px-1 pt-2">
-                                            {initialSuggestions.map(
-                                                (suggestion) => (
-                                                    <Suggestion
-                                                        key={suggestion}
-                                                        suggestion={suggestion}
-                                                        onClick={useSuggestion}
-                                                    />
-                                                ),
-                                            )}
-                                        </Suggestions>
-                                    </ConversationEmptyState>
-                                )}
+                                    }
+                                    title="¿Qué quieres descubrir?"
+                                    description="Te ayudo con rutas, comida, actividades, alojamiento y avisos vigentes."
+                                >
+                                    <span className="flex size-10 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                                        <Compass className="size-4" />
+                                    </span>
+                                    <div className="flex max-w-sm flex-col gap-1">
+                                        <h2 className="text-base font-bold text-foreground">
+                                            ¿Qué quieres descubrir?
+                                        </h2>
+                                        <p className="text-sm text-muted-foreground">
+                                            Te ayudo con rutas, comida,
+                                            actividades, alojamiento y avisos
+                                            vigentes.
+                                        </p>
+                                    </div>
+                                    <Suggestions className="max-w-full px-1 pt-2">
+                                        {initialSuggestions.map(
+                                            (suggestion) => (
+                                                <Suggestion
+                                                    key={suggestion}
+                                                    suggestion={suggestion}
+                                                    onClick={useSuggestion}
+                                                />
+                                            ),
+                                        )}
+                                    </Suggestions>
+                                </ConversationEmptyState>
+                            )}
                         </ConversationContent>
                         <ConversationScrollButton />
                     </Conversation>
@@ -508,6 +501,118 @@ function firstUserInitial(name: string | null | undefined): string {
     return initial && initial.length > 0 ? initial : 'U';
 }
 
+function ContextControls({
+    location,
+    onRequestLocation,
+    routeId,
+    routes,
+    setRouteId,
+    setTravelContext,
+    travelContext,
+}: {
+    location: ChatLocationState;
+    onRequestLocation: () => void;
+    routeId: string;
+    routes: RouteContextOption[];
+    setRouteId: (value: string) => void;
+    setTravelContext: (value: string) => void;
+    travelContext: string;
+}) {
+    return (
+        <Popover>
+            <PopoverTrigger asChild>
+                <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="shrink-0"
+                >
+                    <Compass data-icon="inline-start" />
+                    Personalizar
+                </Button>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="grid w-80 gap-4">
+                <div className="grid gap-1">
+                    <p className="text-sm font-bold">
+                        Personaliza la respuesta
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                        Estos datos son opcionales y mejoran la recomendación.
+                    </p>
+                </div>
+                <div className="grid gap-2">
+                    <Label htmlFor="chat-route">Ruta</Label>
+                    <Select value={routeId} onValueChange={setRouteId}>
+                        <SelectTrigger id="chat-route">
+                            <SelectValue placeholder="Sin ruta específica" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectGroup>
+                                <SelectItem value="none">
+                                    Sin ruta específica
+                                </SelectItem>
+                                {routes.map((route) => (
+                                    <SelectItem
+                                        key={route.id}
+                                        value={String(route.id)}
+                                    >
+                                        {route.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectGroup>
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div className="grid gap-2">
+                    <Label htmlFor="chat-travel-context">Tipo de visita</Label>
+                    <Select
+                        value={travelContext}
+                        onValueChange={setTravelContext}
+                    >
+                        <SelectTrigger id="chat-travel-context">
+                            <SelectValue placeholder="Plan de viaje" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectGroup>
+                                <SelectItem value="none">
+                                    Sin preferencia
+                                </SelectItem>
+                                <SelectItem value="local_cyclist">
+                                    Salida local
+                                </SelectItem>
+                                <SelectItem value="day_visitor">
+                                    Visita por el día
+                                </SelectItem>
+                                <SelectItem value="overnight_tourist">
+                                    Me quedaré a dormir
+                                </SelectItem>
+                            </SelectGroup>
+                        </SelectContent>
+                    </Select>
+                </div>
+                <Button
+                    type="button"
+                    variant="outline"
+                    onClick={onRequestLocation}
+                    disabled={location.status === 'loading'}
+                >
+                    {location.status === 'loading' ? (
+                        <LoaderCircle
+                            data-icon="inline-start"
+                            className="animate-spin"
+                        />
+                    ) : (
+                        <MapPin data-icon="inline-start" />
+                    )}
+                    {location.status === 'ready'
+                        ? 'Actualizar ubicación'
+                        : 'Usar mi ubicación'}
+                </Button>
+            </PopoverContent>
+        </Popover>
+    );
+}
+
 function HistorySheet({
     conversations,
     activeConversation,
@@ -561,7 +666,11 @@ function HistorySheet({
                                 )}
                             >
                                 <Link
-                                    href={`/chat?conversation=${conversation.id}`}
+                                    href={chatIndex.url({
+                                        query: {
+                                            conversation: conversation.id,
+                                        },
+                                    })}
                                     replace
                                     prefetch
                                     className="min-w-0 flex-1 rounded-xl p-1"
@@ -642,21 +751,16 @@ function DeleteConversationForm({
 
 function AgentLoadingBubble() {
     return (
-        <div className="ueb-message-row bot">
-            <div className="ueb-message-avatar bot">
-                <Bot className="size-4" />
+        <Message from="assistant">
+            <div className="flex items-start gap-3">
+                <AssistantAvatar />
+                <MessageContent className="rounded-[var(--radius-surface)] border bg-card px-4 py-3">
+                    <Shimmer className="text-sm">
+                        Preparando una respuesta…
+                    </Shimmer>
+                </MessageContent>
             </div>
-            <div className="ueb-message-bubble">
-                <div
-                    className="flex items-center gap-1.5"
-                    aria-label="El agente está escribiendo"
-                >
-                    <span className="size-1.5 animate-bounce rounded-full bg-muted-foreground [animation-delay:-0.2s]" />
-                    <span className="size-1.5 animate-bounce rounded-full bg-muted-foreground [animation-delay:-0.1s]" />
-                    <span className="size-1.5 animate-bounce rounded-full bg-muted-foreground" />
-                </div>
-            </div>
-        </div>
+        </Message>
     );
 }
 
@@ -681,84 +785,115 @@ function MessageBubble({
     const resources = assistantResources(message.metadata);
 
     return (
-        <div className={cn('ueb-message-row', isUser ? 'user' : 'bot')}>
-            <div className={cn('ueb-message-avatar', isUser ? 'user' : 'bot')}>
-                {isUser ? userInitial : <Bot className="size-4" />}
-            </div>
-            <div className="flex flex-col gap-1">
-                <div className="ueb-message-bubble">
-                    <MessageResponse className="ueb-message-markdown">
-                        {message.message}
-                    </MessageResponse>
-                </div>
-                {suggestedActions.length > 0 && (
-                    <Suggestions className="max-w-[min(76vw,30rem)] px-1">
-                        {suggestedActions.map((suggestion) => (
-                            <Suggestion
-                                key={suggestion}
-                                suggestion={suggestion}
-                                onClick={onUseSuggestion}
-                            />
-                        ))}
-                    </Suggestions>
+        <Message from={isUser ? 'user' : 'assistant'}>
+            <div
+                className={cn(
+                    'flex items-start gap-3',
+                    isUser && 'flex-row-reverse',
                 )}
-                {resources.length > 0 && (
-                    <Sources className="max-w-[min(76vw,30rem)] px-1 text-muted-foreground">
-                        <SourcesTrigger
-                            count={resources.length}
-                            className="rounded-lg text-xs hover:text-foreground"
-                        >
-                            Información verificada ({resources.length})
-                        </SourcesTrigger>
-                        <SourcesContent className="w-full">
-                            {resources.map((resource) => (
-                                <AssistantResourceCard
-                                    key={`${resource.kind}-${resource.id}`}
-                                    resource={resource}
+            >
+                {isUser ? (
+                    <Avatar className="border border-primary bg-primary text-primary-foreground">
+                        <AvatarFallback className="bg-primary text-xs font-bold text-primary-foreground">
+                            {userInitial}
+                        </AvatarFallback>
+                    </Avatar>
+                ) : (
+                    <AssistantAvatar />
+                )}
+                <div
+                    className={cn(
+                        'flex min-w-0 flex-col gap-2',
+                        isUser && 'items-end',
+                    )}
+                >
+                    <MessageContent
+                        className={cn(
+                            'max-w-[min(78vw,42rem)] px-4 py-3',
+                            isUser
+                                ? 'bg-primary text-primary-foreground shadow-sm'
+                                : 'rounded-[var(--radius-surface)] border bg-card',
+                        )}
+                    >
+                        <MessageResponse className="grid gap-2 text-sm leading-6 [&_p]:m-0 [&_ul]:list-disc [&_ul]:pl-5">
+                            {message.message}
+                        </MessageResponse>
+                    </MessageContent>
+                    {suggestedActions.length > 0 && (
+                        <Suggestions className="max-w-[min(78vw,42rem)] px-1">
+                            {suggestedActions.map((suggestion) => (
+                                <Suggestion
+                                    key={suggestion}
+                                    suggestion={suggestion}
+                                    onClick={onUseSuggestion}
                                 />
                             ))}
-                        </SourcesContent>
-                    </Sources>
-                )}
-                <div className="flex items-center gap-2 px-1">
-                    {message.sent_at && (
-                        <span className="text-[0.625rem] leading-none font-black tracking-wide text-muted-foreground">
-                            {new Date(message.sent_at).toLocaleTimeString(
-                                'es-EC',
-                                {
-                                    hour: '2-digit',
-                                    minute: '2-digit',
-                                },
-                            )}
-                        </span>
+                        </Suggestions>
                     )}
-                    {canSpeak && (
-                        <button
-                            type="button"
-                            onClick={() =>
-                                onToggleSpeak(message.id, message.message)
-                            }
-                            className={cn(
-                                'inline-flex size-6 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground',
-                                isSpeaking && 'text-primary',
-                            )}
-                            aria-label={
-                                isSpeaking
-                                    ? 'Detener lectura'
-                                    : 'Escuchar mensaje'
-                            }
-                            title={isSpeaking ? 'Detener' : 'Escuchar'}
-                        >
-                            {isSpeaking ? (
-                                <Square className="size-4 fill-current" />
-                            ) : (
-                                <Volume2 className="size-4" />
-                            )}
-                        </button>
+                    {resources.length > 0 && (
+                        <Sources className="max-w-[min(78vw,42rem)] px-1 text-muted-foreground">
+                            <SourcesTrigger
+                                count={resources.length}
+                                className="rounded-lg text-xs hover:text-foreground"
+                            >
+                                Información verificada ({resources.length})
+                            </SourcesTrigger>
+                            <SourcesContent className="w-full">
+                                {resources.map((resource) => (
+                                    <AssistantResourceCard
+                                        key={`${resource.kind}-${resource.id}`}
+                                        resource={resource}
+                                    />
+                                ))}
+                            </SourcesContent>
+                        </Sources>
                     )}
+                    <MessageActions className="px-1">
+                        {message.sent_at && (
+                            <span className="text-[0.625rem] leading-none font-black tracking-wide text-muted-foreground">
+                                {new Date(message.sent_at).toLocaleTimeString(
+                                    'es-EC',
+                                    {
+                                        hour: '2-digit',
+                                        minute: '2-digit',
+                                    },
+                                )}
+                            </span>
+                        )}
+                        {canSpeak && (
+                            <MessageAction
+                                onClick={() =>
+                                    onToggleSpeak(message.id, message.message)
+                                }
+                                className={cn(isSpeaking && 'text-primary')}
+                                label={
+                                    isSpeaking
+                                        ? 'Detener lectura'
+                                        : 'Escuchar mensaje'
+                                }
+                                tooltip={isSpeaking ? 'Detener' : 'Escuchar'}
+                            >
+                                {isSpeaking ? (
+                                    <Square className="size-4 fill-current" />
+                                ) : (
+                                    <Volume2 className="size-4" />
+                                )}
+                            </MessageAction>
+                        )}
+                    </MessageActions>
                 </div>
             </div>
-        </div>
+        </Message>
+    );
+}
+
+function AssistantAvatar() {
+    return (
+        <Avatar className="border bg-card text-primary shadow-sm">
+            <AvatarFallback className="bg-card text-primary">
+                <Bot className="size-4" />
+            </AvatarFallback>
+        </Avatar>
     );
 }
 

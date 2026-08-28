@@ -327,6 +327,11 @@
             var(--background);
     }
 
+    html.user-no-pull-to-refresh,
+    body.user-no-pull-to-refresh {
+        overscroll-behavior-y: none;
+    }
+
     button,
     input,
     textarea,
