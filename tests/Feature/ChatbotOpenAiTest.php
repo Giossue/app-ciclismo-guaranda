@@ -79,8 +79,11 @@ function configureOpenAiAssistant(): void
 /**
  * @param  list<array{kind: 'route'|'poi', id: int}>  $resourceReferences
  */
-function openAiResponse(string $text, array $resourceReferences = []): array
-{
+function openAiResponse(
+    string $text,
+    array $resourceReferences = [],
+    array $suggestedActions = ['Ver rutas disponibles'],
+): array {
     return [
         'id' => 'resp_test_123',
         'model' => 'test-model',
@@ -91,7 +94,7 @@ function openAiResponse(string $text, array $resourceReferences = []): array
                 'type' => 'output_text',
                 'text' => json_encode([
                     'reply' => $text,
-                    'suggested_actions' => ['Ver rutas disponibles'],
+                    'suggested_actions' => $suggestedActions,
                     'resource_references' => $resourceReferences,
                 ], JSON_THROW_ON_ERROR),
             ]],
@@ -226,6 +229,30 @@ test('chat sends a verified empty route context when none is selected', function
     expect(AiConversation::query()->sole()->context)->not()->toHaveKey('location');
 });
 
+test('chat does not persist generic profile questions as suggested actions', function () {
+    configureOpenAiAssistant();
+
+    Http::fake([
+        'https://api.openai.com/v1/responses' => Http::response(openAiResponse(
+            'Puedo ayudarte a planificar una salida.',
+            [],
+            ['¿Estarás de paso durante el día o planeas quedarte a dormir?'],
+        ), 200),
+    ]);
+
+    $cyclist = User::factory()->cyclist()->create();
+
+    $this->actingAs($cyclist)
+        ->post(route('chat.messages.store'), ['message' => 'Hola, guía'])
+        ->assertRedirect();
+
+    expect(AiConversation::query()->sole()->messages()
+        ->where('role', 'assistant')
+        ->sole()
+        ->metadata['suggested_actions'])
+        ->toBe([]);
+});
+
 test('chat requires configured OpenAI before storing messages', function () {
     config(['guaranda.assistant.openai.api_key' => null, 'guaranda.assistant.openai.model' => null]);
 
@@ -305,7 +332,8 @@ test('user can hide only own chat conversation', function () {
 
     $this->actingAs($owner)
         ->delete(route('chat.conversations.destroy', $ownConversation))
-        ->assertRedirect(route('chat.index'));
+        ->assertRedirect(route('chat.index'))
+        ->assertSessionMissing('toast');
 
     $this->assertSoftDeleted('conversaciones_ia', [
         'id' => $ownConversation->id,

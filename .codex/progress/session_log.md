@@ -791,3 +791,12 @@
 - La guía IA ya no se monta bajo el sidebar, header ni navegación inferior.
   Usa un viewport propio: el encabezado “Volver” y el compositor permanecen
   fijos y solo el historial se desplaza.
+
+## Guía IA: ubicación y sugerencias — 2026-08-28
+
+- Eliminar una conversación es silencioso para el ciclista; conserva la
+  confirmación previa y el soft delete.
+- El compositor reemplaza “Personalizar” por una invitación persistente y
+  opcional para activar la ubicación. Las sugerencias genéricas de tipo de
+  viaje/pernocta se rechazan tanto antes de persistir como al presentar
+  mensajes históricos.

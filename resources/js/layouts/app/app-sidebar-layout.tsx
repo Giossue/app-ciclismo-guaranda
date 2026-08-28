@@ -19,7 +19,7 @@ export default function AppSidebarLayout({ children }: AppLayoutProps) {
     const page = usePage<PageProps>();
     const pathname = page.url.split('?')[0];
     const administrator = isAdmin(page.props.auth);
-    const isChat = pathname === '/chat';
+    const isChat = pathname === '/user/chat';
 
     useDisableNativePullToRefresh(!administrator);
 

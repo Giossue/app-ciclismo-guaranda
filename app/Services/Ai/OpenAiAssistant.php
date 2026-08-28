@@ -140,6 +140,9 @@ En `suggested_actions` devuelve de cero a tres preguntas de seguimiento que sean
 después de esta respuesta. Deben basarse en la consulta actual, el historial reciente y el contexto
 verificado. No repitas la consulta del ciclista, no propongas opciones genéricas y devuelve [] si no
 hay un siguiente paso claro. Cada acción se envía como una nueva pregunta del ciclista.
+No uses `suggested_actions` para pedir ubicación, tipo de viaje, si se quedará a dormir ni otra
+aclaración de perfil. Si una aclaración es imprescindible, inclúyela una sola vez dentro de `reply`
+y devuelve []. Si ya fue respondida en el historial, no la vuelvas a pedir.
 Devuelve el contrato JSON solicitado. No agregues enlaces, tarjetas, IDs, HTML ni Markdown fuera de `reply`.
 INSTRUCTIONS;
     }
@@ -242,8 +245,20 @@ INSTRUCTIONS;
 
         return [
             'reply' => mb_substr(trim($decoded['reply']), 0, 2400),
-            'suggested_actions' => $normalizedActions,
+            'suggested_actions' => collect($normalizedActions)
+                ->reject(fn (string $action): bool => $this->isGenericProfileQuestion($action))
+                ->unique(fn (string $action): string => mb_strtolower($action))
+                ->values()
+                ->all(),
             'resource_references' => $normalizedReferences,
         ];
+    }
+
+    private function isGenericProfileQuestion(string $action): bool
+    {
+        return preg_match(
+            '/(?:de paso|durante el d[ií]a|solo(?:\s+por)?\s+el d[ií]a|quedar(?:te|ás)\s+a\s+dormir|eres\s+(?:visitante|turista))/iu',
+            $action,
+        ) === 1;
     }
 }

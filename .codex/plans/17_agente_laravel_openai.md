@@ -138,8 +138,8 @@ internas navegables y sin dependencia visual de n8n.
 **Avance 2026-08-28:** `Conversation`, `Message`, `MessageResponse`,
 `PromptInput`, sugerencias, fuentes desplegables y tarjetas verificadas están
 integrados. La superficie principal ya no usa el layout heredado: conserva el
-scroll al último mensaje, muestra una bienvenida con preguntas iniciales y deja
-la ruta, el tipo de visita y la ubicación en “Personalizar”. Una ruta abre su
+scroll al último mensaje, muestra una bienvenida con preguntas iniciales e
+invita a activar ubicación opcional junto al compositor. Una ruta abre su
 detalle mediante Wayfinder; un POI se presenta como ficha hasta implementar
 detalle público. Las tarjetas pueden incluir la foto editorial pública
 rehidratada y su descripción almacenada como texto alternativo; el modelo no
@@ -149,6 +149,12 @@ aporta imágenes ni URLs.
 al tocarlas; no se conservan como chips dentro de mensajes históricos. El
 prompt exige que sean pertinentes al intercambio y puede responder con una
 lista vacía.
+
+**Ajuste de conversación 2026-08-28:** la guía se muestra fuera de la
+navegación global. Su encabezado y compositor son fijos, mientras el historial
+es la única zona desplazable. Las sugerencias no pueden pedir perfil de viaje
+ni repetirlo: esas aclaraciones, si hacen falta, van una sola vez en la
+respuesta y sin chips.
 
 ## Etapa 3 — Base de conocimiento vectorial
 

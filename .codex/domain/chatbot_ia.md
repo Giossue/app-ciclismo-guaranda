@@ -131,9 +131,11 @@ La pantalla de ciclista se compone directamente con AI Elements: `Conversation`
 mantiene visible el último intercambio, `Message` y `MessageResponse` presentan
 Markdown seguro, `PromptInput` mantiene la acción de envío, y `Suggestion` /
 `Sources` muestran acciones y recursos verificados. El historial, TTS, estado
-de red y ubicación transitoria se conservan. Ruta, tipo de visita y ubicación
-quedan dentro de “Personalizar” para que la pregunta normal no se convierta en
-un formulario; siguen siendo opcionales y se envían únicamente con la consulta.
+de red y ubicación transitoria se conservan. La pregunta no se convierte en un
+formulario: ruta y tipo de visita no se piden como controles. Junto al
+compositor aparece una invitación clara para activar la ubicación opcional;
+solo esas coordenadas transitorias se envían con la consulta cuando el ciclista
+las concede.
 El encabezado incluye “Volver” hacia rutas. Las sugerencias de seguimiento no
 pertenecen a mensajes históricos: aparecen una sola vez bajo la respuesta
 recién recibida y se envían inmediatamente al tocarlas. Al enviar cualquier
@@ -141,6 +143,9 @@ pregunta desaparecen; la siguiente respuesta puede proponer de cero a tres
 acciones nuevas, ajustadas por OpenAI al historial y al contexto vivo. En una
 conversación nueva, las preguntas iniciales usan la primera ruta activa que
 Laravel ya entregó a la pantalla.
+No se muestran sugerencias para pedir tipo de visita, pernocta ni otra
+aclaración genérica de perfil: si es imprescindible, el asistente la formula
+una sola vez en su respuesta y sin chips.
 Al abrir la pantalla, el estado de red empieza en comprobación: no se muestra
 una alerta ni se permite enviar hasta que Capacitor o el navegador confirme la
 conexión. Solo un resultado confirmado sin red muestra el aviso offline.

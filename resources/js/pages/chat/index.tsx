@@ -30,11 +30,9 @@ import {
 } from '@/components/ai-elements/message';
 import {
     PromptInput,
-    PromptInputButton,
     PromptInputFooter,
     PromptInputSubmit,
     PromptInputTextarea,
-    PromptInputTools,
 } from '@/components/ai-elements/prompt-input';
 import { Shimmer } from '@/components/ai-elements/shimmer';
 import {
@@ -55,20 +53,6 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Label } from '@/components/ui/label';
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from '@/components/ui/popover';
-import {
-    Select,
-    SelectContent,
-    SelectGroup,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
 import {
     Sheet,
     SheetContent,
@@ -159,8 +143,6 @@ type Props = {
 type ChatSubmission = {
     message: string;
     conversation_id: number | null;
-    route_id: number | null;
-    travel_context: string | null;
     location: {
         latitude: string;
         longitude: string;
@@ -189,8 +171,6 @@ export default function ChatIndex({
     const messageRef = useRef<HTMLTextAreaElement>(null);
     const [agentIsLoading, setAgentIsLoading] = useState(false);
     const [speakingId, setSpeakingId] = useState<number | null>(null);
-    const [routeId, setRouteId] = useState('none');
-    const [travelContext, setTravelContext] = useState('none');
     const [submissionErrors, setSubmissionErrors] = useState<
         Record<string, string>
     >({});
@@ -316,9 +296,6 @@ export default function ChatIndex({
                 const submission: ChatSubmission = {
                     message: value,
                     conversation_id: activeConversation?.id ?? null,
-                    route_id: routeId === 'none' ? null : Number(routeId),
-                    travel_context:
-                        travelContext === 'none' ? null : travelContext,
                     location:
                         location.status === 'ready'
                             ? {
@@ -352,7 +329,7 @@ export default function ChatIndex({
                     onFinish: () => setAgentIsLoading(false),
                 });
             }),
-        [activeConversation?.id, location, routeId, travelContext],
+        [activeConversation?.id, location],
     );
 
     const useSuggestion = useCallback(
@@ -365,7 +342,7 @@ export default function ChatIndex({
             <Head title="Asistente" />
 
             <section className="flex h-full min-h-0 w-full flex-col bg-background">
-                <header className="sticky top-0 z-20 shrink-0 border-b bg-background/95 px-4 py-2 backdrop-blur supports-[backdrop-filter]:bg-background/80 sm:px-6">
+                <header className="z-20 shrink-0 border-b bg-background/95 px-4 py-2 backdrop-blur supports-[backdrop-filter]:bg-background/80 sm:px-6">
                     <div className="mx-auto flex w-full max-w-3xl items-center gap-2">
                         <Button
                             variant="ghost"
@@ -492,17 +469,13 @@ export default function ChatIndex({
                     </Conversation>
                 </div>
 
-                <div className="sticky bottom-0 z-20 shrink-0 border-t bg-background/95 px-4 pt-3 backdrop-blur supports-[backdrop-filter]:bg-background/80 sm:px-6">
+                <div className="z-20 shrink-0 border-t bg-background/95 px-4 pt-3 backdrop-blur supports-[backdrop-filter]:bg-background/80 sm:px-6">
                     <div className="mx-auto flex w-full max-w-3xl flex-col gap-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
-                        <div className="flex items-center justify-between gap-2">
-                            <p className="text-xs text-muted-foreground">
-                                {location.status === 'ready'
-                                    ? 'Ubicación activa para recomendaciones cercanas.'
-                                    : networkState === 'checking'
-                                      ? 'Comprobando conexión…'
-                                      : 'Recomendaciones basadas en información pública.'}
-                            </p>
-                        </div>
+                        <LocationNudge
+                            location={location}
+                            networkState={networkState}
+                            onRequestLocation={requestLocation}
+                        />
                         {location.status === 'error' && (
                             <p className="text-xs text-warning">
                                 {location.message}
@@ -529,17 +502,6 @@ export default function ChatIndex({
                                 }
                             />
                             <PromptInputFooter>
-                                <PromptInputTools>
-                                    <ContextControls
-                                        location={location}
-                                        onRequestLocation={requestLocation}
-                                        routeId={routeId}
-                                        routes={routes}
-                                        setRouteId={setRouteId}
-                                        setTravelContext={setTravelContext}
-                                        travelContext={travelContext}
-                                    />
-                                </PromptInputTools>
                                 <PromptInputSubmit
                                     disabled={!canSend || agentIsLoading}
                                     status={
@@ -600,113 +562,45 @@ function starterSuggestionsFor(routes: RouteContextOption[]): string[] {
     ];
 }
 
-function ContextControls({
+function LocationNudge({
     location,
+    networkState,
     onRequestLocation,
-    routeId,
-    routes,
-    setRouteId,
-    setTravelContext,
-    travelContext,
 }: {
     location: ChatLocationState;
+    networkState: NetworkState;
     onRequestLocation: () => void;
-    routeId: string;
-    routes: RouteContextOption[];
-    setRouteId: (value: string) => void;
-    setTravelContext: (value: string) => void;
-    travelContext: string;
 }) {
     return (
-        <Popover>
-            <PopoverTrigger asChild>
-                <PromptInputButton
-                    type="button"
-                    tooltip="Personalizar la recomendación"
-                >
-                    <Compass className="size-4" />
-                    Personalizar
-                </PromptInputButton>
-            </PopoverTrigger>
-            <PopoverContent align="end" className="grid w-80 gap-4">
-                <div className="grid gap-1">
-                    <p className="text-sm font-bold">
-                        Personaliza la respuesta
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                        Estos datos son opcionales y mejoran la recomendación.
-                    </p>
-                </div>
-                <div className="grid gap-2">
-                    <Label htmlFor="chat-route">Ruta</Label>
-                    <Select value={routeId} onValueChange={setRouteId}>
-                        <SelectTrigger id="chat-route">
-                            <SelectValue placeholder="Sin ruta específica" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectGroup>
-                                <SelectItem value="none">
-                                    Sin ruta específica
-                                </SelectItem>
-                                {routes.map((route) => (
-                                    <SelectItem
-                                        key={route.id}
-                                        value={String(route.id)}
-                                    >
-                                        {route.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectGroup>
-                        </SelectContent>
-                    </Select>
-                </div>
-                <div className="grid gap-2">
-                    <Label htmlFor="chat-travel-context">Tipo de visita</Label>
-                    <Select
-                        value={travelContext}
-                        onValueChange={setTravelContext}
-                    >
-                        <SelectTrigger id="chat-travel-context">
-                            <SelectValue placeholder="Plan de viaje" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectGroup>
-                                <SelectItem value="none">
-                                    Sin preferencia
-                                </SelectItem>
-                                <SelectItem value="local_cyclist">
-                                    Salida local
-                                </SelectItem>
-                                <SelectItem value="day_visitor">
-                                    Visita por el día
-                                </SelectItem>
-                                <SelectItem value="overnight_tourist">
-                                    Me quedaré a dormir
-                                </SelectItem>
-                            </SelectGroup>
-                        </SelectContent>
-                    </Select>
-                </div>
-                <Button
-                    type="button"
-                    variant="outline"
-                    onClick={onRequestLocation}
-                    disabled={location.status === 'loading'}
-                >
-                    {location.status === 'loading' ? (
-                        <LoaderCircle
-                            data-icon="inline-start"
-                            className="animate-spin"
-                        />
-                    ) : (
-                        <MapPin data-icon="inline-start" />
-                    )}
-                    {location.status === 'ready'
-                        ? 'Actualizar ubicación'
-                        : 'Usar mi ubicación'}
-                </Button>
-            </PopoverContent>
-        </Popover>
+        <div className="flex items-center justify-between gap-3">
+            <p className="text-xs text-muted-foreground">
+                {location.status === 'ready'
+                    ? 'Ubicación activa para recomendaciones cercanas.'
+                    : networkState === 'checking'
+                      ? 'Comprobando conexión…'
+                      : 'Activa tu ubicación para que tu guía te dé recomendaciones más útiles.'}
+            </p>
+            <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="shrink-0"
+                onClick={onRequestLocation}
+                disabled={location.status === 'loading'}
+            >
+                {location.status === 'loading' ? (
+                    <LoaderCircle
+                        data-icon="inline-start"
+                        className="animate-spin"
+                    />
+                ) : (
+                    <MapPin data-icon="inline-start" />
+                )}
+                {location.status === 'ready'
+                    ? 'Actualizar'
+                    : 'Activar ubicación'}
+            </Button>
+        </div>
     );
 }
 
@@ -727,11 +621,7 @@ function ChatOverflowMenu({
         const title =
             activeConversation.title ?? `Consulta ${activeConversation.id}`;
 
-        if (
-            !window.confirm(
-                `¿Ocultar "${title}" de tu historial? Se conservará un registro interno por seguridad.`,
-            )
-        ) {
+        if (!window.confirm(`¿Borrar "${title}" de tu historial?`)) {
             return;
         }
 
@@ -813,8 +703,7 @@ function HistorySheet({
                 <SheetHeader className="border-b p-4 pr-10">
                     <SheetTitle>Historial</SheetTitle>
                     <SheetDescription>
-                        Continúa una consulta anterior, oculta una conversación
-                        o empieza una nueva.
+                        Continúa una consulta anterior o empieza una nueva.
                     </SheetDescription>
                 </SheetHeader>
 
@@ -929,7 +818,7 @@ function MessageBubble({
                 )}
                 <div
                     className={cn(
-                        'flex min-w-0 flex-col gap-2',
+                        'flex min-w-0 flex-col gap-1',
                         isUser && 'items-end',
                     )}
                 >
@@ -963,7 +852,7 @@ function MessageBubble({
                             </SourcesContent>
                         </Sources>
                     )}
-                    <MessageActions className="px-1">
+                    <MessageActions className="-mt-1 px-1">
                         {message.sent_at && (
                             <span className="text-[0.625rem] leading-none font-black tracking-wide text-muted-foreground">
                                 {new Date(message.sent_at).toLocaleTimeString(
@@ -1077,8 +966,15 @@ function assistantSuggestedActions(
                       typeof suggestion === 'string' &&
                       suggestion.trim() !== '',
               )
+              .filter((suggestion) => !isGenericProfileQuestion(suggestion))
               .slice(0, 3)
         : [];
+}
+
+function isGenericProfileQuestion(suggestion: string): boolean {
+    return /(?:de paso|durante el d[ií]a|solo(?:\s+por)?\s+el d[ií]a|quedar(?:te|ás)\s+a\s+dormir|eres\s+(?:visitante|turista))/iu.test(
+        suggestion,
+    );
 }
 
 function assistantResources(

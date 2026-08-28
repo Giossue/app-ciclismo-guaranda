@@ -214,6 +214,10 @@ Después de esa prueba manual, marcar Fase 12 y Fase 14 como `Completado` si tod
   área desplazable; su encabezado “Volver” y el input permanecen fijos.
 - Las acciones secundarias del chat se concentran en un menú de tres puntos;
   borrar se limita a la conversación activa y pide confirmación.
+- Borrar una conversación vuelve al historial sin toast para el ciclista. La
+  guía ya no presenta “Personalizar”: invita a activar ubicación opcional junto
+  al compositor y descarta chips genéricos que pregunten repetidamente por el
+  tipo de visita o pernocta.
 - OpenAI puede proponer hasta tres referencias internas de ruta/POI; Laravel
   las rehidrata desde la BD viva, descarta recursos inactivos o inexistentes y
   solo entonces persiste y muestra las tarjetas. Las rutas usan navegación

@@ -187,7 +187,6 @@ class ChatController extends Controller
         abort_unless($conversation->user_id === $request->user()?->id, 403);
 
         $conversation->delete();
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Conversación local ocultada.')]);
 
         return to_route('chat.index');
     }
