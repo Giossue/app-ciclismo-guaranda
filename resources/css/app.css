@@ -257,6 +257,25 @@
         @apply border-border;
     }
 
+    html {
+        /*
+         * El hueco de la barra de scroll se reserva siempre, así la página no
+         * cambia de ancho cuando un overlay bloquea el scroll.
+         */
+        scrollbar-gutter: stable;
+    }
+
+    /*
+     * react-remove-scroll (Radix) añade `margin-right` al body para compensar
+     * la barra que retira al abrir un Select, Dialog o Sheet. Con el hueco ya
+     * reservado esa compensación no corresponde y desplaza la página hacia la
+     * izquierda, así que la anulamos. La regla vive en @layer base a propósito:
+     * un `!important` en capa gana al `!important` sin capa que inyecta Radix.
+     */
+    body[data-scroll-locked] {
+        margin-right: 0 !important;
+    }
+
     html,
     body {
         margin: 0;
