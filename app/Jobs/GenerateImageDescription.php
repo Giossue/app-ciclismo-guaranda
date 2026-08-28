@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\PoiImage;
 use App\Models\RouteImage;
+use App\Services\Ai\KnowledgeProjectionDispatcher;
 use App\Services\Ai\OpenAiImageDescriber;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -31,7 +32,7 @@ class GenerateImageDescription implements ShouldQueue
         }
     }
 
-    public function handle(OpenAiImageDescriber $describer): void
+    public function handle(OpenAiImageDescriber $describer, KnowledgeProjectionDispatcher $knowledgeProjection): void
     {
         if (! $describer->configured()) {
             return;
@@ -47,10 +48,14 @@ class GenerateImageDescription implements ShouldQueue
 
         $description = $describer->describe((string) $image->image_path);
 
-        $image->newQuery()
+        $updated = $image->newQuery()
             ->whereKey($image->id)
             ->whereNull('description')
             ->update(['description' => $description]);
+
+        if ($updated === 1) {
+            $knowledgeProjection->afterCommit();
+        }
     }
 
     public function failed(?Throwable $exception): void

@@ -1,7 +1,7 @@
 # Fase 17 — Agente nativo Laravel/OpenAI
 
-Estado: En progreso — Etapas 1 y 2 implementadas localmente; Etapa 3 bloqueada
-por la infraestructura PostgreSQL.
+Estado: En progreso — Etapas 1, 2 y la base de Etapa 3 implementadas; falta
+desplegar y ejecutar la primera sincronización en producción.
 
 ## Decisión y objetivo
 
@@ -29,7 +29,7 @@ Vercel AI Gateway ni un proveedor de modelos.
   propuesta. El administrador la revisa/edita. No se envían automáticamente
   fotos de incidencias de ciclistas por privacidad.
 
-## Etapa 0 — Estabilización e infraestructura (bloqueada)
+## Etapa 0 — Estabilización e infraestructura
 
 - Mantener `database-centraldb` en su imagen actual hasta inventariar sus bases
   y programar mantenimiento; no habilitar pgvector directamente hoy.
@@ -41,6 +41,13 @@ Vercel AI Gateway ni un proveedor de modelos.
 
 **Criterio de salida:** extensión `vector` disponible en la base elegida,
 respaldo verificable, health check y rollback documentados.
+
+**Avance 2026-08-28:** la imagen central fue reemplazada de forma controlada
+por una imagen PostgreSQL 18 compatible con PostGIS 3.6.4 y pgvector 0.8.6,
+conservando los volúmenes existentes. `PostGIS_Full_Version()` y
+`ai:vector-preflight` confirmaron ambos runtimes. La extensión `vector` quedó
+instalada explícitamente en `guaranda_go_db`; la migración de aplicación aún no
+se ha desplegado ni se han generado embeddings.
 
 ### Preflight sin mutaciones
 
@@ -150,6 +157,16 @@ almacenada como texto alternativo; el modelo no aporta imágenes ni URLs.
   y no duplica embeddings.
 - En cada respuesta: buscar candidatos semánticos, hidratar de nuevo modelos
   vivos y filtrar autorización/estado antes de construir contexto.
+
+**Avance 2026-08-28:** la migración pendiente crea
+`documentos_conocimiento_ia` con claves deterministas, metadatos, checksum,
+`halfvec(3072)` e HNSW de coseno solo en PostgreSQL. La suite SQLite conserva
+una columna compatible de prueba. `ai:knowledge:sync` encola la proyección y
+`--now` la procesa de forma explícita; solo embebe cambios o modelos distintos,
+elimina fragmentos ya no públicos y no almacena datos personales. El chat usa
+el índice solo para candidatos y vuelve a hidratar rutas, POIs y alertas vivas
+antes de enviarlas a OpenAI. Rutas, POIs, alertas revisadas, catálogos e
+imágenes editoriales solicitan una resincronización tras confirmar cambios.
 
 **Aceptación:** una reindexación completa y reindexación por cambio son
 reintentables; no hay respuestas que dependan exclusivamente de documentos

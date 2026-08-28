@@ -112,7 +112,6 @@ class MapController extends Controller
                 'id',
                 'route_id',
                 'incident_type_id',
-                'title',
                 'latitude',
                 'longitude',
             ])
@@ -158,7 +157,6 @@ class MapController extends Controller
             'incidents' => $route->incidents
                 ->map(fn ($incident): array => [
                     'id' => $incident->id,
-                    'title' => $incident->title,
                     'latitude' => (float) $incident->latitude,
                     'longitude' => (float) $incident->longitude,
                     'type' => $incident->type === null ? null : ['id' => $incident->type->id, 'name' => $incident->type->name],

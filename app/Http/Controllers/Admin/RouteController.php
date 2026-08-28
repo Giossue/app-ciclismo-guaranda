@@ -16,6 +16,7 @@ use App\Models\RouteStatus;
 use App\Models\RoutingEngine;
 use App\Models\TransportMode;
 use App\Services\Ai\AssistantConfiguration;
+use App\Services\Ai\KnowledgeProjectionDispatcher;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Http\FormRequest;
@@ -31,7 +32,10 @@ use Inertia\Response;
 
 class RouteController extends Controller
 {
-    public function __construct(private readonly AssistantConfiguration $assistantConfiguration) {}
+    public function __construct(
+        private readonly AssistantConfiguration $assistantConfiguration,
+        private readonly KnowledgeProjectionDispatcher $knowledgeProjection,
+    ) {}
 
     public function index(Request $request): Response
     {
@@ -156,6 +160,7 @@ class RouteController extends Controller
 
             $this->syncRoutePayload($route, $payload, $postgisAvailable);
         });
+        $this->knowledgeProjection->afterCommit();
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Ruta creada.')]);
 
@@ -182,6 +187,7 @@ class RouteController extends Controller
 
             $this->syncRoutePayload($route, $payload, $postgisAvailable);
         });
+        $this->knowledgeProjection->afterCommit();
 
         Inertia::flash('toast', ['type' => 'info', 'message' => __('Ruta actualizada.')]);
 
@@ -198,6 +204,7 @@ class RouteController extends Controller
             'route_status_id' => $inactiveStatus->id,
             'route_version' => $route->route_version + 1,
         ])->save();
+        $this->knowledgeProjection->afterCommit();
 
         Inertia::flash('toast', ['type' => 'error', 'message' => __('Ruta deshabilitada.')]);
 

@@ -26,7 +26,6 @@ class IncidentController extends Controller
                 'route_id' => $payload['route_id'],
                 'incident_type_id' => $payload['incident_type_id'],
                 'incident_status_id' => $reportedStatus->id,
-                'title' => $payload['title'],
                 'description' => $payload['description'],
                 'latitude' => $payload['latitude'],
                 'longitude' => $payload['longitude'],
@@ -69,6 +68,8 @@ class IncidentController extends Controller
 
     private function notifyAdministrators(Incident $incident): void
     {
+        $incident->loadMissing('type:id,name');
+
         User::query()
             ->whereHas('role', fn ($query) => $query->where('name', 'Administrador'))
             ->where('active', true)
@@ -77,7 +78,7 @@ class IncidentController extends Controller
                 'user_id' => $admin->id,
                 'type' => 'incident_reported',
                 'title' => 'Nueva incidencia reportada',
-                'message' => "Se reportó la incidencia {$incident->title} y requiere revisión administrativa.",
+                'message' => 'Se reportó una incidencia de tipo '.($incident->type?->name ?? 'sin clasificar').' y requiere revisión administrativa.',
                 'link' => '/admin/incidents',
             ]));
     }

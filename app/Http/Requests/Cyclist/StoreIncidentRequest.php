@@ -25,7 +25,6 @@ class StoreIncidentRequest extends FormRequest
         return [
             'route_id' => ['required', 'integer', Rule::exists(CyclingRoute::class, 'id')],
             'incident_type_id' => ['required', 'integer', Rule::exists(IncidentType::class, 'id')],
-            'title' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string', 'max:10000'],
             'latitude' => ['required', 'numeric', 'between:-90,90'],
             'longitude' => ['required', 'numeric', 'between:-180,180'],

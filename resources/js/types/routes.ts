@@ -53,7 +53,6 @@ export type RouteIncidentFile = {
 
 export type RouteIncident = {
     id: number;
-    title: string;
     description: string;
     latitude: number;
     longitude: number;
@@ -157,10 +156,7 @@ export type MapRouteItem = {
             >
     >;
     incidents: Array<
-        Pick<
-            RouteIncident,
-            'id' | 'title' | 'latitude' | 'longitude' | 'type'
-        > &
+        Pick<RouteIncident, 'id' | 'latitude' | 'longitude' | 'type'> &
             Partial<Pick<RouteIncident, 'description'>>
     >;
     is_favorite: boolean;

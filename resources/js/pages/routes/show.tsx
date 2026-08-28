@@ -1,9 +1,7 @@
-import { Form, Head, Link, router } from '@inertiajs/react';
+import { Form, Head, router } from '@inertiajs/react';
 import {
     AlertTriangle,
-    ArrowLeft,
     Bike,
-    ChevronDown,
     Clock,
     Database,
     Download,
@@ -21,7 +19,7 @@ import {
     X,
 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { FormEvent, ReactNode } from 'react';
+import type { FormEvent } from 'react';
 import FavoriteRouteController from '@/actions/App/Http/Controllers/Cyclist/FavoriteRouteController';
 import IncidentController from '@/actions/App/Http/Controllers/Cyclist/IncidentController';
 import OfflineRouteController from '@/actions/App/Http/Controllers/Cyclist/OfflineRouteController';
@@ -45,11 +43,6 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import {
-    Collapsible,
-    CollapsibleContent,
-    CollapsibleTrigger,
-} from '@/components/ui/collapsible';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -61,6 +54,15 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
+import {
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetFooter,
+    SheetHeader,
+    SheetTitle,
+} from '@/components/ui/sheet';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { mediaUrl } from '@/lib/media';
 import { getNetworkStatus, watchNetworkStatus } from '@/lib/native/capacitor';
@@ -105,14 +107,15 @@ export default function RoutesShow({
         <>
             <Head title={route.name} />
 
-            <div className="-mx-[var(--page-pad-x)] -mt-[var(--page-pad-y)] flex flex-col">
+            <div className="relative -mx-[var(--page-pad-x)] -mt-[var(--page-pad-y)] h-[100dvh] overflow-hidden">
                 <RouteMap
                     routes={[route]}
                     selectedSlug={route.slug}
                     mode="detail"
                     activeTrack={activeTrack}
                     onPoiSelect={setSelectedPoi}
-                    className="rounded-none border-x-0 [&_.leaflet-container]:h-[calc(100svh-10rem)] [&_.leaflet-container]:min-h-[36rem] md:[&_.leaflet-container]:h-[calc(100svh-3rem)]"
+                    immersive
+                    className="h-full"
                 />
                 <RouteExplorerSheet
                     route={route}
@@ -122,6 +125,7 @@ export default function RoutesShow({
                     selectedPoi={selectedPoi}
                     onClearSelectedPoi={() => setSelectedPoi(null)}
                 />
+                <RouteIncidentFab route={route} types={incidentTypes} />
             </div>
         </>
     );
@@ -138,74 +142,70 @@ function RouteExplorerSheet({
     selectedPoi: RoutePoi | null;
     onClearSelectedPoi: () => void;
 }) {
+    const [activeTab, setActiveTab] = useState('summary');
+
     return (
-        <section className="relative z-10 -mt-72 flex flex-col gap-5 rounded-t-[var(--radius-emphasis)] border-t bg-background px-4 pt-3 pb-[calc(var(--bottom-nav-height)+var(--safe-bottom)+1.5rem)] shadow-[0_-16px_40px_color-mix(in_oklch,var(--foreground)_18%,transparent)] md:mx-auto md:-mt-[32rem] md:mr-6 md:w-[min(34rem,42vw)] md:rounded-[var(--radius-emphasis)] md:border">
+        <section className="absolute inset-x-0 bottom-0 z-[510] flex max-h-[min(62dvh,42rem)] flex-col rounded-t-[var(--radius-emphasis)] border-t bg-background/98 shadow-[0_-16px_40px_color-mix(in_oklch,var(--foreground)_18%,transparent)] backdrop-blur md:right-6 md:bottom-6 md:left-auto md:w-[min(34rem,42vw)] md:rounded-[var(--radius-emphasis)] md:border">
             <div
                 aria-hidden="true"
-                className="mx-auto h-1.5 w-12 rounded-full bg-muted-foreground/35"
+                className="mx-auto mt-3 h-1.5 w-12 shrink-0 rounded-full bg-muted-foreground/35"
             />
-            <RouteSummary route={route} />
-
-            {selectedPoi && (
-                <SelectedPoiSummary
-                    poi={selectedPoi}
-                    onClose={onClearSelectedPoi}
-                />
-            )}
-
-            {route.incidents.length > 0 && (
-                <Alert variant="destructive">
-                    <AlertTriangle />
-                    <AlertTitle>Revisa las alertas</AlertTitle>
-                    <AlertDescription>
-                        Hay reportes visibles en esta ruta.
-                    </AlertDescription>
-                </Alert>
-            )}
-
-            <TrackPanel route={route} activeTrack={activeTrack} />
-
-            <div className="flex flex-col divide-y border-y">
-                <RouteSection title="Detalles de la ruta" defaultOpen>
-                    <RouteDetailPanel route={route} />
-                </RouteSection>
-                <RouteSection
-                    key={selectedPoi?.id ?? 'points-of-interest'}
-                    title="Puntos útiles"
-                    count={route.points_of_interest.length}
-                    defaultOpen={selectedPoi !== null}
+            <div className="min-h-0 overflow-y-auto px-4 pt-3 pb-[calc(var(--bottom-nav-height)+var(--safe-bottom)+1.5rem)] md:pb-5">
+                <RouteSummary route={route} />
+                {selectedPoi && (
+                    <SelectedPoiSummary
+                        poi={selectedPoi}
+                        onClose={onClearSelectedPoi}
+                    />
+                )}
+                <Tabs
+                    value={activeTab}
+                    onValueChange={setActiveTab}
+                    className="mt-4 gap-4"
                 >
-                    <div className="flex flex-col gap-3">
+                    <TabsList
+                        variant="line"
+                        className="w-full justify-between overflow-x-auto"
+                    >
+                        <TabsTrigger value="summary">Resumen</TabsTrigger>
+                        <TabsTrigger value="places">Paradas</TabsTrigger>
+                        <TabsTrigger value="alerts">
+                            Alertas
+                            {route.incidents.length > 0
+                                ? ` (${route.incidents.length})`
+                                : ''}
+                        </TabsTrigger>
+                        <TabsTrigger value="more">Más</TabsTrigger>
+                    </TabsList>
+                    <TabsContent
+                        value="summary"
+                        className="flex flex-col gap-4"
+                    >
+                        <RouteDetailPanel route={route} />
+                        <TrackPanel route={route} activeTrack={activeTrack} />
+                    </TabsContent>
+                    <TabsContent value="places" className="flex flex-col gap-4">
                         <PoisPanel route={route} />
                         <PoiSuggestionForm
                             route={route}
                             categories={poiCategories}
                         />
-                    </div>
-                </RouteSection>
-                <RouteSection
-                    title="Alertas y reportes"
-                    count={route.incidents.length || undefined}
-                >
-                    <div className="flex flex-col gap-3">
-                        <IncidentReportForm
-                            route={route}
-                            types={incidentTypes}
-                        />
-                        {route.incidents.length > 0 && (
+                    </TabsContent>
+                    <TabsContent value="alerts" className="flex flex-col gap-4">
+                        {route.incidents.length > 0 ? (
                             <IncidentsPanel route={route} />
+                        ) : (
+                            <EmptyAlerts />
                         )}
-                    </div>
-                </RouteSection>
-                <RouteSection
-                    title="Favoritos y opiniones"
-                    count={route.approved_ratings.length || undefined}
-                >
-                    <FavoriteRatingPanel route={route} />
-                </RouteSection>
-                <RouteSection title="Disponible sin conexión">
-                    <OfflinePanel route={route} incidentTypes={incidentTypes} />
-                </RouteSection>
+                    </TabsContent>
+                    <TabsContent value="more" className="flex flex-col gap-4">
+                        <FavoriteRatingPanel route={route} />
+                        <OfflinePanel
+                            route={route}
+                            incidentTypes={incidentTypes}
+                        />
+                    </TabsContent>
+                </Tabs>
             </div>
         </section>
     );
@@ -257,21 +257,6 @@ function RouteSummary({ route }: { route: CyclingRouteMapItem }) {
                         {route.start_name} → {route.end_name}
                     </p>
                 </div>
-                <div className="flex flex-wrap justify-end gap-1.5">
-                    <Button asChild variant="ghost" size="icon">
-                        <Link
-                            href={routesIndex.url()}
-                            prefetch
-                            aria-label="Volver al mapa de rutas"
-                        >
-                            <ArrowLeft />
-                        </Link>
-                    </Button>
-                    {route.category && <Badge>{route.category.name}</Badge>}
-                    {route.difficulty && (
-                        <Badge variant="outline">{route.difficulty.name}</Badge>
-                    )}
-                </div>
             </div>
 
             <div className="flex flex-wrap gap-4 text-sm">
@@ -291,42 +276,12 @@ function RouteSummary({ route }: { route: CyclingRouteMapItem }) {
                             : 'Tiempo sin dato'}
                     </span>
                 </div>
+                {route.category && <Badge>{route.category.name}</Badge>}
+                {route.difficulty && (
+                    <Badge variant="outline">{route.difficulty.name}</Badge>
+                )}
             </div>
         </div>
-    );
-}
-
-function RouteSection({
-    children,
-    count,
-    defaultOpen = false,
-    title,
-}: {
-    children: ReactNode;
-    count?: number;
-    defaultOpen?: boolean;
-    title: string;
-}) {
-    return (
-        <Collapsible defaultOpen={defaultOpen}>
-            <CollapsibleTrigger asChild>
-                <button
-                    type="button"
-                    className="group flex min-h-12 w-full touch-manipulation items-center justify-between gap-3 px-4 py-3 text-left font-medium"
-                >
-                    <span className="flex items-center gap-2">
-                        {title}
-                        {count !== undefined && (
-                            <Badge variant="outline">{count}</Badge>
-                        )}
-                    </span>
-                    <ChevronDown className="size-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
-                </button>
-            </CollapsibleTrigger>
-            <CollapsibleContent className="overflow-hidden px-3 pb-3 data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down">
-                {children}
-            </CollapsibleContent>
-        </Collapsible>
     );
 }
 
@@ -421,13 +376,27 @@ function IncidentsPanel({ route }: { route: CyclingRouteMapItem }) {
                                 <Badge>{incident.type.name}</Badge>
                             )}
                         </div>
-                        <strong>{incident.title}</strong>
                         <p className="text-sm text-muted-foreground">
                             {incident.description}
                         </p>
                     </div>
                 ))}
             </CardContent>
+        </Card>
+    );
+}
+
+function EmptyAlerts() {
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>Sin alertas visibles</CardTitle>
+                <CardDescription>
+                    Puedes reportar un problema desde el botón flotante del
+                    mapa. El equipo administrativo lo revisará antes de
+                    publicarlo.
+                </CardDescription>
+            </CardHeader>
         </Card>
     );
 }
@@ -1228,7 +1197,6 @@ function OfflinePanel({
             await enqueueOfflineEvent('offline_incident_reported', {
                 route_id: route.id,
                 incident_type_id: Number(data.get('incident_type_id')),
-                title: String(data.get('title') ?? ''),
                 description: String(data.get('description') ?? ''),
                 latitude: Number(data.get('latitude')),
                 longitude: Number(data.get('longitude')),
@@ -1395,8 +1363,9 @@ function OfflinePanel({
                             </h3>
                             <p className="mt-1">
                                 Tienes conexión. Para reportar una incidencia
-                                usa el tab Reportar. Este formulario aparecerá
-                                cuando el dispositivo esté sin internet.
+                                usa el botón flotante de alerta. Este formulario
+                                aparecerá cuando el dispositivo esté sin
+                                internet.
                             </p>
                         </div>
                     ) : (
@@ -1437,11 +1406,6 @@ function OfflinePanel({
                                     </SelectContent>
                                 </Select>
                             </div>
-                            <Input
-                                name="title"
-                                required
-                                placeholder="Título de la incidencia"
-                            />
                             <Textarea
                                 name="description"
                                 required
@@ -1842,12 +1806,48 @@ function poiSuggestionPlaceholder(category: string): string {
     return 'Referencia, servicio, por qué es útil para la ruta';
 }
 
-function IncidentReportForm({
+function RouteIncidentFab({
     route,
     types,
 }: {
     route: CyclingRouteMapItem;
     types: CatalogOption[];
+}) {
+    const [open, setOpen] = useState(false);
+
+    return (
+        <>
+            <Button
+                type="button"
+                variant="destructive"
+                size="icon"
+                onClick={() => setOpen(true)}
+                className="fixed right-[var(--page-pad-x)] bottom-[calc(var(--bottom-nav-height)+var(--safe-bottom)+1rem)] z-[60] size-14 min-h-14 rounded-full shadow-[var(--elevation-floating)] md:right-8 md:bottom-8"
+                aria-label="Reportar una alerta"
+                title="Reportar una alerta"
+            >
+                <AlertTriangle className="size-6" />
+            </Button>
+            <IncidentReportSheet
+                route={route}
+                types={types}
+                open={open}
+                onOpenChange={setOpen}
+            />
+        </>
+    );
+}
+
+function IncidentReportSheet({
+    route,
+    types,
+    open,
+    onOpenChange,
+}: {
+    route: CyclingRouteMapItem;
+    types: CatalogOption[];
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
 }) {
     const [incidentPoint, setIncidentPoint] = useState({
         latitude: route.start_latitude,
@@ -1869,149 +1869,160 @@ function IncidentReportForm({
     };
 
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle>Reportar alerta</CardTitle>
-                <CardDescription>
-                    Envía obstáculos, derrumbes, inseguridad u otros problemas
-                    de esta ruta.
-                </CardDescription>
-            </CardHeader>
-            <CardContent>
+        <Sheet open={open} onOpenChange={onOpenChange}>
+            <SheetContent>
                 <Form
                     {...IncidentController.store.form()}
                     options={{ preserveScroll: true }}
+                    onSuccess={() => onOpenChange(false)}
                     encType="multipart/form-data"
-                    className="grid gap-4 md:grid-cols-2"
+                    className="flex min-h-0 flex-1 flex-col"
                 >
                     {({ processing, errors }) => (
                         <>
-                            <input
-                                type="hidden"
-                                name="route_id"
-                                value={route.id}
-                            />
-                            <input
-                                type="hidden"
-                                name="latitude"
-                                value={incidentPoint.latitude}
-                            />
-                            <input
-                                type="hidden"
-                                name="longitude"
-                                value={incidentPoint.longitude}
-                            />
-                            <div className="grid gap-2">
-                                <Label htmlFor="incident_type_id">
-                                    Tipo de incidencia
-                                </Label>
-                                <Select name="incident_type_id" required>
-                                    <SelectTrigger
-                                        id="incident_type_id"
-                                        className="w-full"
-                                        aria-invalid={Boolean(
-                                            errors.incident_type_id,
-                                        )}
-                                    >
-                                        <SelectValue placeholder="Selecciona tipo" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectGroup>
-                                            {types.map((type) => (
-                                                <SelectItem
-                                                    key={type.id}
-                                                    value={String(type.id)}
-                                                >
-                                                    {type.name}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectGroup>
-                                    </SelectContent>
-                                </Select>
-                                <InputError message={errors.incident_type_id} />
-                            </div>
-
-                            <div className="grid gap-2">
-                                <Label htmlFor="incident_title">Título</Label>
-                                <Input
-                                    id="incident_title"
-                                    name="title"
-                                    required
-                                    placeholder="Ej. Derrumbe pequeño"
-                                    aria-invalid={Boolean(errors.title)}
+                            <SheetHeader>
+                                <SheetTitle>Reportar alerta</SheetTitle>
+                                <SheetDescription>
+                                    Indica el tipo, describe el riesgo y marca
+                                    el punto exacto de la ruta.
+                                </SheetDescription>
+                            </SheetHeader>
+                            <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-5">
+                                <input
+                                    type="hidden"
+                                    name="route_id"
+                                    value={route.id}
                                 />
-                                <InputError message={errors.title} />
-                            </div>
-
-                            <div className="grid gap-2 md:col-span-2">
-                                <Label htmlFor="incident_description">
-                                    Descripción
-                                </Label>
-                                <Textarea
-                                    id="incident_description"
-                                    name="description"
-                                    required
-                                    placeholder="Describe el punto, riesgo y referencia para ubicarlo"
-                                    aria-invalid={Boolean(errors.description)}
+                                <input
+                                    type="hidden"
+                                    name="latitude"
+                                    value={incidentPoint.latitude}
                                 />
-                                <InputError message={errors.description} />
-                            </div>
-
-                            <div className="grid gap-2 md:col-span-2">
-                                <Label>Ubicación de la incidencia</Label>
-                                <div className="overflow-hidden rounded-2xl border border-primary/10">
-                                    <LocationPickerMap
-                                        center={incidentPoint}
-                                        selectedPoint={incidentPoint}
-                                        onSelect={setIncidentPoint}
-                                        className="h-64 w-full"
-                                    />
+                                <input
+                                    type="hidden"
+                                    name="longitude"
+                                    value={incidentPoint.longitude}
+                                />
+                                <div className="flex flex-col gap-5">
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="incident_type_id">
+                                            Tipo de incidencia
+                                        </Label>
+                                        <Select
+                                            name="incident_type_id"
+                                            required
+                                        >
+                                            <SelectTrigger
+                                                id="incident_type_id"
+                                                className="w-full"
+                                                aria-invalid={Boolean(
+                                                    errors.incident_type_id,
+                                                )}
+                                            >
+                                                <SelectValue placeholder="Selecciona tipo" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectGroup>
+                                                    {types.map((type) => (
+                                                        <SelectItem
+                                                            key={type.id}
+                                                            value={String(
+                                                                type.id,
+                                                            )}
+                                                        >
+                                                            {type.name}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectGroup>
+                                            </SelectContent>
+                                        </Select>
+                                        <InputError
+                                            message={errors.incident_type_id}
+                                        />
+                                    </div>
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="incident_description">
+                                            Descripción
+                                        </Label>
+                                        <Textarea
+                                            id="incident_description"
+                                            name="description"
+                                            required
+                                            placeholder="Describe el punto, riesgo y referencia para ubicarlo"
+                                            aria-invalid={Boolean(
+                                                errors.description,
+                                            )}
+                                        />
+                                        <InputError
+                                            message={errors.description}
+                                        />
+                                    </div>
+                                    <div className="grid gap-2">
+                                        <Label>
+                                            Ubicación de la incidencia
+                                        </Label>
+                                        <div className="overflow-hidden rounded-2xl border border-primary/10">
+                                            <LocationPickerMap
+                                                center={incidentPoint}
+                                                selectedPoint={incidentPoint}
+                                                onSelect={setIncidentPoint}
+                                                className="h-64 w-full"
+                                            />
+                                        </div>
+                                        <div className="flex flex-wrap items-center gap-2">
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={fillCurrentLocation}
+                                            >
+                                                <LocateFixed data-icon="inline-start" />
+                                                Usar mi ubicación
+                                            </Button>
+                                            <span className="text-sm text-muted-foreground">{`${incidentPoint.latitude.toFixed(5)}, ${incidentPoint.longitude.toFixed(5)}`}</span>
+                                        </div>
+                                        <InputError message={errors.latitude} />
+                                        <InputError
+                                            message={errors.longitude}
+                                        />
+                                    </div>
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="incident_photo">
+                                            Foto opcional
+                                        </Label>
+                                        <ImageFileInput
+                                            id="incident_photo"
+                                            name="photo"
+                                            invalid={Boolean(errors.photo)}
+                                            onProcessingChange={
+                                                setIsCompressing
+                                            }
+                                        />
+                                        <p className="text-xs text-muted-foreground">
+                                            Si la foto supera 5 MB se optimiza
+                                            automáticamente antes de enviarla.
+                                        </p>
+                                        <InputError message={errors.photo} />
+                                    </div>
                                 </div>
-                                <div className="flex flex-wrap items-center gap-2">
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={fillCurrentLocation}
-                                    >
-                                        <LocateFixed data-icon="inline-start" />
-                                        Usar mi ubicación
-                                    </Button>
-                                    <span className="text-sm text-muted-foreground">
-                                        {`${incidentPoint.latitude.toFixed(5)}, ${incidentPoint.longitude.toFixed(5)}`}
-                                    </span>
-                                </div>
-                                <InputError message={errors.latitude} />
-                                <InputError message={errors.longitude} />
                             </div>
-
-                            <div className="grid gap-2 md:col-span-2">
-                                <Label htmlFor="incident_photo">
-                                    Foto opcional
-                                </Label>
-                                <ImageFileInput
-                                    id="incident_photo"
-                                    name="photo"
-                                    invalid={Boolean(errors.photo)}
-                                    onProcessingChange={setIsCompressing}
-                                />
-                                <p className="text-xs text-muted-foreground">
-                                    Si la foto supera 5 MB se optimiza
-                                    automáticamente antes de enviarla.
-                                </p>
-                                <InputError message={errors.photo} />
-                            </div>
-
-                            <div className="flex flex-wrap gap-2 md:col-span-2">
-                                <Button disabled={processing || isCompressing}>
-                                    Enviar incidencia
+                            <SheetFooter>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => onOpenChange(false)}
+                                >
+                                    Cancelar
                                 </Button>
-                            </div>
+                                <Button disabled={processing || isCompressing}>
+                                    Enviar alerta
+                                </Button>
+                            </SheetFooter>
                         </>
                     )}
                 </Form>
-            </CardContent>
-        </Card>
+            </SheetContent>
+        </Sheet>
     );
 }
 

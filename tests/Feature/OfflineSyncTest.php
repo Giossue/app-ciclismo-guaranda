@@ -112,7 +112,6 @@ test('cyclist can fetch a complete offline package for an active route', functio
         'user_id' => $cyclist->id,
         'incident_type_id' => $incidentType->id,
         'incident_status_id' => $incidentStatus->id,
-        'title' => 'Rama en vía',
         'description' => 'Obstáculo visible antes del mirador.',
         'latitude' => 0.03,
         'longitude' => 0,
@@ -127,7 +126,7 @@ test('cyclist can fetch a complete offline package for an active route', functio
         ->assertJsonPath('route.geojson.type', 'LineString')
         ->assertJsonPath('route.points_of_interest.0.name', 'Mirador offline')
         ->assertJsonPath('route.points_of_interest.0.images.0.image_path', 'pois/mirador.jpg')
-        ->assertJsonPath('route.incidents.0.title', 'Rama en vía')
+        ->assertJsonPath('route.incidents.0.description', 'Obstáculo visible antes del mirador.')
         ->assertJsonPath('map.status', 'Pendiente');
 });
 
@@ -175,7 +174,6 @@ test('cyclist can sync an offline incident with a photo', function () {
                 'payload' => [
                     'route_id' => $route->id,
                     'incident_type_id' => $type->id,
-                    'title' => 'Derrumbe offline',
                     'description' => 'Reporte guardado sin conexión.',
                     'latitude' => 0.04,
                     'longitude' => 0,
@@ -189,7 +187,7 @@ test('cyclist can sync an offline incident with a photo', function () {
         ->assertJsonPath('results.0.client_id', 'offline-incident-1')
         ->assertJsonPath('results.0.status', 'Enviado');
 
-    $incident = Incident::query()->where('title', 'Derrumbe offline')->firstOrFail();
+    $incident = Incident::query()->where('description', 'Reporte guardado sin conexión.')->firstOrFail();
 
     expect($incident->status?->name)->toBe('Reportada')
         ->and($incident->files()->count())->toBe(1);

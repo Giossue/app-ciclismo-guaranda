@@ -171,7 +171,6 @@ class OfflineRouteController extends Controller
 
         return [
             'id' => $incident->id,
-            'title' => $incident->title,
             'description' => $incident->description,
             'latitude' => (float) $incident->latitude,
             'longitude' => (float) $incident->longitude,

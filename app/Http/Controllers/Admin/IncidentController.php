@@ -9,6 +9,7 @@ use App\Models\AppNotification;
 use App\Models\Incident;
 use App\Models\IncidentStatus;
 use App\Models\IncidentType;
+use App\Services\Ai\KnowledgeProjectionDispatcher;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
@@ -18,6 +19,8 @@ use Inertia\Response;
 
 class IncidentController extends Controller
 {
+    public function __construct(private readonly KnowledgeProjectionDispatcher $knowledgeProjection) {}
+
     public function index(ListIncidentsRequest $request): Response
     {
         $this->authorize('viewAny', Incident::class);
@@ -35,7 +38,6 @@ class IncidentController extends Controller
                 'route_id',
                 'incident_type_id',
                 'incident_status_id',
-                'title',
                 'description',
                 'latitude',
                 'longitude',
@@ -49,9 +51,9 @@ class IncidentController extends Controller
 
                 $query->where(function (Builder $query) use ($pattern): void {
                     $query
-                        ->whereLike('title', $pattern)
-                        ->orWhereLike('description', $pattern)
+                        ->whereLike('description', $pattern)
                         ->orWhereLike('admin_response', $pattern)
+                        ->orWhereHas('type', fn (Builder $typeQuery) => $typeQuery->whereLike('name', $pattern))
                         ->orWhereHas('user', function (Builder $userQuery) use ($pattern): void {
                             $userQuery
                                 ->whereLike('name', $pattern)
@@ -93,12 +95,13 @@ class IncidentController extends Controller
             'admin_response' => $payload['admin_response'] ?? null,
             'resolved_at' => $status->name === 'Resuelta' ? now() : null,
         ])->save();
+        $this->knowledgeProjection->afterCommit();
 
         AppNotification::query()->create([
             'user_id' => $incident->user_id,
             'type' => 'incident_reviewed',
             'title' => 'Tu incidencia fue revisada',
-            'message' => "La incidencia {$incident->title} cambió a estado {$status->name}.",
+            'message' => 'Tu incidencia de tipo '.($incident->type?->name ?? 'sin clasificar')." cambió a estado {$status->name}.",
             'link' => $incident->route === null ? null : route('routes.show', $incident->route->slug),
         ]);
 
@@ -117,7 +120,6 @@ class IncidentController extends Controller
 
         return [
             'id' => $incident->id,
-            'title' => $incident->title,
             'description' => Str::limit($incident->description, 180),
             'full_description' => $incident->description,
             'latitude' => (float) $incident->latitude,

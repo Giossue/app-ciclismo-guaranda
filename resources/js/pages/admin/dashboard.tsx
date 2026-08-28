@@ -85,7 +85,7 @@ type AttentionItem = {
 
 type RecentIncident = {
     id: number;
-    title: string;
+    type: string;
     reportedAt: string | null;
     status: string | null;
     route: { id: number; name: string } | null;
@@ -595,7 +595,7 @@ function RecentIncidentsCard({ incidents }: { incidents: RecentIncident[] }) {
                                 {incidents.map((incident) => (
                                     <TableRow key={incident.id}>
                                         <TableCell className="max-w-56 truncate font-medium">
-                                            {incident.title}
+                                            {incident.type}
                                         </TableCell>
                                         <TableCell className="hidden max-w-48 truncate text-muted-foreground md:table-cell">
                                             {incident.route?.name ?? 'Sin ruta'}

@@ -20,6 +20,7 @@ use App\Models\WorkshopDetail;
 use App\Models\WorkshopService;
 use App\Models\WorkshopSpecialty;
 use App\Services\Ai\AssistantConfiguration;
+use App\Services\Ai\KnowledgeProjectionDispatcher;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\Pivot;
@@ -34,7 +35,10 @@ use Inertia\Response;
 
 class PoiController extends Controller
 {
-    public function __construct(private readonly AssistantConfiguration $assistantConfiguration) {}
+    public function __construct(
+        private readonly AssistantConfiguration $assistantConfiguration,
+        private readonly KnowledgeProjectionDispatcher $knowledgeProjection,
+    ) {}
 
     public function index(ListPointsOfInterestRequest $request): Response
     {
@@ -124,6 +128,7 @@ class PoiController extends Controller
             $poi = PointOfInterest::query()->create($this->poiAttributes($payload));
             $this->syncPoiPayload($poi, $payload, $postgisAvailable);
         });
+        $this->knowledgeProjection->afterCommit();
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('POI creado.')]);
 
@@ -158,6 +163,7 @@ class PoiController extends Controller
 
             $this->syncPoiPayload($poi, $payload, $postgisAvailable);
         });
+        $this->knowledgeProjection->afterCommit();
 
         Inertia::flash('toast', $reactivating
             ? ['type' => 'success', 'message' => __('POI activado.')]
@@ -172,6 +178,7 @@ class PoiController extends Controller
 
         $poi->forceFill(['active' => false])->save();
         $poi->delete();
+        $this->knowledgeProjection->afterCommit();
 
         Inertia::flash('toast', ['type' => 'error', 'message' => __('POI deshabilitado.')]);
 
@@ -187,6 +194,7 @@ class PoiController extends Controller
         }
 
         $poi->forceFill(['active' => true])->save();
+        $this->knowledgeProjection->afterCommit();
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('POI activado.')]);
 

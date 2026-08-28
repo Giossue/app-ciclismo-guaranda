@@ -15,7 +15,7 @@ class KnowledgeDocumentBuilder
      * Builds the future vector projection from the public source of truth.
      * It deliberately does not persist, embed, or expose private data.
      *
-     * @return Collection<int, array{source_type: 'route'|'poi'|'incident', source_id: int, section: string, language: 'es', content: string, metadata: array<string, mixed>, checksum: string}>
+     * @return Collection<int, array{document_key: string, source_type: 'route'|'poi'|'incident', source_id: int, section: string, language: 'es', content: string, metadata: array<string, mixed>, checksum: string}>
      */
     public function all(): Collection
     {
@@ -85,7 +85,7 @@ class KnowledgeDocumentBuilder
     private function visibleIncidents(): Collection
     {
         return Incident::query()
-            ->select(['id', 'route_id', 'incident_type_id', 'title', 'description', 'reported_at'])
+            ->select(['id', 'route_id', 'incident_type_id', 'description', 'reported_at'])
             ->with(['route:id,name', 'type:id,name'])
             ->whereHas('route.status', fn ($query) => $query->where('name', 'Activa'))
             ->whereHas('status', fn ($query) => $query->where('name', 'En revisión'))
@@ -94,7 +94,7 @@ class KnowledgeDocumentBuilder
     }
 
     /**
-     * @return list<array{source_type: 'route'|'poi'|'incident', source_id: int, section: string, language: 'es', content: string, metadata: array<string, mixed>, checksum: string}>
+     * @return list<array{document_key: string, source_type: 'route'|'poi'|'incident', source_id: int, section: string, language: 'es', content: string, metadata: array<string, mixed>, checksum: string}>
      */
     private function routeDocuments(CyclingRoute $route): array
     {
@@ -146,7 +146,7 @@ class KnowledgeDocumentBuilder
     }
 
     /**
-     * @return array{source_type: 'route'|'poi'|'incident', source_id: int, section: string, language: 'es', content: string, metadata: array<string, mixed>, checksum: string}
+     * @return array{document_key: string, source_type: 'route'|'poi'|'incident', source_id: int, section: string, language: 'es', content: string, metadata: array<string, mixed>, checksum: string}
      */
     private function poiDocument(PointOfInterest $poi): array
     {
@@ -172,12 +172,12 @@ class KnowledgeDocumentBuilder
     }
 
     /**
-     * @return array{source_type: 'route'|'poi'|'incident', source_id: int, section: string, language: 'es', content: string, metadata: array<string, mixed>, checksum: string}
+     * @return array{document_key: string, source_type: 'route'|'poi'|'incident', source_id: int, section: string, language: 'es', content: string, metadata: array<string, mixed>, checksum: string}
      */
     private function incidentDocument(Incident $incident): array
     {
         $content = $this->content([
-            "Alerta visible: {$incident->title}",
+            'Alerta visible: '.($incident->type?->name ?? 'Incidencia'),
             $this->line('Ruta', $incident->route?->name),
             $this->line('Tipo', $incident->type?->name),
             $this->line('Descripción', $incident->description),
@@ -194,11 +194,12 @@ class KnowledgeDocumentBuilder
     /**
      * @param  'route'|'poi'|'incident'  $sourceType
      * @param  array<string, mixed>  $metadata
-     * @return array{source_type: 'route'|'poi'|'incident', source_id: int, section: string, language: 'es', content: string, metadata: array<string, mixed>, checksum: string}
+     * @return array{document_key: string, source_type: 'route'|'poi'|'incident', source_id: int, section: string, language: 'es', content: string, metadata: array<string, mixed>, checksum: string}
      */
     private function document(string $sourceType, int $sourceId, string $section, string $content, array $metadata): array
     {
         $payload = [
+            'document_key' => $this->documentKey($sourceType, $sourceId, $section, $metadata),
             'source_type' => $sourceType,
             'source_id' => $sourceId,
             'section' => $section,
@@ -208,6 +209,22 @@ class KnowledgeDocumentBuilder
         ];
 
         return [...$payload, 'checksum' => hash('sha256', json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR))];
+    }
+
+    /**
+     * A POI may appear in more than one route, so route-specific fragments
+     * require the route identifier as part of their stable projection key.
+     *
+     * @param  'route'|'poi'|'incident'  $sourceType
+     * @param  array<string, mixed>  $metadata
+     */
+    private function documentKey(string $sourceType, int $sourceId, string $section, array $metadata): string
+    {
+        if ($section === 'route_poi' && is_int($metadata['route_id'] ?? null)) {
+            return "route:{$metadata['route_id']}:poi:{$sourceId}:route_poi";
+        }
+
+        return "{$sourceType}:{$sourceId}:{$section}";
     }
 
     private function metricLine(?RouteMetric $metric): ?string

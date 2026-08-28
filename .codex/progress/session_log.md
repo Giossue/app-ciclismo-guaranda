@@ -736,3 +736,17 @@
 - Validación final de la preparación local: 193 pruebas Pest / 1418 aserciones,
   Pint, `git diff --check`, vista previa de conocimiento, TypeScript, ESLint y
   Prettier aprobados.
+
+## 2026-08-28 — Vectorización después de preflight remoto
+
+- El servidor confirmó PostGIS y pgvector sanos (`vector` 0.8.6) tras renovar
+  la imagen compatible del PostgreSQL central; no se alteraron tablas de la
+  aplicación en esta comprobación.
+- Se implementó localmente la migración de `documentos_conocimiento_ia`,
+  sincronización por checksum/cola, `OpenAiEmbeddings`, HNSW de coseno y
+  candidatos semánticos rehidratados desde datos actuales. Los cambios de ruta,
+  POI, alerta, catálogo e imagen editorial programan reindexación tras commit.
+- Validación focalizada aprobada: 41 pruebas Pest / 366 aserciones, Pint,
+  `git diff --check` y listado de rutas de chat. La migración no puede simularse
+  en el PostgreSQL local porque carece de pgvector; producción ya aprobó el
+  preflight requerido.

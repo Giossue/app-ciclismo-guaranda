@@ -354,3 +354,14 @@
   de POIs de comida, hospedaje, tienda, taller y salud. Esto permite resolver
   los cuatro momentos turísticos sin esperar pgvector y conserva el filtro de
   recursos activos en el instante de responder.
+
+## 2026-08-28 — Proyección pgvector reconstruible
+
+- La base central queda en PostgreSQL 18 con PostGIS 3.6.4 y pgvector 0.8.6
+  verificados. La extensión `vector` se habilitó solo en `guaranda_go_db`.
+- `documentos_conocimiento_ia` será una proyección sin claves foráneas ni PII:
+  su identidad es `document_key`, porque un POI puede aparecer en varias rutas.
+  El HNSW usa coseno sobre `halfvec(3072)` de `text-embedding-3-large`.
+- El vector solo selecciona candidatos. Laravel reconsulta rutas activas, POIs
+  activos y alertas visibles, de modo que un embedding atrasado nunca autoriza
+  una respuesta ni una tarjeta obsoleta.

@@ -51,7 +51,6 @@ function createIncidentForAdminReview(): Incident
         'user_id' => $cyclist->id,
         'incident_type_id' => $incidentType->id,
         'incident_status_id' => $incidentStatus->id,
-        'title' => 'Vía cerrada por maquinaria',
         'description' => 'Maquinaria bloquea el paso en una curva.',
         'latitude' => -1.405,
         'longitude' => -79.021,
@@ -71,7 +70,7 @@ test('administrator can view incident review page', function () {
         ->assertInertia(fn (Assert $page) => $page
             ->component('admin/incidents/index')
             ->has('incidents.data', 1)
-            ->where('incidents.data.0.title', 'Vía cerrada por maquinaria')
+            ->where('incidents.data.0.type.name', 'Vía cerrada')
             ->has('statuses', 4)
             ->has('types', 6));
 });

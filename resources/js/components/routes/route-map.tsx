@@ -8,6 +8,7 @@ import {
     CircleMarker,
     GeoJSON,
     MapContainer,
+    Marker,
     Polyline,
     Popup,
     TileLayer,
@@ -103,13 +104,6 @@ const endPathOptions = {
     opacity: 1,
     className: 'map-marker-signal map-marker-signal-end',
 };
-const poiPathOptions = {
-    color: 'var(--info)',
-    fillColor: 'var(--info)',
-    fillOpacity: 0.9,
-    opacity: 1,
-    className: 'map-marker-signal map-marker-signal-poi',
-};
 const incidentPathOptions = {
     color: 'var(--destructive)',
     fillColor: 'var(--destructive)',
@@ -137,6 +131,18 @@ const userTrackPathOptions = {
     opacity: 0.95,
     weight: 6,
 };
+const poiIconPaths: Record<string, string> = {
+    Comida: '<path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/>',
+    Tienda: '<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/>',
+    Taller: '<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>',
+    Salud: '<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/><path d="M3.22 12H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27"/>',
+    Hospedaje:
+        '<path d="M2 20v-8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v8"/><path d="M4 10V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v4"/><path d="M12 4v6"/><path d="M2 18h20"/>',
+    Mirador:
+        '<path d="M10 10h4"/><path d="M19 7V4a1 1 0 0 0-1-1h-2a1 1 0 0 0-1 1v3"/><path d="M20 21a2 2 0 0 0 2-2v-3.851c0-1.39-2-2.962-2-4.829V8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v11a2 2 0 0 0 2 2z"/><path d="M22 16H2"/><path d="M4 21a2 2 0 0 1-2-2v-3.851c0-1.39 2-2.962 2-4.829V8a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v11a2 2 0 0 1-2 2z"/><path d="M9 7V4a1 1 0 0 0-1-1H6a1 1 0 0 0-1 1v3"/>',
+    default:
+        '<path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/>',
+};
 
 export default function RouteMap({
     routes,
@@ -159,10 +165,6 @@ export default function RouteMap({
         incidents: true,
     }));
     const center = useMemo(() => mapCenter(routes), [routes]);
-    const navigationRoute = useMemo(
-        () => selectedRoute(routes, selectedSlug),
-        [routes, selectedSlug],
-    );
     const activeLayer =
         mapLayer === 'satellite' ? satelliteLayer : standardLayer;
     const showOverviewFilters = mode === 'overview';
@@ -199,19 +201,6 @@ export default function RouteMap({
                     immersive && 'absolute top-3 left-3 z-[500]',
                 )}
             >
-                {mode === 'detail' && userLocation && navigationRoute && (
-                    <Button type="button" variant="overlay" size="icon" asChild>
-                        <a
-                            href={navigationUrl(userLocation, navigationRoute)}
-                            target="_blank"
-                            rel="noreferrer"
-                            aria-label="Abrir navegación externa"
-                            title="Abrir navegación externa"
-                        >
-                            <Navigation />
-                        </a>
-                    </Button>
-                )}
                 <Button
                     type="button"
                     variant="overlay"
@@ -329,6 +318,7 @@ export default function RouteMap({
                 <MapContainer
                     center={center}
                     zoom={12}
+                    zoomControl={false}
                     scrollWheelZoom={false}
                     className={cn(
                         'relative z-0 h-[420px] w-full md:h-[520px]',
@@ -527,11 +517,10 @@ function RouteLayers({
 
             {filters.pois &&
                 route.points_of_interest.map((poi) => (
-                    <CircleMarker
+                    <Marker
                         key={`poi-${route.id}-${poi.id}`}
-                        center={[poi.latitude, poi.longitude]}
-                        pathOptions={poiPathOptions}
-                        radius={6}
+                        position={[poi.latitude, poi.longitude]}
+                        icon={poiMarkerIcon(poi.category?.name)}
                         eventHandlers={{
                             click: () => onPoiSelect?.(poi as RoutePoi),
                         }}
@@ -539,7 +528,7 @@ function RouteLayers({
                         <Popup>
                             <PoiPopup poi={poi} />
                         </Popup>
-                    </CircleMarker>
+                    </Marker>
                 ))}
 
             {filters.incidents &&
@@ -552,10 +541,9 @@ function RouteLayers({
                     >
                         <Popup>
                             <div className="flex flex-col gap-1 text-sm">
-                                <strong>{incident.title}</strong>
-                                {incident.type && (
-                                    <span>{incident.type.name}</span>
-                                )}
+                                <strong>
+                                    {incident.type?.name ?? 'Alerta en la ruta'}
+                                </strong>
                                 {'description' in incident &&
                                     incident.description && (
                                         <span>{incident.description}</span>
@@ -625,6 +613,18 @@ function PoiPopup({
             {poi.route_observation && <span>{poi.route_observation}</span>}
         </div>
     );
+}
+
+function poiMarkerIcon(categoryName?: string): L.DivIcon {
+    const iconPath = poiIconPaths[categoryName ?? ''] ?? poiIconPaths.default;
+
+    return L.divIcon({
+        className: 'map-poi-marker',
+        html: `<span class="map-poi-marker-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${iconPath}</svg></span>`,
+        iconSize: [36, 36],
+        iconAnchor: [18, 18],
+        popupAnchor: [0, -18],
+    });
 }
 
 function FitRouteBounds({
@@ -736,22 +736,4 @@ function mapCenter(routes: RouteMapItem[]): [number, number] {
     }
 
     return [firstRoute.start_latitude, firstRoute.start_longitude];
-}
-
-function selectedRoute(
-    routes: RouteMapItem[],
-    selectedSlug?: string,
-): RouteMapItem | null {
-    if (selectedSlug) {
-        return routes.find((route) => route.slug === selectedSlug) ?? null;
-    }
-
-    return routes[0] ?? null;
-}
-
-function navigationUrl(location: UserLocation, route: RouteMapItem): string {
-    const origin = `${location.latitude},${location.longitude}`;
-    const destination = `${route.start_latitude},${route.start_longitude}`;
-
-    return `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&travelmode=bicycling`;
 }

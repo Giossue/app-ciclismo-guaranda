@@ -241,3 +241,12 @@ Después de esa prueba manual, marcar Fase 12 y Fase 14 como `Completado` si tod
 - `ai:knowledge:preview --limit=20` permite revisar por consola los fragmentos
   públicos candidatos al índice sin insertar datos, generar embeddings ni
   requerir pgvector.
+
+## Índice vectorial habilitado 2026-08-28
+
+- Producción verificó PostGIS 3.6.4 y pgvector 0.8.6 cargables en la misma
+  instancia central; `ai:vector-preflight` devolvió estado correcto.
+- Pendiente de deploy: migración `documentos_conocimiento_ia`, sincronizador
+  idempotente con `text-embedding-3-large`/`halfvec(3072)` y retrieval que
+  rehidrata recursos vivos antes de responder. Después del deploy se ejecutará
+  `php artisan ai:knowledge:sync` y se comprobará el worker de base de datos.

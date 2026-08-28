@@ -23,7 +23,6 @@ class Incident extends Model
             'route_id',
             'incident_type_id',
             'incident_status_id',
-            'title',
             'description',
             'latitude',
             'longitude',

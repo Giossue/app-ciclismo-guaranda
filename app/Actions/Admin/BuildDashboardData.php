@@ -187,14 +187,14 @@ class BuildDashboardData
     public function recentIncidents(): array
     {
         return Incident::query()
-            ->select(['id', 'title', 'route_id', 'user_id', 'incident_status_id', 'reported_at'])
-            ->with(['route:id,name', 'status:id,name', 'user:id,name,last_name'])
+            ->select(['id', 'route_id', 'user_id', 'incident_type_id', 'incident_status_id', 'reported_at'])
+            ->with(['route:id,name', 'status:id,name', 'type:id,name', 'user:id,name,last_name'])
             ->latest('reported_at')
             ->limit(5)
             ->get()
             ->map(fn (Incident $incident): array => [
                 'id' => $incident->id,
-                'title' => $incident->title,
+                'type' => $incident->type?->name ?? 'Incidencia',
                 'reportedAt' => $incident->reported_at?->toAtomString(),
                 'status' => $incident->status?->name,
                 'route' => $incident->route === null ? null : [

@@ -76,6 +76,13 @@ class AssistantConfiguration
         return filled(config('guaranda.assistant.openai.api_key')) && $this->vision()['model'] !== null;
     }
 
+    public function configuredForEmbeddings(): bool
+    {
+        return filled(config('guaranda.assistant.openai.api_key'))
+            && filled(config('guaranda.assistant.openai.embedding_model'))
+            && (int) config('guaranda.assistant.openai.embedding_dimensions', 0) === 3072;
+    }
+
     private function setting(): ?AiAssistantSetting
     {
         return Cache::remember(self::CACHE_KEY, now()->addMinutes(5), fn (): ?AiAssistantSetting => AiAssistantSetting::query()->find(1));

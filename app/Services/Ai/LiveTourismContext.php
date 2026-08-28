@@ -12,11 +12,15 @@ use Illuminate\Support\Str;
 
 class LiveTourismContext
 {
+    public function __construct(private readonly SemanticKnowledgeRetriever $semanticKnowledge) {}
+
     /**
      * @return array<string, mixed>
      */
     public function forMessage(?CyclingRoute $route, string $message, ?string $travelContext = null): array
     {
+        $semanticReferences = $this->semanticKnowledge->references($message);
+
         return [
             'route' => $route === null ? $this->emptyRoute() : $this->route($route),
             'tourism_moments' => [
@@ -26,7 +30,10 @@ class LiveTourismContext
                 'where_to_sleep' => 'dónde dormir',
             ],
             'traveler_context' => $this->travelerContext($travelContext),
-            'public_results' => $this->publicResults($message),
+            // The semantic index only yields candidate IDs. Every resource is
+            // queried again below from current public records before OpenAI
+            // receives it, so stale vectors cannot expose stale content.
+            'public_results' => $this->publicResults($message, $semanticReferences),
         ];
     }
 
@@ -107,7 +114,6 @@ class LiveTourismContext
             'active_incidents' => $route->incidents->take(6)->map(fn (Incident $incident): array => [
                 'id' => $incident->id,
                 'type' => $incident->type?->name,
-                'title' => $incident->title,
                 'description' => Str::limit($incident->description, 180),
             ])->values()->all(),
         ];
@@ -116,16 +122,21 @@ class LiveTourismContext
     /**
      * @return array{routes: list<array<string, mixed>>, pois: list<array<string, mixed>>, active_incidents: list<array<string, mixed>>}
      */
-    private function publicResults(string $message): array
+    private function publicResults(string $message, array $semanticReferences): array
     {
         $terms = $this->searchTerms($message);
+        $routeIds = $semanticReferences['route_ids'] ?? [];
+        $poiIds = $semanticReferences['poi_ids'] ?? [];
+        $incidentIds = $semanticReferences['incident_ids'] ?? [];
 
         return [
             'routes' => CyclingRoute::query()
                 ->select(['id', 'name', 'description', 'start_name', 'end_name', 'route_difficulty_id', 'route_category_id'])
                 ->with(['difficulty:id,name', 'category:id,name'])
                 ->whereHas('status', fn ($query) => $query->where('name', 'Activa'))
-                ->when($terms !== [], fn ($query) => $query->where(function ($searchQuery) use ($terms): void {
+                ->when($terms !== [] || $routeIds !== [], fn ($query) => $query->where(function ($searchQuery) use ($routeIds, $terms): void {
+                    $searchQuery->when($routeIds !== [], fn ($idQuery) => $idQuery->whereIn('id', $routeIds));
+
                     foreach ($terms as $term) {
                         $this->orWhereContains($searchQuery, 'name', $term);
                         $this->orWhereContains($searchQuery, 'description', $term);
@@ -151,7 +162,9 @@ class LiveTourismContext
                 ->select(['id', 'poi_category_id', 'name', 'description', 'observations', 'address', 'active'])
                 ->with($this->poiRelations())
                 ->where('active', true)
-                ->when($terms !== [], fn ($query) => $query->where(function ($searchQuery) use ($terms): void {
+                ->when($terms !== [] || $poiIds !== [], fn ($query) => $query->where(function ($searchQuery) use ($poiIds, $terms): void {
+                    $searchQuery->when($poiIds !== [], fn ($idQuery) => $idQuery->whereIn('id', $poiIds));
+
                     foreach ($terms as $term) {
                         $this->orWhereContains($searchQuery, 'name', $term);
                         $this->orWhereContains($searchQuery, 'description', $term);
@@ -167,10 +180,11 @@ class LiveTourismContext
                 ->values()
                 ->all(),
             'active_incidents' => Incident::query()
-                ->select(['id', 'route_id', 'incident_type_id', 'title', 'description', 'reported_at'])
+                ->select(['id', 'route_id', 'incident_type_id', 'description', 'reported_at'])
                 ->with(['route:id,name', 'type:id,name'])
                 ->whereHas('route.status', fn ($query) => $query->where('name', 'Activa'))
                 ->whereHas('status', fn ($query) => $query->where('name', 'En revisión'))
+                ->when($incidentIds !== [], fn ($query) => $query->whereIn('id', $incidentIds))
                 ->latest('reported_at')
                 ->latest('id')
                 ->limit(4)
@@ -180,7 +194,6 @@ class LiveTourismContext
                     'route_id' => $incident->route_id,
                     'route_name' => $incident->route?->name,
                     'type' => $incident->type?->name,
-                    'title' => $incident->title,
                     'description' => Str::limit($incident->description, 160),
                 ])
                 ->values()

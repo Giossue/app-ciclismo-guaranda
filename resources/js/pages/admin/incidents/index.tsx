@@ -39,7 +39,6 @@ import type { CatalogOption } from '@/types';
 
 type ManagedIncident = {
     id: number;
-    title: string;
     description: string;
     full_description: string;
     latitude: number;
@@ -107,7 +106,7 @@ export default function AdminIncidentsIndex({
             cell: (incident) => (
                 <div className="flex min-w-0 flex-col gap-1">
                     <span className="font-medium text-foreground">
-                        {incident.title}
+                        {incident.type?.name ?? 'Incidencia'}
                     </span>
                     <span className="text-xs text-muted-foreground">
                         {incident.description}
@@ -259,7 +258,7 @@ function IncidentRowActions({
                         type="button"
                         variant="ghost"
                         size="icon"
-                        aria-label={`Acciones para ${incident.title}`}
+                        aria-label={`Acciones para ${incident.type?.name ?? 'incidencia'}`}
                     >
                         <EllipsisVertical />
                     </Button>
@@ -277,7 +276,9 @@ function IncidentRowActions({
             <Sheet open={open} onOpenChange={setOpen}>
                 <SheetContent className="w-full overflow-y-auto sm:max-w-xl">
                     <SheetHeader>
-                        <SheetTitle>{incident.title}</SheetTitle>
+                        <SheetTitle>
+                            {incident.type?.name ?? 'Incidencia'}
+                        </SheetTitle>
                         <SheetDescription>
                             Verifica el reporte y define en qué estado queda
                             para los ciclistas.
@@ -310,7 +311,7 @@ function IncidentSummary({ incident }: { incident: ManagedIncident }) {
         .filter((file) => file.file_type.startsWith('image'))
         .map((file, index) => ({
             src: mediaUrl(file.file_path),
-            alt: `Evidencia ${index + 1} de ${incident.title}`,
+            alt: `Evidencia ${index + 1} de ${incident.type?.name ?? 'incidencia'}`,
         }));
 
     return (

@@ -121,7 +121,6 @@ class SyncController extends Controller
             'route_id' => (int) $payload['route_id'],
             'incident_type_id' => (int) $payload['incident_type_id'],
             'incident_status_id' => $status->id,
-            'title' => (string) $payload['title'],
             'description' => (string) $payload['description'],
             'latitude' => (float) $payload['latitude'],
             'longitude' => (float) $payload['longitude'],

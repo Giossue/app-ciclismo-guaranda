@@ -4,6 +4,7 @@ use App\Jobs\GenerateImageDescription;
 use App\Models\PoiCategory;
 use App\Models\PoiImage;
 use App\Models\PointOfInterest;
+use App\Services\Ai\KnowledgeProjectionDispatcher;
 use App\Services\Ai\OpenAiImageDescriber;
 use Database\Seeders\CatalogSeeder;
 
@@ -39,8 +40,10 @@ test('image description job saves a generated description for an empty managed i
         ->once()
         ->with('pois/imagen-administrada.jpg')
         ->andReturn('Mirador con vista a un valle andino.');
+    $dispatcher = mock(KnowledgeProjectionDispatcher::class);
+    $dispatcher->shouldReceive('afterCommit')->once();
 
-    (new GenerateImageDescription('poi', $image->id))->handle($describer);
+    (new GenerateImageDescription('poi', $image->id))->handle($describer, $dispatcher);
 
     expect($image->refresh()->description)->toBe('Mirador con vista a un valle andino.');
 });
@@ -50,8 +53,10 @@ test('image description job preserves a manual description', function () {
     $describer = mock(OpenAiImageDescriber::class);
     $describer->shouldReceive('configured')->once()->andReturnTrue();
     $describer->shouldNotReceive('describe');
+    $dispatcher = mock(KnowledgeProjectionDispatcher::class);
+    $dispatcher->shouldNotReceive('afterCommit');
 
-    (new GenerateImageDescription('poi', $image->id))->handle($describer);
+    (new GenerateImageDescription('poi', $image->id))->handle($describer, $dispatcher);
 
     expect($image->refresh()->description)->toBe('Descripción escrita por administración.');
 });
@@ -67,8 +72,10 @@ test('image description job does not overwrite a concurrent manual edit', functi
 
             return 'Descripción generada que no debe sobrescribir.';
         });
+    $dispatcher = mock(KnowledgeProjectionDispatcher::class);
+    $dispatcher->shouldNotReceive('afterCommit');
 
-    (new GenerateImageDescription('poi', $image->id))->handle($describer);
+    (new GenerateImageDescription('poi', $image->id))->handle($describer, $dispatcher);
 
     expect($image->refresh()->description)->toBe('Descripción manual guardada durante el proceso.');
 });

@@ -56,15 +56,14 @@ function knowledgePoi(string $name, bool $active = true): PointOfInterest
     ]);
 }
 
-function knowledgeIncident(CyclingRoute $route, string $statusName, string $title): Incident
+function knowledgeIncident(CyclingRoute $route, string $statusName, string $description): Incident
 {
     return Incident::query()->create([
         'user_id' => User::factory()->cyclist()->create()->id,
         'route_id' => $route->id,
         'incident_type_id' => IncidentType::query()->where('name', 'Derrumbe')->sole()->id,
         'incident_status_id' => IncidentStatus::query()->where('name', $statusName)->sole()->id,
-        'title' => $title,
-        'description' => "Descripción pública de {$title}.",
+        'description' => "Descripción pública de {$description}.",
         'latitude' => -1.591,
         'longitude' => -79.002,
         'reported_at' => now(),
@@ -153,4 +152,22 @@ test('knowledge documents have stable checksums until public source data changes
 
     expect($updated)->not->toBeNull()
         ->and($updated['checksum'])->not->toBe($first['checksum']);
+});
+
+test('route POI fragments remain distinct when the same POI belongs to multiple routes', function () {
+    $firstRoute = knowledgeRoute('Activa', 'Ruta uno');
+    $secondRoute = knowledgeRoute('Activa', 'Ruta dos');
+    $poi = knowledgePoi('POI compartido');
+    $firstRoute->pointsOfInterest()->attach($poi->id, ['sort_order' => 1]);
+    $secondRoute->pointsOfInterest()->attach($poi->id, ['sort_order' => 1]);
+
+    $keys = app(KnowledgeDocumentBuilder::class)->all()
+        ->where('section', 'route_poi')
+        ->pluck('document_key')
+        ->all();
+
+    expect($keys)->toEqualCanonicalizing([
+        "route:{$firstRoute->id}:poi:{$poi->id}:route_poi",
+        "route:{$secondRoute->id}:poi:{$poi->id}:route_poi",
+    ]);
 });

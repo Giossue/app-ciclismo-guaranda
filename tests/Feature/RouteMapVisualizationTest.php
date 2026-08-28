@@ -104,7 +104,6 @@ function createRouteForMapVisualization(string $statusName = 'Activa'): CyclingR
         'user_id' => $cyclist->id,
         'incident_type_id' => $incidentType->id,
         'incident_status_id' => $incidentStatus->id,
-        'title' => 'Piedras en la vía',
         'description' => 'Piedras pequeñas cerca del mirador.',
         'latitude' => -1.406,
         'longitude' => -79.022,
@@ -133,7 +132,7 @@ test('cyclist can view active routes on map with geojson points and incidents', 
             ->has('routes.data', 1)
             ->where('routes.data.0.geojson.type', 'LineString')
             ->where('routes.data.0.points_of_interest.0.name', 'Mirador de prueba')
-            ->where('routes.data.0.incidents.0.title', 'Piedras en la vía'));
+            ->where('routes.data.0.incidents.0.type.name', 'Obstáculo'));
 
     foreach (['geometrias_ruta', 'puntos_interes', 'incidencias'] as $table) {
         $query = collect($queries)->first(fn (string $sql): bool => str_contains($sql, "from \"{$table}\""));
@@ -170,7 +169,7 @@ test('cyclist map explorer only exposes active routes and its selected route', f
             ->where('routes.0.slug', $activeRoute->slug)
             ->where('routes.0.geojson.type', 'LineString')
             ->where('routes.0.points_of_interest.0.name', 'Mirador de prueba')
-            ->where('routes.0.incidents.0.title', 'Piedras en la vía')
+            ->where('routes.0.incidents.0.type.name', 'Obstáculo')
             ->where('routes.0.is_favorite', true)
             ->where('selectedRouteSlug', $activeRoute->slug));
 

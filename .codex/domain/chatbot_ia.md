@@ -79,9 +79,9 @@ usa `store: false`; no se envían secretos, nombres, emails, roles ni cabeceras
 al proveedor.
 
 El valor inicial para visión es `gpt-5.6-luna`, con detalle bajo y esfuerzo
-`none`, para minimizar coste en descripciones editoriales. Esto no configura
-embeddings; `text-embedding-3-large` queda reservado para la Etapa 3 cuando el
-preflight de pgvector sea correcto.
+`none`, para minimizar coste en descripciones editoriales. El embedding usa
+`text-embedding-3-large` con 3072 dimensiones, configurado exclusivamente en
+el servidor cuando pgvector haya superado el preflight.
 
 Para descripciones de imágenes editoriales administradas se usa
 `GUARANDA_GO_OPENAI_VISION_MODEL`; sin `OPENAI_API_KEY` no se encola nada. El
@@ -92,10 +92,11 @@ incidencias de ciclistas.
 
 ## Evolución vectorial e imágenes
 
-La Fase 17 deja preparada la transición a pgvector con
-`text-embedding-3-large` y descripciones automáticas de imágenes admin. No se
-crea ni modifica todavía ninguna tabla vectorial hasta reparar el runtime de
-PostGIS y planificar una ventana de mantenimiento. Plan: `17_agente_laravel_openai.md`.
+La Fase 17 usa `text-embedding-3-large` para una proyección reconstruible en
+pgvector. `documentos_conocimiento_ia` guarda solo fragmentos públicos,
+checksum, metadatos mínimos y embedding; no sustituye rutas, POIs ni alertas.
+La sincronización se encola después de cambios confirmados y compara checksum
+para evitar regeneraciones innecesarias. Plan: `17_agente_laravel_openai.md`.
 
 `KnowledgeDocumentBuilder` es la preparación de contenido: recorre rutas
 activas, POIs activos y alertas visibles y genera fragmentos deterministas con
@@ -118,4 +119,8 @@ correcto en la base elegida.
 
 `php artisan ai:knowledge:preview --limit=20` muestra por consola los
 fragmentos públicos candidatos. Es una inspección de solo lectura: no consulta
-OpenAI, no inserta filas y no requiere pgvector.
+OpenAI, no inserta filas y no requiere pgvector. La operación posterior es
+`php artisan ai:knowledge:sync`: por defecto usa la cola; `--now` se reserva
+para una ejecución administrativa explícita. La recuperación semántica entrega
+solo IDs candidatos; Laravel reconsulta y filtra los recursos actuales antes de
+construir el contexto del chat.

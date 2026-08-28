@@ -181,7 +181,6 @@ class RouteController extends Controller
                 'route_id',
                 'incident_type_id',
                 'incident_status_id',
-                'title',
                 'description',
                 'latitude',
                 'longitude',
@@ -469,7 +468,6 @@ class RouteController extends Controller
 
         return [
             'id' => $incident->id,
-            'title' => $incident->title,
             'description' => Str::limit($incident->description, 140),
             'latitude' => (float) $incident->latitude,
             'longitude' => (float) $incident->longitude,

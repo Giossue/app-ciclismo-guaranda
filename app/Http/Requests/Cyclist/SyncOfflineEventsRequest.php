@@ -45,7 +45,7 @@ class SyncOfflineEventsRequest extends FormRequest
                 }
 
                 if ($eventType === 'offline_incident_reported') {
-                    foreach (['route_id', 'incident_type_id', 'title', 'description', 'latitude', 'longitude'] as $field) {
+                    foreach (['route_id', 'incident_type_id', 'description', 'latitude', 'longitude'] as $field) {
                         if (! array_key_exists($field, $payload) || $payload[$field] === null || $payload[$field] === '') {
                             $validator->errors()->add("events.{$index}.payload.{$field}", 'Campo requerido para incidencia offline.');
                         }

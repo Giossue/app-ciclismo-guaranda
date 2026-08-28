@@ -24,6 +24,7 @@ use App\Models\User;
 use App\Models\UserRole;
 use App\Models\WorkshopService;
 use App\Models\WorkshopSpecialty;
+use App\Services\Ai\KnowledgeProjectionDispatcher;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\RedirectResponse;
@@ -40,6 +41,8 @@ use Inertia\Response;
  */
 class CatalogController extends Controller
 {
+    public function __construct(private readonly KnowledgeProjectionDispatcher $knowledgeProjection) {}
+
     /**
      * Columnas por tabla, cacheadas durante la petición: el formulario de alta
      * necesita saber qué campos tiene cada catálogo, no solo el seleccionado.
@@ -142,6 +145,7 @@ class CatalogController extends Controller
 
         $record = $modelClass::query()->create($this->payload($validated, $hasDescription, $hasActive));
         $recordName = (string) $record->getAttribute('name');
+        $this->knowledgeProjection->afterCommit();
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Registro :name creado.', ['name' => $recordName])]);
 
@@ -165,6 +169,7 @@ class CatalogController extends Controller
         $catalogRecord = $modelClass::query()->findOrFail($record);
         $catalogRecord->forceFill($this->payload($validated, $hasDescription, $hasActive))->save();
         $recordName = (string) $catalogRecord->getAttribute('name');
+        $this->knowledgeProjection->afterCommit();
 
         Inertia::flash('toast', ['type' => 'info', 'message' => __('Registro :name actualizado.', ['name' => $recordName])]);
 

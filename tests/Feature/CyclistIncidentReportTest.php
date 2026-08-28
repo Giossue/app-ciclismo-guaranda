@@ -80,7 +80,6 @@ test('cyclist can report an incident with optional photo and admin notification'
         ->post(route('incidents.store'), [
             'route_id' => $route->id,
             'incident_type_id' => $type->id,
-            'title' => 'Derrumbe pequeño',
             'description' => 'Hay piedras ocupando media vía cerca del km 4.',
             'latitude' => -1.405,
             'longitude' => -79.021,
@@ -89,7 +88,7 @@ test('cyclist can report an incident with optional photo and admin notification'
         ->assertSessionHasNoErrors()
         ->assertRedirect();
 
-    $incident = Incident::query()->where('title', 'Derrumbe pequeño')->firstOrFail();
+    $incident = Incident::query()->where('description', 'Hay piedras ocupando media vía cerca del km 4.')->firstOrFail();
 
     expect($incident->status?->name)->toBe('Reportada')
         ->and($incident->files()->count())->toBe(1);
@@ -114,7 +113,6 @@ test('incident photo can not exceed five megabytes', function () {
         ->post(route('incidents.store'), [
             'route_id' => $route->id,
             'incident_type_id' => $type->id,
-            'title' => 'Foto pesada',
             'description' => 'La imagen supera el límite.',
             'latitude' => -1.405,
             'longitude' => -79.021,
@@ -132,7 +130,6 @@ test('incident must belong to an active route', function () {
         ->post(route('incidents.store'), [
             'route_id' => $route->id,
             'incident_type_id' => $type->id,
-            'title' => 'Obstáculo',
             'description' => 'Reporte en ruta inactiva.',
             'latitude' => -1.405,
             'longitude' => -79.021,
@@ -154,7 +151,6 @@ test('cyclist sees only incidents in review on route detail', function () {
             'user_id' => $cyclist->id,
             'incident_type_id' => $type->id,
             'incident_status_id' => $reported->id,
-            'title' => 'No visible todavía',
             'description' => 'Debe esperar revisión.',
             'latitude' => -1.404,
             'longitude' => -79.02,
@@ -164,7 +160,6 @@ test('cyclist sees only incidents in review on route detail', function () {
             'user_id' => $cyclist->id,
             'incident_type_id' => $type->id,
             'incident_status_id' => $inReview->id,
-            'title' => 'Visible en revisión',
             'description' => 'Ya fue validada como activa.',
             'latitude' => -1.405,
             'longitude' => -79.021,
@@ -179,5 +174,5 @@ test('cyclist sees only incidents in review on route detail', function () {
             ->component('routes/show')
             ->has('incidentTypes', 6)
             ->has('route.incidents', 1)
-            ->where('route.incidents.0.title', 'Visible en revisión'));
+            ->where('route.incidents.0.description', 'Ya fue validada como activa.'));
 });
