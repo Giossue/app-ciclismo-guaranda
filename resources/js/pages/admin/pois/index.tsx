@@ -271,7 +271,7 @@ export default function AdminPoisIndex({
                     }
                 }}
             >
-                <SheetContent className="w-full overflow-hidden p-0 sm:max-w-[min(72rem,calc(100vw-4rem))]">
+                <SheetContent className="w-screen max-w-none overflow-hidden p-0 sm:max-w-none">
                     <SheetHeader className="shrink-0 border-b bg-popover">
                         <SheetTitle>
                             {form === 'edit' && poiForm

@@ -1,4 +1,5 @@
 import { Form, Link } from '@inertiajs/react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import PoiController from '@/actions/App/Http/Controllers/Admin/PoiController';
 import ImageFileInput from '@/components/image-file-input';
@@ -25,6 +26,7 @@ import {
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { cn } from '@/lib/utils';
 import type { CatalogOption } from '@/types';
 
@@ -82,6 +84,14 @@ type Props = {
     onCancel?: () => void;
 };
 
+const poiStepLabels = ['Datos', 'Rutas y recursos', 'Detalles'] as const;
+
+const poiStepDescriptions = [
+    'Describe, clasifica y ubica el punto de interés.',
+    'Asocia rutas, horarios e imágenes.',
+    'Completa la información propia de la categoría.',
+] as const;
+
 export default function PoiForm({
     mode,
     poi,
@@ -103,6 +113,7 @@ export default function PoiForm({
     const [selectedCategoryId, setSelectedCategoryId] = useState(
         poi?.poi_category_id == null ? '' : String(poi.poi_category_id),
     );
+    const [activeStep, setActiveStep] = useState<1 | 2 | 3>(1);
     const [isCompressing, setIsCompressing] = useState(false);
     const [routeAssociations, setRouteAssociations] = useState<
         RouteAssociation[]
@@ -157,7 +168,52 @@ export default function PoiForm({
         >
             {({ processing, errors }) => (
                 <div className="flex flex-col gap-5">
-                    <Card>
+                    <div className="flex flex-col gap-3 rounded-2xl border bg-muted/20 p-3">
+                        <div className="flex items-center justify-between gap-3">
+                            <div>
+                                <p className="text-sm font-semibold">
+                                    Paso {activeStep} de 3
+                                </p>
+                                <p className="text-sm text-muted-foreground">
+                                    {poiStepDescriptions[activeStep - 1]}
+                                </p>
+                            </div>
+                        </div>
+                        <ToggleGroup
+                            type="single"
+                            value={String(activeStep)}
+                            onValueChange={(value) => {
+                                if (value) {
+                                    setActiveStep(Number(value) as 1 | 2 | 3);
+                                }
+                            }}
+                            variant="outline"
+                            size="sm"
+                            className="grid w-full grid-cols-3"
+                            aria-label="Pasos para crear un punto de interés"
+                        >
+                            {poiStepLabels.map((label, index) => (
+                                <ToggleGroupItem
+                                    key={label}
+                                    value={String(index + 1)}
+                                    aria-label={`Paso ${index + 1}: ${label}`}
+                                    className="min-w-0 px-2 text-xs sm:text-sm"
+                                >
+                                    <span className="sm:hidden">
+                                        {index + 1}
+                                    </span>
+                                    <span className="hidden truncate sm:inline">
+                                        {index + 1}. {label}
+                                    </span>
+                                </ToggleGroupItem>
+                            ))}
+                        </ToggleGroup>
+                    </div>
+
+                    <Card
+                        className={cn(activeStep !== 1 && 'hidden')}
+                        aria-hidden={activeStep !== 1}
+                    >
                         <CardHeader>
                             <CardTitle>Datos base</CardTitle>
                             <CardDescription>
@@ -267,7 +323,10 @@ export default function PoiForm({
                         </CardContent>
                     </Card>
 
-                    <Card>
+                    <Card
+                        className={cn(activeStep !== 2 && 'hidden')}
+                        aria-hidden={activeStep !== 2}
+                    >
                         <CardHeader>
                             <CardTitle>Rutas, horarios e imágenes</CardTitle>
                             <CardDescription>
@@ -325,7 +384,10 @@ export default function PoiForm({
                         </CardContent>
                     </Card>
 
-                    <Card>
+                    <Card
+                        className={cn(activeStep !== 3 && 'hidden')}
+                        aria-hidden={activeStep !== 3}
+                    >
                         <CardHeader>
                             <CardTitle>Detalles por categoría</CardTitle>
                             <CardDescription>
@@ -633,9 +695,35 @@ export default function PoiForm({
                                 </Link>
                             </Button>
                         )}
-                        <Button disabled={processing || isCompressing}>
-                            {isEdit ? 'Guardar cambios' : 'Crear POI'}
-                        </Button>
+                        <div className="flex flex-wrap gap-2">
+                            {activeStep > 1 && (
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() =>
+                                        setActiveStep((activeStep - 1) as 1 | 2)
+                                    }
+                                >
+                                    <ChevronLeft data-icon="inline-start" />
+                                    Anterior
+                                </Button>
+                            )}
+                            {activeStep < 3 ? (
+                                <Button
+                                    type="button"
+                                    onClick={() =>
+                                        setActiveStep((activeStep + 1) as 2 | 3)
+                                    }
+                                >
+                                    Siguiente
+                                    <ChevronRight data-icon="inline-end" />
+                                </Button>
+                            ) : (
+                                <Button disabled={processing || isCompressing}>
+                                    {isEdit ? 'Guardar cambios' : 'Crear POI'}
+                                </Button>
+                            )}
+                        </div>
                     </div>
                 </div>
             )}

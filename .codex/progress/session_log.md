@@ -825,3 +825,9 @@
 - Se corrigió el editor administrativo de rutas para que valores vacíos o nulos no se conviertan mediante JavaScript en las coordenadas `0,0` ni provoquen un salto del mapa al océano.
 - La validación defensiva se aplica al fallback de inicio/final, los POIs nuevos y las coordenadas leídas desde GeoJSON; el trazado sigue usando la ubicación visible seleccionada en Leaflet.
 - Validaciones aprobadas: TypeScript, ESLint, Prettier, build Vite y `git diff --check`.
+
+## 2026-08-28 — Formulario de POIs a ancho completo
+
+- La creación y edición de POIs usa la misma superficie de sheet a ancho completo que el formulario de rutas, conservando encabezado, contenido desplazable, tarjetas y acciones fijas.
+- El formulario se divide en tres pasos (`Datos`, `Rutas y recursos` y `Detalles`) con navegación táctil y acciones `Anterior`/`Siguiente`, siguiendo el patrón visual del alta de rutas.
+- Validaciones aprobadas: TypeScript, ESLint y Prettier focalizados, build Vite y `git diff --check`.
