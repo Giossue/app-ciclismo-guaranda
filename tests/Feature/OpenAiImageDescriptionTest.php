@@ -6,6 +6,10 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 
+beforeEach(function () {
+    Http::preventStrayRequests();
+});
+
 function imageDescriptionResponse(string $description): array
 {
     return [
@@ -60,5 +64,8 @@ test('image description refuses an unavailable managed file before contacting Op
     ]);
     Http::fake();
 
-    app(OpenAiImageDescriber::class)->describe('routes/missing.jpg');
-})->throws(RuntimeException::class, 'Managed image file no longer exists.');
+    expect(fn () => app(OpenAiImageDescriber::class)->describe('routes/missing.jpg'))
+        ->toThrow(RuntimeException::class, 'Managed image file no longer exists.');
+
+    Http::assertNothingSent();
+});

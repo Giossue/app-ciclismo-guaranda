@@ -58,6 +58,15 @@ mostrar `Runtime PostGIS = ok`; cualquier `error` obliga a detenerse y reparar
 la imagen/instancia elegida antes de tocar schema. Para una conexión Laravel no
 predeterminada se usa `--connection=nombre`.
 
+Para revisar el contenido candidato sin tocar la base, se usa:
+
+```bash
+php artisan ai:knowledge:preview --limit=20
+```
+
+El comando solo muestra fragmentos públicos que se indexarían; no llama a
+OpenAI ni inserta documentos/embeddings.
+
 ## Etapa 1 — Contrato nativo y chat confiable
 
 - Crear `OpenAiAssistant` como frontera OpenAI con HTTP de Laravel; la clave
@@ -70,6 +79,9 @@ predeterminada se usa `--connection=nombre`.
   rutas/POIs/alertas. Validar el esquema antes de persistir o renderizar.
 - El primer retrieval será determinista contra datos vivos de Laravel, de modo
   que el chat puede funcionar antes del índice vectorial.
+- El contexto vivo incluye horarios y fichas públicas de comida, hospedaje,
+  tiendas, talleres y salud para los cuatro momentos turísticos, sin depender
+  de embeddings.
 
 **Aceptación:** usuario activo recibe respuesta o error seguro; no hay llamada
 a n8n, no se exponen secretos y las referencias inactivas se excluyen.

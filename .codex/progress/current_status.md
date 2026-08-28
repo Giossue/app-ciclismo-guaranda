@@ -235,3 +235,9 @@ Después de esa prueba manual, marcar Fase 12 y Fase 14 como `Completado` si tod
   de fotos de ruta/POI, sin datos personales ni coordenadas de incidencias. No
   crea tablas, embeddings ni modifica la base central mientras pgvector siga
   pendiente.
+- Mientras pgvector está pendiente, `LiveTourismContext` ya envía al asistente
+  datos vivos de POIs activos, sus horarios y sus fichas públicas por categoría;
+  los cuatro momentos turísticos no dependen de un índice desactualizado.
+- `ai:knowledge:preview --limit=20` permite revisar por consola los fragmentos
+  públicos candidatos al índice sin insertar datos, generar embeddings ni
+  requerir pgvector.

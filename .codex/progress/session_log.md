@@ -720,3 +720,19 @@
   estabilidad/invalidez del checksum.
 - Validación posterior: 190 pruebas Pest / 1409 aserciones, Pint, TypeScript,
   ESLint, Prettier, `git diff --check` y build Vite aprobados.
+- Se retiraron referencias operativas heredadas de n8n en los routers y
+  especificaciones activas; los documentos/workflow históricos conservan una
+  advertencia explícita de no uso. El chat ahora incluye fichas públicas vivas
+  de POIs de comida, hospedaje, tiendas, talleres y salud antes de cualquier
+  retrieval vectorial. Pruebas focalizadas de chat y conocimiento: 12 pruebas,
+  83 aserciones, más Pint y revisión de diff aprobados.
+- Las pruebas de chat y visión bloquean solicitudes HTTP no simuladas. Para no
+  confundir el renderizador Inertia SSR local con OpenAI, esas pruebas desactivan
+  SSR explícitamente; cualquier request de OpenAI sin `Http::fake()` ahora falla.
+  Validación backend posterior: 191 pruebas Pest / 1412 aserciones y Pint.
+- Se añadió `ai:knowledge:preview --limit=20` para inspeccionar en consola los
+  documentos públicos candidatos al índice futuro. El comando es de solo
+  lectura y sus pruebas cubren contenido visible y límites seguros.
+- Validación final de la preparación local: 193 pruebas Pest / 1418 aserciones,
+  Pint, `git diff --check`, vista previa de conocimiento, TypeScript, ESLint y
+  Prettier aprobados.

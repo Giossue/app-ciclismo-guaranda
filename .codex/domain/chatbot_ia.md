@@ -106,7 +106,16 @@ talleres y salud para cubrir los cuatro momentos del visitante. Cuando pgvector
 esté listo, un job podrá persistir estos mismos fragmentos como proyección
 idempotente.
 
+Antes de que exista retrieval vectorial, `LiveTourismContext` ya entrega al
+chat datos vivos de POIs activos: horarios y fichas públicas de comida,
+hospedaje, tiendas, talleres y salud. Así los cuatro momentos turísticos no
+dependen de una copia vectorial ni de información obsoleta.
+
 El preflight no destructivo `php artisan ai:vector-preflight` consulta la base
 actual y falla de forma segura si `vector` no está disponible o no carga en
 runtime. No se autoriza una migración de embeddings hasta que el preflight sea
 correcto en la base elegida.
+
+`php artisan ai:knowledge:preview --limit=20` muestra por consola los
+fragmentos públicos candidatos. Es una inspección de solo lectura: no consulta
+OpenAI, no inserta filas y no requiere pgvector.

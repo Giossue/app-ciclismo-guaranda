@@ -2,6 +2,8 @@
 
 use App\Models\AiConversation;
 use App\Models\CyclingRoute;
+use App\Models\PoiCategory;
+use App\Models\PointOfInterest;
 use App\Models\RouteCategory;
 use App\Models\RouteDifficulty;
 use App\Models\RouteStatus;
@@ -16,6 +18,8 @@ use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function () {
     $this->seed(CatalogSeeder::class);
+    config(['inertia.ssr.enabled' => false]);
+    Http::preventStrayRequests();
 });
 
 function createRouteForChatbot(string $statusName = 'Activa'): CyclingRoute
@@ -125,6 +129,20 @@ test('chat calls OpenAI and stores an exchange after response', function () {
         'is_main' => true,
     ]);
     $route->update(['main_image_path' => 'routes/chatbot-cover.jpg']);
+    $foodPoi = PointOfInterest::query()->create([
+        'poi_category_id' => PoiCategory::query()->where('name', 'Comida')->sole()->id,
+        'name' => 'Comedor del ciclista',
+        'description' => 'Comida local para recuperar energía.',
+        'latitude' => -1.5926,
+        'longitude' => -79.0009,
+        'active' => true,
+    ]);
+    $foodPoi->foodDetail()->create([
+        'has_wifi' => true,
+        'has_bike_parking' => true,
+        'chef_recommendation' => 'Prueba el almuerzo de la casa.',
+    ]);
+    $route->pointsOfInterest()->attach($foodPoi->id, ['sort_order' => 1]);
 
     Http::fake([
         'https://api.openai.com/v1/responses' => Http::response(openAiResponse('Respuesta IA para Guaranda Go.', [
@@ -168,7 +186,7 @@ test('chat calls OpenAI and stores an exchange after response', function () {
         ->and($conversation->context)->toHaveKey('traveler_context.kind', 'day_visitor')
         ->and($conversation->context)->not()->toHaveKey('location');
 
-    Http::assertSent(function (Request $request) use ($route): bool {
+    Http::assertSent(function (Request $request) use ($route, $foodPoi): bool {
         $payload = $request->data();
 
         return $request->url() === 'https://api.openai.com/v1/responses'
@@ -177,6 +195,8 @@ test('chat calls OpenAI and stores an exchange after response', function () {
             && is_string(Arr::get($payload, 'input.0.content.0.text'))
             && str_contains((string) Arr::get($payload, 'input.0.content.0.text'), '¿Qué debo llevar para esta ruta?')
             && str_contains((string) Arr::get($payload, 'input.0.content.0.text'), $route->name)
+            && str_contains((string) Arr::get($payload, 'input.0.content.0.text'), $foodPoi->name)
+            && str_contains((string) Arr::get($payload, 'input.0.content.0.text'), 'Prueba el almuerzo de la casa.')
             && str_contains((string) Arr::get($payload, 'input.0.content.0.text'), '"latitude":-1.5926');
     });
 });

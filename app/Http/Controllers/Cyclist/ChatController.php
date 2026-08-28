@@ -111,7 +111,22 @@ class ChatController extends Controller
                 'metrics.transportMode:id,name',
                 'recommendations',
                 'observations',
-                'pointsOfInterest' => fn ($query) => $query->where('active', true)->with(['category:id,name', 'hours']),
+                'pointsOfInterest' => fn ($query) => $query->where('active', true)->with([
+                    'category:id,name',
+                    'hours:id,point_of_interest_id,weekday,opens_at,closes_at',
+                    'foodDetail:point_of_interest_id,cuisine_type_id,price_range_id,is_pet_friendly,has_wifi,accepted_payment_type,has_bike_parking,chef_recommendation',
+                    'foodDetail.cuisineType:id,name',
+                    'foodDetail.priceRange:id,name',
+                    'lodgingDetail:point_of_interest_id,lodging_type_id,allows_bikes_in_room,has_bike_wash_area,base_price',
+                    'lodgingDetail.lodgingType:id,name',
+                    'storeDetail:point_of_interest_id,store_type_id,sells_hydration,sells_snacks,accepted_payment_type',
+                    'storeDetail.storeType:id,name',
+                    'workshopDetail:point_of_interest_id,workshop_specialty_id,emergency_service,emergency_phone',
+                    'workshopDetail.specialty:id,name',
+                    'workshopDetail.services:id,name',
+                    'healthDetail:point_of_interest_id,health_center_type_id,has_defibrillator,care_level',
+                    'healthDetail.healthCenterType:id,name',
+                ]),
                 'incidents' => fn ($query) => $query
                     ->whereHas('status', fn ($statusQuery) => $statusQuery->where('name', 'En revisión'))
                     ->with(['type:id,name', 'status:id,name'])

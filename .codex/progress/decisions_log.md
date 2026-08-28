@@ -347,3 +347,10 @@
   dispara migraciones antes de tiempo.
 - La ubicación no forma parte de la persistencia de conversaciones. El modelo recibe solo contexto público acotado, ubicación temporal si fue autorizada y ocho mensajes recientes truncados.
 - AI Elements se usa sin plugins de Markdown avanzados que no corresponden al producto, para proteger la descarga de la app móvil.
+
+## 2026-08-28 — Contexto turístico vivo antes de embeddings
+
+- El chat recibe directamente desde Laravel los horarios y detalles públicos
+  de POIs de comida, hospedaje, tienda, taller y salud. Esto permite resolver
+  los cuatro momentos turísticos sin esperar pgvector y conserva el filtro de
+  recursos activos en el instante de responder.
