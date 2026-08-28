@@ -513,6 +513,7 @@
 - La navegación de POIs se trasladó de pestañas locales a un submenú desplegable en el sidebar, con POIs oficiales, sugerencias y reportes.
 - Los sheets de acción usan un pie fijo y reutilizable con `Cancelar` y la acción principal; el contenido se mantiene desplazable.
 - En el layout de sidebar, el cierre de sesión se retiró del menú móvil y se ubicó en el menú del avatar del encabezado.
+- Se preparó la imagen de producción para PhpRedis y se documentó la activación privada de caché Redis mediante variables de Dokploy, sin almacenar la URI ni contraseñas.
 
 ## 2026-08-27 — Landing adaptable
 

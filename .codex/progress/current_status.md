@@ -147,3 +147,7 @@ Después de esa prueba manual, marcar Fase 12 y Fase 14 como `Completado` si tod
 - `notificaciones_app` incorpora la columna `link` para que cada aviso apunte a su destino; la migración se aplicó en la base local y en la remota `guaranda_go_db`, verificada con `migrate:status` contra el remoto.
 - La campana del encabezado abre un panel lateral con los últimos ocho avisos, tiempo relativo y accesos a marcar todas como leídas y ver el listado completo; la lista viaja como prop opcional y solo se consulta al abrir el panel.
 - El prop compartido pasó a llamarse `notificationCenter`: el anterior `notifications` quedaba sombreado por el listado paginado de la propia pantalla y dejaba el contador en cero allí.
+
+## Preparación Redis 2026-08-27
+
+- La imagen de producción incluye la extensión PhpRedis y Laravel ya dispone de conexiones `default` y `cache`; Redis se habilita exclusivamente mediante secretos del entorno Dokploy con `CACHE_STORE=redis`. Sesiones y colas continúan en PostgreSQL en esta primera activación.
