@@ -40,12 +40,7 @@ export type OfflineQueueItem = {
     event_type: OfflineEventType;
     payload: Record<string, unknown>;
     status:
-        | 'Pendiente'
-        | 'Enviado'
-        | 'Error'
-        | 'pendiente'
-        | 'enviado'
-        | 'error';
+        'Pendiente' | 'Enviado' | 'Error' | 'pendiente' | 'enviado' | 'error';
     attempts: number;
     last_error: string | null;
     created_at: string;

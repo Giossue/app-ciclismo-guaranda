@@ -45,7 +45,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { capitalize, cn } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 
 export type DataTableQuery = Record<string, number | string | undefined>;
 
@@ -187,7 +187,7 @@ export function DataTableToolbar({
                                             key={option.value}
                                             value={option.value}
                                         >
-                                            {capitalize(option.label)}
+                                            {option.label}
                                         </SelectItem>
                                     ))}
                                 </SelectGroup>

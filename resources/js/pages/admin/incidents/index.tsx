@@ -35,7 +35,6 @@ import {
 } from '@/components/ui/sheet';
 import { Textarea } from '@/components/ui/textarea';
 import { mediaUrl } from '@/lib/media';
-import { capitalize } from '@/lib/utils';
 import type { CatalogOption } from '@/types';
 
 type ManagedIncident = {
@@ -496,7 +495,7 @@ function IncidentReviewForm({
                                                 key={status.id}
                                                 value={String(status.id)}
                                             >
-                                                {capitalize(status.name)}
+                                                {status.name}
                                             </SelectItem>
                                         ))}
                                     </SelectGroup>

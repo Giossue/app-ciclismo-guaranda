@@ -38,7 +38,6 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { capitalize } from '@/lib/utils';
 import { index as incidentsIndex } from '@/routes/admin/incidents';
 import { index as poisIndex } from '@/routes/admin/pois';
 import { index as ratingsIndex } from '@/routes/admin/ratings';
@@ -457,7 +456,7 @@ function RouteStatusCard({
                             <li key={status.id} className="flex flex-col gap-2">
                                 <div className="flex items-center justify-between gap-3 text-sm">
                                     <span className="font-medium">
-                                        {capitalize(status.name)}
+                                        {status.name}
                                     </span>
                                     <span className="text-muted-foreground tabular-nums">
                                         {status.count.toLocaleString()}
@@ -466,7 +465,7 @@ function RouteStatusCard({
                                 <ProgressBar
                                     value={status.count}
                                     maximum={totalRoutes}
-                                    label={`${capitalize(status.name)}: ${status.count} rutas`}
+                                    label={`${status.name}: ${status.count} rutas`}
                                 />
                             </li>
                         ))}

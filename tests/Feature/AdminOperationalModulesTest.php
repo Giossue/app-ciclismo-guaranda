@@ -128,7 +128,7 @@ test('administrator can create and update catalog records', function () {
         ])
         ->assertRedirect();
 
-    $category = RouteCategory::query()->where('name', 'Gravel')->firstOrFail();
+    $category = RouteCategory::query()->where('name', 'gravel')->firstOrFail();
 
     $this->actingAs($admin)
         ->patch(route('admin.catalogs.update', ['route-categories', $category]), [
@@ -140,7 +140,7 @@ test('administrator can create and update catalog records', function () {
 
     $category->refresh();
 
-    expect($category->name)->toBe('Gravel turístico')
+    expect($category->name)->toBe('gravel turístico')
         ->and($category->description)->toBe('Ruta turística de ripio y asfalto.')
         ->and((bool) $category->active)->toBeFalse();
 });

@@ -29,7 +29,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
@@ -139,7 +138,6 @@ class CatalogController extends Controller
         $hasActive = Schema::hasColumn($table, 'active');
         $allowedNames = $definition['allowed_names'] ?? null;
 
-        $this->normalizeName($request);
         $validated = $request->validate($this->rules($table, $hasDescription, $hasActive, allowedNames: $allowedNames));
 
         $record = $modelClass::query()->create($this->payload($validated, $hasDescription, $hasActive));
@@ -162,7 +160,6 @@ class CatalogController extends Controller
         $hasActive = Schema::hasColumn($table, 'active');
         $allowedNames = $definition['allowed_names'] ?? null;
 
-        $this->normalizeName($request);
         $validated = $request->validate($this->rules($table, $hasDescription, $hasActive, $record, $allowedNames));
 
         $catalogRecord = $modelClass::query()->findOrFail($record);
@@ -336,17 +333,6 @@ class CatalogController extends Controller
         }
 
         return $payload;
-    }
-
-    private function normalizeName(Request $request): void
-    {
-        if (! $request->has('name')) {
-            return;
-        }
-
-        $request->merge([
-            'name' => Str::ucfirst(trim((string) $request->input('name'))),
-        ]);
     }
 
     /**
