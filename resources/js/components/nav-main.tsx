@@ -1,4 +1,4 @@
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import { ChevronDown } from 'lucide-react';
 import {
     Collapsible,
@@ -11,6 +11,7 @@ import {
     SidebarGroupLabel,
     SidebarMenu,
     SidebarMenuAction,
+    SidebarMenuBadge,
     SidebarMenuButton,
     SidebarMenuItem,
     SidebarMenuSub,
@@ -21,8 +22,16 @@ import { useCurrentUrl } from '@/hooks/use-current-url';
 import { cn, toUrl } from '@/lib/utils';
 import type { NavItem } from '@/types';
 
+type AdminCounters = Partial<Record<NonNullable<NavItem['badgeKey']>, number>>;
+
 export function NavMain({ items = [] }: { items: NavItem[] }) {
     const { isCurrentOrParentUrl, isCurrentUrl } = useCurrentUrl();
+    const counters =
+        (usePage().props.adminCounters as AdminCounters | null) ?? {};
+
+    /** Solo se pinta si hay pendientes: un cero no aporta nada. */
+    const pending = (item: NavItem): number =>
+        item.badgeKey ? (counters[item.badgeKey] ?? 0) : 0;
 
     /**
      * Solo se marca el subelemento más específico: `/admin/pois/reports` empieza
@@ -91,6 +100,11 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
                                                 <span>{item.title}</span>
                                             </Link>
                                         </SidebarMenuButton>
+                                        {pending(item) > 0 && (
+                                            <SidebarMenuBadge className="right-8 text-xs">
+                                                {pending(item)}
+                                            </SidebarMenuBadge>
+                                        )}
                                         <CollapsibleTrigger asChild>
                                             <SidebarMenuAction
                                                 aria-label={`Mostrar secciones de ${item.title}`}
@@ -132,6 +146,15 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
                                                                             child.title
                                                                         }
                                                                     </span>
+                                                                    {pending(
+                                                                        child,
+                                                                    ) > 0 && (
+                                                                        <span className="ml-auto text-xs text-muted-foreground tabular-nums">
+                                                                            {pending(
+                                                                                child,
+                                                                            )}
+                                                                        </span>
+                                                                    )}
                                                                 </Link>
                                                             </SidebarMenuSubButton>
                                                         </SidebarMenuSubItem>
@@ -167,6 +190,11 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
                                         <span>{item.title}</span>
                                     </Link>
                                 </SidebarMenuButton>
+                                {pending(item) > 0 && (
+                                    <SidebarMenuBadge className="text-xs">
+                                        {pending(item)}
+                                    </SidebarMenuBadge>
+                                )}
                             </SidebarMenuItem>
                         );
                     })}

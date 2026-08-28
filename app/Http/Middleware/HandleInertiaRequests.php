@@ -3,6 +3,11 @@
 namespace App\Http\Middleware;
 
 use App\Models\AppNotification;
+use App\Models\Incident;
+use App\Models\ModerationStatus;
+use App\Models\PoiReport;
+use App\Models\PoiSuggestion;
+use App\Models\RouteRating;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -46,7 +51,34 @@ class HandleInertiaRequests extends Middleware
             'notifications' => [
                 'unread_count' => fn (): int => $this->unreadNotificationsCount($request),
             ],
+            'adminCounters' => fn (): ?array => $this->adminCounters($request),
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+        ];
+    }
+
+    /**
+     * Pendientes por módulo para las insignias del sidebar. Solo se calculan
+     * para administradores: el resto de usuarios no ve esos módulos.
+     *
+     * @return array<string, int>|null
+     */
+    private function adminCounters(Request $request): ?array
+    {
+        $user = $request->user();
+
+        if (! $user instanceof User || $user->role?->name !== 'administrador') {
+            return null;
+        }
+
+        $pendingModerationId = ModerationStatus::query()->where('name', 'pendiente')->value('id');
+
+        return [
+            'incidents' => Incident::query()->whereNull('resolved_at')->count(),
+            'ratings' => $pendingModerationId === null
+                ? 0
+                : RouteRating::query()->where('moderation_status_id', $pendingModerationId)->count(),
+            'poiSuggestions' => PoiSuggestion::query()->where('status', 'pendiente')->count(),
+            'poiReports' => PoiReport::query()->where('status', 'pendiente')->count(),
         ];
     }
 

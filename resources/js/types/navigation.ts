@@ -12,4 +12,6 @@ export type NavItem = {
     href: NonNullable<InertiaLinkProps['href']>;
     icon?: LucideIcon | null;
     isActive?: boolean;
+    /** Clave de `adminCounters`: pinta el número de pendientes junto al módulo. */
+    badgeKey?: 'incidents' | 'ratings' | 'poiSuggestions' | 'poiReports';
 };

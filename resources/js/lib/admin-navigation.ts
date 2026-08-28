@@ -44,10 +44,12 @@ export const adminNavItems: NavItem[] = [
             {
                 title: 'Sugerencias',
                 href: PoiSuggestionController(),
+                badgeKey: 'poiSuggestions',
             },
             {
                 title: 'Reportes',
                 href: PoiReportController(),
+                badgeKey: 'poiReports',
             },
         ],
     },
@@ -55,6 +57,7 @@ export const adminNavItems: NavItem[] = [
         title: 'Incidencias',
         href: '/admin/incidents',
         icon: ClipboardList,
+        badgeKey: 'incidents',
     },
     {
         title: 'Usuarios',
@@ -65,6 +68,7 @@ export const adminNavItems: NavItem[] = [
         title: 'Valoraciones',
         href: '/admin/ratings',
         icon: MessageSquareText,
+        badgeKey: 'ratings',
     },
     {
         title: 'Catálogos',
