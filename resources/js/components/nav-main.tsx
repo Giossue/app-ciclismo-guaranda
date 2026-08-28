@@ -31,11 +31,9 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
                                     isActive={active}
                                     tooltip={{ children: item.title }}
                                     className={cn(
-                                        'relative min-h-10 rounded-[var(--radius-control)] font-medium',
-                                        // Indicador de ubicación: tinte de marca, texto en --link
-                                        // y barra lateral, visible también con el sidebar colapsado.
+                                        'min-h-10 rounded-[var(--radius-control)] font-medium',
+                                        // Indicador de ubicación: tinte de marca y texto en --link.
                                         'data-[active=true]:bg-primary/12 data-[active=true]:font-semibold data-[active=true]:text-link',
-                                        'data-[active=true]:before:absolute data-[active=true]:before:inset-y-1.5 data-[active=true]:before:left-0 data-[active=true]:before:w-1 data-[active=true]:before:rounded-full data-[active=true]:before:bg-primary data-[active=true]:before:content-[""]',
                                     )}
                                 >
                                     <Link
