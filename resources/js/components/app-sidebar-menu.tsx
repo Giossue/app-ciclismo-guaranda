@@ -1,6 +1,7 @@
 import { Link, router, usePage } from '@inertiajs/react';
 import type { LucideIcon } from 'lucide-react';
 import { LogOut, Palette, ShieldCheck, UserRound } from 'lucide-react';
+import AppLogo from '@/components/app-logo';
 import { useSidebar } from '@/components/ui/sidebar';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
@@ -67,6 +68,11 @@ export function AppSidebarMenu({ items }: { items: NavItem[] }) {
 
     return (
         <div className="flex h-full flex-col gap-5 overflow-y-auto p-4 pb-[calc(var(--safe-bottom)+1rem)]">
+            {/* Marca; el pr-14 reserva el espacio del botón de cerrar */}
+            <div className="flex min-h-10 items-center gap-2 pr-14">
+                <AppLogo />
+            </div>
+
             {/* Active Session Info */}
             <section className="flex flex-col gap-0.5 rounded-2xl border border-border bg-card p-4">
                 <p className="font-black tracking-wider text-[var(--fs-caption)] text-muted-foreground uppercase">

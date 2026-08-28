@@ -18,6 +18,8 @@ use App\Models\TrackGpsPoint;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\Pivot;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -55,16 +57,13 @@ class RouteController extends Controller
             'status:id,name',
             'category:id,name',
             'difficulty:id,name',
-            'geometry',
+            'geometry:id,route_id,geojson',
             'images',
             'metrics.transportMode:id,name',
             'recommendations',
             'observations',
-            'pointsOfInterest' => fn ($query) => $query->where('active', true)->with(['category:id,name', 'hours', 'images']),
-            'incidents' => fn ($query) => $query
-                ->whereHas('status', fn ($statusQuery) => $statusQuery->where('name', 'en revisión'))
-                ->with(['type:id,name', 'status:id,name', 'files'])
-                ->latest('reported_at'),
+            'pointsOfInterest' => fn (BelongsToMany $query) => $this->publicPointsOfInterest($query),
+            'incidents' => fn (HasMany $query) => $this->publicIncidents($query),
             'ratings' => fn ($query) => $query
                 ->whereHas('moderationStatus', fn ($statusQuery) => $statusQuery->where('name', 'aprobado'))
                 ->with(['user:id,name,last_name', 'moderationStatus:id,name', 'files'])
@@ -97,17 +96,60 @@ class RouteController extends Controller
                 'status:id,name',
                 'category:id,name',
                 'difficulty:id,name',
-                'geometry',
+                'geometry:id,route_id,geojson',
                 'metrics.transportMode:id,name',
                 'recommendations',
                 'observations',
-                'pointsOfInterest' => fn ($query) => $query->where('active', true)->with('category:id,name'),
-                'incidents' => fn ($query) => $query
-                    ->whereHas('status', fn ($statusQuery) => $statusQuery->where('name', 'en revisión'))
-                    ->with(['type:id,name', 'status:id,name', 'files'])
-                    ->latest('reported_at'),
+                'pointsOfInterest' => fn (BelongsToMany $query) => $this->publicPointsOfInterest($query),
+                'incidents' => fn (HasMany $query) => $this->publicIncidents($query),
             ])
             ->whereHas('status', fn ($query) => $query->where('name', 'activa'));
+    }
+
+    private function publicPointsOfInterest(BelongsToMany $query): BelongsToMany
+    {
+        return $query
+            ->select([
+                'id',
+                'poi_category_id',
+                'name',
+                'description',
+                'observations',
+                'address',
+                'phone',
+                'latitude',
+                'longitude',
+                'active',
+            ])
+            ->where('active', true)
+            ->with([
+                'category:id,name',
+                'hours:id,point_of_interest_id,weekday,opens_at,closes_at,description',
+                'images:id,point_of_interest_id,image_path,description,sort_order',
+            ]);
+    }
+
+    private function publicIncidents(HasMany $query): HasMany
+    {
+        return $query
+            ->select([
+                'id',
+                'route_id',
+                'incident_type_id',
+                'incident_status_id',
+                'title',
+                'description',
+                'latitude',
+                'longitude',
+                'reported_at',
+            ])
+            ->whereHas('status', fn ($statusQuery) => $statusQuery->where('name', 'en revisión'))
+            ->with([
+                'type:id,name',
+                'status:id,name',
+                'files:id,incident_id,file_path,file_type',
+            ])
+            ->latest('reported_at');
     }
 
     /**
