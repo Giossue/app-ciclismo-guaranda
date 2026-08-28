@@ -2,7 +2,13 @@ import 'leaflet/dist/leaflet.css';
 
 import { Link } from '@inertiajs/react';
 import L from 'leaflet';
-import { Filter, Layers, LocateFixed, Navigation } from 'lucide-react';
+import {
+    AlertTriangle,
+    Filter,
+    Layers,
+    LocateFixed,
+    Navigation,
+} from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import {
     CircleMarker,
@@ -22,7 +28,6 @@ import {
     DropdownMenuCheckboxItem,
     DropdownMenuContent,
     DropdownMenuGroup,
-    DropdownMenuLabel,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { mediaUrl } from '@/lib/media';
@@ -47,6 +52,7 @@ export type RouteMapProps = {
     activeTrack?: ActiveTrack | null;
     onPoiSelect?: (poi: RoutePoi) => void;
     onRouteSelect?: (route: RouteMapItem) => void;
+    onReportIncident?: () => void;
 };
 
 type UserLocation = {
@@ -78,8 +84,8 @@ const satelliteLayer = {
     url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
 };
 const routePathOptions = {
-    color: 'var(--warning)',
-    fillColor: 'var(--warning)',
+    color: 'var(--primary)',
+    fillColor: 'var(--primary)',
     opacity: 0.98,
     weight: 5,
 };
@@ -130,6 +136,7 @@ export default function RouteMap({
     activeTrack = null,
     onPoiSelect,
     onRouteSelect,
+    onReportIncident,
 }: RouteMapProps) {
     const [gpsStatus, setGpsStatus] = useState<GpsStatus>('idle');
     const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
@@ -144,7 +151,6 @@ export default function RouteMap({
     const activeLayer =
         mapLayer === 'satellite' ? satelliteLayer : standardLayer;
     const showOverviewFilters = mode === 'overview';
-
     const requestLocation = () => {
         setGpsStatus('requesting');
 
@@ -186,29 +192,6 @@ export default function RouteMap({
                     immersive && 'absolute top-3 left-3 z-[500]',
                 )}
             >
-                <Button
-                    type="button"
-                    variant="overlay"
-                    size="icon"
-                    onClick={() =>
-                        setMapLayer((current) =>
-                            current === 'standard' ? 'satellite' : 'standard',
-                        )
-                    }
-                    aria-label={`Cambiar a ${mapLayer === 'standard' ? 'satélite' : 'mapa'}`}
-                    title={`Cambiar a ${mapLayer === 'standard' ? 'satélite' : 'mapa'}`}
-                >
-                    <Layers />
-                </Button>
-            </div>
-
-            <div
-                className={cn(
-                    'flex flex-col gap-3',
-                    immersive &&
-                        'absolute top-1/2 right-3 z-[500] -translate-y-1/2',
-                )}
-            >
                 {showOverviewFilters && (
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -224,9 +207,6 @@ export default function RouteMap({
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent side="left" align="end">
-                            <DropdownMenuLabel>
-                                Mostrar en el mapa
-                            </DropdownMenuLabel>
                             <DropdownMenuGroup>
                                 <DropdownMenuCheckboxItem
                                     checked={filters.tracks}
@@ -267,6 +247,29 @@ export default function RouteMap({
                     type="button"
                     variant="overlay"
                     size="icon"
+                    onClick={() =>
+                        setMapLayer((current) =>
+                            current === 'standard' ? 'satellite' : 'standard',
+                        )
+                    }
+                    aria-label={`Cambiar a ${mapLayer === 'standard' ? 'satélite' : 'mapa'}`}
+                    title={`Cambiar a ${mapLayer === 'standard' ? 'satélite' : 'mapa'}`}
+                >
+                    <Layers />
+                </Button>
+            </div>
+
+            <div
+                className={cn(
+                    'flex flex-col gap-3',
+                    immersive &&
+                        'absolute top-1/2 right-3 z-[500] -translate-y-1/2',
+                )}
+            >
+                <Button
+                    type="button"
+                    variant="overlay"
+                    size="icon"
                     onClick={requestLocation}
                     disabled={gpsStatus === 'requesting'}
                     aria-label="Mostrar mi ubicación actual"
@@ -275,6 +278,19 @@ export default function RouteMap({
                 >
                     <LocateFixed className="size-6" />
                 </Button>
+                {onReportIncident && (
+                    <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        onClick={onReportIncident}
+                        aria-label="Reportar una alerta"
+                        title="Reportar una alerta"
+                        className="size-14 min-h-14 rounded-full shadow-[var(--elevation-floating)]"
+                    >
+                        <AlertTriangle className="size-6" />
+                    </Button>
+                )}
             </div>
 
             {gpsStatus === 'denied' && (

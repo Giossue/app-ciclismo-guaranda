@@ -1,8 +1,9 @@
-import { Form, Head, Link, router, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
     ArrowLeft,
     Bot,
     Compass,
+    EllipsisVertical,
     History,
     LoaderCircle,
     MapPin,
@@ -13,7 +14,6 @@ import {
     WifiOff,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { FormEvent } from 'react';
 import ChatController from '@/actions/App/Http/Controllers/Cyclist/ChatController';
 import {
     Conversation,
@@ -48,6 +48,13 @@ import InputError from '@/components/input-error';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Label } from '@/components/ui/label';
 import {
     Popover,
@@ -68,7 +75,6 @@ import {
     SheetDescription,
     SheetHeader,
     SheetTitle,
-    SheetTrigger,
 } from '@/components/ui/sheet';
 import { mediaUrl } from '@/lib/media';
 import {
@@ -380,28 +386,7 @@ export default function ChatIndex({
                                 'Planifica tu próxima salida'}
                         </p>
                     </div>
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        asChild
-                        className="size-9 shrink-0 rounded-xl p-0"
-                    >
-                        <Link
-                            href={chatIndex.url({ query: { new: 1 } })}
-                            replace
-                            prefetch
-                            aria-label="Nueva consulta"
-                        >
-                            <Plus className="size-4" />
-                        </Link>
-                    </Button>
-                    {activeConversation && (
-                        <DeleteConversationForm
-                            conversation={activeConversation}
-                            compact
-                        />
-                    )}
-                    <HistorySheet
+                    <ChatOverflowMenu
                         conversations={conversations}
                         activeConversation={activeConversation}
                     />
@@ -552,9 +537,6 @@ export default function ChatIndex({
                                         setTravelContext={setTravelContext}
                                         travelContext={travelContext}
                                     />
-                                    <span className="text-xs text-muted-foreground">
-                                        Enter para enviar
-                                    </span>
                                 </PromptInputTools>
                                 <PromptInputSubmit
                                     disabled={!canSend || agentIsLoading}
@@ -726,26 +708,105 @@ function ContextControls({
     );
 }
 
-function HistorySheet({
+function ChatOverflowMenu({
     conversations,
     activeConversation,
 }: {
     conversations: ConversationSummary[];
     activeConversation: ChatConversation | null;
 }) {
+    const [historyOpen, setHistoryOpen] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const deleteActiveConversation = () => {
+        if (!activeConversation || isDeleting) {
+            return;
+        }
+
+        const title =
+            activeConversation.title ?? `Consulta ${activeConversation.id}`;
+
+        if (
+            !window.confirm(
+                `¿Ocultar "${title}" de tu historial? Se conservará un registro interno por seguridad.`,
+            )
+        ) {
+            return;
+        }
+
+        router.delete(ChatController.destroy.url(activeConversation.id), {
+            preserveScroll: true,
+            onStart: () => setIsDeleting(true),
+            onFinish: () => setIsDeleting(false),
+        });
+    };
+
     return (
-        <Sheet>
-            <SheetTrigger asChild>
-                <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    className="size-9 shrink-0 rounded-xl"
-                    aria-label="Abrir historial"
-                >
-                    <History className="size-4" />
-                </Button>
-            </SheetTrigger>
+        <>
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        className="size-9 shrink-0 rounded-xl"
+                        aria-label="Más opciones de conversación"
+                    >
+                        <EllipsisVertical />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuItem asChild>
+                        <Link
+                            href={chatIndex.url({ query: { new: 1 } })}
+                            replace
+                            prefetch
+                        >
+                            <Plus />
+                            Nueva consulta
+                        </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => setHistoryOpen(true)}>
+                        <History />
+                        Historial
+                    </DropdownMenuItem>
+                    {activeConversation && (
+                        <>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                                variant="destructive"
+                                disabled={isDeleting}
+                                onSelect={deleteActiveConversation}
+                            >
+                                <Trash2 />
+                                {isDeleting ? 'Borrando…' : 'Borrar'}
+                            </DropdownMenuItem>
+                        </>
+                    )}
+                </DropdownMenuContent>
+            </DropdownMenu>
+            <HistorySheet
+                conversations={conversations}
+                activeConversation={activeConversation}
+                open={historyOpen}
+                onOpenChange={setHistoryOpen}
+            />
+        </>
+    );
+}
+
+function HistorySheet({
+    conversations,
+    activeConversation,
+    open,
+    onOpenChange,
+}: {
+    conversations: ConversationSummary[];
+    activeConversation: ChatConversation | null;
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+}) {
+    return (
+        <Sheet open={open} onOpenChange={onOpenChange}>
             <SheetContent className="w-[86vw] gap-0 p-0 sm:max-w-sm">
                 <SheetHeader className="border-b p-4 pr-10">
                     <SheetTitle>Historial</SheetTitle>
@@ -800,9 +861,6 @@ function HistorySheet({
                                         </p>
                                     )}
                                 </Link>
-                                <DeleteConversationForm
-                                    conversation={conversation}
-                                />
                             </div>
                         ))}
 
@@ -815,50 +873,6 @@ function HistorySheet({
                 </div>
             </SheetContent>
         </Sheet>
-    );
-}
-
-function DeleteConversationForm({
-    conversation,
-    compact = false,
-}: {
-    conversation: Pick<ChatConversation, 'id' | 'title'>;
-    compact?: boolean;
-}) {
-    const title = conversation.title ?? `Consulta ${conversation.id}`;
-
-    return (
-        <Form
-            {...ChatController.destroy.form(conversation.id)}
-            options={{ preserveScroll: true }}
-            onSubmit={(event: FormEvent<HTMLFormElement>) => {
-                if (
-                    !window.confirm(
-                        `¿Ocultar "${title}" de tu historial? Se conservará un registro interno por seguridad.`,
-                    )
-                ) {
-                    event.preventDefault();
-                }
-            }}
-        >
-            {({ processing }) => (
-                <Button
-                    type="submit"
-                    variant={compact ? 'outline' : 'ghost'}
-                    size="icon"
-                    className={cn(
-                        compact
-                            ? 'size-9 shrink-0 rounded-xl text-destructive hover:border-destructive hover:text-destructive'
-                            : 'size-9 shrink-0 rounded-xl text-destructive hover:bg-destructive/10 hover:text-destructive',
-                    )}
-                    disabled={processing}
-                    aria-label={`Ocultar ${title}`}
-                    title="Ocultar de mi historial"
-                >
-                    <Trash2 className="size-4" />
-                </Button>
-            )}
-        </Form>
     );
 }
 

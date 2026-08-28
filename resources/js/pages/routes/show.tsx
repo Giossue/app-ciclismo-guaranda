@@ -102,6 +102,7 @@ export default function RoutesShow({
     activeTrack,
 }: Props) {
     const [selectedPoi, setSelectedPoi] = useState<RoutePoi | null>(null);
+    const [isIncidentSheetOpen, setIsIncidentSheetOpen] = useState(false);
 
     return (
         <>
@@ -114,6 +115,7 @@ export default function RoutesShow({
                     mode="detail"
                     activeTrack={activeTrack}
                     onPoiSelect={setSelectedPoi}
+                    onReportIncident={() => setIsIncidentSheetOpen(true)}
                     immersive
                     className="h-full"
                 />
@@ -125,7 +127,12 @@ export default function RoutesShow({
                     selectedPoi={selectedPoi}
                     onClearSelectedPoi={() => setSelectedPoi(null)}
                 />
-                <RouteIncidentFab route={route} types={incidentTypes} />
+                <IncidentReportSheet
+                    route={route}
+                    types={incidentTypes}
+                    open={isIncidentSheetOpen}
+                    onOpenChange={setIsIncidentSheetOpen}
+                />
             </div>
         </>
     );
@@ -1804,38 +1811,6 @@ function poiSuggestionPlaceholder(category: string): string {
     }
 
     return 'Referencia, servicio, por qué es útil para la ruta';
-}
-
-function RouteIncidentFab({
-    route,
-    types,
-}: {
-    route: CyclingRouteMapItem;
-    types: CatalogOption[];
-}) {
-    const [open, setOpen] = useState(false);
-
-    return (
-        <>
-            <Button
-                type="button"
-                variant="destructive"
-                size="icon"
-                onClick={() => setOpen(true)}
-                className="fixed right-[var(--page-pad-x)] bottom-[calc(var(--bottom-nav-height)+var(--safe-bottom)+1rem)] z-[60] size-14 min-h-14 rounded-full shadow-[var(--elevation-floating)] md:right-8 md:bottom-8"
-                aria-label="Reportar una alerta"
-                title="Reportar una alerta"
-            >
-                <AlertTriangle className="size-6" />
-            </Button>
-            <IncidentReportSheet
-                route={route}
-                types={types}
-                open={open}
-                onOpenChange={setOpen}
-            />
-        </>
-    );
 }
 
 function IncidentReportSheet({

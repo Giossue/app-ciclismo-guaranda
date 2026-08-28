@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { useDisableNativePullToRefresh } from '@/hooks/use-disable-native-pull-to-refresh';
 import { isAdmin } from '@/lib/navigation';
+import { cn } from '@/lib/utils';
 import { index as favoritesIndex } from '@/routes/favorites';
 import { index as mapsIndex } from '@/routes/maps';
 import { index as routesIndex } from '@/routes/routes';
@@ -11,6 +12,7 @@ import type { Auth } from '@/types';
 
 type PageProps = {
     auth: Auth;
+    selectedRouteSlug?: string | null;
 };
 
 export default function MapsLayout({
@@ -19,7 +21,7 @@ export default function MapsLayout({
     children: React.ReactNode;
 }) {
     const { isCurrentUrl } = useCurrentUrl();
-    const { auth } = usePage<PageProps>().props;
+    const { auth, selectedRouteSlug } = usePage<PageProps>().props;
 
     useDisableNativePullToRefresh(!isAdmin(auth));
 
@@ -29,7 +31,10 @@ export default function MapsLayout({
 
             <nav
                 aria-label="Navegación del mapa"
-                className="fixed inset-x-0 bottom-[calc(var(--safe-bottom)+0.75rem)] z-[700] flex justify-center px-4"
+                className={cn(
+                    'fixed inset-x-0 bottom-[calc(var(--safe-bottom)+0.75rem)] z-[700] flex justify-center px-4',
+                    selectedRouteSlug && 'hidden',
+                )}
             >
                 <div className="flex items-center gap-1 rounded-[var(--radius-emphasis)] border bg-background/90 p-1.5 shadow-lg backdrop-blur">
                     <Button

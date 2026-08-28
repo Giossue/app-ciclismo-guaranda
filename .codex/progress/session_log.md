@@ -772,3 +772,15 @@
 - El chat ya no interpreta el valor transitorio de `navigator.onLine` como
   desconexión al abrirse en Capacitor. Mantiene un estado breve de comprobación
   y muestra el aviso offline solo tras recibir un resultado confirmado.
+
+## 2026-08-28 — Chat móvil inmersivo
+
+- En `/chat` se oculta la navegación inferior móvil y el contenido usa la
+  altura restante del viewport para que el compositor no se desplace junto a
+  los mensajes. Se retiró el texto “Enter para enviar”.
+
+## 2026-08-28 — Acciones del chat agrupadas
+
+- El encabezado del chat concentra Nueva consulta, Historial y Borrar en un
+  menú de tres puntos. Borrar aplica únicamente a la conversación activa y
+  conserva la confirmación previa.

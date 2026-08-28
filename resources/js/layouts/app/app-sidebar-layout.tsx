@@ -7,6 +7,7 @@ import { AppSidebarHeader } from '@/components/app-sidebar-header';
 import { PullToRefresh } from '@/components/pull-to-refresh';
 import { useDisableNativePullToRefresh } from '@/hooks/use-disable-native-pull-to-refresh';
 import { isAdmin } from '@/lib/navigation';
+import { cn } from '@/lib/utils';
 import type { AppLayoutProps, Auth } from '@/types';
 
 type PageProps = {
@@ -18,6 +19,7 @@ export default function AppSidebarLayout({ children }: AppLayoutProps) {
     const page = usePage<PageProps>();
     const pathname = page.url.split('?')[0];
     const administrator = isAdmin(page.props.auth);
+    const isChat = pathname === '/chat';
 
     useDisableNativePullToRefresh(!administrator);
 
@@ -36,11 +38,16 @@ export default function AppSidebarLayout({ children }: AppLayoutProps) {
                 <AppSidebarHeader />
                 <main
                     key={pathname}
-                    className="safe-bottom-pad ueb-admin-page flex flex-1 animate-in flex-col gap-[var(--page-gap)] px-[var(--page-pad-x)] pt-[var(--page-pad-y)] duration-150 ease-out fade-in md:pb-[var(--page-pad-y)]"
+                    className={cn(
+                        'ueb-admin-page flex flex-1 animate-in flex-col gap-[var(--page-gap)] px-[var(--page-pad-x)] pt-[var(--page-pad-y)] duration-150 ease-out fade-in',
+                        isChat
+                            ? 'h-[calc(100dvh-3rem)] min-h-0 overflow-hidden pb-[var(--page-pad-y)]'
+                            : 'safe-bottom-pad md:pb-[var(--page-pad-y)]',
+                    )}
                 >
                     {children}
                 </main>
-                <AppMobileNav />
+                {!isChat && <AppMobileNav />}
             </AppContent>
         </AppShell>
     );

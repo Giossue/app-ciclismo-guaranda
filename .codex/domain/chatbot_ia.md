@@ -144,3 +144,9 @@ Laravel ya entregó a la pantalla.
 Al abrir la pantalla, el estado de red empieza en comprobación: no se muestra
 una alerta ni se permite enviar hasta que Capacitor o el navegador confirme la
 conexión. Solo un resultado confirmado sin red muestra el aviso offline.
+En móvil, el chat ocupa el alto restante del viewport, mantiene el compositor
+anclado y oculta la navegación inferior para concentrar la interacción; el
+botón “Volver” conserva una salida clara hacia rutas.
+Las acciones secundarias de la conversación se agrupan en un menú de tres
+puntos: nueva consulta, historial y borrar la conversación activa. Borrar
+mantiene una confirmación y no aparece si todavía no existe una conversación.
