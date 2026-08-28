@@ -40,7 +40,7 @@ export function AppMobileNav() {
                             className={cn(
                                 'flex min-w-0 flex-1 touch-manipulation flex-col items-center justify-center gap-0.5 rounded-xl px-1 py-1 leading-none font-bold text-[var(--fs-caption)] transition-[color,transform] active:scale-[0.96]',
                                 active
-                                    ? 'text-primary'
+                                    ? 'text-link'
                                     : 'text-muted-foreground hover:text-foreground',
                             )}
                         >
@@ -72,7 +72,7 @@ export function AppMobileNav() {
                     className={cn(
                         'flex min-w-0 flex-1 touch-manipulation flex-col items-center justify-center gap-0.5 rounded-xl px-1 py-1 leading-none font-bold text-[var(--fs-caption)] transition-[color,transform] active:scale-[0.96]',
                         openMobile
-                            ? 'text-primary'
+                            ? 'text-link'
                             : 'text-muted-foreground hover:text-foreground',
                     )}
                 >

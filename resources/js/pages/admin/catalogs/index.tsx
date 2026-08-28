@@ -1,5 +1,5 @@
 import { Form, Head, router } from '@inertiajs/react';
-import { Database, Pencil, Plus } from 'lucide-react';
+import { Pencil, Plus } from 'lucide-react';
 import { useState } from 'react';
 import CatalogController from '@/actions/App/Http/Controllers/Admin/CatalogController';
 import { DataTable } from '@/components/data-table';
@@ -80,10 +80,6 @@ type Props = {
     catalogs: CatalogSummary[];
     filters: CatalogFilters;
     records: PaginatedRecords;
-    totals: {
-        catalogs: number;
-        records: number;
-    };
 };
 
 export default function AdminCatalogsIndex({
@@ -91,7 +87,6 @@ export default function AdminCatalogsIndex({
     catalogs,
     filters,
     records,
-    totals,
 }: Props) {
     const [createOpen, setCreateOpen] = useState(false);
 
@@ -171,21 +166,10 @@ export default function AdminCatalogsIndex({
             <Head title="Catálogos" />
 
             <div className="flex flex-col gap-6">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                    <Heading
-                        title="Catálogos del sistema"
-                        description="Administra roles, estados, categorías y tipos base usados por rutas, POIs, incidencias, recorridos y reportes."
-                    />
-                    <div className="flex flex-wrap gap-2">
-                        <Badge variant="secondary">
-                            <Database data-icon="inline-start" />
-                            {totals.catalogs} catálogos
-                        </Badge>
-                        <Badge variant="outline">
-                            {totals.records} registros
-                        </Badge>
-                    </div>
-                </div>
+                <Heading
+                    title="Catálogos del sistema"
+                    description="Administra roles, estados, categorías y tipos base usados por rutas, POIs, incidencias, recorridos y reportes."
+                />
 
                 <Card>
                     <CardHeader>
@@ -245,7 +229,6 @@ export default function AdminCatalogsIndex({
 
                 <DataTable
                     title={catalog.title}
-                    description={`Tabla: ${catalog.table}`}
                     data={records.data}
                     columns={columns}
                     getRowId={(record) => record.id}

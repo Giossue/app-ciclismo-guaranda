@@ -214,7 +214,7 @@ export default function Profile({
 
                                         {status ===
                                             'verification-link-sent' && (
-                                            <div className="mt-2 font-bold text-primary">
+                                            <div className="mt-2 font-bold text-link">
                                                 Se envió un nuevo enlace de
                                                 verificación a tu correo.
                                             </div>
