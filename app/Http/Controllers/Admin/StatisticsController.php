@@ -32,6 +32,8 @@ class StatisticsController extends Controller
                 'to' => $to?->toDateString(),
             ],
             'metrics' => $this->metrics($from, $to),
+            'activitySeries' => $this->activitySeries($from, $to),
+            'ratingsDistribution' => $this->ratingsDistribution($from, $to),
             'topViewedRoutes' => $this->topViewedRoutes($from, $to),
             'topDownloadedRoutes' => $this->topDownloadedRoutes($from, $to),
             'topRatedRoutes' => $this->topRatedRoutes($from, $to),
@@ -83,6 +85,83 @@ class StatisticsController extends Controller
         }, 'guaranda-go-estadisticas.csv', [
             'Content-Type' => 'text/csv; charset=UTF-8',
         ]);
+    }
+
+    /**
+     * Serie diaria del rango para las gráficas de evolución. Sin rango explícito
+     * se muestran los últimos 30 días, que es lo que cabe leer en una línea.
+     *
+     * @return list<array{date: string, label: string, views: int, downloads: int, tracks: int}>
+     */
+    private function activitySeries(?CarbonImmutable $from, ?CarbonImmutable $to): array
+    {
+        $end = $to ?? CarbonImmutable::now()->endOfDay();
+        $start = $from ?? $end->subDays(29)->startOfDay();
+
+        if ($start->greaterThan($end)) {
+            return [];
+        }
+
+        $days = min((int) $start->startOfDay()->diffInDays($end->startOfDay()) + 1, 180);
+        $views = $this->dailyCounts('consultas_ruta', 'viewed_at', $start, $end);
+        $downloads = $this->dailyCounts('descargas_ruta', 'downloaded_at', $start, $end);
+        $tracks = $this->dailyCounts('recorridos', 'ended_at', $start, $end);
+
+        $series = [];
+
+        for ($offset = 0; $offset < $days; $offset++) {
+            $date = $start->addDays($offset);
+            $key = $date->toDateString();
+
+            $series[] = [
+                'date' => $key,
+                'label' => $date->translatedFormat('d M'),
+                'views' => (int) ($views[$key] ?? 0),
+                'downloads' => (int) ($downloads[$key] ?? 0),
+                'tracks' => (int) ($tracks[$key] ?? 0),
+            ];
+        }
+
+        return $series;
+    }
+
+    /**
+     * @param  'viewed_at'|'downloaded_at'|'ended_at'  $column
+     * @return array<string, int>
+     */
+    private function dailyCounts(string $table, string $column, CarbonImmutable $from, CarbonImmutable $to): array
+    {
+        return DB::table($table)
+            ->whereBetween($column, [$from, $to])
+            ->groupBy('day')
+            ->selectRaw("DATE({$column}) as day, COUNT(*) as total")
+            ->pluck('total', 'day')
+            ->map(fn ($total): int => (int) $total)
+            ->all();
+    }
+
+    /**
+     * @return list<array{rating: int, label: string, count: int}>
+     */
+    private function ratingsDistribution(?CarbonImmutable $from, ?CarbonImmutable $to): array
+    {
+        $counts = $this->applyQueryDateRange(DB::table('valoraciones_ruta'), 'rated_at', $from, $to)
+            ->groupBy('rating')
+            ->selectRaw('rating, COUNT(*) as total')
+            ->pluck('total', 'rating')
+            ->all();
+
+        $distribution = [];
+
+        foreach (range(1, 5) as $rating) {
+            $distribution[] = [
+                'rating' => $rating,
+                'label' => $rating.($rating === 1 ? ' estrella' : ' estrellas'),
+                'count' => (int) ($counts[$rating] ?? 0),
+            ];
+        }
+
+        return $distribution;
     }
 
     /**

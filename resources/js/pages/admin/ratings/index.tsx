@@ -1,5 +1,10 @@
 import { Form, Head, Link, router } from '@inertiajs/react';
-import { Ellipsis, MessageSquareText, RouteIcon, Star } from 'lucide-react';
+import {
+    EllipsisVertical,
+    MessageSquareText,
+    RouteIcon,
+    Star,
+} from 'lucide-react';
 import { useState } from 'react';
 import RatingController from '@/actions/App/Http/Controllers/Admin/RatingController';
 import { DataTable } from '@/components/data-table';
@@ -260,7 +265,7 @@ function RatingRowActions({
                         size="icon"
                         aria-label={`Acciones para la valoración de ${rating.user?.name ?? 'usuario'}`}
                     >
-                        <Ellipsis />
+                        <EllipsisVertical />
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">

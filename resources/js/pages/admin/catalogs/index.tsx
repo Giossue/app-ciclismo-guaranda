@@ -1,5 +1,5 @@
 import { Form, Head, router } from '@inertiajs/react';
-import { Pencil } from 'lucide-react';
+import { EllipsisVertical, Pencil } from 'lucide-react';
 import { useState } from 'react';
 import CatalogController from '@/actions/App/Http/Controllers/Admin/CatalogController';
 import { DataTable } from '@/components/data-table';
@@ -10,6 +10,13 @@ import { PrimaryActionButton } from '@/components/primary-action-button';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuGroup,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Field, FieldGroup, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import {
@@ -447,15 +454,26 @@ function CatalogRecordRowActions({
 
     return (
         <>
-            <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                aria-label={`Editar ${record.name}`}
-                onClick={() => setEditOpen(true)}
-            >
-                <Pencil />
-            </Button>
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        aria-label={`Acciones para ${record.name}`}
+                    >
+                        <EllipsisVertical />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuGroup>
+                        <DropdownMenuItem onSelect={() => setEditOpen(true)}>
+                            <Pencil />
+                            Editar registro
+                        </DropdownMenuItem>
+                    </DropdownMenuGroup>
+                </DropdownMenuContent>
+            </DropdownMenu>
 
             <Sheet open={editOpen} onOpenChange={setEditOpen}>
                 <SheetContent className="w-full overflow-y-auto sm:max-w-lg">

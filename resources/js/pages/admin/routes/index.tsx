@@ -280,9 +280,10 @@ export default function AdminRoutesIndex({
                     }
                 }}
             >
+                {/* El editor de trazado y las galerías necesitan todo el ancho. */}
                 <SheetContent
                     side="right"
-                    className="w-full max-w-none overflow-y-auto sm:max-w-3xl lg:max-w-5xl"
+                    className="w-full max-w-none overflow-y-auto border-0 sm:max-w-none"
                 >
                     <SheetHeader>
                         <SheetTitle>

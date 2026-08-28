@@ -6,9 +6,9 @@ import * as React from 'react';
 import { cn } from '@/lib/utils';
 
 const badgeVariants = cva(
-    // Escala al 70% de la métrica base del sistema: separación, relleno,
-    // tipografía e icono llevan el mismo factor para no deformar la píldora.
-    'inline-flex w-fit shrink-0 items-center justify-center gap-[0.175rem] rounded-full border px-[0.4375rem] py-[0.175rem] text-[calc(var(--fs-xs)*0.7)] leading-none font-semibold tracking-[0.04em] uppercase whitespace-nowrap transition-colors [&>svg]:pointer-events-none [&>svg]:size-[0.7rem]',
+    // Todo el badge se escala con --badge-scale sobre la métrica base del
+    // sistema, así separación, relleno, tipografía e icono se mueven juntos.
+    'inline-flex w-fit shrink-0 items-center justify-center gap-[calc(0.25rem*var(--badge-scale))] rounded-full border px-[calc(0.625rem*var(--badge-scale))] py-[calc(0.25rem*var(--badge-scale))] text-[calc(var(--fs-xs)*var(--badge-scale))] leading-none font-semibold tracking-[0.04em] uppercase whitespace-nowrap transition-colors [&>svg]:pointer-events-none [&>svg]:size-[calc(1rem*var(--badge-scale))]',
     {
         variants: {
             variant: {

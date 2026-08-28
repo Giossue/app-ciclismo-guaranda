@@ -30,6 +30,17 @@
             }
         </style>
 
+        {{--
+            Inter se descarga en paralelo con el CSS. Sin esto el navegador solo
+            descubre el woff2 después de analizar app.css, pinta con la fuente de
+            respaldo y salta a Inter al llegar. El guardia evita romper cuando no
+            hay build (tests o entorno recién clonado).
+        --}}
+        @if (file_exists(public_path('build/manifest.json')))
+            <link rel="preload" as="font" type="font/woff2" crossorigin
+                href="{{ Vite::asset('node_modules/@fontsource-variable/inter/files/inter-latin-wght-normal.woff2') }}">
+        @endif
+
         <link rel="icon" href="/favicon.svg" type="image/svg+xml">
         <link rel="icon" href="/favicon.ico" sizes="any">
         <link rel="apple-touch-icon" href="/apple-touch-icon.png">

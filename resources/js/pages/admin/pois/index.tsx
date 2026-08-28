@@ -1,5 +1,5 @@
 import { Form, Head, Link, router } from '@inertiajs/react';
-import { Ellipsis, Pencil, Power, RouteIcon } from 'lucide-react';
+import { EllipsisVertical, Pencil, Power, RouteIcon } from 'lucide-react';
 import PoiController from '@/actions/App/Http/Controllers/Admin/PoiController';
 import { DataTable } from '@/components/data-table';
 import type { DataTableColumn, DataTableQuery } from '@/components/data-table';
@@ -223,7 +223,7 @@ function PoiRowActions({ poi }: { poi: ManagedPoi }) {
                     size="icon"
                     aria-label={`Acciones para ${poi.name}`}
                 >
-                    <Ellipsis />
+                    <EllipsisVertical />
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">

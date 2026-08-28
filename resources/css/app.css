@@ -120,6 +120,8 @@
     --control-height: 3.25rem;
     /* Tamaño único de icono del sistema: todo SVG de interfaz mide lo mismo. */
     --icon-size: 1rem;
+    /* Escala del badge sobre la métrica base: relleno, tipografía e icono. */
+    --badge-scale: 0.77;
     --action-height: 2.75rem;
     --action-height-sm: 2.5rem;
     --action-height-lg: 3rem;

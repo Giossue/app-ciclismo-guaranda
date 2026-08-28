@@ -1,5 +1,11 @@
 import { Form, Head, router } from '@inertiajs/react';
-import { Ellipsis, KeyRound, Pencil, Power, RotateCcw } from 'lucide-react';
+import {
+    EllipsisVertical,
+    KeyRound,
+    Pencil,
+    Power,
+    RotateCcw,
+} from 'lucide-react';
 import { useState } from 'react';
 import UserController from '@/actions/App/Http/Controllers/Admin/UserController';
 import { DataTable } from '@/components/data-table';
@@ -241,7 +247,7 @@ function UserRowActions({
                         size="icon"
                         aria-label={`Acciones para ${user.name} ${user.last_name}`}
                     >
-                        <Ellipsis />
+                        <EllipsisVertical />
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">

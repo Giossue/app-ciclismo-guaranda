@@ -21,7 +21,14 @@ export function AppSidebarHeader({
                     orientation="vertical"
                     className="hidden h-4 md:block"
                 />
-                <div className="min-w-0 text-sm text-muted-foreground">
+                {/*
+                 * En móvil la miga repetiría el título que la propia pantalla
+                 * ya muestra debajo, así que ahí se deja solo la marca.
+                 */}
+                <span className="truncate text-sm text-muted-foreground md:hidden">
+                    Guaranda Go
+                </span>
+                <div className="hidden min-w-0 text-sm text-muted-foreground md:block">
                     {breadcrumbs.length > 0 ? (
                         <Breadcrumbs breadcrumbs={breadcrumbs} />
                     ) : (

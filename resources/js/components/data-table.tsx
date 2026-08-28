@@ -8,7 +8,7 @@ import {
     Settings2,
     X,
 } from 'lucide-react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -47,6 +47,9 @@ import {
 
 export type DataTableQuery = Record<string, number | string | undefined>;
 
+/** Radix no admite un item con valor vacío, así que «todos» viaja con centinela. */
+const ALL_FILTER_VALUE = '__all';
+
 export type DataTableColumn<T> = {
     id: string;
     label: string;
@@ -54,6 +57,10 @@ export type DataTableColumn<T> = {
     hideable?: boolean;
     headerClassName?: string;
     cellClassName?: string;
+    /** En móvil encabeza la tarjeta. Por defecto, la primera columna. */
+    primary?: boolean;
+    /** En móvil va al extremo de la cabecera. Por defecto, la columna `actions`. */
+    actions?: boolean;
 };
 
 export type DataTableFilter = {
@@ -113,6 +120,17 @@ export function DataTable<T>({
         (filter) => !filter.persistent && String(query[filter.id] ?? '') !== '',
     );
 
+    // En móvil la fila se transforma en tarjeta: sin scroll horizontal ni
+    // columnas ocultas, que en una pantalla estrecha esconden datos.
+    const primaryColumn =
+        columns.find((column) => column.primary) ?? columns[0];
+    const actionsColumn = columns.find(
+        (column) => column.actions ?? column.id === 'actions',
+    );
+    const detailColumns = columns.filter(
+        (column) => column !== primaryColumn && column !== actionsColumn,
+    );
+
     const clearQuery = () => {
         const preserved = Object.fromEntries(
             filters
@@ -126,7 +144,7 @@ export function DataTable<T>({
     const updateFilter = (id: string, value: string) => {
         onQueryChange({
             ...query,
-            [id]: value || undefined,
+            [id]: value === ALL_FILTER_VALUE ? undefined : value || undefined,
             page: 1,
         });
     };
@@ -196,6 +214,13 @@ export function DataTable<T>({
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectGroup>
+                                            {!filter.persistent && (
+                                                <SelectItem
+                                                    value={ALL_FILTER_VALUE}
+                                                >
+                                                    {filter.placeholder}
+                                                </SelectItem>
+                                            )}
                                             {filter.options.map((option) => (
                                                 <SelectItem
                                                     key={option.value}
@@ -223,7 +248,7 @@ export function DataTable<T>({
                         </div>
                     </div>
 
-                    <div className="flex shrink-0 items-center gap-2">
+                    <div className="hidden shrink-0 items-center gap-2 md:flex">
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button
@@ -271,7 +296,50 @@ export function DataTable<T>({
                     </div>
                 </div>
 
-                <div className="overflow-hidden rounded-[var(--radius-control)] border">
+                <ul className="flex flex-col gap-3 md:hidden">
+                    {data.length > 0 ? (
+                        data.map((row) => (
+                            <li
+                                key={getRowId(row)}
+                                className="flex flex-col gap-3 rounded-[var(--radius-control)] border bg-card p-3"
+                            >
+                                <div className="flex items-start justify-between gap-3">
+                                    {primaryColumn && (
+                                        <div className="min-w-0 flex-1">
+                                            {primaryColumn.cell(row)}
+                                        </div>
+                                    )}
+                                    {actionsColumn && (
+                                        <div className="shrink-0">
+                                            {actionsColumn.cell(row)}
+                                        </div>
+                                    )}
+                                </div>
+
+                                {detailColumns.length > 0 && (
+                                    <dl className="grid grid-cols-[minmax(0,auto)_minmax(0,1fr)] gap-x-3 gap-y-1.5 border-t pt-3">
+                                        {detailColumns.map((column) => (
+                                            <Fragment key={column.id}>
+                                                <dt className="text-xs text-muted-foreground">
+                                                    {column.label}
+                                                </dt>
+                                                <dd className="min-w-0 text-sm">
+                                                    {column.cell(row)}
+                                                </dd>
+                                            </Fragment>
+                                        ))}
+                                    </dl>
+                                )}
+                            </li>
+                        ))
+                    ) : (
+                        <li className="rounded-[var(--radius-control)] border border-dashed p-6 text-center text-sm text-muted-foreground">
+                            {emptyMessage}
+                        </li>
+                    )}
+                </ul>
+
+                <div className="hidden overflow-hidden rounded-[var(--radius-control)] border md:block">
                     <Table className="min-w-[44rem]">
                         <TableHeader className="bg-muted/50">
                             <TableRow>

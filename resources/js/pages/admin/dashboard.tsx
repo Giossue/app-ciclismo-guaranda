@@ -151,7 +151,7 @@ export default function AdminDashboard({
 
                 <section
                     aria-label="Indicadores principales"
-                    className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-5"
+                    className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-5 [&>*:last-child:nth-child(odd)]:col-span-2 xl:[&>*:last-child:nth-child(odd)]:col-span-1"
                 >
                     {overview.map((metric) => (
                         <OverviewCard key={metric.key} metric={metric} />

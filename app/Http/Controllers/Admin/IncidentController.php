@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\ListIncidentsRequest;
 use App\Http\Requests\Admin\UpdateIncidentRequest;
 use App\Models\AppNotification;
 use App\Models\Incident;
 use App\Models\IncidentStatus;
 use App\Models\IncidentType;
 use DateTimeInterface;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -16,9 +18,15 @@ use Inertia\Response;
 
 class IncidentController extends Controller
 {
-    public function index(): Response
+    public function index(ListIncidentsRequest $request): Response
     {
         $this->authorize('viewAny', Incident::class);
+
+        $filters = $request->validated();
+        $search = $filters['search'] ?? null;
+        $statusId = isset($filters['status']) ? (int) $filters['status'] : null;
+        $typeId = isset($filters['type']) ? (int) $filters['type'] : null;
+        $perPage = (int) ($filters['per_page'] ?? 15);
 
         $incidents = Incident::query()
             ->select([
@@ -36,14 +44,41 @@ class IncidentController extends Controller
                 'admin_response',
             ])
             ->with(['route:id,name,slug', 'type:id,name', 'status:id,name', 'user:id,name,last_name,email', 'files'])
+            ->when($search, function (Builder $query, string $search): void {
+                $pattern = "%{$search}%";
+
+                $query->where(function (Builder $query) use ($pattern): void {
+                    $query
+                        ->whereLike('title', $pattern)
+                        ->orWhereLike('description', $pattern)
+                        ->orWhereLike('admin_response', $pattern)
+                        ->orWhereHas('user', function (Builder $userQuery) use ($pattern): void {
+                            $userQuery
+                                ->whereLike('name', $pattern)
+                                ->orWhereLike('last_name', $pattern)
+                                ->orWhereLike('email', $pattern);
+                        })
+                        ->orWhereHas('route', fn (Builder $routeQuery) => $routeQuery->whereLike('name', $pattern));
+                });
+            })
+            ->when($statusId, fn (Builder $query, int $statusId) => $query->where('incident_status_id', $statusId))
+            ->when($typeId, fn (Builder $query, int $typeId) => $query->where('incident_type_id', $typeId))
             ->latest('reported_at')
-            ->paginate(12)
+            ->latest('id')
+            ->paginate($perPage)
+            ->withQueryString()
             ->through(fn (Incident $incident): array => $this->serializeIncident($incident));
 
         return Inertia::render('admin/incidents/index', [
             'incidents' => $incidents,
             'statuses' => IncidentStatus::query()->orderBy('id')->get(['id', 'name']),
             'types' => IncidentType::query()->orderBy('id')->get(['id', 'name']),
+            'filters' => [
+                'search' => $search ?? '',
+                'status' => $statusId === null ? '' : (string) $statusId,
+                'type' => $typeId === null ? '' : (string) $typeId,
+                'per_page' => $perPage,
+            ],
         ]);
     }
 
