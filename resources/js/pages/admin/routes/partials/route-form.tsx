@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 import RouteController from '@/actions/App/Http/Controllers/Admin/RouteController';
-import RouteGeometryEditor from '@/components/admin/routes/route-geometry-editor';
+import RouteGeometryEditor from '@/components/admin/routes/client-only-route-geometry-editor';
 import ImageFileInput from '@/components/image-file-input';
 import ImageWithFallback from '@/components/image-with-fallback';
 import InputError from '@/components/input-error';

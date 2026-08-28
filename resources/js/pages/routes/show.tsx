@@ -19,13 +19,6 @@ import {
 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
-import {
-    CircleMarker,
-    MapContainer,
-    TileLayer,
-    useMap,
-    useMapEvents,
-} from 'react-leaflet';
 import FavoriteRouteController from '@/actions/App/Http/Controllers/Cyclist/FavoriteRouteController';
 import IncidentController from '@/actions/App/Http/Controllers/Cyclist/IncidentController';
 import OfflineRouteController from '@/actions/App/Http/Controllers/Cyclist/OfflineRouteController';
@@ -38,7 +31,8 @@ import ImageGallery from '@/components/image-gallery';
 import type { GalleryImage } from '@/components/image-gallery';
 import InputError from '@/components/input-error';
 import { MobileTabs } from '@/components/mobile-tabs';
-import RouteMap from '@/components/routes/route-map';
+import LocationPickerMap from '@/components/routes/client-only-location-picker-map';
+import RouteMap from '@/components/routes/client-only-route-map';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -1410,24 +1404,12 @@ function OfflinePanel({
                             <div className="grid gap-2">
                                 <Label>Ubicación de la alerta</Label>
                                 <div className="overflow-hidden rounded-2xl border border-primary/10">
-                                    <MapContainer
-                                        center={[
-                                            offlineIncidentPoint.latitude,
-                                            offlineIncidentPoint.longitude,
-                                        ]}
-                                        zoom={14}
-                                        scrollWheelZoom={false}
+                                    <LocationPickerMap
+                                        center={offlineIncidentPoint}
+                                        selectedPoint={offlineIncidentPoint}
+                                        onSelect={setOfflineIncidentPoint}
                                         className="h-64 w-full"
-                                    >
-                                        <TileLayer
-                                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                                        />
-                                        <SuggestionLocationPicker
-                                            selectedPoint={offlineIncidentPoint}
-                                            onSelect={setOfflineIncidentPoint}
-                                        />
-                                    </MapContainer>
+                                    />
                                 </div>
                                 <span className="text-sm text-muted-foreground">
                                     {`${offlineIncidentPoint.latitude.toFixed(5)}, ${offlineIncidentPoint.longitude.toFixed(5)}`}
@@ -1714,26 +1696,19 @@ function PoiSuggestionForm({
                             <div className="grid gap-2 md:col-span-2">
                                 <Label>Ubicación del POI</Label>
                                 <div className="overflow-hidden rounded-2xl border border-primary/10">
-                                    <MapContainer
-                                        center={[
-                                            selectedPoint?.latitude ??
+                                    <LocationPickerMap
+                                        center={{
+                                            latitude:
+                                                selectedPoint?.latitude ??
                                                 route.start_latitude,
-                                            selectedPoint?.longitude ??
+                                            longitude:
+                                                selectedPoint?.longitude ??
                                                 route.start_longitude,
-                                        ]}
-                                        zoom={14}
-                                        scrollWheelZoom={false}
+                                        }}
+                                        selectedPoint={selectedPoint}
+                                        onSelect={setSelectedPoint}
                                         className="h-72 w-full"
-                                    >
-                                        <TileLayer
-                                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                                        />
-                                        <SuggestionLocationPicker
-                                            selectedPoint={selectedPoint}
-                                            onSelect={setSelectedPoint}
-                                        />
-                                    </MapContainer>
+                                    />
                                 </div>
                                 <div className="flex flex-wrap items-center gap-2">
                                     <Button
@@ -1780,56 +1755,6 @@ function PoiSuggestionForm({
                 </Form>
             </CardContent>
         </Card>
-    );
-}
-
-function SuggestionLocationPicker({
-    selectedPoint,
-    onSelect,
-}: {
-    selectedPoint: { latitude: number; longitude: number } | null;
-    onSelect: (point: { latitude: number; longitude: number }) => void;
-}) {
-    const map = useMap();
-
-    useEffect(() => {
-        if (!selectedPoint) {
-            return;
-        }
-
-        map.setView(
-            [selectedPoint.latitude, selectedPoint.longitude],
-            map.getZoom(),
-            {
-                animate: false,
-            },
-        );
-    }, [map, selectedPoint]);
-
-    useMapEvents({
-        click(event) {
-            onSelect({
-                latitude: Number(event.latlng.lat.toFixed(7)),
-                longitude: Number(event.latlng.lng.toFixed(7)),
-            });
-        },
-    });
-
-    if (!selectedPoint) {
-        return null;
-    }
-
-    return (
-        <CircleMarker
-            center={[selectedPoint.latitude, selectedPoint.longitude]}
-            pathOptions={{
-                color: 'var(--primary)',
-                fillColor: 'var(--primary)',
-                fillOpacity: 0.9,
-                opacity: 1,
-            }}
-            radius={8}
-        />
     );
 }
 
@@ -1979,24 +1904,12 @@ function IncidentReportForm({
                             <div className="grid gap-2 md:col-span-2">
                                 <Label>Ubicación de la incidencia</Label>
                                 <div className="overflow-hidden rounded-2xl border border-primary/10">
-                                    <MapContainer
-                                        center={[
-                                            incidentPoint.latitude,
-                                            incidentPoint.longitude,
-                                        ]}
-                                        zoom={14}
-                                        scrollWheelZoom={false}
+                                    <LocationPickerMap
+                                        center={incidentPoint}
+                                        selectedPoint={incidentPoint}
+                                        onSelect={setIncidentPoint}
                                         className="h-64 w-full"
-                                    >
-                                        <TileLayer
-                                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                                        />
-                                        <SuggestionLocationPicker
-                                            selectedPoint={incidentPoint}
-                                            onSelect={setIncidentPoint}
-                                        />
-                                    </MapContainer>
+                                    />
                                 </div>
                                 <div className="flex flex-wrap items-center gap-2">
                                     <Button

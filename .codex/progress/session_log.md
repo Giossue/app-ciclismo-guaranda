@@ -543,3 +543,10 @@
 - Se añadió `link` a las notificaciones y se rellena al revisar incidencias y valoraciones (ruta relacionada) y al reportar una incidencia (bandeja administrativa).
 - La fila de notificación se extrajo a un componente compartido entre el panel de la campana y la pantalla completa; el panel usa tiempo relativo y la pantalla mantiene la hora dentro de cada grupo por día.
 - Los módulos del sidebar muestran insignias de pendientes (incidencias, valoraciones, sugerencias y reportes de POIs) calculadas solo para administradores.
+
+## 2026-08-27 — Estabilidad SSR de mapas y readiness
+
+- Se corrigió el error SSR `window is not defined` de `leaflet-draw`: los mapas públicos, editor administrativo y selectores de ubicación se cargan dinámicamente después de hidratar React.
+- Se creó una prueba de `GET /up` y un endpoint JSON mínimo sin SSR para el health check de Dokploy.
+- Se añadió y ejecutó `scripts/audit_ssr_browser_usage.py`; la cadena estática de todas las páginas Inertia queda libre de dependencias exclusivas del navegador.
+- Validaciones aprobadas: Pint, Pest focalizado (15 pruebas), tipos, ESLint, Prettier, build SSR, chequeo de salud SSR y render SSR real de `/admin/routes` tanto listado como formulario de creación.

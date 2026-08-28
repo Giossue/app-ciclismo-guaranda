@@ -28,6 +28,7 @@ resources/js/
 - Usar Wayfinder para rutas tipadas cuando corresponda.
 - Evitar lógica de negocio pesada en componentes.
 - Separar hooks para comportamiento reutilizable: GPS, network, offline, sync.
+- Dependencias exclusivas de navegador (Leaflet, Leaflet Draw y plugins equivalentes) se cargan dinámicamente dentro de `useEffect` mediante un wrapper cliente; nunca se importan desde la cadena estática de una página SSR. Ejecutar `python3 scripts/audit_ssr_browser_usage.py` al cambiar mapas o integraciones de navegador.
 
 ## Pantallas principales
 

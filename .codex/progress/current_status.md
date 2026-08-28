@@ -151,3 +151,9 @@ Después de esa prueba manual, marcar Fase 12 y Fase 14 como `Completado` si tod
 ## Preparación Redis 2026-08-27
 
 - La imagen de producción incluye la extensión PhpRedis y Laravel ya dispone de conexiones `default` y `cache`; Redis se habilita exclusivamente mediante secretos del entorno Dokploy con `CACHE_STORE=redis`. Sesiones y colas continúan en PostgreSQL en esta primera activación.
+
+## Estabilidad SSR y deploy 2026-08-27
+
+- Se aisló Leaflet, Leaflet Draw, geocodificación y selectores de ubicación en wrappers cargados solo tras montar el navegador; el SSR de `/admin/routes` ya no evalúa `window`.
+- `GET /up` es una respuesta JSON mínima e independiente del SSR, preparada para configurarse como health check de Dokploy.
+- Se añadió `scripts/audit_ssr_browser_usage.py`, que recorre imports estáticos desde cada página Inertia y falla si una dependencia de navegador vuelve a ser alcanzable.

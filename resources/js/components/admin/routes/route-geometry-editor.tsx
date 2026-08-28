@@ -30,7 +30,7 @@ type RoutePoiDraft = {
     longitude: string;
 };
 
-type Props = {
+export type RouteGeometryEditorProps = {
     initialGeojson?: string | null;
     startLatitude?: string | number | null;
     startLongitude?: string | number | null;
@@ -105,7 +105,7 @@ export default function RouteGeometryEditor({
     poiDrafts = [],
     activePoiKey = null,
     onPoiLocationChange,
-}: Props) {
+}: RouteGeometryEditorProps) {
     const initialLine = useMemo(
         () => parseLineString(initialGeojson),
         [initialGeojson],

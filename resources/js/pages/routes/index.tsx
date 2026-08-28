@@ -2,7 +2,7 @@ import { Head, Link } from '@inertiajs/react';
 import { ImageIcon, RouteIcon, Star } from 'lucide-react';
 import ImageWithFallback from '@/components/image-with-fallback';
 import { MobileTabs } from '@/components/mobile-tabs';
-import RouteMap from '@/components/routes/route-map';
+import RouteMap from '@/components/routes/client-only-route-map';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
