@@ -11,6 +11,8 @@ use App\Models\RouteStatus;
 use App\Models\TransportMode;
 use App\Models\User;
 use Database\Seeders\CatalogSeeder;
+use Illuminate\Database\Events\QueryExecuted;
+use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function () {
@@ -111,6 +113,11 @@ test('cyclist can view active routes on map with geojson points and incidents', 
 
     $cyclist = User::factory()->cyclist()->create();
     createRouteForMapVisualization();
+    $queries = [];
+
+    DB::listen(function (QueryExecuted $query) use (&$queries): void {
+        $queries[] = $query->sql;
+    });
 
     $this->actingAs($cyclist)
         ->get(route('routes.index'))
@@ -121,6 +128,18 @@ test('cyclist can view active routes on map with geojson points and incidents', 
             ->where('routes.data.0.geojson.type', 'LineString')
             ->where('routes.data.0.points_of_interest.0.name', 'Mirador de prueba')
             ->where('routes.data.0.incidents.0.title', 'Piedras en la vía'));
+
+    foreach (['geometrias_ruta', 'puntos_interes', 'incidencias'] as $table) {
+        $query = collect($queries)->first(fn (string $sql): bool => str_contains($sql, "from \"{$table}\""));
+
+        expect($query)
+            ->not->toBeNull()
+            ->not->toContain('"geom"');
+
+        if ($table === 'geometrias_ruta') {
+            expect($query)->not->toContain('select *');
+        }
+    }
 });
 
 test('cyclist can view route detail with metrics recommendations and map payload', function () {

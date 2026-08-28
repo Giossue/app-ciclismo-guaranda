@@ -17,9 +17,9 @@ use App\Models\Track;
 use App\Models\TrackGpsPoint;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -71,7 +71,21 @@ class RouteController extends Controller
         ]);
 
         $activeTrack = Track::query()
-            ->with(['status:id,name', 'gpsPoints'])
+            ->select([
+                'id',
+                'track_status_id',
+                'started_at',
+                'ended_at',
+                'distance_traveled_km',
+                'total_time_seconds',
+                'completion_percentage',
+                'is_valid',
+                'summary',
+            ])
+            ->with([
+                'status:id,name',
+                'gpsPoints:id,track_id,latitude,longitude,accuracy_m,recorded_at',
+            ])
             ->where('user_id', request()->user()?->id)
             ->where('route_id', $route->id)
             ->whereHas('status', fn ($query) => $query->whereIn('name', ['en curso', 'pausado']))
@@ -108,18 +122,19 @@ class RouteController extends Controller
 
     private function publicPointsOfInterest(BelongsToMany $query): BelongsToMany
     {
+        $pointOfInterest = $query->getModel();
+
         return $query
             ->select([
-                'id',
-                'poi_category_id',
-                'name',
-                'description',
-                'observations',
-                'address',
-                'phone',
-                'latitude',
-                'longitude',
-                'active',
+                $pointOfInterest->qualifyColumn('id'),
+                $pointOfInterest->qualifyColumn('poi_category_id'),
+                $pointOfInterest->qualifyColumn('name'),
+                $pointOfInterest->qualifyColumn('description'),
+                $pointOfInterest->qualifyColumn('observations'),
+                $pointOfInterest->qualifyColumn('address'),
+                $pointOfInterest->qualifyColumn('phone'),
+                $pointOfInterest->qualifyColumn('latitude'),
+                $pointOfInterest->qualifyColumn('longitude'),
             ])
             ->where('active', true)
             ->with([

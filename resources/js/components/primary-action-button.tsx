@@ -2,6 +2,7 @@ import type { InertiaLinkProps } from '@inertiajs/react';
 import { Link } from '@inertiajs/react';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useHideOnScroll } from '@/hooks/use-hide-on-scroll';
 import { cn } from '@/lib/utils';
 
 type Props = {
@@ -14,8 +15,10 @@ type Props = {
 );
 
 /**
- * Acción principal de un módulo. En móvil se reduce al icono `+` y desde `md`
- * recupera la etiqueta completa; el destino o la acción son los mismos.
+ * Acción principal de un módulo. En móvil es una acción flotante con el icono
+ * `+` sobre la barra inferior, que se esconde al bajar y vuelve al subir; desde
+ * `md` es un botón normal en el flujo con su etiqueta. Destino y acción no
+ * cambian entre ambos.
  */
 export function PrimaryActionButton({
     className,
@@ -23,8 +26,12 @@ export function PrimaryActionButton({
     label,
     onClick,
 }: Props) {
+    const hidden = useHideOnScroll();
+
     const responsive = cn(
-        'md:h-[var(--action-height)] md:w-auto md:rounded-[var(--radius-control)] md:px-4',
+        'fixed right-[var(--page-pad-x)] bottom-[calc(var(--bottom-nav-height)+var(--safe-bottom)+1rem)] z-[60] shadow-[var(--elevation-floating)] transition-[background-color,border-color,color,box-shadow,transform,opacity] duration-200 ease-out',
+        hidden && 'pointer-events-none translate-y-[calc(100%+2rem)] opacity-0',
+        'md:pointer-events-auto md:static md:h-[var(--action-height)] md:w-auto md:translate-y-0 md:rounded-[var(--radius-control)] md:px-4 md:opacity-100 md:shadow-none',
         className,
     );
 

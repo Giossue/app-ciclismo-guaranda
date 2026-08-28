@@ -9,6 +9,8 @@ use App\Models\Track;
 use App\Models\TransportMode;
 use App\Models\User;
 use Database\Seeders\CatalogSeeder;
+use Illuminate\Database\Events\QueryExecuted;
+use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function () {
@@ -86,6 +88,11 @@ test('cyclist can start a track for an active route', function () {
     $route = createRouteForTrackLifecycle();
 
     $track = startTrackForUser($cyclist, $route);
+    $queries = [];
+
+    DB::listen(function (QueryExecuted $query) use (&$queries): void {
+        $queries[] = $query->sql;
+    });
 
     expect($track->status?->name)->toBe('en curso')
         ->and($track->distance_traveled_km)->toBe('0.000')
@@ -98,6 +105,15 @@ test('cyclist can start a track for an active route', function () {
             ->component('routes/show')
             ->where('activeTrack.id', $track->id)
             ->where('activeTrack.status.name', 'en curso'));
+
+    $gpsPointsQuery = collect($queries)->first(
+        fn (string $sql): bool => str_contains($sql, 'from "puntos_gps_recorrido"'),
+    );
+
+    expect($gpsPointsQuery)
+        ->not->toBeNull()
+        ->not->toContain('select *')
+        ->not->toContain('"geom"');
 });
 
 test('cyclist can not start track for inactive route or duplicate active track', function () {
