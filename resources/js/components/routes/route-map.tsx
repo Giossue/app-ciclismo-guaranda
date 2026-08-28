@@ -7,12 +7,9 @@ import {
     LocateFixed,
     MapPin,
     Navigation,
-    RadioTower,
     RouteIcon,
     ShieldAlert,
     Store,
-    Wifi,
-    WifiOff,
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import {
@@ -26,7 +23,6 @@ import {
 } from 'react-leaflet';
 import CyclistRouteController from '@/actions/App/Http/Controllers/Cyclist/RouteController';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { mediaUrl } from '@/lib/media';
 import { getCurrentAppLocation } from '@/lib/native/capacitor';
@@ -58,7 +54,7 @@ type UserLocation = {
     accuracy: number;
 };
 
-type GpsStatus = 'idle' | 'requesting' | 'granted' | 'denied' | 'unsupported';
+type GpsStatus = 'idle' | 'requesting' | 'granted' | 'denied';
 type MapLayer = 'standard' | 'satellite';
 type OverlayFilters = {
     tracks: boolean;
@@ -117,10 +113,19 @@ const incidentPathOptions = {
     opacity: 1,
 };
 const userPathOptions = {
-    color: '#2f80ed',
+    color: 'var(--card)',
     fillColor: '#2f80ed',
     fillOpacity: 0.9,
     opacity: 1,
+    weight: 3,
+};
+const userPulsePathOptions = {
+    color: '#2f80ed',
+    fillColor: '#2f80ed',
+    fillOpacity: 0.18,
+    opacity: 0.5,
+    weight: 1,
+    className: 'map-user-location-sonar',
 };
 const userTrackPathOptions = {
     color: 'var(--secondary)',
@@ -139,9 +144,6 @@ export default function RouteMap({
     onPoiSelect,
     onRouteSelect,
 }: RouteMapProps) {
-    const [isOnline, setIsOnline] = useState(() =>
-        typeof navigator === 'undefined' ? true : navigator.onLine,
-    );
     const [gpsStatus, setGpsStatus] = useState<GpsStatus>('idle');
     const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
     const [mapLayer, setMapLayer] = useState<MapLayer>('standard');
@@ -159,19 +161,6 @@ export default function RouteMap({
     const activeLayer =
         mapLayer === 'satellite' ? satelliteLayer : standardLayer;
     const showOverviewFilters = mode === 'overview';
-
-    useEffect(() => {
-        const handleOnline = () => setIsOnline(true);
-        const handleOffline = () => setIsOnline(false);
-
-        window.addEventListener('online', handleOnline);
-        window.addEventListener('offline', handleOffline);
-
-        return () => {
-            window.removeEventListener('online', handleOnline);
-            window.removeEventListener('offline', handleOffline);
-        };
-    }, []);
 
     const requestLocation = () => {
         setGpsStatus('requesting');
@@ -201,61 +190,55 @@ export default function RouteMap({
         >
             <div
                 className={cn(
-                    'flex flex-wrap items-center gap-2 rounded-[var(--radius-emphasis)] border border-primary/10 bg-card/80 p-2 shadow-sm shadow-primary/10 backdrop-blur',
-                    immersive &&
-                        'absolute top-3 left-3 z-[500] max-w-[calc(100%-1.5rem)]',
+                    'flex items-center gap-2',
+                    immersive && 'absolute top-3 left-3 z-[500]',
                 )}
             >
-                <Badge variant={isOnline ? 'default' : 'outline'}>
-                    {isOnline ? (
-                        <Wifi data-icon="inline-start" />
-                    ) : (
-                        <WifiOff data-icon="inline-start" />
-                    )}
-                    {isOnline ? 'Con conexión' : 'Sin conexión'}
-                </Badge>
-                <Badge
-                    variant={gpsStatus === 'granted' ? 'default' : 'outline'}
-                >
-                    <RadioTower data-icon="inline-start" />
-                    {gpsLabel(gpsStatus)}
-                </Badge>
-                <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={requestLocation}
-                    disabled={gpsStatus === 'requesting'}
-                >
-                    <LocateFixed data-icon="inline-start" />
-                    Ubicación actual
-                </Button>
                 {mode === 'detail' && userLocation && navigationRoute && (
-                    <Button type="button" variant="outline" size="sm" asChild>
+                    <Button type="button" variant="overlay" size="icon" asChild>
                         <a
                             href={navigationUrl(userLocation, navigationRoute)}
                             target="_blank"
                             rel="noreferrer"
+                            aria-label="Abrir navegación externa"
+                            title="Abrir navegación externa"
                         >
-                            <Navigation data-icon="inline-start" />
-                            Abrir navegación externa
+                            <Navigation />
                         </a>
                     </Button>
                 )}
                 <Button
                     type="button"
-                    variant={mapLayer === 'satellite' ? 'secondary' : 'outline'}
-                    size="sm"
+                    variant="overlay"
+                    size="icon"
                     onClick={() =>
                         setMapLayer((current) =>
                             current === 'standard' ? 'satellite' : 'standard',
                         )
                     }
+                    aria-label={`Cambiar a ${mapLayer === 'standard' ? 'satélite' : 'mapa'}`}
+                    title={`Cambiar a ${mapLayer === 'standard' ? 'satélite' : 'mapa'}`}
                 >
-                    <Layers data-icon="inline-start" />
-                    {activeLayer.label}
+                    <Layers />
                 </Button>
             </div>
+
+            <Button
+                type="button"
+                variant="overlay"
+                size="icon"
+                onClick={requestLocation}
+                disabled={gpsStatus === 'requesting'}
+                aria-label="Mostrar mi ubicación actual"
+                title="Mi ubicación"
+                className={cn(
+                    'size-14 min-h-14 rounded-full shadow-[var(--elevation-floating)]',
+                    immersive &&
+                        'absolute top-1/2 right-3 z-[500] -translate-y-1/2',
+                )}
+            >
+                <LocateFixed className="size-6" />
+            </Button>
 
             {showOverviewFilters && (
                 <div
@@ -292,7 +275,7 @@ export default function RouteMap({
                 </div>
             )}
 
-            {(gpsStatus === 'denied' || gpsStatus === 'unsupported') && (
+            {gpsStatus === 'denied' && (
                 <Alert
                     className={cn(
                         immersive && 'absolute top-28 left-3 z-[500] max-w-sm',
@@ -301,9 +284,8 @@ export default function RouteMap({
                     <Navigation />
                     <AlertTitle>Ubicación no disponible</AlertTitle>
                     <AlertDescription>
-                        {gpsStatus === 'unsupported'
-                            ? 'Este navegador o WebView no soporta geolocalización.'
-                            : 'Activa el permiso de ubicación para mostrar tu posición sobre la ruta.'}
+                        Activa el permiso de ubicación para mostrar tu posición
+                        sobre la ruta.
                     </AlertDescription>
                 </Alert>
             )}
@@ -356,24 +338,36 @@ export default function RouteMap({
                     ))}
 
                     {userLocation && (
-                        <CircleMarker
-                            center={[
-                                userLocation.latitude,
-                                userLocation.longitude,
-                            ]}
-                            pathOptions={userPathOptions}
-                            radius={9}
-                        >
-                            <Popup>
-                                <div className="flex flex-col gap-1 text-sm">
-                                    <strong>Tu ubicación</strong>
-                                    <span>
-                                        Precisión aproximada:{' '}
-                                        {Math.round(userLocation.accuracy)} m
-                                    </span>
-                                </div>
-                            </Popup>
-                        </CircleMarker>
+                        <>
+                            <CircleMarker
+                                center={[
+                                    userLocation.latitude,
+                                    userLocation.longitude,
+                                ]}
+                                pathOptions={userPulsePathOptions}
+                                radius={28}
+                                interactive={false}
+                            />
+                            <CircleMarker
+                                center={[
+                                    userLocation.latitude,
+                                    userLocation.longitude,
+                                ]}
+                                pathOptions={userPathOptions}
+                                radius={9}
+                            >
+                                <Popup>
+                                    <div className="flex flex-col gap-1 text-sm">
+                                        <strong>Tu ubicación</strong>
+                                        <span>
+                                            Precisión aproximada:{' '}
+                                            {Math.round(userLocation.accuracy)}{' '}
+                                            m
+                                        </span>
+                                    </div>
+                                </Popup>
+                            </CircleMarker>
+                        </>
                     )}
                 </MapContainer>
             </div>
@@ -756,24 +750,4 @@ function navigationUrl(location: UserLocation, route: RouteMapItem): string {
     const destination = `${route.start_latitude},${route.start_longitude}`;
 
     return `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&travelmode=bicycling`;
-}
-
-function gpsLabel(status: GpsStatus): string {
-    if (status === 'requesting') {
-        return 'Solicitando GPS';
-    }
-
-    if (status === 'granted') {
-        return 'GPS activo';
-    }
-
-    if (status === 'denied') {
-        return 'GPS sin permiso';
-    }
-
-    if (status === 'unsupported') {
-        return 'GPS no soportado';
-    }
-
-    return 'GPS pendiente';
 }

@@ -388,6 +388,33 @@
 }
 
 @layer components {
+    .leaflet-interactive.map-user-location-sonar {
+        animation: map-user-location-sonar 2.2s ease-out infinite;
+        transform-box: fill-box;
+        transform-origin: center;
+    }
+
+    @keyframes map-user-location-sonar {
+        0% {
+            opacity: 0.55;
+            transform: scale(0.35);
+        }
+
+        75%,
+        100% {
+            opacity: 0;
+            transform: scale(1);
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .leaflet-interactive.map-user-location-sonar {
+            animation: none;
+            opacity: 0.25;
+            transform: none;
+        }
+    }
+
     .safe-bottom-pad {
         padding-bottom: calc(
             var(--bottom-nav-height) + var(--safe-bottom) + 20px
