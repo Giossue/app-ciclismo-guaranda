@@ -11,6 +11,7 @@ use App\Models\PoiCategory;
 use App\Models\PoiHour;
 use App\Models\PointOfInterest;
 use App\Models\RouteCategory;
+use App\Models\RouteDifficulty;
 use App\Models\RouteRating;
 use App\Models\RouteView;
 use App\Models\Track;
@@ -20,17 +21,40 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\Pivot;
+use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class RouteController extends Controller
 {
-    public function index(): Response
+    public function index(Request $request): Response
     {
-        $selectedCategory = request()->integer('category') ?: null;
+        $filters = $request->validate([
+            'search' => ['nullable', 'string', 'max:120'],
+            'category' => ['nullable', 'integer', Rule::exists(RouteCategory::class, 'id')],
+            'difficulty' => ['nullable', 'integer', Rule::exists(RouteDifficulty::class, 'id')],
+        ]);
+
+        $search = $filters['search'] ?? null;
+        $categoryId = isset($filters['category']) ? (int) $filters['category'] : null;
+        $difficultyId = isset($filters['difficulty']) ? (int) $filters['difficulty'] : null;
+
         $routes = $this->activeRouteQuery()
-            ->when($selectedCategory !== null, fn ($query) => $query->where('route_category_id', $selectedCategory))
+            ->when($search, function (Builder $query, string $search): void {
+                $pattern = "%{$search}%";
+
+                $query->where(function (Builder $query) use ($pattern): void {
+                    $query
+                        ->whereLike('name', $pattern)
+                        ->orWhereLike('description', $pattern)
+                        ->orWhereLike('start_name', $pattern)
+                        ->orWhereLike('end_name', $pattern);
+                });
+            })
+            ->when($categoryId, fn (Builder $query, int $categoryId) => $query->where('route_category_id', $categoryId))
+            ->when($difficultyId, fn (Builder $query, int $difficultyId) => $query->where('route_difficulty_id', $difficultyId))
             ->latest('id')
             ->paginate(12)
             ->withQueryString()
@@ -38,8 +62,13 @@ class RouteController extends Controller
 
         return Inertia::render('routes/index', [
             'routes' => $routes,
-            'categories' => RouteCategory::query()->orderBy('id')->get(['id', 'name']),
-            'selectedCategory' => $selectedCategory,
+            'categories' => RouteCategory::query()->orderBy('name')->get(['id', 'name']),
+            'difficulties' => RouteDifficulty::query()->orderBy('id')->get(['id', 'name']),
+            'filters' => [
+                'search' => $search ?? '',
+                'category' => $categoryId === null ? '' : (string) $categoryId,
+                'difficulty' => $difficultyId === null ? '' : (string) $difficultyId,
+            ],
         ]);
     }
 

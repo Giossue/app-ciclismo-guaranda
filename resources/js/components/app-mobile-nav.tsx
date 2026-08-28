@@ -8,17 +8,13 @@ import type { Auth } from '@/types';
 
 type PageProps = {
     auth: Auth;
-    notificationCenter?: {
-        unread_count?: number;
-    };
 };
 
 export function AppMobileNav() {
-    const { auth, notificationCenter } = usePage<PageProps>().props;
+    const { auth } = usePage<PageProps>().props;
     const { isCurrentUrl } = useCurrentUrl();
     const { openMobile, setOpenMobile } = useSidebar();
     const primaryItems = mobilePrimaryNavItems(auth);
-    const unreadCount = notificationCenter?.unread_count ?? 0;
 
     if (!auth.user) {
         return null;
@@ -44,7 +40,7 @@ export function AppMobileNav() {
                                     : 'text-muted-foreground hover:text-foreground',
                             )}
                         >
-                            <span className="relative">
+                            <span>
                                 {Icon && (
                                     <Icon
                                         className={cn(
@@ -53,13 +49,6 @@ export function AppMobileNav() {
                                         )}
                                     />
                                 )}
-                                {item.title === 'Notificaciones' &&
-                                    unreadCount > 0 && (
-                                        <span
-                                            aria-hidden="true"
-                                            className="absolute -top-0.5 -right-1 size-2 rounded-full bg-destructive"
-                                        />
-                                    )}
                             </span>
                             <span className="max-w-full truncate">
                                 {shortTitle(item.title)}

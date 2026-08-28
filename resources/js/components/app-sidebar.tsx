@@ -24,15 +24,12 @@ export function AppSidebar() {
     const { auth } = usePage<PageProps>().props;
     const { isMobile } = useSidebar();
     const navItems = mainNavItems(auth);
-    const sidebarNavItems = navItems.filter(
-        (item) => item.title !== 'Notificaciones',
-    );
     const startPath = homePath(auth);
 
     return (
         <Sidebar collapsible="icon" variant="sidebar">
             {isMobile ? (
-                <AppSidebarMenu items={sidebarNavItems} />
+                <AppSidebarMenu items={navItems} />
             ) : (
                 <>
                     <SidebarHeader>
@@ -48,7 +45,7 @@ export function AppSidebar() {
                     </SidebarHeader>
 
                     <SidebarContent>
-                        <NavMain items={sidebarNavItems} />
+                        <NavMain items={navItems} />
                     </SidebarContent>
 
                     <SidebarFooter>

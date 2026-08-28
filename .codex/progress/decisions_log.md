@@ -314,3 +314,9 @@
 
 - Las rutas web del ciclista usan el prefijo `/user`: rutas, favoritas, notificaciones, asistente, recorridos, sync, incidencias, POIs, perfil y seguridad.
 - Los nombres de ruta Laravel se conservan para mantener compatibles controladores, Fortify, Wayfinder y APKs; los accesos GET históricos redirigen al namespace nuevo.
+
+## 2026-08-28 — Catálogo de rutas de ciclista alineado al administrativo
+
+- El catálogo de ciclista reutiliza la barra de filtros administrativa con búsqueda, categoría y dificultad; el estado se omite porque solo se exponen rutas activas.
+- Las tarjetas comparten la misma jerarquía de imagen, datos de ubicación y métricas que la gestión administrativa, sin exponer acciones administrativas.
+- Notificaciones no pertenece a la navegación del ciclista: queda accesible desde la campana global; Favoritas ocupa ese lugar en la navegación principal y móvil.

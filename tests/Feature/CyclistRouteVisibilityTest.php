@@ -90,3 +90,32 @@ test('inactive and draft routes do not appear to cyclist', function () {
             ->component('routes/index')
             ->has('routes.data', 0));
 });
+
+test('cyclist filters active routes by search, category and difficulty', function () {
+    $this->withoutVite();
+
+    $cyclist = User::factory()->cyclist()->create();
+    $visible = createCyclingRouteForVisibility('Activa', 'Ruta del mirador');
+    createCyclingRouteForVisibility('Activa', 'Ruta del mirador urbana')->update([
+        'route_category_id' => RouteCategory::query()->where('name', 'Urbana')->firstOrFail()->id,
+    ]);
+    createCyclingRouteForVisibility('Activa', 'Ruta del mirador media')->update([
+        'route_difficulty_id' => RouteDifficulty::query()->where('name', 'Media')->firstOrFail()->id,
+    ]);
+    createCyclingRouteForVisibility('Borrador', 'Ruta del mirador borrador');
+
+    $this->actingAs($cyclist)
+        ->get(route('routes.index', [
+            'search' => 'mirador',
+            'category' => $visible->route_category_id,
+            'difficulty' => $visible->route_difficulty_id,
+        ]))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('routes/index')
+            ->has('routes.data', 1)
+            ->where('routes.data.0.id', $visible->id)
+            ->where('filters.search', 'mirador')
+            ->where('filters.category', (string) $visible->route_category_id)
+            ->where('filters.difficulty', (string) $visible->route_difficulty_id));
+});

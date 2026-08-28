@@ -647,3 +647,9 @@
 
 - La experiencia ciclista quedó bajo `/user/*`, incluido el destino poslogin `/user/routes`, perfil y seguridad. Las rutas históricas GET principales redirigen sin romper marcadores.
 - Se retiró la comprobación literal de `Ciclista` de la bandeja de usuario: una sesión autenticada que no es administrador conserva acceso únicamente a sus propias notificaciones, incluso con un rol legado pendiente de normalización.
+
+## 2026-08-28 — Catálogo ciclista: filtros y navegación
+
+- Se sustituyeron los chips de categorías por la barra compartida de búsqueda, categoría y dificultad; el backend conserva solo rutas activas y preserva filtros en la paginación.
+- Las tarjetas del catálogo ciclista siguen ahora la estructura visual de rutas administrativas. Notificaciones se retiró de las navegaciones lateral y móvil; Favoritas queda como acceso principal y la campana mantiene el acceso a avisos.
+- Validaciones aprobadas: `CyclistRouteVisibilityTest` (3 pruebas, 40 aserciones), `RouteMapVisualizationTest` (3 pruebas, 44 aserciones), Pint, tipos, lint, formato, build Vite y caché de rutas.

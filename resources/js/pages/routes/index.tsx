@@ -1,7 +1,16 @@
-import { Head, Link } from '@inertiajs/react';
-import { AlertTriangle, ImageIcon, RouteIcon, Star } from 'lucide-react';
+import { Head, Link, router } from '@inertiajs/react';
+import {
+    AlertTriangle,
+    Bike,
+    Clock,
+    MapPinned,
+    RouteIcon,
+    Star,
+} from 'lucide-react';
 import CyclistRouteController from '@/actions/App/Http/Controllers/Cyclist/RouteController';
 import { CatalogPagination } from '@/components/catalog-pagination';
+import { DataTableToolbar } from '@/components/data-table';
+import type { DataTableQuery } from '@/components/data-table';
 import ImageWithFallback from '@/components/image-with-fallback';
 import { MobileTabs } from '@/components/mobile-tabs';
 import RouteMap from '@/components/routes/client-only-route-map';
@@ -11,10 +20,10 @@ import {
     Card,
     CardContent,
     CardDescription,
-    CardFooter,
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import { CardGrid } from '@/components/ui/card-grid';
 import {
     Empty,
     EmptyContent,
@@ -30,25 +39,46 @@ import type {
     PaginatedRoutes,
 } from '@/types';
 
+type RouteFilters = {
+    category: string;
+    difficulty: string;
+    search: string;
+};
+
 type Props = {
     routes: PaginatedRoutes;
     categories: CatalogOption[];
-    selectedCategory: number | null;
+    difficulties: CatalogOption[];
+    filters: RouteFilters;
 };
 
 export default function RoutesIndex({
     routes,
     categories,
-    selectedCategory,
+    difficulties,
+    filters,
 }: Props) {
+    const hasFilters = Object.values(filters).some((value) => value !== '');
+
+    const changeQuery = (query: DataTableQuery) => {
+        router.get(CyclistRouteController.index.url(), query, {
+            only: ['routes', 'filters'],
+            preserveScroll: true,
+            preserveState: true,
+            replace: true,
+        });
+    };
+
     return (
         <>
             <Head title="Rutas" />
 
             <div className="flex w-full flex-col gap-5">
-                <CategoryFilter
+                <RouteFiltersToolbar
                     categories={categories}
-                    selectedCategory={selectedCategory}
+                    difficulties={difficulties}
+                    filters={filters}
+                    onQueryChange={changeQuery}
                 />
 
                 <MobileTabs
@@ -61,8 +91,10 @@ export default function RoutesIndex({
                             content: (
                                 <RoutesList
                                     routes={routes.data}
-                                    selectedCategory={selectedCategory}
-                                    showLatestBadge={routes.current_page === 1}
+                                    hasFilters={hasFilters}
+                                    showLatestBadge={
+                                        routes.current_page === 1 && !hasFilters
+                                    }
                                 />
                             ),
                         },
@@ -103,7 +135,9 @@ export default function RoutesIndex({
                     buildPageUrl={(page) =>
                         CyclistRouteController.index.url({
                             query: {
-                                category: selectedCategory ?? undefined,
+                                search: filters.search || undefined,
+                                category: filters.category || undefined,
+                                difficulty: filters.difficulty || undefined,
                                 page,
                             },
                         })
@@ -114,66 +148,57 @@ export default function RoutesIndex({
     );
 }
 
-function CategoryFilter({
+function RouteFiltersToolbar({
     categories,
-    selectedCategory,
+    difficulties,
+    filters,
+    onQueryChange,
 }: {
     categories: CatalogOption[];
-    selectedCategory: number | null;
+    difficulties: CatalogOption[];
+    filters: RouteFilters;
+    onQueryChange: (query: DataTableQuery) => void;
 }) {
     return (
-        <nav
-            aria-label="Filtrar rutas por categoría"
-            className="ueb-chip-row -mx-1 px-1 py-1 sm:mx-auto sm:justify-center"
-        >
-            <Button
-                variant={selectedCategory === null ? 'secondary' : 'outline'}
-                size="sm"
-                asChild
-                className="shrink-0 rounded-full px-4"
-            >
-                <Link
-                    href={CyclistRouteController.index.url()}
-                    replace
-                    prefetch
-                >
-                    Todas
-                </Link>
-            </Button>
-            {categories.map((category) => (
-                <Button
-                    key={category.id}
-                    variant={
-                        selectedCategory === category.id
-                            ? 'secondary'
-                            : 'outline'
-                    }
-                    size="sm"
-                    asChild
-                    className="shrink-0 rounded-full px-4"
-                >
-                    <Link
-                        href={CyclistRouteController.index.url({
-                            query: { category: category.id },
-                        })}
-                        replace
-                        prefetch
-                    >
-                        {category.name}
-                    </Link>
-                </Button>
-            ))}
-        </nav>
+        <Card className="data-table">
+            <CardContent>
+                <DataTableToolbar
+                    query={filters}
+                    onQueryChange={onQueryChange}
+                    searchPlaceholder="Buscar por nombre, descripción u origen"
+                    filters={[
+                        {
+                            id: 'category',
+                            label: 'Filtrar por categoría',
+                            placeholder: 'Todas las categorías',
+                            options: categories.map((category) => ({
+                                label: category.name,
+                                value: String(category.id),
+                            })),
+                        },
+                        {
+                            id: 'difficulty',
+                            label: 'Filtrar por dificultad',
+                            placeholder: 'Todas las dificultades',
+                            options: difficulties.map((difficulty) => ({
+                                label: difficulty.name,
+                                value: String(difficulty.id),
+                            })),
+                        },
+                    ]}
+                />
+            </CardContent>
+        </Card>
     );
 }
 
 function RoutesList({
     routes,
-    selectedCategory,
+    hasFilters,
     showLatestBadge,
 }: {
     routes: CyclingRouteMapItem[];
-    selectedCategory: number | null;
+    hasFilters: boolean;
     showLatestBadge: boolean;
 }) {
     if (routes.length === 0) {
@@ -184,17 +209,17 @@ function RoutesList({
                         <RouteIcon />
                     </EmptyMedia>
                     <EmptyTitle>
-                        {selectedCategory === null
-                            ? 'No hay rutas disponibles'
-                            : 'No hay rutas en esta categoría'}
+                        {hasFilters
+                            ? 'No encontramos rutas con esos filtros'
+                            : 'No hay rutas disponibles'}
                     </EmptyTitle>
                     <EmptyDescription>
-                        {selectedCategory === null
-                            ? 'Vuelve a revisar más tarde.'
-                            : 'Prueba con otra categoría para seguir explorando.'}
+                        {hasFilters
+                            ? 'Prueba con otra búsqueda o ajusta los filtros.'
+                            : 'Vuelve a revisar más tarde.'}
                     </EmptyDescription>
                 </EmptyHeader>
-                {selectedCategory !== null && (
+                {hasFilters && (
                     <EmptyContent>
                         <Button variant="outline" size="sm" asChild>
                             <Link
@@ -211,7 +236,7 @@ function RoutesList({
     }
 
     return (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <CardGrid layout="lg-3" className="grid-cols-1 gap-4 md:grid-cols-2">
             {routes.map((route, index) => (
                 <RouteCard
                     key={route.id}
@@ -219,7 +244,7 @@ function RoutesList({
                     isLatest={showLatestBadge && index === 0}
                 />
             ))}
-        </div>
+        </CardGrid>
     );
 }
 
@@ -233,107 +258,102 @@ function RouteCard({
     const routeUrl = CyclistRouteController.show.url(route.slug);
 
     return (
-        <Card className="group h-full gap-0 overflow-hidden py-0 transition-[border-color,transform] duration-200 hover:-translate-y-0.5 hover:border-primary">
-            <Link
-                href={routeUrl}
-                prefetch
-                className="relative block aspect-[16/9] overflow-hidden bg-muted"
-                aria-label={`Ver ${route.name}`}
-            >
+        <Link
+            href={routeUrl}
+            prefetch
+            aria-label={`Ver ${route.name}`}
+            className="block h-full"
+        >
+            <Card className="h-full overflow-hidden transition-[border-color,transform] duration-200 hover:-translate-y-0.5 hover:border-primary">
                 <ImageWithFallback
                     src={mediaUrl(route.main_image_path)}
                     alt={`Vista de ${route.name}`}
-                    className="size-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                    className="h-36 w-full object-cover"
                     fallback={
-                        <div className="flex size-full items-center justify-center text-muted-foreground">
-                            <ImageIcon />
+                        <div className="flex h-36 items-center justify-center bg-muted text-muted-foreground">
+                            <MapPinned aria-hidden="true" />
                             <span className="sr-only">
                                 Esta ruta no tiene imagen principal
                             </span>
                         </div>
                     }
                 />
-                <div className="absolute inset-x-3 top-3 flex items-start justify-between gap-2">
-                    {isLatest ? <Badge>Más reciente</Badge> : <span />}
-                    <div className="flex flex-wrap justify-end gap-1.5">
-                        {route.user_interaction.is_favorite && (
-                            <Badge>
-                                <Star data-icon="inline-start" />
-                                Favorita
-                            </Badge>
-                        )}
-                        {route.incidents.length > 0 && (
-                            <Badge>
-                                <AlertTriangle data-icon="inline-start" />
-                                {route.incidents.length}{' '}
-                                {route.incidents.length === 1
-                                    ? 'alerta'
-                                    : 'alertas'}
-                            </Badge>
-                        )}
+                <CardHeader>
+                    <div className="flex items-start justify-between gap-3">
+                        <div className="flex flex-col gap-2">
+                            {isLatest && <Badge>Más reciente</Badge>}
+                            <div className="flex flex-wrap gap-1.5">
+                                {route.category && (
+                                    <Badge>{route.category.name}</Badge>
+                                )}
+                                {route.difficulty && (
+                                    <Badge variant="outline">
+                                        {route.difficulty.name}
+                                    </Badge>
+                                )}
+                            </div>
+                            <CardTitle className="font-normal tracking-normal">
+                                {route.name}
+                            </CardTitle>
+                            <CardDescription className="line-clamp-2">
+                                {route.description}
+                            </CardDescription>
+                        </div>
+                        <div className="flex shrink-0 flex-col items-end gap-1.5">
+                            {route.user_interaction.is_favorite && (
+                                <Badge>
+                                    <Star data-icon="inline-start" />
+                                    Favorita
+                                </Badge>
+                            )}
+                            {route.incidents.length > 0 && (
+                                <Badge>
+                                    <AlertTriangle data-icon="inline-start" />
+                                    {route.incidents.length}{' '}
+                                    {route.incidents.length === 1
+                                        ? 'alerta'
+                                        : 'alertas'}
+                                </Badge>
+                            )}
+                        </div>
                     </div>
-                </div>
-            </Link>
-
-            <CardHeader className="gap-2 pt-4">
-                <div className="flex flex-wrap gap-2">
-                    {route.category && (
-                        <Badge variant="outline">{route.category.name}</Badge>
-                    )}
-                    {route.difficulty && (
-                        <Badge variant="outline">{route.difficulty.name}</Badge>
-                    )}
-                </div>
-                <CardTitle className="line-clamp-2 text-lg">
-                    <Link
-                        href={routeUrl}
-                        prefetch
-                        className="transition-colors hover:text-link"
-                    >
-                        {route.name}
-                    </Link>
-                </CardTitle>
-                <CardDescription className="line-clamp-2">
-                    {route.start_name} → {route.end_name}
-                </CardDescription>
-            </CardHeader>
-
-            <CardContent className="mt-auto grid grid-cols-2 gap-3 pb-4 text-sm">
-                <RouteMetric
-                    label="Distancia"
-                    value={
-                        route.metric
-                            ? `${route.metric.distance_km.toLocaleString()} km`
-                            : 'Sin dato'
-                    }
-                />
-                <RouteMetric
-                    label="Tiempo"
-                    value={
-                        route.metric
-                            ? `${route.metric.estimated_time_minutes} min`
-                            : 'Sin dato'
-                    }
-                />
-            </CardContent>
-
-            <CardFooter className="border-t py-3">
-                <Button asChild variant="outline" className="w-full">
-                    <Link href={routeUrl} prefetch>
-                        Ver ruta
-                    </Link>
-                </Button>
-            </CardFooter>
-        </Card>
-    );
-}
-
-function RouteMetric({ label, value }: { label: string; value: string }) {
-    return (
-        <div className="flex min-w-0 flex-col gap-0.5">
-            <span className="text-xs text-muted-foreground">{label}</span>
-            <span className="truncate font-bold text-foreground">{value}</span>
-        </div>
+                </CardHeader>
+                <CardContent className="flex flex-col gap-4 text-sm">
+                    <div className="flex gap-2 text-muted-foreground">
+                        <MapPinned className="mt-0.5 size-4 shrink-0" />
+                        <span className="line-clamp-2">
+                            {route.start_name} → {route.end_name}
+                        </span>
+                    </div>
+                    <div className="flex gap-2 border-t pt-3">
+                        <Bike className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+                        <div>
+                            <p className="text-xs text-muted-foreground">
+                                Distancia
+                            </p>
+                            <p className="font-semibold">
+                                {route.metric
+                                    ? `${route.metric.distance_km} km`
+                                    : 'Sin dato'}
+                            </p>
+                        </div>
+                    </div>
+                    <div className="flex gap-2 border-t pt-3">
+                        <Clock className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+                        <div>
+                            <p className="text-xs text-muted-foreground">
+                                Tiempo estimado
+                            </p>
+                            <p className="font-semibold">
+                                {route.metric
+                                    ? `${route.metric.estimated_time_minutes} min`
+                                    : 'Sin dato'}
+                            </p>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+        </Link>
     );
 }
 

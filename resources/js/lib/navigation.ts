@@ -1,8 +1,7 @@
-import { Bell, Bot, Heart, Route } from 'lucide-react';
+import { Bot, Heart, Route } from 'lucide-react';
 import { adminNavItems } from '@/lib/admin-navigation';
 import { index as chatIndex } from '@/routes/chat';
 import { index as favoritesIndex } from '@/routes/favorites';
-import { index as notificationsIndex } from '@/routes/notifications';
 import { index as routesIndex } from '@/routes/routes';
 import type { Auth, NavItem } from '@/types';
 
@@ -16,11 +15,6 @@ const cyclistNavItems: NavItem[] = [
         title: 'Favoritas',
         href: favoritesIndex.url(),
         icon: Heart,
-    },
-    {
-        title: 'Notificaciones',
-        href: notificationsIndex.url(),
-        icon: Bell,
     },
     {
         title: 'Asistente IA',
@@ -45,9 +39,7 @@ export function mobilePrimaryNavItems(auth: Auth): NavItem[] {
     if (!isAdmin(auth)) {
         return [
             cyclistNavItems.find((item) => item.href === routesIndex.url()),
-            cyclistNavItems.find(
-                (item) => item.href === notificationsIndex.url(),
-            ),
+            cyclistNavItems.find((item) => item.href === favoritesIndex.url()),
             cyclistNavItems.find((item) => item.href === chatIndex.url()),
         ].filter((item): item is NavItem => Boolean(item));
     }
