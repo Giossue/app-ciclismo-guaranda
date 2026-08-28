@@ -6,7 +6,6 @@ import type { DataTableColumn, DataTableQuery } from '@/components/data-table';
 import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
 import type { CatalogOption } from '@/types';
-import { PoiModuleNavigation } from '../partials/poi-module-navigation';
 
 type ManagedSuggestion = {
     category: CatalogOption | null;
@@ -122,8 +121,6 @@ export default function AdminPoiSuggestionsIndex({
                     title="Sugerencias de POIs"
                     description="Consulta los puntos de interés enviados por ciclistas."
                 />
-
-                <PoiModuleNavigation active="suggestions" />
 
                 <DataTable
                     data={suggestions.data}

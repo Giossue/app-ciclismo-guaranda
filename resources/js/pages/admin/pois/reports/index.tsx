@@ -5,7 +5,6 @@ import { DataTable } from '@/components/data-table';
 import type { DataTableColumn, DataTableQuery } from '@/components/data-table';
 import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
-import { PoiModuleNavigation } from '../partials/poi-module-navigation';
 
 type ManagedReport = {
     description: string | null;
@@ -115,8 +114,6 @@ export default function AdminPoiReportsIndex({ filters, reports }: Props) {
                     title="Reportes de POIs"
                     description="Consulta cierres y datos incorrectos reportados por ciclistas."
                 />
-
-                <PoiModuleNavigation active="reports" />
 
                 <DataTable
                     data={reports.data}

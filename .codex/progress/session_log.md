@@ -498,13 +498,19 @@
 
 ## 2026-08-27 — Submenú administrativo de POIs
 
-- Se separaron POIs oficiales, sugerencias y reportes en rutas y vistas administrativas independientes, usando un submenú local y rutas Wayfinder tipadas.
+- Se separaron POIs oficiales, sugerencias y reportes en rutas y vistas administrativas independientes, usando rutas Wayfinder tipadas.
 - La vista principal de POIs ahora usa la tabla operativa reutilizable con búsqueda, filtros por categoría/estado, paginación y acciones de edición o activación.
 - Se añadieron policies, validación de query y pruebas de autorización/aislamiento de las tres vistas; no hubo cambios de esquema ni de datos remotos.
 
 ## 2026-08-27 — Menú de acciones para POIs
 
 - La columna de acciones de la tabla de POIs se redujo a un menú contextual de tres puntos; desde allí se puede editar y activar o desactivar cada POI con el estado pendiente correspondiente.
+
+## 2026-08-27 — Filtros y conteo de reportes de POIs
+
+- El conteo de reportes de la tabla se muestra como número simple, sin badge, y se eliminó la descripción redundante sobre la tabla.
+- Los filtros de POIs descartan valores vacíos, la primera página y el tamaño por defecto de la URL; `Limpiar` devuelve al listado base sin parámetros.
+- La navegación de POIs se trasladó de pestañas locales a un submenú desplegable en el sidebar, con POIs oficiales, sugerencias y reportes.
 
 ## 2026-08-27 — Landing adaptable
 

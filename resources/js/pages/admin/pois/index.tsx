@@ -16,7 +16,6 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import type { CatalogOption } from '@/types';
-import { PoiModuleNavigation } from './partials/poi-module-navigation';
 
 type ManagedPoi = {
     active: boolean;
@@ -55,7 +54,7 @@ type Props = {
 
 export default function AdminPoisIndex({ categories, filters, pois }: Props) {
     const changeQuery = (query: DataTableQuery) => {
-        router.get(PoiController.index.url(), query, {
+        router.get(PoiController.index.url(), compactPoiQuery(query), {
             only: ['pois', 'filters'],
             preserveScroll: true,
             preserveState: true,
@@ -116,9 +115,9 @@ export default function AdminPoisIndex({ categories, filters, pois }: Props) {
             id: 'reports',
             label: 'Reportes',
             cell: (poi) => (
-                <Badge variant={poi.reports_count > 0 ? 'default' : 'outline'}>
+                <span className="text-muted-foreground tabular-nums">
                     {poi.reports_count}
-                </Badge>
+                </span>
             ),
         },
         {
@@ -156,13 +155,10 @@ export default function AdminPoisIndex({ categories, filters, pois }: Props) {
                     />
                 </div>
 
-                <PoiModuleNavigation active="pois" />
-
                 <DataTable
                     data={pois.data}
                     columns={columns}
                     getRowId={(poi) => poi.id}
-                    description="Consulta, filtra y administra los POIs oficiales de las rutas."
                     emptyMessage="No hay POIs que coincidan con los filtros seleccionados."
                     searchPlaceholder="Buscar por nombre, descripción o categoría"
                     query={filters}
@@ -199,6 +195,22 @@ export default function AdminPoisIndex({ categories, filters, pois }: Props) {
             </div>
         </>
     );
+}
+
+function compactPoiQuery(query: DataTableQuery): DataTableQuery {
+    return Object.fromEntries(
+        Object.entries(query).filter(([key, value]) => {
+            if (value === undefined || value === '') {
+                return false;
+            }
+
+            if (key === 'page' && Number(value) === 1) {
+                return false;
+            }
+
+            return !(key === 'per_page' && Number(value) === 15);
+        }),
+    ) as DataTableQuery;
 }
 
 function PoiRowActions({ poi }: { poi: ManagedPoi }) {

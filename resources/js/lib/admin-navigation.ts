@@ -11,6 +11,9 @@ import {
     Tags,
     Users,
 } from 'lucide-react';
+import PoiController from '@/actions/App/Http/Controllers/Admin/PoiController';
+import PoiReportController from '@/actions/App/Http/Controllers/Admin/PoiReportController';
+import PoiSuggestionController from '@/actions/App/Http/Controllers/Admin/PoiSuggestionController';
 import type { NavItem } from '@/types';
 
 export const adminNavItems: NavItem[] = [
@@ -31,8 +34,22 @@ export const adminNavItems: NavItem[] = [
     },
     {
         title: 'POIs',
-        href: '/admin/pois',
+        href: PoiController.index(),
         icon: MapPin,
+        children: [
+            {
+                title: 'POIs',
+                href: PoiController.index(),
+            },
+            {
+                title: 'Sugerencias',
+                href: PoiSuggestionController(),
+            },
+            {
+                title: 'Reportes',
+                href: PoiReportController(),
+            },
+        ],
     },
     {
         title: 'Incidencias',
