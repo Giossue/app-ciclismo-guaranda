@@ -110,6 +110,8 @@ type Props = {
     pois: RoutePoiOption[];
     defaults?: RouteDefaults;
     defaultGeojson?: string | null;
+    /** Cierra la hoja que contiene el formulario en vez de navegar al listado. */
+    onCancel?: () => void;
     route?: RouteFormData;
 };
 
@@ -157,6 +159,7 @@ export default function RouteForm({
     pois,
     defaults,
     defaultGeojson,
+    onCancel,
     route,
 }: Props) {
     const isEdit = mode === 'edit' && route !== undefined;
@@ -1222,14 +1225,24 @@ export default function RouteForm({
                             )}
 
                             <div className="flex flex-wrap gap-2">
-                                <Button variant="outline" asChild>
-                                    <Link
-                                        href={RouteController.index.url()}
-                                        prefetch
+                                {onCancel ? (
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={onCancel}
                                     >
                                         Cancelar
-                                    </Link>
-                                </Button>
+                                    </Button>
+                                ) : (
+                                    <Button variant="outline" asChild>
+                                        <Link
+                                            href={RouteController.index.url()}
+                                            prefetch
+                                        >
+                                            Cancelar
+                                        </Link>
+                                    </Button>
+                                )}
                                 <Button
                                     disabled={
                                         processing ||

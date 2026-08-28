@@ -42,7 +42,7 @@ Los estilos reutilizables se definen en `resources/css/app.css`; no crear otra f
 - Para **texto o iconos de marca** usa `--link`/`--link-hover` (oscuros en claro, claros en oscuro) o `--brand-accent`; no uses `--primary` como color de texto porque en tema oscuro no alcanza 4.5:1 sobre el fondo.
 - Si `--brand-accent` se usa como fondo, el texto va con `--brand-accent-foreground`, que invierte según el tema.
 - `Badge` tiene **solo dos variantes**: `default` (sólido de marca) para el estado vigente o el dato que exige atención, y `outline` (neutro) para metadatos, taxonomías, contadores informativos y estados apagados. No se añaden variantes por color de estado: el significado lo lleva el texto del badge.
-- Su tipografía vive únicamente en el componente (`text-[var(--fs-xs)]`, `font-semibold`, `uppercase`, `tracking-[0.04em]`): peso intermedio, por debajo de los títulos. No redefinir badges desde `app.css` ni con clases por pantalla.
+- Su tipografía y su métrica viven únicamente en el componente y están al **70%** de la escala base: `text-[calc(var(--fs-xs)*0.7)]`, `px-[0.4375rem]`, `py-[0.175rem]`, `gap-[0.175rem]` e icono `0.7rem`, con `font-semibold`, `uppercase` y `tracking-[0.04em]`. No redefinir badges desde `app.css` ni con clases por pantalla.
 - El resto de verdes (`--ring`, `--focus-ring`, `--info`, `--chart-1`, `--chart-2`, `--primary-glow`, `--sidebar-primary`) se derivan del mismo tono OKLCH (H≈142.5) variando solo luminosidad; `--success`, `--warning` y `--destructive` siguen siendo colores de estado independientes.
 - `rounded-full` y `rounded-none` solo se usan cuando la forma es intencionalmente circular/píldora o sin radio. Evitar valores arbitrarios como `rounded-[18px]` o `border-radius: 16px`.
 
@@ -53,7 +53,8 @@ Antes de una refactorización visual amplia, ejecutar `python3 temp/audit_ui_tok
 - Tamaño único: **todos** los iconos miden `--icon-size` (1rem / 16px). No hay escala de iconos ni tamaños por contexto.
 - El contrato vive en `resources/css/app.css`: la regla base `svg.lucide` aplica `--icon-size` a cualquier icono Lucide, incluso si no declara clase.
 - Cuando haga falta declararlo en el marcado, usar `size-4`; no introducir `size-3`, `size-5`, `size-6`, `h-5 w-5` ni valores arbitrarios como `size-[18px]`.
-- Los primitives que fijan tamaño de SVG (`button`, `badge`, `alert`, `breadcrumb`, `empty`, `select`, `dropdown-menu`, `sidebar`, `toggle`, `navigation-menu`, `calendar`) usan `size-4` sin excepción.
+- Los primitives que fijan tamaño de SVG (`button`, `alert`, `breadcrumb`, `empty`, `select`, `dropdown-menu`, `sidebar`, `toggle`, `navigation-menu`, `calendar`) usan `size-4`.
+- Excepción del contrato: el icono dentro de `Badge` mide `0.7rem`, porque el badge completo está escalado al 70% (relleno, tipografía e icono con el mismo factor) y un icono de 16px lo deformaría.
 - Los estados vacíos y los placeholders de imagen también usan el tamaño estándar; el contenedor aporta la presencia visual, no el icono.
 - Excepción única: el punto indicador de `DropdownMenuRadioItem` (`CircleIcon`) mantiene `size-2` porque es un indicador de selección, no iconografía.
 - No son iconos y quedan fuera del contrato: el logo (`AppLogoIcon`, es un `<img>`), las ilustraciones decorativas (`MountainScene`) y el QR de doble factor.

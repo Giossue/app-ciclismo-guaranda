@@ -6,7 +6,9 @@ import * as React from 'react';
 import { cn } from '@/lib/utils';
 
 const badgeVariants = cva(
-    'inline-flex w-fit shrink-0 items-center justify-center gap-1 rounded-full border px-2.5 py-1 text-[var(--fs-xs)] leading-none font-semibold tracking-[0.04em] uppercase whitespace-nowrap transition-colors [&>svg]:pointer-events-none [&>svg]:size-4',
+    // Escala al 70% de la métrica base del sistema: separación, relleno,
+    // tipografía e icono llevan el mismo factor para no deformar la píldora.
+    'inline-flex w-fit shrink-0 items-center justify-center gap-[0.175rem] rounded-full border px-[0.4375rem] py-[0.175rem] text-[calc(var(--fs-xs)*0.7)] leading-none font-semibold tracking-[0.04em] uppercase whitespace-nowrap transition-colors [&>svg]:pointer-events-none [&>svg]:size-[0.7rem]',
     {
         variants: {
             variant: {

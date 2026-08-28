@@ -1,4 +1,4 @@
-import { Form, Head, Link } from '@inertiajs/react';
+import { Form, Head, Link, router } from '@inertiajs/react';
 import {
     Bike,
     Clock,
@@ -31,8 +31,16 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetHeader,
+    SheetTitle,
+} from '@/components/ui/sheet';
 import { mediaUrl } from '@/lib/media';
 import type { CatalogOption } from '@/types';
+import RouteForm from './partials/route-form';
 
 type RouteSummary = {
     id: number;
@@ -71,11 +79,55 @@ type PaginatedRoutes = {
     total: number;
 };
 
+type RouteFormOptions = {
+    statuses: CatalogOption[];
+    categories: CatalogOption[];
+    difficulties: CatalogOption[];
+    transportModes: CatalogOption[];
+    routingEngines: CatalogOption[];
+    poiCategories: CatalogOption[];
+    pois: Parameters<typeof RouteForm>[0]['pois'];
+    defaults?: Parameters<typeof RouteForm>[0]['defaults'];
+    defaultGeojson?: string | null;
+};
+
+type RouteFormData = NonNullable<Parameters<typeof RouteForm>[0]['route']>;
+
 type Props = {
+    form: 'create' | 'edit' | null;
+    formOptions: RouteFormOptions | null;
+    routeForm: RouteFormData | null;
     routes: PaginatedRoutes;
 };
 
-export default function AdminRoutesIndex({ routes }: Props) {
+/** Abre la hoja apuntando la URL al formulario, sin recargar el listado. */
+function openRouteForm(query: { form: 'create' | 'edit'; route?: number }) {
+    router.get(RouteController.index.url(), query, {
+        only: ['form', 'formOptions', 'routeForm'],
+        preserveScroll: true,
+        preserveState: true,
+    });
+}
+
+export default function AdminRoutesIndex({
+    form,
+    formOptions,
+    routeForm,
+    routes,
+}: Props) {
+    const closeRouteForm = () => {
+        router.get(
+            RouteController.index.url(),
+            {},
+            {
+                only: ['form', 'formOptions', 'routeForm'],
+                preserveScroll: true,
+                preserveState: true,
+                replace: true,
+            },
+        );
+    };
+
     return (
         <>
             <Head title="Rutas" />
@@ -87,8 +139,8 @@ export default function AdminRoutesIndex({ routes }: Props) {
                         description="Gestiona las rutas disponibles para ciclistas."
                     />
                     <PrimaryActionButton
-                        href={RouteController.create.url()}
                         label="Nueva ruta"
+                        onClick={() => openRouteForm({ form: 'create' })}
                     />
                 </div>
 
@@ -196,14 +248,14 @@ export default function AdminRoutesIndex({ routes }: Props) {
                             </CardDescription>
                         </CardHeader>
                         <CardFooter>
-                            <Button asChild>
-                                <Link
-                                    href={RouteController.create.url()}
-                                    prefetch
-                                >
-                                    <Plus data-icon="inline-start" />
-                                    Crear ruta
-                                </Link>
+                            <Button
+                                type="button"
+                                onClick={() =>
+                                    openRouteForm({ form: 'create' })
+                                }
+                            >
+                                <Plus data-icon="inline-start" />
+                                Crear ruta
                             </Button>
                         </CardFooter>
                     </Card>
@@ -219,6 +271,61 @@ export default function AdminRoutesIndex({ routes }: Props) {
                     )}
                 </div>
             </div>
+
+            <Sheet
+                open={form !== null}
+                onOpenChange={(open) => {
+                    if (!open) {
+                        closeRouteForm();
+                    }
+                }}
+            >
+                <SheetContent
+                    side="right"
+                    className="w-full max-w-none overflow-y-auto sm:max-w-3xl lg:max-w-5xl"
+                >
+                    <SheetHeader>
+                        <SheetTitle>
+                            {form === 'edit' && routeForm
+                                ? `Editar ${routeForm.name}`
+                                : 'Nueva ruta oficial'}
+                        </SheetTitle>
+                        <SheetDescription>
+                            {form === 'edit'
+                                ? 'Ajusta trazado, portada, métricas y POIs; los cambios relevantes incrementan la versión.'
+                                : 'Completa primero lo esencial. Los detalles complementarios se muestran solo cuando los necesites.'}
+                        </SheetDescription>
+                    </SheetHeader>
+
+                    {formOptions && (
+                        <div className="px-5 pb-5">
+                            <RouteForm
+                                key={
+                                    form === 'edit' && routeForm
+                                        ? `edit-${routeForm.id}`
+                                        : 'create'
+                                }
+                                mode={form === 'edit' ? 'edit' : 'create'}
+                                onCancel={closeRouteForm}
+                                route={
+                                    form === 'edit'
+                                        ? (routeForm ?? undefined)
+                                        : undefined
+                                }
+                                statuses={formOptions.statuses}
+                                categories={formOptions.categories}
+                                difficulties={formOptions.difficulties}
+                                transportModes={formOptions.transportModes}
+                                routingEngines={formOptions.routingEngines}
+                                poiCategories={formOptions.poiCategories}
+                                pois={formOptions.pois}
+                                defaults={formOptions.defaults}
+                                defaultGeojson={formOptions.defaultGeojson}
+                            />
+                        </div>
+                    )}
+                </SheetContent>
+            </Sheet>
         </>
     );
 }
@@ -311,14 +418,13 @@ function RouteCardActions({ route }: { route: RouteSummary }) {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
                 <DropdownMenuGroup>
-                    <DropdownMenuItem asChild>
-                        <Link
-                            href={RouteController.edit.url(route.id)}
-                            prefetch
-                        >
-                            <Pencil />
-                            Editar ruta
-                        </Link>
+                    <DropdownMenuItem
+                        onSelect={() =>
+                            openRouteForm({ form: 'edit', route: route.id })
+                        }
+                    >
+                        <Pencil />
+                        Editar ruta
                     </DropdownMenuItem>
                 </DropdownMenuGroup>
                 {route.status?.name !== 'inactiva' && (

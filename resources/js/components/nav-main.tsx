@@ -18,11 +18,29 @@ import {
     SidebarMenuSubItem,
 } from '@/components/ui/sidebar';
 import { useCurrentUrl } from '@/hooks/use-current-url';
-import { cn } from '@/lib/utils';
+import { cn, toUrl } from '@/lib/utils';
 import type { NavItem } from '@/types';
 
 export function NavMain({ items = [] }: { items: NavItem[] }) {
     const { isCurrentOrParentUrl, isCurrentUrl } = useCurrentUrl();
+
+    /**
+     * Solo se marca el subelemento más específico: `/admin/pois/reports` empieza
+     * por `/admin/pois`, así que sin esto se encenderían dos a la vez.
+     */
+    const activeChildUrl = (children: NavItem[]): string | null => {
+        const matches = children.filter((child) =>
+            isCurrentOrParentUrl(child.href),
+        );
+
+        if (matches.length === 0) {
+            return null;
+        }
+
+        return matches
+            .map((child) => toUrl(child.href))
+            .reduce((best, url) => (url.length > best.length ? url : best));
+    };
 
     return (
         <SidebarGroup className="px-2 py-2">
@@ -40,6 +58,10 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
                         );
 
                         if (item.children?.length) {
+                            const currentChildUrl = activeChildUrl(
+                                item.children,
+                            );
+
                             return (
                                 <Collapsible
                                     key={`${item.title}-${active ? 'active' : 'inactive'}`}
@@ -81,9 +103,8 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
                                             <SidebarMenuSub>
                                                 {item.children.map((child) => {
                                                     const childActive =
-                                                        isCurrentOrParentUrl(
-                                                            child.href,
-                                                        );
+                                                        toUrl(child.href) ===
+                                                        currentChildUrl;
 
                                                     return (
                                                         <SidebarMenuSubItem

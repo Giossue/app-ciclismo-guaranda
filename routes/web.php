@@ -68,7 +68,8 @@ Route::middleware(['auth', 'verified', 'admin'])
         Route::get('dashboard', DashboardController::class)->name('dashboard');
 
         Route::post('routes/elevation-preview', RouteElevationController::class)->middleware('throttle:20,1')->name('routes.elevation-preview');
-        Route::resource('routes', AdminRouteController::class)->except(['show']);
+        // Alta y edición se resuelven en una hoja del listado, no en páginas propias.
+        Route::resource('routes', AdminRouteController::class)->except(['show', 'create', 'edit']);
         Route::get('pois/suggestions', AdminPoiSuggestionController::class)->name('pois.suggestions.index');
         Route::get('pois/reports', AdminPoiReportController::class)->name('pois.reports.index');
         Route::resource('pois', AdminPoiController::class)->except(['show'])->withTrashed(['edit', 'update']);

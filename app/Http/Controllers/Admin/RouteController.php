@@ -17,18 +17,25 @@ use App\Models\TransportMode;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class RouteController extends Controller
 {
-    public function index(): Response
+    public function index(Request $request): Response
     {
         $this->authorize('viewAny', CyclingRoute::class);
+
+        $filters = $request->validate([
+            'form' => ['nullable', Rule::in(['create', 'edit'])],
+            'route' => ['nullable', 'integer'],
+        ]);
 
         $routes = CyclingRoute::query()
             ->with(['status:id,name', 'category:id,name', 'difficulty:id,name', 'admin:id,name,last_name', 'metrics.transportMode:id,name'])
@@ -38,24 +45,63 @@ class RouteController extends Controller
 
         return Inertia::render('admin/routes/index', [
             'routes' => $routes,
+            ...$this->routeFormProps($filters['form'] ?? null, $filters['route'] ?? null),
         ]);
     }
 
-    public function create(): Response
+    /**
+     * Alta y edición viven en una hoja lateral del listado: sus datos solo se
+     * calculan cuando la URL pide el formulario.
+     *
+     * @return array{form: string|null, formOptions: array<string, mixed>|null, routeForm: array<string, mixed>|null}
+     */
+    private function routeFormProps(?string $mode, ?int $routeId): array
     {
-        $this->authorize('create', CyclingRoute::class);
+        $empty = ['form' => null, 'formOptions' => null, 'routeForm' => null];
 
-        $catalogs = $this->catalogProps();
+        if ($mode === 'create') {
+            $this->authorize('create', CyclingRoute::class);
 
-        return Inertia::render('admin/routes/create', [
-            ...$catalogs,
-            'defaults' => [
-                'route_status_id' => $catalogs['statuses']->firstWhere('name', 'borrador')?->id,
-                'transport_mode_id' => $catalogs['transportModes']->firstWhere('name', 'bicicleta')?->id,
-                'routing_engine_id' => $catalogs['routingEngines']->first()?->id,
-            ],
-            'defaultGeojson' => null,
+            $catalogs = $this->catalogProps();
+
+            return [
+                'form' => 'create',
+                'formOptions' => [
+                    ...$catalogs,
+                    'defaults' => [
+                        'route_status_id' => $catalogs['statuses']->firstWhere('name', 'borrador')?->id,
+                        'transport_mode_id' => $catalogs['transportModes']->firstWhere('name', 'bicicleta')?->id,
+                        'routing_engine_id' => $catalogs['routingEngines']->first()?->id,
+                    ],
+                    'defaultGeojson' => null,
+                ],
+                'routeForm' => null,
+            ];
+        }
+
+        if ($mode !== 'edit' || $routeId === null) {
+            return $empty;
+        }
+
+        $route = CyclingRoute::query()->findOrFail($routeId);
+
+        $this->authorize('update', $route);
+
+        $route->load([
+            'geometry:id,route_id,geojson',
+            'metrics.routingEngine',
+            'metrics.transportMode',
+            'images',
+            'recommendations',
+            'observations',
+            'pointsOfInterest:id',
         ]);
+
+        return [
+            'form' => 'edit',
+            'formOptions' => $this->catalogProps(),
+            'routeForm' => $this->serializeRouteForm($route),
+        ];
     }
 
     public function store(StoreRouteRequest $request): RedirectResponse
@@ -77,26 +123,6 @@ class RouteController extends Controller
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Ruta creada.')]);
 
         return to_route('admin.routes.index');
-    }
-
-    public function edit(CyclingRoute $route): Response
-    {
-        $this->authorize('update', $route);
-
-        $route->load([
-            'geometry:id,route_id,geojson',
-            'metrics.routingEngine',
-            'metrics.transportMode',
-            'images',
-            'recommendations',
-            'observations',
-            'pointsOfInterest:id',
-        ]);
-
-        return Inertia::render('admin/routes/edit', [
-            ...$this->catalogProps(),
-            'route' => $this->serializeRouteForm($route),
-        ]);
     }
 
     public function update(UpdateRouteRequest $request, CyclingRoute $route): RedirectResponse
