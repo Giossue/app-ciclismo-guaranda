@@ -39,8 +39,9 @@ Antes de implementar una fase, el agente debe:
 | 12 | `12_capacitor_android.md` | Requiere revisión |
 | 13 | `13_estadisticas_reportes.md` | Completado |
 | 14 | `14_validacion_final.md` | Requiere revisión |
-| 15 | `15_agente_n8n_tools.md` | En progreso |
+| 15 | `15_agente_n8n_tools.md` | Sustituido por Fase 17 |
 | 16 | `16_refactor_frontend_mobile_design.md` | Completado |
+| 17 | `17_agente_laravel_openai.md` | En progreso |
 
 ## Fase activa sugerida
 
@@ -49,6 +50,7 @@ Implementación activa:
 ```txt
 15_agente_n8n_tools.md
 16_refactor_frontend_mobile_design.md
+17_agente_laravel_openai.md
 ```
 
 Validación manual final en Android real:

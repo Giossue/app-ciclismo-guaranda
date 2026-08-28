@@ -1,4 +1,8 @@
-# Integración con agente externo n8n
+# Histórico — integración con agente externo n8n
+
+> Este documento describe una implementación retirada. Desde 2026-08-28 el
+> asistente usa Laravel/OpenAI; no hay webhook, tools HTTP ni memoria n8n en el
+> flujo vigente. Ver `.codex/domain/chatbot_ia.md` y Fase 17.
 
 ## Decisión clave
 

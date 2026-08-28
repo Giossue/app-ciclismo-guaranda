@@ -11,6 +11,6 @@ Esta es una vista de navegación, no un reemplazo de los documentos de `.codex/d
 | Incidencias | Incidencia, archivo, estado | Fotos hasta 5 MB; solo incidencias revisadas se hacen visibles. |
 | Interacción | Favorito, valoración, multimedia | Una valoración requiere recorrido válido y solo aprobadas cuentan públicamente. |
 | Offline | Descarga de ruta, entrada de cola | La cola sincroniza incidencias/fotos y recorridos al recuperar red. |
-| Asistente | Conversación IA, mensaje IA | El agente vive en n8n; ubicación es opcional y transitoria. |
+| Asistente | Conversación IA, mensaje IA | Laravel consulta OpenAI con contexto público vivo; ubicación es opcional, transitoria y no se guarda. |
 
 Documentos de detalle: `users_auth.md`, `routes.md`, `pois.md`, `incidents.md`, `gps_tracks.md`, `ratings_comments.md` y `chatbot_ia.md` en `.codex/domain/`.

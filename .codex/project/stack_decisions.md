@@ -15,8 +15,8 @@ App móvil: Capacitor Android
 Offline: SQLite local + filesystem
 Mapas: Leaflet + OpenStreetMap / TileServer GL
 Rutas: OSRM / GraphHopper / OpenRouteService según necesidad
-IA: webhook externo n8n
-Clima: Open-Meteo dentro del flujo n8n/backend
+IA: Laravel + OpenAI Responses
+Clima: pendiente de integración backend explícita
 Colas: Laravel Jobs + Redis
 ```
 
@@ -25,7 +25,7 @@ Colas: Laravel Jobs + Redis
 - La aplicación se desarrolla dentro de `ciclismo-guaranda/`.
 - El backend y frontend conviven en el starter Laravel React/Inertia.
 - Capacitor empaqueta la app Android a partir del frontend.
-- El sistema no contiene lógica de IA propia: consume n8n.
+- Laravel encapsula la integración OpenAI; el frontend/APK no contiene claves ni invoca proveedores de IA directamente.
 - El APK no debe contener secretos.
 - El mapa offline completo de Ecuador debe planificarse por tamaño y almacenamiento.
 
@@ -38,10 +38,8 @@ Colas: Laravel Jobs + Redis
 - Laravel Boost.
 - Email verification, registration, 2FA, passkeys y password confirmation habilitados.
 
-## Decisiones n8n/tools
+## Decisiones del asistente
 
-- n8n usa un nodo Agent conectado a modelo, memoria Postgres y tools HTTP.
-- Las tools Laravel actuales son: `buscar_rutas`, `detalle_ruta`, `buscar_pois`, `progreso_ruta` y `alertas_ruta`.
-- El clima se consulta desde n8n con Open-Meteo; si no hay ubicación se usa Guaranda como fallback.
-- `buscar_rutas` y `buscar_pois` no deben enviar el mensaje completo del usuario como `query`; `query` solo sirve para nombres/lugares/necesidades concretas.
-- Las tools Laravel se autentican con token de servidor (`GUARANDA_GO_AGENT_TOOL_TOKEN`) desde n8n; nunca desde frontend/APK.
+- Laravel consulta OpenAI Responses con `store: false`, respuesta JSON Schema y timeout acotado.
+- El contexto público se construye en Laravel desde rutas activas, POIs activos y alertas visibles; no existen tools HTTP ni token de n8n.
+- Los embeddings `text-embedding-3-large`, pgvector e indexación de imágenes son una fase posterior, nunca requisito para el flujo inicial.

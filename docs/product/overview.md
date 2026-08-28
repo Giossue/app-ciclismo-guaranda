@@ -17,7 +17,7 @@ No hay usuarios invitados: toda funcionalidad requiere autenticación.
 2. Descargar datos de una ruta, recorrerla con GPS y sincronizar cuando haya conexión.
 3. Reportar una incidencia con foto; un administrador la revisa antes de su visibilidad ciclista.
 4. Valorar una ruta solamente tras un recorrido válido (al menos 90 %).
-5. Consultar el asistente de n8n online con contexto mínimo y ubicación opcional/transitoria.
+5. Consultar el asistente online con contexto público vivo y ubicación opcional/transitoria.
 
 ## Límites
 

@@ -54,7 +54,7 @@ Usar REST para:
 - Crear incidencias.
 - Favoritos.
 - Valoraciones.
-- Chatbot webhook proxy.
+- Asistente OpenAI encapsulado en servicio Laravel.
 
 ## Reglas
 

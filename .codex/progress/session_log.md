@@ -653,3 +653,42 @@
 - Se sustituyeron los chips de categorías por la barra compartida de búsqueda, categoría y dificultad; el backend conserva solo rutas activas y preserva filtros en la paginación.
 - Las tarjetas del catálogo ciclista siguen ahora la estructura visual de rutas administrativas. Notificaciones se retiró de las navegaciones lateral y móvil; Favoritas queda como acceso principal y la campana mantiene el acceso a avisos.
 - Validaciones aprobadas: `CyclistRouteVisibilityTest` (3 pruebas, 40 aserciones), `RouteMapVisualizationTest` (3 pruebas, 44 aserciones), Pint, tipos, lint, formato, build Vite y caché de rutas.
+## 2026-08-28 — Plan de agente nativo
+
+- Se verificó AI Elements: el repositorio ya contiene componentes de conversación, mensajes, prompt, adjuntos, sugerencias, fuentes, razonamiento, tools y confirmación; React 19, Tailwind 4, shadcn y AI SDK también están presentes.
+- Se creó la Fase 17 para migrar el agente a Laravel/OpenAI en etapas y se documentó que no se instala ni usa Vercel AI Gateway/Next.js para este flujo.
+- Se detuvo la experimentación de pgvector: la base central presenta PostGIS registrado sin biblioteca cargable. Se construyó una imagen local de prueba y se generó un backup físico, pero no se desplegó ni se modificaron datos o schema.
+- Se sustituyó localmente el envío del chat a n8n por `OpenAiAssistant` contra
+  `POST /v1/responses`, con `store: false`, timeouts configurables y contexto
+  vivo separado en `LiveTourismContext`. Se añadió rechazo de conversaciones
+  ajenas y el estado técnico seguro de configuración OpenAI.
+- Se completó el primer contrato nativo: respuesta JSON Schema (`reply` y hasta
+  tres sugerencias), estado `completed` verificado, persistencia transaccional,
+  historial limitado y ubicación estrictamente temporal.
+- Se retiraron `AgentToolController`, `EnsureAgentToolToken`, `/api/agent/*` y
+  sus pruebas n8n. El contexto se obtiene de la BD desde Laravel; el servicio
+  n8n del VPS no fue tocado.
+- El chat incorpora `MessageResponse`, `Suggestions` y `Suggestion` de AI
+  Elements. Los plugins de Markdown de código, matemáticas, Mermaid y CJK se
+  removieron para evitar un bundle innecesariamente grande.
+- El modelo solo devuelve referencias internas de ruta/POI; Laravel las
+  rehidrata y filtra por estado antes de guardar o mostrar tarjetas. Se añadió
+  el contexto temporal de salida local, visita de día o pernoctación y las
+  tarjetas/fuentes de AI Elements al chat.
+- Validaciones aprobadas: Pint, `ChatbotOpenAiTest` (10 pruebas, 62
+  aserciones), TypeScript, ESLint, Prettier, `git diff --check` y build Vite.
+- Se incorporó `GenerateImageDescription` y `OpenAiImageDescriber` para fotos
+  recién subidas por administradores. La cola de base de datos ya existe y su
+  worker se configura en Supervisor; usa un único intento, no sobrescribe texto
+  manual y solo arranca con `GUARANDA_GO_OPENAI_VISION_MODEL` configurado.
+- Validaciones focalizadas aprobadas: `OpenAiImageDescriptionTest`,
+  `AdminRouteManagementTest` y `AdminPoiManagementTest` (22 pruebas, 263
+  aserciones), además de sintaxis PHP, caché de configuración/rutas, tipos,
+  lint y formato.
+- Se añadieron tarjetas de fuentes del chat con imagen editorial pública
+  rehidratada y descripción accesible; se verificó además que la observabilidad
+  de OpenAI conserva solo modelo, latencia y tokens, sin contenido conversacional
+  ni datos de imagen/ubicación.
+- Validación final del bloque local: Pint, 181 pruebas Pest (1313 aserciones),
+  TypeScript, ESLint, Prettier, build Vite, caché de configuración y caché de
+  rutas aprobados.

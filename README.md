@@ -50,7 +50,7 @@ Aunque funcionalmente se desea una versión completa, se recomienda organizar el
 3. Offline y almacenamiento local.
 4. Seguimiento GPS y recorridos.
 5. Incidencias, favoritos, valoraciones y comentarios.
-6. Chatbot IA con n8n.
+6. Asistente IA Laravel/OpenAI.
 7. Estadísticas, auditoría y optimización.
 
 Esto no significa dejar funcionalidades para una segunda fase, sino implementarlas de forma ordenada y verificable.
@@ -106,9 +106,9 @@ La aplicación será híbrida:
 | Servidor de mapas | TileServer GL self-hosted y/o generación de mapa offline de Ecuador |
 | Motores de rutas | OSRM, GraphHopper y OpenRouteService según necesidad |
 | Offline local | SQLite local + almacenamiento de archivos en el dispositivo |
-| IA | Integración externa con agente en n8n mediante webhook |
-| Modelos IA | DeepSeek v4 Flash o GPT-5.5 configurados fuera del sistema, dentro del flujo de n8n |
-| Clima | Open-Meteo integrado mediante n8n/backend |
+| IA | Laravel consulta OpenAI Responses desde servidor con datos públicos verificados |
+| Modelos IA | Modelo OpenAI configurable solo por entorno; sin claves en frontend/APK |
+| Clima | Integración backend pendiente; el asistente no inventa condiciones actuales |
 | Colas | Laravel Jobs + Redis |
 | Monitoreo | Registro de errores y actividad |
 | Despliegue | Servidor/VPS para backend, base de datos, n8n, almacenamiento y servicios de mapas/rutas |
@@ -654,7 +654,7 @@ Según la categoría, se podrá mostrar:
 
 ## 16. Chatbot IA
 
-El chatbot funcionará únicamente online y no será un módulo nativo de IA dentro del sistema. Guaranda Go solo se integrará con un agente externo creado en n8n.
+El asistente funciona únicamente online. Laravel construye el contexto público de Guaranda Go y consulta OpenAI desde servidor; el frontend y el APK no conocen la clave.
 
 ### Objetivos del chatbot
 
@@ -668,35 +668,29 @@ El chatbot funcionará únicamente online y no será un módulo nativo de IA den
 - Considerar edad del usuario.
 - Considerar dificultad de la ruta.
 - Consultar incidencias activas.
-- Considerar clima mediante Open-Meteo.
-- Mostrar imágenes relacionadas o generadas/configuradas mediante el flujo IA cuando aplique.
+- Informar que clima e imágenes aún requieren sus etapas de integración explícitas.
 
-### Integración externa con n8n
+### Integración segura con OpenAI
 
-- El agente de IA vive fuera del sistema, en n8n.
-- n8n ya se encuentra implementado en el servidor mediante Dokploy.
-- Guaranda Go consumirá un webhook externo de n8n.
-- El sistema debe enviar la petición al webhook definido y mostrar/procesar el JSON devuelto por el nodo `Respond to Webhook`.
-- La lógica de IA, prompts, herramientas, proveedor, límites y orquestación se gestionan aparte dentro de n8n.
+- Laravel consulta OpenAI Responses desde el servidor con `store: false`, timeout y respuesta JSON validada.
+- El contexto incluye solo rutas activas, POIs activos y alertas visibles; no expone datos personales, secretos ni ubicación persistente.
 - Las claves de IA no deben estar en la app Android ni en el frontend.
 
 ### Fuentes y responsabilidad de respuesta
 
-La selección de fuentes, prompts, restricciones, proveedor IA y reglas anti-alucinación se gestionan en n8n. Desde Guaranda Go, la responsabilidad técnica es:
+Laravel define el contexto acotado, las instrucciones, el contrato de respuesta
+y las reglas de seguridad. Desde Guaranda Go, la responsabilidad técnica es:
 
-- Enviar al webhook los datos requeridos por el agente, si aplica.
-- Recibir el JSON devuelto por n8n.
-- Mostrar la respuesta en la interfaz del chatbot.
-- Manejar errores, timeouts o respuestas inválidas del webhook.
+- Consultar OpenAI solo desde servidor y validar la respuesta antes de mostrarla.
+- Mostrar texto y sugerencias revisables en la interfaz del chatbot.
+- Manejar errores, timeouts o respuestas incompletas sin guardar un intercambio parcial.
 
-El agente externo podrá usar, según su configuración en n8n:
+El asistente usa datos públicos verificados de:
 
 - Datos de rutas registrados.
 - POIs registrados.
 - Observaciones y recomendaciones.
 - Incidencias activas validadas.
-- Datos del perfil relevantes, como edad.
-- Datos climáticos desde Open-Meteo.
 
 ### Restricciones
 
@@ -704,7 +698,7 @@ El agente externo podrá usar, según su configuración en n8n:
 - No disponible para invitados.
 - Límite aproximado: 30 a 50 mensajes por usuario, configurable.
 - Debe evitar recomendaciones médicas, legales o de emergencia.
-- La prevención de alucinaciones se gestionará desde el flujo y base de conocimiento configurados en n8n.
+- La prevención de alucinaciones se aplica con contexto acotado, contrato JSON y validación en Laravel.
 
 ### Historial
 
@@ -1578,9 +1572,9 @@ Aunque se busca una solución open source y self-hosted, algunos servicios como 
 
 La app debe funcionar parcialmente aunque estos servicios fallen.
 
-## 26.4 n8n y claves de IA
+## 26.4 Claves de IA
 
-Las claves de IA deben estar en el servidor/n8n, nunca dentro del APK.
+Las claves de IA deben estar como secretos del servidor/Dokploy, nunca dentro del APK.
 
 ---
 
@@ -1610,9 +1604,9 @@ Aunque el sistema será amplio, no se consideran parte de esta versión:
 Las siguientes decisiones reemplazan los puntos pendientes anteriores:
 
 1. Las incidencias no se muestran públicamente apenas se reportan. Primero deben pasar por revisión/validación administrativa.
-2. n8n ya está implementado en el servidor mediante Dokploy. El sistema consumirá el agente externo de n8n por webhook. Para otros servicios como TileServer GL, OSRM o GraphHopper, se podrá usar Dokploy/Docker si se decide instalarlos.
+2. El asistente se integra desde Laravel con OpenAI; servicios como TileServer GL, OSRM o GraphHopper pueden desplegarse mediante Dokploy/Docker si se decide instalarlos.
 3. La distribución inicial será por APK. No se prioriza Google Play Store en esta versión.
-4. El sistema no tendrá un módulo nativo de IA. Solo se conectará a un webhook externo de n8n y mostrará/procesará el JSON devuelto por el nodo `Respond to Webhook`. Los modelos como DeepSeek v4 Flash o GPT-5.5 se configurarán aparte dentro de n8n.
+4. Laravel es la frontera nativa del asistente: construye datos públicos vivos y consulta un modelo OpenAI configurable solo por entorno. El frontend y APK nunca reciben la clave.
 5. La firma y actualización del APK serán básicas, acordes a un proyecto universitario. No se requiere un flujo avanzado de publicación o actualización automática.
 6. Los puntos GPS se conservarán mientras exista el recorrido. No se define una política avanzada de purga automática para esta versión.
 7. El administrador podrá ver tanto métricas agregadas como recorridos completos con puntos GPS.

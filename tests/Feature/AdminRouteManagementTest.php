@@ -1,5 +1,6 @@
 <?php
 
+use App\Jobs\GenerateImageDescription;
 use App\Models\CyclingRoute;
 use App\Models\PoiCategory;
 use App\Models\PointOfInterest;
@@ -12,6 +13,7 @@ use App\Models\User;
 use Database\Seeders\CatalogSeeder;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -329,6 +331,28 @@ test('administrator can upload route cover and gallery images', function () {
         ->and($route->images()->where('is_main', true)->count())->toBe(1);
 
     Storage::disk('public')->assertExists($route->main_image_path);
+});
+
+test('administrator queues descriptions only for newly uploaded route images when vision is configured', function () {
+    Storage::fake('public');
+    Queue::fake();
+    config([
+        'guaranda.assistant.openai.api_key' => 'test-openai-key',
+        'guaranda.assistant.openai.vision_model' => 'test-vision-model',
+    ]);
+
+    $admin = User::factory()->administrator()->create();
+
+    $this->actingAs($admin)
+        ->post(route('admin.routes.store'), routePayload([
+            'main_image_path' => null,
+            'main_image' => UploadedFile::fake()->image('salinas-cover.jpg'),
+            'additional_images_text' => 'routes/manual.jpg|Descripción manual',
+            'additional_images' => [UploadedFile::fake()->image('mirador.jpg')],
+        ]))
+        ->assertSessionHasNoErrors();
+
+    Queue::assertPushed(GenerateImageDescription::class, 2);
 });
 
 test('administrator can update a route and increment its version', function () {

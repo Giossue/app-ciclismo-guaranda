@@ -9,7 +9,7 @@
 - Mapas, POIs, offline, GPS y recorridos.
 - Incidencias con fotos y moderación/revisión.
 - Valoraciones solo para rutas completadas.
-- Chatbot externo mediante webhook n8n.
+- Asistente online Laravel/OpenAI con contexto público verificado.
 - Panel administrativo.
 - Estadísticas y exportaciones.
 
@@ -38,7 +38,7 @@ Si una tarea intenta agregar algo excluido, primero consultar al usuario. Si el 
 ## Límites del agente IA
 
 - El agente no debe inventar rutas, POIs, distancias, desniveles, reportes ni clima.
-- El agente no genera cards; responde texto natural y la app decide la representación visual.
-- No se expone al usuario final lenguaje técnico como Laravel, n8n, webhook, API, base de datos, parser, tools o moderación.
+- El modelo no genera cards ni enlaces; Laravel decide las referencias visuales autorizadas.
+- No se expone al usuario final lenguaje técnico como Laravel, OpenAI, API, base de datos, parser, tools o moderación.
 - El chatbot no funciona offline.
 - La ubicación no bloquea toda la app: solo limita funciones de cercanía, navegación/progreso y clima exacto.

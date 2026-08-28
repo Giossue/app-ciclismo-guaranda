@@ -4,7 +4,7 @@ Guaranda Go es una app híbrida Android para cicloturismo en la Provincia de Bol
 
 ## Objetivo
 
-Permitir que ciclistas registrados consulten rutas oficiales, descarguen mapas/rutas para uso offline, registren recorridos GPS, reporten incidencias, consulten POIs, guarden favoritos, valoren rutas completadas y usen un agente externo de n8n para recomendaciones.
+Permitir que ciclistas registrados consulten rutas oficiales, descarguen mapas/rutas para uso offline, registren recorridos GPS, reporten incidencias, consulten POIs, guarden favoritos, valoren rutas completadas y usen un asistente Laravel/OpenAI para recomendaciones.
 
 ## Plataforma
 
@@ -36,12 +36,11 @@ Permitir que ciclistas registrados consulten rutas oficiales, descarguen mapas/r
 - Seguimiento GPS cada 60 segundos.
 - Recorrido válido al completar aproximadamente 90% de la ruta.
 - Incidencias con revisión administrativa antes de hacerse públicas.
-- Chatbot externo por webhook n8n.
+- Asistente online Laravel/OpenAI.
 
-## Agente cicloturístico n8n
+## Asistente cicloturístico
 
-- El asistente vive en n8n y consulta datos reales mediante tools HTTP protegidas de Laravel.
-- No usa embeddings ni vector store para rutas/POIs/reportes.
-- Laravel envía al webhook contexto mínimo: usuario, ruta seleccionada, mensaje y ubicación transitoria si el ciclista la activó.
-- Sin ubicación, el asistente funciona en modo limitado: puede recomendar rutas generales, clima referencial de Guaranda, detalle de ruta, POIs y alertas; no debe afirmar cercanía.
-- Con ubicación, el asistente puede recomendar por cercanía, calcular progreso/distancias y usar clima de la posición del usuario.
+- Laravel recupera rutas activas, POIs activos y alertas visibles directamente desde la BD y los entrega como contexto acotado a OpenAI.
+- La etapa actual aún no usa embeddings/vector store; pgvector queda planificado después de reparar la infraestructura PostgreSQL/PostGIS.
+- La ubicación es opcional, se transmite solo durante la consulta y no se persiste en conversaciones ni mensajes.
+- Un visitante suele estar de paso durante el día; un turista suele pernoctar. El asistente pregunta esa preferencia cuando cambia la recomendación.

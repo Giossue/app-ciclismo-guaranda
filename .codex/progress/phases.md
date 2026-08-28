@@ -17,5 +17,6 @@
 | 12. Capacitor Android/APK | Requiere revisión | Capacitor Android, plugins y permisos configurados; GitHub Actions genera APK debug con URL HTTPS del backend. Falta instalar/probar en Android 13+. |
 | 13. Estadísticas/reportes | Completado | Analítica admin real con métricas, rankings, filtros por fecha, registro de consultas de rutas y exportación CSV. |
 | 14. Validación final | Requiere revisión | Validación local de código/build/rutas aprobada; falta certificación manual en Android real antes de marcar entrega final cerrada. |
-| 15. Agente n8n con tools Laravel | En progreso | Tools API protegidas para que n8n consulte rutas, POIs, alertas y progreso/distancias desde la BD sin embeddings. |
+| 15. Agente n8n con tools Laravel | Sustituido | Las tools HTTP y la dependencia de n8n fueron retiradas; la Fase 17 recupera datos vivos directamente desde Laravel. |
 | 16. Refactor frontend mobile first integral | Completado | Rediseño total UI mobile first de auth, ciclista, admin, ajustes, componentes base, modales, tabs, navbar, badges, botones, inputs y toasts. |
+| 17. Agente nativo Laravel/OpenAI | En progreso | Sustituye la orquestación n8n por Laravel/OpenAI, añade contexto turístico y prepara retrieval vectorial e imágenes IA por etapas. |

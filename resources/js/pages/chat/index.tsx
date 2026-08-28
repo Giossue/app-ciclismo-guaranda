@@ -12,8 +12,16 @@ import {
     WifiOff,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { FormEvent, ReactNode } from 'react';
+import type { FormEvent } from 'react';
 import ChatController from '@/actions/App/Http/Controllers/Cyclist/ChatController';
+import { MessageResponse } from '@/components/ai-elements/message';
+import {
+    Sources,
+    SourcesContent,
+    SourcesTrigger,
+} from '@/components/ai-elements/sources';
+import { Suggestion, Suggestions } from '@/components/ai-elements/suggestion';
+import ImageWithFallback from '@/components/image-with-fallback';
 import InputError from '@/components/input-error';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -35,6 +43,7 @@ import {
     SheetTrigger,
 } from '@/components/ui/sheet';
 import { Textarea } from '@/components/ui/textarea';
+import { mediaUrl } from '@/lib/media';
 import {
     browserNetworkStatus,
     getCurrentAppLocation,
@@ -49,6 +58,7 @@ import {
 } from '@/lib/native/speech';
 import { cn } from '@/lib/utils';
 import { index as chatIndex } from '@/routes/chat';
+import { show as routeShow } from '@/routes/routes';
 import type { Auth } from '@/types';
 
 type ChatMessage = {
@@ -58,6 +68,16 @@ type ChatMessage = {
     provider: string | null;
     sent_at: string | null;
     metadata?: Record<string, unknown> | null;
+};
+
+type AssistantResource = {
+    kind: 'route' | 'poi';
+    id: number;
+    title: string;
+    description: string | null;
+    image_path: string | null;
+    image_description: string | null;
+    slug?: string;
 };
 
 type ChatConversation = {
@@ -94,7 +114,7 @@ type ChatLocationState =
     | { status: 'error'; message: string };
 
 type Props = {
-    webhookConfigured: boolean;
+    assistantConfigured: boolean;
     conversations: ConversationSummary[];
     activeConversation: ChatConversation | null;
     latestMessages: ChatMessage[];
@@ -102,7 +122,7 @@ type Props = {
 };
 
 export default function ChatIndex({
-    webhookConfigured,
+    assistantConfigured,
     conversations,
     activeConversation,
     latestMessages,
@@ -127,6 +147,13 @@ export default function ChatIndex({
     const speechSupported = useMemo(() => isSpeechSupported(), []);
     const { auth } = usePage<{ auth: Auth }>().props;
     const userInitial = firstUserInitial(auth.user?.name);
+
+    const useSuggestion = useCallback((suggestion: string) => {
+        if (messageRef.current) {
+            messageRef.current.value = suggestion;
+            messageRef.current.focus();
+        }
+    }, []);
 
     useEffect(() => {
         void getNetworkStatus().then((status) => setIsOnline(status.connected));
@@ -176,7 +203,7 @@ export default function ChatIndex({
         }
     }, [latestMessages]);
 
-    const canSend = webhookConfigured && isOnline;
+    const canSend = assistantConfigured && isOnline;
 
     const requestLocation = async () => {
         setLocation({ status: 'loading' });
@@ -241,7 +268,7 @@ export default function ChatIndex({
                     </Alert>
                 )}
 
-                {!webhookConfigured && (
+                {!assistantConfigured && (
                     <Alert className="m-3">
                         <Bot />
                         <AlertTitle>Asistente no disponible</AlertTitle>
@@ -260,6 +287,7 @@ export default function ChatIndex({
                             speechSupported={speechSupported}
                             isSpeaking={speakingId === message.id}
                             onToggleSpeak={toggleSpeak}
+                            onUseSuggestion={useSuggestion}
                         />
                     ))}
 
@@ -330,35 +358,84 @@ export default function ChatIndex({
                                 </>
                             )}
 
-                            <div className="grid gap-1">
-                                <Label htmlFor="route_id" className="sr-only">
-                                    Ruta opcional
-                                </Label>
-                                <Select name="route_id" defaultValue="none">
-                                    <SelectTrigger
-                                        id="route_id"
-                                        className="h-9 w-full rounded-xl border bg-input text-xs"
-                                        aria-invalid={Boolean(errors.route_id)}
+                            <div className="grid gap-2 sm:grid-cols-2">
+                                <div className="grid gap-1">
+                                    <Label
+                                        htmlFor="route_id"
+                                        className="sr-only"
                                     >
-                                        <SelectValue placeholder="Sin ruta específica" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectGroup>
-                                            <SelectItem value="none">
-                                                Sin ruta específica
-                                            </SelectItem>
-                                            {routes.map((route) => (
-                                                <SelectItem
-                                                    key={route.id}
-                                                    value={String(route.id)}
-                                                >
-                                                    {route.name}
+                                        Ruta opcional
+                                    </Label>
+                                    <Select name="route_id" defaultValue="none">
+                                        <SelectTrigger
+                                            id="route_id"
+                                            className="h-9 w-full rounded-xl border bg-input text-xs"
+                                            aria-invalid={Boolean(
+                                                errors.route_id,
+                                            )}
+                                        >
+                                            <SelectValue placeholder="Sin ruta específica" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectGroup>
+                                                <SelectItem value="none">
+                                                    Sin ruta específica
                                                 </SelectItem>
-                                            ))}
-                                        </SelectGroup>
-                                    </SelectContent>
-                                </Select>
-                                <InputError message={errors.route_id} />
+                                                {routes.map((route) => (
+                                                    <SelectItem
+                                                        key={route.id}
+                                                        value={String(route.id)}
+                                                    >
+                                                        {route.name}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectGroup>
+                                        </SelectContent>
+                                    </Select>
+                                    <InputError message={errors.route_id} />
+                                </div>
+
+                                <div className="grid gap-1">
+                                    <Label
+                                        htmlFor="travel_context"
+                                        className="sr-only"
+                                    >
+                                        Plan de viaje opcional
+                                    </Label>
+                                    <Select
+                                        name="travel_context"
+                                        defaultValue="none"
+                                    >
+                                        <SelectTrigger
+                                            id="travel_context"
+                                            className="h-9 w-full rounded-xl border bg-input text-xs"
+                                            aria-invalid={Boolean(
+                                                errors.travel_context,
+                                            )}
+                                        >
+                                            <SelectValue placeholder="Plan de viaje" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectGroup>
+                                                <SelectItem value="none">
+                                                    Plan de viaje opcional
+                                                </SelectItem>
+                                                <SelectItem value="local_cyclist">
+                                                    Salida local
+                                                </SelectItem>
+                                                <SelectItem value="day_visitor">
+                                                    Visita por el día
+                                                </SelectItem>
+                                                <SelectItem value="overnight_tourist">
+                                                    Me quedaré a dormir
+                                                </SelectItem>
+                                            </SelectGroup>
+                                        </SelectContent>
+                                    </Select>
+                                    <InputError
+                                        message={errors.travel_context}
+                                    />
+                                </div>
                             </div>
 
                             <div className="flex flex-col gap-1 rounded-xl border bg-card px-3 py-2 text-xs text-muted-foreground">
@@ -611,15 +688,19 @@ function MessageBubble({
     speechSupported,
     isSpeaking,
     onToggleSpeak,
+    onUseSuggestion,
 }: {
     message: ChatMessage;
     userInitial: string;
     speechSupported: boolean;
     isSpeaking: boolean;
     onToggleSpeak: (id: number, rawMessage: string) => void;
+    onUseSuggestion: (suggestion: string) => void;
 }) {
     const isUser = message.role === 'user';
     const canSpeak = !isUser && speechSupported;
+    const suggestedActions = assistantSuggestedActions(message.metadata);
+    const resources = assistantResources(message.metadata);
 
     return (
         <div className={cn('ueb-message-row', isUser ? 'user' : 'bot')}>
@@ -628,8 +709,39 @@ function MessageBubble({
             </div>
             <div className="flex flex-col gap-1">
                 <div className="ueb-message-bubble">
-                    <MarkdownMessage>{message.message}</MarkdownMessage>
+                    <MessageResponse className="ueb-message-markdown">
+                        {message.message}
+                    </MessageResponse>
                 </div>
+                {suggestedActions.length > 0 && (
+                    <Suggestions className="max-w-[min(76vw,30rem)] px-1">
+                        {suggestedActions.map((suggestion) => (
+                            <Suggestion
+                                key={suggestion}
+                                suggestion={suggestion}
+                                onClick={onUseSuggestion}
+                            />
+                        ))}
+                    </Suggestions>
+                )}
+                {resources.length > 0 && (
+                    <Sources className="max-w-[min(76vw,30rem)] px-1 text-muted-foreground">
+                        <SourcesTrigger
+                            count={resources.length}
+                            className="rounded-lg text-xs hover:text-foreground"
+                        >
+                            Información verificada ({resources.length})
+                        </SourcesTrigger>
+                        <SourcesContent className="w-full">
+                            {resources.map((resource) => (
+                                <AssistantResourceCard
+                                    key={`${resource.kind}-${resource.id}`}
+                                    resource={resource}
+                                />
+                            ))}
+                        </SourcesContent>
+                    </Sources>
+                )}
                 <div className="flex items-center gap-2 px-1">
                     {message.sent_at && (
                         <span className="text-[0.625rem] leading-none font-black tracking-wide text-muted-foreground">
@@ -672,6 +784,101 @@ function MessageBubble({
     );
 }
 
+function AssistantResourceCard({ resource }: { resource: AssistantResource }) {
+    const image = resource.image_path ? (
+        <ImageWithFallback
+            src={mediaUrl(resource.image_path)}
+            alt={resource.image_description ?? resource.title}
+            className="size-14 shrink-0 rounded-lg object-cover"
+            fallback={
+                <div className="flex size-14 shrink-0 items-center justify-center rounded-lg bg-muted text-[0.625rem] text-muted-foreground">
+                    Sin foto
+                </div>
+            }
+        />
+    ) : null;
+
+    const content = (
+        <>
+            {image}
+            <span className="flex min-w-0 flex-col gap-1">
+                <span className="text-xs font-medium text-primary">
+                    {resource.kind === 'route'
+                        ? 'Ruta oficial'
+                        : 'Punto de interés'}
+                </span>
+                <strong className="line-clamp-1 text-sm text-foreground">
+                    {resource.title}
+                </strong>
+                {resource.description && (
+                    <span className="line-clamp-2 text-xs text-muted-foreground">
+                        {resource.description}
+                    </span>
+                )}
+            </span>
+        </>
+    );
+
+    const className =
+        'flex w-full items-start gap-3 rounded-xl border bg-card p-3 text-left transition-colors';
+
+    if (resource.kind === 'route' && resource.slug) {
+        return (
+            <Link
+                href={routeShow(resource.slug).url}
+                className={`${className} hover:bg-accent`}
+                prefetch
+            >
+                {content}
+            </Link>
+        );
+    }
+
+    return <div className={className}>{content}</div>;
+}
+
+function assistantSuggestedActions(
+    metadata: Record<string, unknown> | null | undefined,
+): string[] {
+    const suggestions = metadata?.suggested_actions;
+
+    return Array.isArray(suggestions)
+        ? suggestions
+              .filter(
+                  (suggestion): suggestion is string =>
+                      typeof suggestion === 'string' &&
+                      suggestion.trim() !== '',
+              )
+              .slice(0, 3)
+        : [];
+}
+
+function assistantResources(
+    metadata: Record<string, unknown> | null | undefined,
+): AssistantResource[] {
+    const resources = metadata?.resources;
+
+    if (!Array.isArray(resources)) {
+        return [];
+    }
+
+    return resources.filter(
+        (resource): resource is AssistantResource =>
+            typeof resource === 'object' &&
+            resource !== null &&
+            (resource.kind === 'route' || resource.kind === 'poi') &&
+            typeof resource.id === 'number' &&
+            typeof resource.title === 'string' &&
+            (typeof resource.description === 'string' ||
+                resource.description === null) &&
+            (typeof resource.image_path === 'string' ||
+                resource.image_path === null) &&
+            (typeof resource.image_description === 'string' ||
+                resource.image_description === null) &&
+            (resource.slug === undefined || typeof resource.slug === 'string'),
+    );
+}
+
 function speakableText(raw: string): string {
     return raw
         .replace(/\r\n/g, '\n')
@@ -681,127 +888,6 @@ function speakableText(raw: string): string {
         .replace(/[\uFE00-\uFE0F]|\u200D/g, '')
         .replace(/\s+/g, ' ')
         .trim();
-}
-
-function MarkdownMessage({ children }: { children: string }) {
-    const blocks = parseMarkdownBlocks(children);
-
-    return (
-        <div className="ueb-message-markdown">
-            {blocks.map((block, index) => {
-                if (block.type === 'list') {
-                    return (
-                        <ul key={index}>
-                            {block.items.map((item, itemIndex) => (
-                                <li key={itemIndex}>
-                                    {renderInlineMarkdown(item)}
-                                </li>
-                            ))}
-                        </ul>
-                    );
-                }
-
-                return <p key={index}>{renderParagraph(block.lines)}</p>;
-            })}
-        </div>
-    );
-}
-
-type MarkdownBlock =
-    | {
-          type: 'paragraph';
-          lines: string[];
-      }
-    | {
-          type: 'list';
-          items: string[];
-      };
-
-function parseMarkdownBlocks(markdown: string): MarkdownBlock[] {
-    const blocks: MarkdownBlock[] = [];
-    const paragraphLines: string[] = [];
-    const listItems: string[] = [];
-
-    const flushParagraph = () => {
-        if (paragraphLines.length > 0) {
-            blocks.push({ type: 'paragraph', lines: [...paragraphLines] });
-            paragraphLines.length = 0;
-        }
-    };
-
-    const flushList = () => {
-        if (listItems.length > 0) {
-            blocks.push({ type: 'list', items: [...listItems] });
-            listItems.length = 0;
-        }
-    };
-
-    markdown
-        .replace(/\r\n/g, '\n')
-        .split('\n')
-        .forEach((rawLine) => {
-            const line = rawLine.trimEnd();
-
-            if (line.trim() === '') {
-                flushParagraph();
-                flushList();
-
-                return;
-            }
-
-            const bullet = line.match(/^\s*(?:[-*•]|\d+\.)\s+(.+)$/);
-
-            if (bullet?.[1]) {
-                flushParagraph();
-                listItems.push(bullet[1]);
-
-                return;
-            }
-
-            flushList();
-            paragraphLines.push(line.trimStart());
-        });
-
-    flushParagraph();
-    flushList();
-
-    return blocks.length > 0 ? blocks : [{ type: 'paragraph', lines: [''] }];
-}
-
-function renderParagraph(lines: string[]): ReactNode[] {
-    return lines.flatMap((line, index) => {
-        const nodes = renderInlineMarkdown(line);
-
-        if (index === lines.length - 1) {
-            return nodes;
-        }
-
-        return [...nodes, <br key={`br-${index}`} />];
-    });
-}
-
-function renderInlineMarkdown(text: string): ReactNode[] {
-    const nodes: ReactNode[] = [];
-    const strongPattern = /\*\*([^*]+)\*\*/g;
-    let lastIndex = 0;
-    let match: RegExpExecArray | null;
-
-    while ((match = strongPattern.exec(text)) !== null) {
-        if (match.index > lastIndex) {
-            nodes.push(text.slice(lastIndex, match.index));
-        }
-
-        nodes.push(
-            <strong key={`${match.index}-${match[1]}`}>{match[1]}</strong>,
-        );
-        lastIndex = strongPattern.lastIndex;
-    }
-
-    if (lastIndex < text.length) {
-        nodes.push(text.slice(lastIndex));
-    }
-
-    return nodes.length > 0 ? nodes : [text];
 }
 
 ChatIndex.layout = {

@@ -33,8 +33,9 @@ class SystemSettingsController extends Controller
                     'filesystem' => config('filesystems.default'),
                 ],
                 'integrations' => [
-                    'n8n_webhook_configured' => filled(config('guaranda.n8n.webhook_url')),
-                    'n8n_timeout_seconds' => config('guaranda.n8n.timeout_seconds'),
+                    'openai_configured' => filled(config('guaranda.assistant.openai.api_key'))
+                        && filled(config('guaranda.assistant.openai.model')),
+                    'openai_timeout_seconds' => config('guaranda.assistant.openai.timeout_seconds'),
                     'postgis_available' => $this->postgisAvailable(),
                     'public_storage_linked' => is_link(public_path('storage')),
                 ],

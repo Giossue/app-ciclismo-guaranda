@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Cyclist;
 
+use App\Models\AiConversation;
 use App\Models\CyclingRoute;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -18,6 +19,10 @@ class StoreChatMessageRequest extends FormRequest
 
         if ($this->input('conversation_id') === '') {
             $this->merge(['conversation_id' => null]);
+        }
+
+        if ($this->input('travel_context') === 'none' || $this->input('travel_context') === '') {
+            $this->merge(['travel_context' => null]);
         }
 
         $location = $this->input('location');
@@ -46,6 +51,7 @@ class StoreChatMessageRequest extends FormRequest
             'message' => ['required', 'string', 'min:2', 'max:2000'],
             'route_id' => ['nullable', 'integer', Rule::exists(CyclingRoute::class, 'id')],
             'conversation_id' => ['nullable', 'integer', Rule::exists('conversaciones_ia', 'id')],
+            'travel_context' => ['nullable', 'string', Rule::in(['local_cyclist', 'day_visitor', 'overnight_tourist'])],
             'location' => ['nullable', 'array'],
             'location.latitude' => ['nullable', 'numeric', 'between:-90,90', 'required_with:location.longitude'],
             'location.longitude' => ['nullable', 'numeric', 'between:-180,180', 'required_with:location.latitude'],
@@ -57,6 +63,15 @@ class StoreChatMessageRequest extends FormRequest
     public function withValidator(Validator $validator): void
     {
         $validator->after(function (Validator $validator): void {
+            $conversationId = $this->integer('conversation_id');
+
+            if ($conversationId > 0 && ! AiConversation::query()
+                ->whereKey($conversationId)
+                ->where('user_id', $this->user()?->id)
+                ->exists()) {
+                $validator->errors()->add('conversation_id', 'La conversación seleccionada no está disponible.');
+            }
+
             $routeId = $this->input('route_id');
 
             if ($routeId === null || $routeId === '') {

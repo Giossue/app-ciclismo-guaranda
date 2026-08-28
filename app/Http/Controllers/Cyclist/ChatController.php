@@ -7,25 +7,28 @@ use App\Http\Requests\Cyclist\StoreChatMessageRequest;
 use App\Models\AiConversation;
 use App\Models\AiMessage;
 use App\Models\CyclingRoute;
-use App\Models\Incident;
-use App\Models\PoiHour;
 use App\Models\PointOfInterest;
 use App\Models\User;
+use App\Services\Ai\LiveTourismContext;
+use App\Services\Ai\OpenAiAssistant;
 use DateTimeInterface;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
-use RuntimeException;
 use Throwable;
 
 class ChatController extends Controller
 {
+    public function __construct(
+        private readonly OpenAiAssistant $assistant,
+        private readonly LiveTourismContext $tourismContext,
+    ) {}
+
     public function index(Request $request): Response
     {
         $user = $request->user();
@@ -60,7 +63,7 @@ class ChatController extends Controller
         }
 
         return Inertia::render('chat/index', [
-            'webhookConfigured' => $this->webhookUrl() !== null,
+            'assistantConfigured' => $this->assistant->configured(),
             'conversations' => $conversations
                 ->map(fn (AiConversation $conversation): array => $this->serializeConversationSummary(
                     $conversation,
@@ -91,11 +94,9 @@ class ChatController extends Controller
 
     public function store(StoreChatMessageRequest $request): RedirectResponse
     {
-        $webhookUrl = $this->webhookUrl();
-
-        if ($webhookUrl === null) {
+        if (! $this->assistant->configured()) {
             return back()->withErrors([
-                'message' => 'El webhook de n8n no está configurado en el servidor.',
+                'message' => 'El asistente no está configurado en el servidor.',
             ]);
         }
 
@@ -120,36 +121,47 @@ class ChatController extends Controller
 
         $message = trim((string) $payload['message']);
         $location = $this->transientLocation($payload);
-        $context = $this->buildContext($route);
+        $storedContext = $this->tourismContext->forMessage(
+            $route,
+            $message,
+            $payload['travel_context'] ?? null,
+        );
+        $assistantContext = $storedContext;
+        $assistantContext['location'] = $location;
         $conversation = $this->requestedConversation($user, $payload);
-        $sessionId = 'guaranda-go-user-'.$user->id;
-        $webhookPayload = $this->buildWebhookPayload($sessionId, $message, $route, $context, $location);
+        $history = $this->conversationHistory($conversation);
 
         try {
-            $response = Http::acceptJson()
-                ->asJson()
-                ->timeout($this->timeoutSeconds())
-                ->post($webhookUrl, $webhookPayload);
-
-            if ($response->failed()) {
-                throw new RuntimeException('n8n respondió con estado HTTP '.$response->status().'.');
-            }
-
-            $json = $response->json();
-            $assistantText = $this->extractAssistantText($json);
-            $conversation = $this->persistExchange($user, $conversation, $message, $assistantText, $context, $json);
+            $assistantReply = $this->assistant->reply(
+                message: $message,
+                context: $assistantContext,
+                history: $history,
+                safetyIdentifier: hash_hmac('sha256', 'user-'.$user->id, (string) config('app.key')),
+            );
+            $assistantReply['metadata']['resources'] = $this->verifiedResources(
+                $assistantReply['metadata']['resource_references'],
+            );
+            unset($assistantReply['metadata']['resource_references']);
+            $conversation = $this->persistExchange(
+                $user,
+                $conversation,
+                $message,
+                $assistantReply['message'],
+                $storedContext,
+                $assistantReply['metadata'],
+            );
 
             return to_route('chat.index', ['conversation' => $conversation->id]);
         } catch (ConnectionException $exception) {
             return $this->assistantErrorResponse(
                 $message,
-                'No se pudo conectar con n8n. Revisa tu conexión e inténtalo de nuevo.',
+                'No se pudo conectar con el asistente. Revisa tu conexión e inténtalo de nuevo.',
                 $exception,
             );
         } catch (Throwable $exception) {
             return $this->assistantErrorResponse(
                 $message,
-                'El asistente externo no está disponible en este momento. Inténtalo nuevamente más tarde.',
+                'El asistente no está disponible en este momento. Inténtalo nuevamente más tarde.',
                 $exception,
             );
         }
@@ -194,113 +206,6 @@ class ChatController extends Controller
     }
 
     /**
-     * @return array<string, mixed>
-     */
-    private function buildContext(?CyclingRoute $route): array
-    {
-        if ($route === null) {
-            return [];
-        }
-
-        return [
-            'route' => $this->routeContext($route),
-        ];
-    }
-
-    /**
-     * @param  array<string, mixed>  $context
-     * @param  array{latitude: float, longitude: float, accuracy_m?: float, recorded_at?: string}|null  $location
-     * @return array<string, mixed>
-     */
-    private function buildWebhookPayload(string $sessionId, string $message, ?CyclingRoute $route, array $context, ?array $location): array
-    {
-        return [
-            'session_id' => $sessionId,
-            'message' => $message,
-            'route_id' => $route?->id,
-            'route' => $context['route'] ?? $this->emptyRouteContext(),
-            'location' => $location ?? [
-                'latitude' => null,
-                'longitude' => null,
-                'accuracy_m' => null,
-                'recorded_at' => null,
-            ],
-        ];
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function emptyRouteContext(): array
-    {
-        return [
-            'id' => null,
-            'name' => null,
-            'slug' => null,
-            'difficulty' => null,
-            'category' => null,
-            'description' => null,
-            'start' => null,
-            'end' => null,
-            'metric' => [
-                'distance_km' => null,
-                'estimated_time_minutes' => null,
-                'positive_elevation_m' => null,
-                'negative_elevation_m' => null,
-                'transport_mode' => null,
-            ],
-            'recommendations' => null,
-            'observations' => null,
-            'pois' => null,
-            'active_incidents' => null,
-        ];
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function routeContext(CyclingRoute $route): array
-    {
-        $latestMetric = $route->metrics->sortByDesc('route_version')->first();
-
-        return [
-            'id' => $route->id,
-            'name' => $route->name,
-            'slug' => $route->slug,
-            'difficulty' => $route->difficulty?->name,
-            'category' => $route->category?->name,
-            'description' => Str::limit($route->description, 700),
-            'start' => $route->start_name,
-            'end' => $route->end_name,
-            'metric' => $latestMetric === null ? null : [
-                'distance_km' => (float) $latestMetric->distance_km,
-                'estimated_time_minutes' => $latestMetric->estimated_time_minutes,
-                'positive_elevation_m' => (float) $latestMetric->positive_elevation_m,
-                'negative_elevation_m' => (float) $latestMetric->negative_elevation_m,
-                'transport_mode' => $latestMetric->transportMode?->name,
-            ],
-            'recommendations' => $route->recommendations->pluck('text')->take(6)->values()->all(),
-            'observations' => $route->observations->pluck('text')->take(6)->values()->all(),
-            'pois' => $route->pointsOfInterest->take(8)->map(fn (PointOfInterest $poi): array => [
-                'name' => $poi->name,
-                'category' => $poi->category?->name,
-                'description' => Str::limit((string) $poi->description, 180),
-                'hours' => $poi->hours->take(3)->map(fn (PoiHour $hour): array => [
-                    'weekday' => $hour->weekday,
-                    'opens_at' => $this->formatTimeValue($hour->getAttribute('opens_at')),
-                    'closes_at' => $this->formatTimeValue($hour->getAttribute('closes_at')),
-                    'description' => $hour->description,
-                ])->values()->all(),
-            ])->values()->all(),
-            'active_incidents' => $route->incidents->take(6)->map(fn (Incident $incident): array => [
-                'type' => $incident->type?->name,
-                'title' => $incident->title,
-                'description' => Str::limit($incident->description, 180),
-            ])->values()->all(),
-        ];
-    }
-
-    /**
      * @param  array<string, mixed>  $payload
      */
     private function requestedConversation(User $user, array $payload): ?AiConversation
@@ -317,66 +222,150 @@ class ChatController extends Controller
     }
 
     /**
-     * @param  array<string, mixed>  $context
+     * @return list<array{role: string, message: string}>
      */
-    private function persistExchange(User $user, ?AiConversation $conversation, string $userMessage, string $assistantMessage, array $context, mixed $rawResponse): AiConversation
+    private function conversationHistory(?AiConversation $conversation): array
     {
-        $now = now();
-
         if ($conversation === null) {
-            $conversation = AiConversation::query()->create([
-                'user_id' => $user->id,
-                'title' => Str::limit($userMessage, 80),
-                'context' => $context,
-                'started_at' => $now,
-                'last_activity_at' => $now,
-            ]);
-        } else {
-            $conversation->forceFill([
-                'context' => $context,
-                'last_activity_at' => $now,
-            ])->save();
+            return [];
         }
 
-        $conversation->messages()->create([
-            'role' => 'user',
-            'message' => $userMessage,
-            'provider' => null,
-            'metadata' => [],
-            'sent_at' => $now,
-        ]);
-
-        $conversation->messages()->create([
-            'role' => 'assistant',
-            'message' => $assistantMessage,
-            'provider' => 'n8n',
-            'metadata' => $this->assistantMetadata($rawResponse),
-            'sent_at' => $now->copy()->addSecond(),
-        ]);
-
-        return $conversation;
+        return $conversation->messages()
+            ->select(['id', 'role', 'message', 'sent_at'])
+            ->latest('sent_at')
+            ->latest('id')
+            ->limit(8)
+            ->get()
+            ->reverse()
+            ->map(fn (AiMessage $message): array => [
+                'role' => $message->role,
+                'message' => Str::limit($message->message, 600),
+            ])
+            ->values()
+            ->all();
     }
 
     /**
-     * @return array<string, mixed>
+     * @param  array<string, mixed>  $context
      */
-    private function assistantMetadata(mixed $rawResponse): array
+    private function persistExchange(User $user, ?AiConversation $conversation, string $userMessage, string $assistantMessage, array $context, array $assistantMetadata): AiConversation
     {
-        if (! is_array($rawResponse)) {
-            return [];
-        }
+        return DB::transaction(function () use ($assistantMessage, $assistantMetadata, $context, $conversation, $user, $userMessage): AiConversation {
+            $now = now();
 
-        $source = Arr::isList($rawResponse) ? ($rawResponse[0] ?? []) : $rawResponse;
+            if ($conversation === null) {
+                $conversation = AiConversation::query()->create([
+                    'user_id' => $user->id,
+                    'title' => Str::limit($userMessage, 80),
+                    'context' => $context,
+                    'started_at' => $now,
+                    'last_activity_at' => $now,
+                ]);
+            } else {
+                $conversation->forceFill([
+                    'context' => $context,
+                    'last_activity_at' => $now,
+                ])->save();
+            }
 
-        if (! is_array($source)) {
-            return [];
-        }
+            $conversation->messages()->create([
+                'role' => 'user',
+                'message' => $userMessage,
+                'provider' => null,
+                'metadata' => [],
+                'sent_at' => $now,
+            ]);
 
-        return array_filter([
-            'voice_text' => Arr::get($source, 'voice_text'),
-            'cards' => Arr::get($source, 'cards'),
-            'suggested_actions' => Arr::get($source, 'suggested_actions'),
-        ], fn (mixed $value): bool => $value !== null && $value !== []);
+            $conversation->messages()->create([
+                'role' => 'assistant',
+                'message' => $assistantMessage,
+                'provider' => 'openai',
+                'metadata' => $assistantMetadata,
+                'sent_at' => $now->copy()->addSecond(),
+            ]);
+
+            return $conversation;
+        });
+    }
+
+    /**
+     * Rehydrates model-selected IDs from the live database. This deliberately
+     * discards unknown, inactive, or stale references before they reach users.
+     *
+     * @param  list<array{kind: 'route'|'poi', id: int}>  $references
+     * @return list<array{kind: 'route'|'poi', id: int, title: string, description: string|null, image_path: string|null, image_description: string|null, slug?: string}>
+     */
+    private function verifiedResources(array $references): array
+    {
+        $routeIds = collect($references)
+            ->where('kind', 'route')
+            ->pluck('id')
+            ->all();
+        $poiIds = collect($references)
+            ->where('kind', 'poi')
+            ->pluck('id')
+            ->all();
+
+        $routes = CyclingRoute::query()
+            ->select(['id', 'name', 'slug', 'description', 'main_image_path'])
+            ->with('images:id,route_id,image_path,description,sort_order')
+            ->whereIn('id', $routeIds)
+            ->whereHas('status', fn ($query) => $query->where('name', 'Activa'))
+            ->get()
+            ->keyBy('id');
+        $pois = PointOfInterest::query()
+            ->select(['id', 'name', 'description'])
+            ->with('images:id,point_of_interest_id,image_path,description,sort_order')
+            ->whereIn('id', $poiIds)
+            ->where('active', true)
+            ->get()
+            ->keyBy('id');
+
+        return collect($references)
+            ->map(function (array $reference) use ($pois, $routes): ?array {
+                if ($reference['kind'] === 'route') {
+                    /** @var CyclingRoute|null $route */
+                    $route = $routes->get($reference['id']);
+
+                    if ($route === null) {
+                        return null;
+                    }
+
+                    $image = $route->images->firstWhere('image_path', $route->main_image_path)
+                        ?? $route->images->first();
+
+                    return [
+                        'kind' => 'route',
+                        'id' => $route->id,
+                        'title' => $route->name,
+                        'description' => Str::limit($route->description, 160),
+                        'image_path' => $route->main_image_path ?? $image?->image_path,
+                        'image_description' => $image?->description,
+                        'slug' => $route->slug,
+                    ];
+                }
+
+                /** @var PointOfInterest|null $poi */
+                $poi = $pois->get($reference['id']);
+
+                if ($poi === null) {
+                    return null;
+                }
+
+                $image = $poi->images->first();
+
+                return [
+                    'kind' => 'poi',
+                    'id' => $poi->id,
+                    'title' => $poi->name,
+                    'description' => Str::limit((string) $poi->description, 160),
+                    'image_path' => $image?->image_path,
+                    'image_description' => $image?->description,
+                ];
+            })
+            ->filter()
+            ->values()
+            ->all();
     }
 
     /**
@@ -435,41 +424,12 @@ class ChatController extends Controller
         ];
     }
 
-    private function extractAssistantText(mixed $json): string
-    {
-        if (is_string($json) && trim($json) !== '') {
-            return trim($json);
-        }
-
-        $candidate = null;
-
-        if (is_array($json)) {
-            $source = Arr::isList($json) ? ($json[0] ?? null) : $json;
-
-            if (is_array($source)) {
-                $candidate = Arr::get($source, 'reply')
-                    ?? Arr::get($source, 'answer')
-                    ?? Arr::get($source, 'message')
-                    ?? Arr::get($source, 'text')
-                    ?? Arr::get($source, 'response')
-                    ?? Arr::get($source, 'output');
-            }
-        }
-
-        if (is_string($candidate) && trim($candidate) !== '') {
-            return trim($candidate);
-        }
-
-        return 'Recibí una respuesta de n8n, pero no contiene un campo de texto reconocible.';
-    }
-
     private function assistantErrorResponse(string $message, string $userMessage, ?Throwable $exception = null): RedirectResponse
     {
         if ($exception !== null) {
-            Log::warning('n8n chatbot request failed', [
+            Log::warning('OpenAI assistant request failed', [
                 'user_id' => request()->user()?->id,
                 'exception' => $exception::class,
-                'message' => $exception->getMessage(),
             ]);
         }
 
@@ -478,8 +438,8 @@ class ChatController extends Controller
         return to_route('chat.index')->with('chat_exchange', [
             'messages' => $this->exchangeMessages(
                 $message,
-                'No pude consultar el asistente externo: '.$userMessage,
-                'n8n',
+                'No pude consultar el asistente: '.$userMessage,
+                'openai',
             ),
         ]);
     }
@@ -509,30 +469,5 @@ class ChatController extends Controller
                 'metadata' => ['transient' => true],
             ],
         ];
-    }
-
-    private function webhookUrl(): ?string
-    {
-        $url = config('guaranda.n8n.webhook_url');
-
-        return is_string($url) && $url !== '' ? $url : null;
-    }
-
-    private function timeoutSeconds(): int
-    {
-        return max(1, (int) config('guaranda.n8n.timeout_seconds', 20));
-    }
-
-    private function formatTimeValue(mixed $value): ?string
-    {
-        if ($value instanceof DateTimeInterface) {
-            return $value->format('H:i');
-        }
-
-        if (is_string($value) && $value !== '') {
-            return substr($value, 0, 5);
-        }
-
-        return null;
     }
 }

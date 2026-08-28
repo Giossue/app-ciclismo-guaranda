@@ -179,3 +179,40 @@ Después de esa prueba manual, marcar Fase 12 y Fase 14 como `Completado` si tod
 ## Normalización de roles heredados 2026-08-28
 
 - La migración pendiente `2026_08_28_055413_capitalize_catalog_and_workflow_values` conserva las cuentas si una base contiene a la vez `administrador`/`Administrador` o `ciclista`/`Ciclista`: reasigna `usuarios.role_id` al rol canónico y elimina solamente el duplicado.
+
+## Agente nativo Laravel/OpenAI 2026-08-28
+
+- Se aprueba sustituir el flujo del asistente desde n8n a una frontera nativa Laravel/OpenAI. AI Elements ya compone el chat real para Markdown, sugerencias, fuentes desplegables y tarjetas verificadas de rutas/POIs.
+- El agente incorporará los momentos cómo llegar, dónde comer, qué hacer y dónde dormir, usando contexto de viaje temporal (local, visitante de día o turista con pernoctación), no un rol adicional persistente.
+- La vectorización y visión quedan bloqueadas hasta resolver de forma planificada la infraestructura PostgreSQL: se detectó una instalación PostGIS registrada pero sin biblioteca en la imagen actual de `database-centraldb`. No se cambió imagen, esquema ni datos; se generó un respaldo físico del volumen de datos antes de cualquier cambio.
+- Plan de trabajo: `.codex/plans/17_agente_laravel_openai.md`.
+- Primera entrega implementada localmente: `ChatController` ya delega en
+  `OpenAiAssistant` y `LiveTourismContext`, usa Responses API con `store: false`,
+  conserva datos vivos de ruta/POIs/alertas y persiste respuestas como proveedor
+  `openai`. Aún falta configurar la clave y modelo como secretos Dokploy antes
+  de que producción pueda responder.
+- Se retiraron las rutas `/api/agent/*`, su middleware y token exclusivo de
+  n8n. `LiveTourismContext` recupera directamente rutas activas, POIs activos
+  y alertas visibles, y añade los cuatro momentos turísticos al contexto.
+- OpenAI debe devolver una respuesta JSON Schema; Laravel valida el estado
+  `completed`, texto y sugerencias antes de persistir. La ubicación se entrega
+  solo a esa llamada y no queda en el historial.
+- AI Elements ya se usa en el chat para Markdown y sugerencias. Se retiraron
+  plugins de código, matemáticas, Mermaid y CJK que no aportaban al turismo y
+  elevaban innecesariamente el bundle móvil.
+- OpenAI puede proponer hasta tres referencias internas de ruta/POI; Laravel
+  las rehidrata desde la BD viva, descarta recursos inactivos o inexistentes y
+  solo entonces persiste y muestra las tarjetas. Las rutas usan navegación
+  tipada de Wayfinder; los POIs no muestran enlace hasta contar con su detalle
+  público.
+- Las tarjetas pueden incorporar la imagen editorial pública vigente de cada
+  recurso; Laravel la rehidrata junto con el registro activo y usa la
+  descripción almacenada como texto alternativo. La respuesta del modelo nunca
+  aporta URL ni contenido de imagen.
+- Observabilidad mínima: las llamadas completadas registran solo modelo,
+  latencia y conteo de tokens; los fallos registran el tipo de excepción y el
+  ID del usuario, sin mensajes, imágenes, ubicación ni secretos.
+- Las fotos nuevas subidas por administración para rutas o POIs pueden recibir
+  una descripción automática por cola de base de datos, solo cuando se configure
+  el modelo de visión. El worker vive bajo Supervisor en el contenedor actual;
+  no se crea una base de datos ni un servicio extra y se excluyen incidencias.

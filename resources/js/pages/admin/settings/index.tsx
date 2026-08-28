@@ -46,7 +46,7 @@ const sections: SettingSectionOption[] = [
     {
         id: 'integrations',
         label: 'Integraciones',
-        description: 'n8n, PostGIS y almacenamiento.',
+        description: 'Asistente, PostGIS y almacenamiento.',
         icon: Plug,
     },
     {
@@ -75,8 +75,8 @@ const valueLabels: Record<string, string> = {
     cache: 'Caché',
     queue: 'Colas',
     filesystem: 'Archivos',
-    n8n_webhook_configured: 'Webhook n8n configurado',
-    n8n_timeout_seconds: 'Tiempo de espera de n8n',
+    openai_configured: 'Asistente OpenAI configurado',
+    openai_timeout_seconds: 'Tiempo de espera del asistente',
     postgis_available: 'PostGIS disponible',
     public_storage_linked: 'Almacenamiento público enlazado',
     app_key_configured: 'APP_KEY configurada',

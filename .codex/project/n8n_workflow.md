@@ -1,3 +1,7 @@
+> Histórico: workflow retirado del flujo de Guaranda Go el 2026-08-28. Se
+> conserva solo como registro; no debe desplegarse, configurarse ni recibir
+> datos de esta aplicación. El servicio n8n compartido del VPS no fue eliminado.
+
 {
   "nodes": [
     {

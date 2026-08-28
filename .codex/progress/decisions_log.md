@@ -201,6 +201,14 @@
 - La futura integración depende del contrato que entregue el nuevo backend del agente. Hasta entonces los componentes permanecen compilables, localizados y sin consumidores de producción.
 - Las primitives locales de shadcn tienen prioridad sobre el registry externo y no se sobrescriben durante instalación o actualización.
 
+## 2026-08-28 — Agente nativo Laravel/OpenAI y conocimiento derivado
+
+- Se sustituirá n8n en el flujo de Guaranda Go por una integración servidor a servidor desde Laravel hacia OpenAI. n8n no se borra del VPS porque puede servir a otros sistemas, pero deja de ser dependencia del chat de esta app al completar la transición.
+- AI Elements se conserva como capa visual agnóstica: componentes fuente React/shadcn, no un backend, gateway ni proveedor. Laravel conserva el contrato del chat.
+- PostgreSQL es fuente de verdad. El índice vectorial es una proyección idempotente cuyos resultados se revalidan contra los modelos vivos antes de mostrarse.
+- La descripción automática de imágenes queda limitada inicialmente a medios editoriales administrados de rutas/POIs; incidencias de ciclistas quedan fuera por privacidad.
+- La infraestructura vectorial queda aplazada: no se modifica la instancia PostgreSQL central hasta tener inventario de bases, ventana de mantenimiento y rollback probado.
+
 ## 2026-07-01 — Historial local posterior a n8n
 
 - Decisión: Laravel puede persistir `conversaciones_ia`/`mensajes_ia` después de que n8n responda, para mostrar historial en la app sin guardar mensajes al momento de escribir.
@@ -320,3 +328,10 @@
 - El catálogo de ciclista reutiliza la barra de filtros administrativa con búsqueda, categoría y dificultad; el estado se omite porque solo se exponen rutas activas.
 - Las tarjetas comparten la misma jerarquía de imagen, datos de ubicación y métricas que la gestión administrativa, sin exponer acciones administrativas.
 - Notificaciones no pertenece a la navegación del ciclista: queda accesible desde la campana global; Favoritas ocupa ese lugar en la navegación principal y móvil.
+
+## 2026-08-28 — Retiro de n8n del asistente
+
+- Se adopta Laravel como frontera única del asistente y OpenAI Responses como proveedor externo, con `store: false`, configuración exclusiva de servidor y contrato JSON Schema validado.
+- Las tools HTTP y el token de n8n se retiran porque Laravel recupera los datos públicos vivos directamente; no se elimina el servicio n8n compartido del VPS.
+- La ubicación no forma parte de la persistencia de conversaciones. El modelo recibe solo contexto público acotado, ubicación temporal si fue autorizada y ocho mensajes recientes truncados.
+- AI Elements se usa sin plugins de Markdown avanzados que no corresponden al producto, para proteger la descarga de la app móvil.

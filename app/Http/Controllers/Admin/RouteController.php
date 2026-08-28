@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreRouteRequest;
 use App\Http\Requests\Admin\UpdateRouteRequest;
+use App\Jobs\GenerateImageDescription;
 use App\Models\CyclingRoute;
 use App\Models\PoiCategory;
 use App\Models\PointOfInterest;
@@ -288,8 +289,16 @@ class RouteController extends Controller
         }
 
         $route->images()->delete();
+        $uploadedImagePaths = is_array($payload['uploaded_image_paths'] ?? null)
+            ? $payload['uploaded_image_paths']
+            : [];
+
         foreach ($this->imageRows($payload) as $imageRow) {
-            $route->images()->create($imageRow);
+            $image = $route->images()->create($imageRow);
+
+            if (in_array($image->image_path, $uploadedImagePaths, true)) {
+                $this->queueImageDescription($image->id);
+            }
         }
 
         $poiIds = [
@@ -549,16 +558,20 @@ class RouteController extends Controller
     private function storeUploadedRouteFiles(FormRequest $request, array $payload): array
     {
         $mainImage = $request->file('main_image');
+        $payload['uploaded_image_paths'] = [];
 
         if ($mainImage instanceof UploadedFile) {
             $payload['main_image_path'] = $mainImage->store('routes', 'public');
+            $payload['uploaded_image_paths'][] = $payload['main_image_path'];
         }
 
         $payload['uploaded_additional_images'] = [];
         $additionalImages = $request->file('additional_images');
 
         if ($additionalImages instanceof UploadedFile) {
-            $payload['uploaded_additional_images'][] = $additionalImages->store('routes', 'public');
+            $path = $additionalImages->store('routes', 'public');
+            $payload['uploaded_additional_images'][] = $path;
+            $payload['uploaded_image_paths'][] = $path;
 
             return $payload;
         }
@@ -568,10 +581,22 @@ class RouteController extends Controller
         }
 
         foreach ($additionalImages as $image) {
-            $payload['uploaded_additional_images'][] = $image->store('routes', 'public');
+            $path = $image->store('routes', 'public');
+            $payload['uploaded_additional_images'][] = $path;
+            $payload['uploaded_image_paths'][] = $path;
         }
 
         return $payload;
+    }
+
+    private function queueImageDescription(int $imageId): void
+    {
+        if (! filled(config('guaranda.assistant.openai.api_key'))
+            || ! filled(config('guaranda.assistant.openai.vision_model'))) {
+            return;
+        }
+
+        GenerateImageDescription::dispatch('route', $imageId)->afterCommit();
     }
 
     private function uniqueSlug(string $name, ?int $ignoreId = null): string

@@ -1,6 +1,6 @@
 # Seguridad, privacidad y datos sensibles
 
-Guaranda Go maneja datos personales, ubicación GPS, historial de recorridos, incidencias y conversaciones con un agente externo de n8n.
+Guaranda Go maneja datos personales, ubicación GPS, historial de recorridos, incidencias y conversaciones con un asistente que Laravel consulta en OpenAI.
 
 ## Reglas obligatorias
 
@@ -23,7 +23,7 @@ Datos que requieren cuidado especial:
 - Ubicación GPS y puntos de recorrido.
 - Incidencias reportadas.
 - Fotografías de incidencias.
-- Conversaciones con IA/n8n.
+- Conversaciones con IA.
 
 ## Ubicación GPS
 
@@ -32,11 +32,11 @@ Datos que requieren cuidado especial:
 - El usuario debe saber cuándo el recorrido está activo.
 - Si hay seguimiento con pantalla bloqueada, Android debe mostrar notificación persistente.
 
-## IA externa / n8n
+## IA externa / OpenAI
 
-- El agente vive fuera del sistema, en n8n.
-- El sistema solo consume el webhook y muestra/procesa el JSON de `Respond to Webhook`.
-- No enviar datos innecesarios al webhook.
+- Laravel consulta OpenAI desde servidor con `store: false` y un contrato JSON estricto.
+- No enviar nombre, email, rol, tokens, secretos, URL privadas ni ubicación persistente.
+- La ubicación solo se usa durante la respuesta solicitada; nunca se guarda en el historial.
 - No guardar claves IA en frontend ni APK.
 
 ## Institución responsable

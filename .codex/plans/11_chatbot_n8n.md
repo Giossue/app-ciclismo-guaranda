@@ -1,4 +1,7 @@
-# Fase 11 — Chatbot externo n8n
+# Histórico — Fase 11: Chatbot externo n8n
+
+> Sustituida por Fase 17 Laravel/OpenAI. Este documento no describe el
+> comportamiento vigente del chat.
 
 Estado: `Completado`
 

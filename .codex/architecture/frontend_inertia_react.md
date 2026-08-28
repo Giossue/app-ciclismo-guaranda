@@ -42,7 +42,7 @@ resources/js/
 - Favoritos.
 - Perfil.
 - Reportar incidencia.
-- Chatbot externo n8n.
+- Chat online con AI Elements, historial y sugerencias revisables.
 - Historial/resumen de recorridos.
 
 ## Estado y datos

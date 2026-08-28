@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\ListPointsOfInterestRequest;
 use App\Http\Requests\Admin\StorePoiRequest;
 use App\Http\Requests\Admin\UpdatePoiRequest;
+use App\Jobs\GenerateImageDescription;
 use App\Models\CuisineType;
 use App\Models\CyclingRoute;
 use App\Models\HealthCenterType;
@@ -324,13 +325,24 @@ class PoiController extends Controller
                 continue;
             }
 
-            $poi->images()->create([
+            $storedImage = $poi->images()->create([
                 'image_path' => $image->store('pois', 'public'),
                 'description' => null,
                 'sort_order' => $sortOrder,
             ]);
+            $this->queueImageDescription($storedImage->id);
             $sortOrder++;
         }
+    }
+
+    private function queueImageDescription(int $imageId): void
+    {
+        if (! filled(config('guaranda.assistant.openai.api_key'))
+            || ! filled(config('guaranda.assistant.openai.vision_model'))) {
+            return;
+        }
+
+        GenerateImageDescription::dispatch('poi', $imageId)->afterCommit();
     }
 
     private function syncRoutes(PointOfInterest $poi, mixed $routeLinksText): void

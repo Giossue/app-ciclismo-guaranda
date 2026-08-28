@@ -15,7 +15,7 @@ flowchart TD
     D --> E[PostgreSQL + PostGIS]
     D --> F[Redis / Jobs]
     D --> G[Storage archivos]
-    D --> H[n8n Webhook]
+    D --> H[OpenAI Responses]
     D --> I[Mapas / Rutas]
 ```
 
@@ -39,5 +39,5 @@ flowchart TD
 - Favoritos.
 - Valoraciones/comentarios.
 - Offline/sincronización.
-- Chatbot n8n.
+- Asistente Laravel/OpenAI.
 - Administración/estadísticas.

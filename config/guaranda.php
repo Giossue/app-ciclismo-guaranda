@@ -7,13 +7,16 @@ return [
         'password' => env('GUARANDA_GO_ADMIN_PASSWORD'),
     ],
 
-    'n8n' => [
-        'webhook_url' => env('GUARANDA_GO_N8N_WEBHOOK_URL'),
-        'timeout_seconds' => (int) env('GUARANDA_GO_N8N_TIMEOUT_SECONDS', 20),
-    ],
-
-    'agent' => [
-        'tool_token' => env('GUARANDA_GO_AGENT_TOOL_TOKEN'),
+    'assistant' => [
+        'openai' => [
+            'api_key' => env('OPENAI_API_KEY'),
+            'model' => env('GUARANDA_GO_OPENAI_MODEL'),
+            'vision_model' => env('GUARANDA_GO_OPENAI_VISION_MODEL'),
+            'timeout_seconds' => (int) env('GUARANDA_GO_OPENAI_TIMEOUT_SECONDS', 20),
+            'connect_timeout_seconds' => (int) env('GUARANDA_GO_OPENAI_CONNECT_TIMEOUT_SECONDS', 3),
+            'max_output_tokens' => (int) env('GUARANDA_GO_OPENAI_MAX_OUTPUT_TOKENS', 700),
+            'vision_max_image_bytes' => (int) env('GUARANDA_GO_OPENAI_VISION_MAX_IMAGE_BYTES', 5 * 1024 * 1024),
+        ],
     ],
 
     'elevation' => [

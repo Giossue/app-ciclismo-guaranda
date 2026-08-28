@@ -1,4 +1,7 @@
-# Fase 15 — Agente n8n con tools Laravel
+# Histórico — Fase 15: Agente n8n con tools Laravel
+
+> Sustituida por Fase 17 Laravel/OpenAI. Las tools y sus rutas fueron retiradas;
+> este plan se conserva solo como historial.
 
 Estado: En progreso
 

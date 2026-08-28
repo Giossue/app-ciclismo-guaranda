@@ -1,5 +1,6 @@
 <?php
 
+use App\Jobs\GenerateImageDescription;
 use App\Models\CuisineType;
 use App\Models\CyclingRoute;
 use App\Models\FoodDetail;
@@ -13,6 +14,9 @@ use App\Models\RouteDifficulty;
 use App\Models\RouteStatus;
 use App\Models\User;
 use Database\Seeders\CatalogSeeder;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function () {
@@ -275,6 +279,25 @@ test('administrator can create a complete poi with details and route association
         'has_wifi' => true,
         'has_bike_parking' => true,
     ]);
+});
+
+test('administrator queues descriptions only for newly uploaded POI images when vision is configured', function () {
+    Storage::fake('public');
+    Queue::fake();
+    config([
+        'guaranda.assistant.openai.api_key' => 'test-openai-key',
+        'guaranda.assistant.openai.vision_model' => 'test-vision-model',
+    ]);
+    $admin = User::factory()->administrator()->create();
+
+    $this->actingAs($admin)
+        ->post(route('admin.pois.store'), adminPoiPayload([
+            'images_text' => 'pois/manual.jpg|Descripción manual',
+            'images' => [UploadedFile::fake()->image('cafeteria.jpg')],
+        ]))
+        ->assertSessionHasNoErrors();
+
+    Queue::assertPushed(GenerateImageDescription::class, 1);
 });
 
 test('administrator can update poi and replace category details', function () {

@@ -14,12 +14,12 @@ APK Capacitor Android
             ├─ PostgreSQL + PostGIS
             ├─ Redis + jobs
             ├─ almacenamiento de medios
-            └─ proxy seguro a n8n y servicios geográficos
+            └─ servicios de IA OpenAI y geográficos
 ```
 
 ## Límites y dirección de dependencias
 
-- Las páginas React usan rutas Wayfinder y contratos enviados por Laravel; no conocen secretos ni llaman directamente a n8n, OpenTopoData ni servicios con credenciales.
+- Las páginas React usan rutas Wayfinder y contratos enviados por Laravel; no conocen secretos ni llaman directamente a OpenAI, OpenTopoData ni servicios con credenciales.
 - Controllers y endpoints validan entradas, delegan reglas que crecen a Actions/Services y devuelven respuestas consistentes. Las Policies autorizan cada registro en el servidor.
 - Eloquent y las migraciones Laravel son la frontera de persistencia. PostgreSQL/PostGIS es producción; SQLite se usa para pruebas y el almacenamiento local Android es una réplica/offline distinta.
 - Integraciones externas viven detrás de servicios Laravel. Los jobs procesan tareas lentas o reintentables.
@@ -31,7 +31,7 @@ APK Capacitor Android
 - Rutas, geometrías PostGIS, métricas, imágenes, mapa Leaflet y POIs.
 - Incidencias, recorridos GPS, favoritos, valoraciones, notificaciones y estadísticas.
 - Paquetes offline, cola de sincronización y adaptadores nativos Android.
-- Chat seguro: Laravel hace de proxy; n8n conserva la inteligencia, memoria y consultas de clima.
+- Chat seguro: Laravel construye contexto público vivo, consulta OpenAI desde servidor y conserva el historial propio sin enviar secretos ni ubicación persistente.
 
 ## Lectura detallada
 

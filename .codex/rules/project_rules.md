@@ -7,7 +7,7 @@
 - El backend es Laravel en `ciclismo-guaranda/`.
 - El frontend es React + Inertia + TypeScript + Vite.
 - Android se empaqueta con Capacitor.
-- El sistema requiere servidor para API, base de datos, n8n, mapas/rutas, archivos y sincronización.
+- El sistema requiere servidor para API, base de datos, IA, mapas/rutas, archivos y sincronización.
 
 ## Prioridades técnicas
 
@@ -23,7 +23,7 @@
 - No hardcodear credenciales, API keys, webhooks ni secretos.
 - No agregar dependencias sin justificarlo y pedir aprobación.
 - No cambiar decisiones de arquitectura sin actualizar `README.md` y `.codex`.
-- No crear módulos de IA internos; solo consumir webhook externo de n8n.
+- El asistente vive en Laravel y consulta OpenAI solo desde servidor; no exponer claves, contexto sensible ni controles internos al frontend/APK.
 - No crear usuarios invitados: todo requiere autenticación.
 - No permitir creación pública de rutas por ciclistas.
 - No prometer soporte prioritario para iOS.
