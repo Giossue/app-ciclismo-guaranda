@@ -394,6 +394,56 @@
         transform-origin: center;
     }
 
+    .leaflet-interactive.map-route-signal {
+        animation: map-route-signal 2.4s ease-in-out infinite;
+    }
+
+    .leaflet-interactive.map-marker-signal {
+        animation: map-marker-signal 1.8s ease-in-out infinite;
+        transform-box: fill-box;
+        transform-origin: center;
+    }
+
+    .leaflet-interactive.map-marker-signal-start {
+        animation-delay: -0.2s;
+    }
+
+    .leaflet-interactive.map-marker-signal-end {
+        animation-delay: -0.6s;
+    }
+
+    .leaflet-interactive.map-marker-signal-poi {
+        animation-delay: -1s;
+    }
+
+    .leaflet-interactive.map-marker-signal-incident {
+        animation-delay: -1.4s;
+    }
+
+    @keyframes map-route-signal {
+        0%,
+        100% {
+            opacity: 0.62;
+        }
+
+        50% {
+            opacity: 1;
+        }
+    }
+
+    @keyframes map-marker-signal {
+        0%,
+        100% {
+            opacity: 0.65;
+            transform: scale(0.86);
+        }
+
+        50% {
+            opacity: 1;
+            transform: scale(1.22);
+        }
+    }
+
     @keyframes map-user-location-sonar {
         0% {
             opacity: 0.55;
@@ -411,6 +461,12 @@
         .leaflet-interactive.map-user-location-sonar {
             animation: none;
             opacity: 0.25;
+            transform: none;
+        }
+
+        .leaflet-interactive.map-route-signal,
+        .leaflet-interactive.map-marker-signal {
+            animation: none;
             transform: none;
         }
     }

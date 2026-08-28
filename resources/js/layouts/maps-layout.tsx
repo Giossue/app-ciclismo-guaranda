@@ -1,7 +1,5 @@
 import { Link } from '@inertiajs/react';
 import { Heart, Map, Route } from 'lucide-react';
-import AppearanceCycleButton from '@/components/appearance-cycle-button';
-import { NotificationBellLink } from '@/components/notification-bell-link';
 import { Button } from '@/components/ui/button';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { index as favoritesIndex } from '@/routes/favorites';
@@ -18,13 +16,6 @@ export default function MapsLayout({
     return (
         <div className="relative h-[100dvh] overflow-hidden bg-background">
             {children}
-
-            <div className="pointer-events-none fixed top-3 right-3 z-[700] flex gap-1">
-                <div className="pointer-events-auto rounded-[var(--radius-control)] border bg-background/90 p-1 shadow-lg backdrop-blur">
-                    <NotificationBellLink />
-                    <AppearanceCycleButton />
-                </div>
-            </div>
 
             <nav
                 aria-label="Navegación del mapa"

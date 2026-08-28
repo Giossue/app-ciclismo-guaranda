@@ -2,15 +2,7 @@ import 'leaflet/dist/leaflet.css';
 
 import { Link } from '@inertiajs/react';
 import L from 'leaflet';
-import {
-    Layers,
-    LocateFixed,
-    MapPin,
-    Navigation,
-    RouteIcon,
-    ShieldAlert,
-    Store,
-} from 'lucide-react';
+import { Filter, Layers, LocateFixed, Navigation } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import {
     CircleMarker,
@@ -24,6 +16,14 @@ import {
 import CyclistRouteController from '@/actions/App/Http/Controllers/Cyclist/RouteController';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import {
+    DropdownMenu,
+    DropdownMenuCheckboxItem,
+    DropdownMenuContent,
+    DropdownMenuGroup,
+    DropdownMenuLabel,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { mediaUrl } from '@/lib/media';
 import { getCurrentAppLocation } from '@/lib/native/capacitor';
 import { cn } from '@/lib/utils';
@@ -81,6 +81,7 @@ const routePathOptions = {
     fillColor: 'var(--warning)',
     opacity: 0.98,
     weight: 5,
+    className: 'map-route-signal',
 };
 const routeHaloPathOptions = {
     color: 'var(--foreground)',
@@ -93,24 +94,28 @@ const startPathOptions = {
     fillColor: 'var(--primary)',
     fillOpacity: 0.9,
     opacity: 1,
+    className: 'map-marker-signal map-marker-signal-start',
 };
 const endPathOptions = {
     color: 'var(--warning)',
     fillColor: 'var(--warning)',
     fillOpacity: 0.9,
     opacity: 1,
+    className: 'map-marker-signal map-marker-signal-end',
 };
 const poiPathOptions = {
     color: 'var(--info)',
     fillColor: 'var(--info)',
     fillOpacity: 0.9,
     opacity: 1,
+    className: 'map-marker-signal map-marker-signal-poi',
 };
 const incidentPathOptions = {
     color: 'var(--destructive)',
     fillColor: 'var(--destructive)',
     fillOpacity: 0.9,
     opacity: 1,
+    className: 'map-marker-signal map-marker-signal-incident',
 };
 const userPathOptions = {
     color: 'var(--card)',
@@ -223,57 +228,80 @@ export default function RouteMap({
                 </Button>
             </div>
 
-            <Button
-                type="button"
-                variant="overlay"
-                size="icon"
-                onClick={requestLocation}
-                disabled={gpsStatus === 'requesting'}
-                aria-label="Mostrar mi ubicación actual"
-                title="Mi ubicación"
+            <div
                 className={cn(
-                    'size-14 min-h-14 rounded-full shadow-[var(--elevation-floating)]',
+                    'flex flex-col gap-3',
                     immersive &&
                         'absolute top-1/2 right-3 z-[500] -translate-y-1/2',
                 )}
             >
-                <LocateFixed className="size-6" />
-            </Button>
+                {showOverviewFilters && (
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button
+                                type="button"
+                                variant="overlay"
+                                size="icon"
+                                aria-label="Filtrar elementos del mapa"
+                                title="Filtrar mapa"
+                                className="size-14 min-h-14 rounded-full shadow-[var(--elevation-floating)]"
+                            >
+                                <Filter className="size-6" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent side="left" align="end">
+                            <DropdownMenuLabel>
+                                Mostrar en el mapa
+                            </DropdownMenuLabel>
+                            <DropdownMenuGroup>
+                                <DropdownMenuCheckboxItem
+                                    checked={filters.tracks}
+                                    onCheckedChange={() =>
+                                        toggleFilter('tracks')
+                                    }
+                                >
+                                    Rutas
+                                </DropdownMenuCheckboxItem>
+                                <DropdownMenuCheckboxItem
+                                    checked={filters.endpoints}
+                                    onCheckedChange={() =>
+                                        toggleFilter('endpoints')
+                                    }
+                                >
+                                    Inicios y finales
+                                </DropdownMenuCheckboxItem>
+                                <DropdownMenuCheckboxItem
+                                    checked={filters.pois}
+                                    onCheckedChange={() => toggleFilter('pois')}
+                                >
+                                    Puntos de interés
+                                </DropdownMenuCheckboxItem>
+                                <DropdownMenuCheckboxItem
+                                    checked={filters.incidents}
+                                    onCheckedChange={() =>
+                                        toggleFilter('incidents')
+                                    }
+                                >
+                                    Incidencias
+                                </DropdownMenuCheckboxItem>
+                            </DropdownMenuGroup>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                )}
 
-            {showOverviewFilters && (
-                <div
-                    className={cn(
-                        'flex flex-wrap gap-2',
-                        immersive &&
-                            'absolute top-16 left-3 z-[500] max-w-[calc(100%-1.5rem)]',
-                    )}
+                <Button
+                    type="button"
+                    variant="overlay"
+                    size="icon"
+                    onClick={requestLocation}
+                    disabled={gpsStatus === 'requesting'}
+                    aria-label="Mostrar mi ubicación actual"
+                    title="Mi ubicación"
+                    className="size-14 min-h-14 rounded-full shadow-[var(--elevation-floating)]"
                 >
-                    <FilterButton
-                        active={filters.endpoints}
-                        onClick={() => toggleFilter('endpoints')}
-                        label="Inicios/finales"
-                        icon={MapPin}
-                    />
-                    <FilterButton
-                        active={filters.pois}
-                        onClick={() => toggleFilter('pois')}
-                        label="POIs"
-                        icon={Store}
-                    />
-                    <FilterButton
-                        active={filters.incidents}
-                        onClick={() => toggleFilter('incidents')}
-                        label="Incidencias"
-                        icon={ShieldAlert}
-                    />
-                    <FilterButton
-                        active={filters.tracks}
-                        onClick={() => toggleFilter('tracks')}
-                        label="Trazados"
-                        icon={RouteIcon}
-                    />
-                </div>
-            )}
+                    <LocateFixed className="size-6" />
+                </Button>
+            </div>
 
             {gpsStatus === 'denied' && (
                 <Alert
@@ -372,30 +400,6 @@ export default function RouteMap({
                 </MapContainer>
             </div>
         </div>
-    );
-}
-
-function FilterButton({
-    active,
-    onClick,
-    label,
-    icon: Icon,
-}: {
-    active: boolean;
-    onClick: () => void;
-    label: string;
-    icon: typeof RouteIcon;
-}) {
-    return (
-        <Button
-            type="button"
-            size="sm"
-            variant={active ? 'secondary' : 'outline'}
-            onClick={onClick}
-        >
-            <Icon data-icon="inline-start" />
-            {label}
-        </Button>
     );
 }
 
@@ -697,7 +701,7 @@ function FlyToUserLocation({ location }: { location: UserLocation | null }) {
             return;
         }
 
-        map.flyTo([location.latitude, location.longitude], 15);
+        map.flyTo([location.latitude, location.longitude], 17);
     }, [location, map]);
 
     return null;
