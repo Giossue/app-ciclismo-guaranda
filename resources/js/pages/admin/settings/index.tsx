@@ -6,7 +6,6 @@ import {
     Database,
     Plug,
     Rocket,
-    ServerCog,
     ShieldCheck,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
@@ -15,13 +14,6 @@ import SystemSettingsController from '@/actions/App/Http/Controllers/Admin/Syste
 import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
 
 type SettingValue = string | number | boolean | null;
 
@@ -117,78 +109,85 @@ export default function AdminSettingsIndex({ settings }: Props) {
             <Head title="Configuración" />
 
             <div className="flex flex-col gap-6">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                    <Heading
-                        title="Configuración operativa"
-                        description="Consulta el estado del entorno y de los servicios conectados. Los valores sensibles no se exponen."
-                    />
-                    <Badge variant="outline">
-                        <ServerCog data-icon="inline-start" />
-                        {String(settings.application?.environment ?? 'Entorno')}
-                    </Badge>
-                </div>
+                <Heading
+                    title="Configuración operativa"
+                    description="Consulta el estado del entorno y de los servicios conectados. Los valores sensibles no se exponen."
+                />
 
-                <section className="grid gap-6 lg:grid-cols-[15rem_minmax(0,1fr)]">
-                    <nav
-                        aria-label="Secciones de configuración"
-                        className="flex gap-2 overflow-x-auto lg:flex-col lg:overflow-visible"
-                    >
-                        {availableSections.map((section) => {
-                            const Icon = section.icon;
-                            const selected = section.id === selectedSection?.id;
+                <section className="overflow-hidden rounded-[var(--radius-surface)] border bg-card lg:grid lg:min-h-128 lg:grid-cols-[18rem_minmax(0,1fr)]">
+                    <aside className="border-b bg-muted/30 lg:border-r lg:border-b-0">
+                        <nav
+                            aria-label="Secciones de configuración"
+                            className="flex overflow-x-auto p-2 lg:flex-col lg:overflow-visible"
+                        >
+                            {availableSections.map((section) => {
+                                const Icon = section.icon;
+                                const selected =
+                                    section.id === selectedSection?.id;
 
-                            return (
-                                <Button
-                                    key={section.id}
-                                    type="button"
-                                    variant={selected ? 'secondary' : 'ghost'}
-                                    className="h-auto min-w-48 shrink-0 justify-start px-3 py-3 text-left lg:w-full"
-                                    aria-current={selected ? 'page' : undefined}
-                                    onClick={() => setActiveSection(section.id)}
-                                >
-                                    <Icon data-icon="inline-start" />
-                                    <span className="flex min-w-0 flex-col gap-1">
-                                        <span>{section.label}</span>
-                                        <span className="truncate text-xs text-muted-foreground">
-                                            {section.description}
+                                return (
+                                    <Button
+                                        key={section.id}
+                                        type="button"
+                                        variant={
+                                            selected ? 'secondary' : 'ghost'
+                                        }
+                                        className="h-auto min-w-48 shrink-0 justify-start px-3 py-3 text-left lg:w-full"
+                                        aria-current={
+                                            selected ? 'page' : undefined
+                                        }
+                                        onClick={() =>
+                                            setActiveSection(section.id)
+                                        }
+                                    >
+                                        <Icon data-icon="inline-start" />
+                                        <span className="flex min-w-0 flex-col gap-1">
+                                            <span>{section.label}</span>
+                                            <span className="truncate text-xs text-muted-foreground">
+                                                {section.description}
+                                            </span>
                                         </span>
-                                    </span>
-                                </Button>
-                            );
-                        })}
-                    </nav>
+                                    </Button>
+                                );
+                            })}
+                        </nav>
+                    </aside>
 
                     {selectedSection ? (
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>{selectedSection.label}</CardTitle>
-                                <CardDescription>
+                        <section
+                            aria-labelledby="settings-section-title"
+                            className="min-w-0"
+                        >
+                            <header className="flex flex-col gap-1 border-b px-4 py-5 sm:px-6">
+                                <h3
+                                    id="settings-section-title"
+                                    className="font-display leading-[var(--lh-title)] font-extrabold tracking-[-0.03em] text-[var(--fs-lg)] text-foreground"
+                                >
+                                    {selectedSection.label}
+                                </h3>
+                                <p className="text-sm text-muted-foreground">
                                     {selectedSection.description} Valores leídos
                                     del entorno actual.
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <dl className="divide-y divide-border">
-                                    {Object.entries(selectedValues).map(
-                                        ([key, value]) => (
-                                            <div
-                                                key={key}
-                                                className="flex flex-col gap-2 py-4 first:pt-0 sm:flex-row sm:items-center sm:justify-between"
-                                            >
-                                                <dt className="text-sm text-foreground">
-                                                    {valueLabels[key] ?? key}
-                                                </dt>
-                                                <dd className="text-sm text-muted-foreground sm:text-right">
-                                                    <SettingValue
-                                                        value={value}
-                                                    />
-                                                </dd>
-                                            </div>
-                                        ),
-                                    )}
-                                </dl>
-                            </CardContent>
-                        </Card>
+                                </p>
+                            </header>
+                            <dl className="divide-y divide-border px-4 sm:px-6">
+                                {Object.entries(selectedValues).map(
+                                    ([key, value]) => (
+                                        <div
+                                            key={key}
+                                            className="flex flex-col gap-2 py-4 sm:flex-row sm:items-center sm:justify-between"
+                                        >
+                                            <dt className="text-sm text-foreground">
+                                                {valueLabels[key] ?? key}
+                                            </dt>
+                                            <dd className="text-sm text-muted-foreground sm:text-right">
+                                                <SettingValue value={value} />
+                                            </dd>
+                                        </div>
+                                    ),
+                                )}
+                            </dl>
+                        </section>
                     ) : null}
                 </section>
             </div>

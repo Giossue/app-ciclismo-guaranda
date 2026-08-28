@@ -24,6 +24,7 @@ use App\Models\User;
 use App\Models\UserRole;
 use App\Models\WorkshopService;
 use App\Models\WorkshopSpecialty;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -37,14 +38,61 @@ use Inertia\Response;
  */
 class CatalogController extends Controller
 {
-    public function index(): Response
+    public function index(Request $request): Response
     {
         $this->authorize('viewAny', User::class);
 
+        $catalogs = $this->catalogs();
+
+        $filters = $request->validate([
+            'catalog' => ['nullable', 'string', Rule::in(array_keys($catalogs))],
+            'search' => ['nullable', 'string', 'max:120'],
+            'status' => ['nullable', Rule::in(['active', 'inactive'])],
+            'per_page' => ['nullable', 'integer', Rule::in([10, 15, 25, 50])],
+        ]);
+
+        $slug = $filters['catalog'] ?? (string) array_key_first($catalogs);
+        $search = $filters['search'] ?? null;
+        $status = $filters['status'] ?? null;
+        $perPage = (int) ($filters['per_page'] ?? 15);
+
+        $definition = $catalogs[$slug];
+        $meta = $this->catalogMeta($slug, $definition);
+        $summaries = $this->catalogSummaries($catalogs);
+
+        $records = $this->recordsQuery($definition, $meta)
+            ->when($search, function (Builder $query, string $search) use ($meta): void {
+                $pattern = "%{$search}%";
+
+                $query->where(function (Builder $query) use ($pattern, $meta): void {
+                    $query->whereLike('name', $pattern);
+
+                    if ($meta['has_description']) {
+                        $query->orWhereLike('description', $pattern);
+                    }
+                });
+            })
+            ->when($meta['has_active'] && $status === 'active', fn (Builder $query) => $query->where('active', true))
+            ->when($meta['has_active'] && $status === 'inactive', fn (Builder $query) => $query->where('active', false))
+            ->orderBy('name')
+            ->paginate($perPage)
+            ->withQueryString()
+            ->through(fn (Model $record): array => $this->serializeRecord($record, $meta));
+
         return Inertia::render('admin/catalogs/index', [
-            'catalogs' => collect($this->catalogs())
-                ->map(fn (array $catalog, string $slug): array => $this->serializeCatalog($slug, $catalog))
-                ->values(),
+            'catalogs' => $summaries,
+            'catalog' => $meta,
+            'records' => $records,
+            'filters' => [
+                'catalog' => $slug,
+                'search' => $search ?? '',
+                'status' => $meta['has_active'] ? ($status ?? '') : '',
+                'per_page' => $perPage,
+            ],
+            'totals' => [
+                'catalogs' => count($summaries),
+                'records' => array_sum(array_column($summaries, 'records_count')),
+            ],
         ]);
     }
 
@@ -65,7 +113,9 @@ class CatalogController extends Controller
         $record = $modelClass::query()->create($this->payload($validated, $hasDescription, $hasActive));
         $recordName = (string) $record->getAttribute('name');
 
-        return back()->with('success', "Catálogo {$recordName} creado.");
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Registro :name creado.', ['name' => $recordName])]);
+
+        return back();
     }
 
     public function update(Request $request, string $catalog, int $record): RedirectResponse
@@ -86,67 +136,102 @@ class CatalogController extends Controller
         $catalogRecord->forceFill($this->payload($validated, $hasDescription, $hasActive))->save();
         $recordName = (string) $catalogRecord->getAttribute('name');
 
-        return back()->with('success', "Catálogo {$recordName} actualizado.");
+        Inertia::flash('toast', ['type' => 'info', 'message' => __('Registro :name actualizado.', ['name' => $recordName])]);
+
+        return back();
+    }
+
+    /**
+     * @param  array<string, CatalogDefinition>  $catalogs
+     * @return list<array{slug: string, title: string, records_count: int}>
+     */
+    private function catalogSummaries(array $catalogs): array
+    {
+        $summaries = [];
+
+        foreach ($catalogs as $slug => $catalog) {
+            $modelClass = $catalog['model'];
+            $query = $modelClass::query();
+            $allowedNames = $catalog['allowed_names'] ?? null;
+
+            if ($allowedNames !== null) {
+                $query->whereIn('name', $allowedNames);
+            }
+
+            $summaries[] = [
+                'slug' => $slug,
+                'title' => $catalog['title'],
+                'records_count' => $query->count(),
+            ];
+        }
+
+        return $summaries;
     }
 
     /**
      * @param  CatalogDefinition  $catalog
-     * @return array<string, mixed>
+     * @return array{slug: string, title: string, table: string, locked: bool, has_description: bool, has_active: bool}
      */
-    private function serializeCatalog(string $slug, array $catalog): array
+    private function catalogMeta(string $slug, array $catalog): array
     {
         $modelClass = $catalog['model'];
-        $model = new $modelClass;
-        $table = $model->getTable();
-        $hasDescription = Schema::hasColumn($table, 'description');
-        $hasActive = Schema::hasColumn($table, 'active');
-        $allowedNames = $catalog['allowed_names'] ?? null;
-
-        $recordsQuery = $modelClass::query()
-            ->select(array_values(array_filter([
-                'id',
-                'name',
-                $hasDescription ? 'description' : null,
-                $hasActive ? 'active' : null,
-                'created_at',
-                'updated_at',
-            ])));
-
-        if ($allowedNames !== null) {
-            $recordsQuery->whereIn('name', $allowedNames);
-        }
-
-        $records = $recordsQuery
-            ->orderBy('name')
-            ->get()
-            ->map(function (Model $record) use ($hasDescription, $hasActive): array {
-                $serialized = [
-                    'id' => (int) $record->getKey(),
-                    'name' => (string) $record->getAttribute('name'),
-                ];
-
-                if ($hasDescription) {
-                    $serialized['description'] = $record->getAttribute('description');
-                }
-
-                if ($hasActive) {
-                    $serialized['active'] = (bool) $record->getAttribute('active');
-                }
-
-                return $serialized;
-            })
-            ->values()
-            ->all();
+        $table = (new $modelClass)->getTable();
 
         return [
             'slug' => $slug,
             'title' => $catalog['title'],
             'table' => $table,
             'locked' => (bool) ($catalog['locked'] ?? false),
-            'has_description' => $hasDescription,
-            'has_active' => $hasActive,
-            'records' => $records,
+            'has_description' => Schema::hasColumn($table, 'description'),
+            'has_active' => Schema::hasColumn($table, 'active'),
         ];
+    }
+
+    /**
+     * @param  CatalogDefinition  $catalog
+     * @param  array{slug: string, title: string, table: string, locked: bool, has_description: bool, has_active: bool}  $meta
+     * @return Builder<Model>
+     */
+    private function recordsQuery(array $catalog, array $meta): Builder
+    {
+        $modelClass = $catalog['model'];
+        $allowedNames = $catalog['allowed_names'] ?? null;
+
+        $query = $modelClass::query()
+            ->select(array_values(array_filter([
+                'id',
+                'name',
+                $meta['has_description'] ? 'description' : null,
+                $meta['has_active'] ? 'active' : null,
+            ])));
+
+        if ($allowedNames !== null) {
+            $query->whereIn('name', $allowedNames);
+        }
+
+        return $query;
+    }
+
+    /**
+     * @param  array{slug: string, title: string, table: string, locked: bool, has_description: bool, has_active: bool}  $meta
+     * @return array<string, mixed>
+     */
+    private function serializeRecord(Model $record, array $meta): array
+    {
+        $serialized = [
+            'id' => (int) $record->getKey(),
+            'name' => (string) $record->getAttribute('name'),
+        ];
+
+        if ($meta['has_description']) {
+            $serialized['description'] = $record->getAttribute('description');
+        }
+
+        if ($meta['has_active']) {
+            $serialized['active'] = (bool) $record->getAttribute('active');
+        }
+
+        return $serialized;
     }
 
     /**

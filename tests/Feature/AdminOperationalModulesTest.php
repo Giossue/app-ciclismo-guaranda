@@ -36,6 +36,41 @@ test('cyclist can not access operational admin modules', function (string $route
     'admin.settings.index',
 ]);
 
+test('administrator can browse catalog records with search and pagination', function () {
+    $this->withoutVite();
+
+    $admin = User::factory()->administrator()->create();
+
+    RouteCategory::query()->create([
+        'name' => 'gravel visible',
+        'description' => 'Ruta mixta de ripio y asfalto.',
+    ]);
+    RouteCategory::query()->create([
+        'name' => 'otra categoria',
+        'description' => 'Categoria fuera de la busqueda.',
+    ]);
+
+    $this->actingAs($admin)
+        ->get(route('admin.catalogs.index', [
+            'catalog' => 'route-categories',
+            'search' => 'visible',
+            'per_page' => 10,
+        ]))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('admin/catalogs/index')
+            ->where('catalog.slug', 'route-categories')
+            ->where('catalog.has_description', true)
+            ->where('filters.catalog', 'route-categories')
+            ->where('filters.search', 'visible')
+            ->where('filters.per_page', 10)
+            ->where('records.per_page', 10)
+            ->has('records.data', 1)
+            ->where('records.data.0.name', 'gravel visible')
+            ->has('catalogs')
+            ->has('totals.records'));
+});
+
 test('administrator can create and update catalog records', function () {
     $admin = User::factory()->administrator()->create();
 
