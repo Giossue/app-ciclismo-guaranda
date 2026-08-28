@@ -9,7 +9,7 @@ import {
     LocateFixed,
     Navigation,
 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
     GeoJSON,
     MapContainer,
@@ -18,6 +18,7 @@ import {
     Popup,
     TileLayer,
     useMap,
+    useMapEvents,
 } from 'react-leaflet';
 import CyclistRouteController from '@/actions/App/Http/Controllers/Cyclist/RouteController';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -32,6 +33,7 @@ import {
 import { mediaUrl } from '@/lib/media';
 import { getCurrentAppLocation } from '@/lib/native/capacitor';
 import { cn } from '@/lib/utils';
+import { show as approachShow } from '@/routes/routes/approach';
 import type {
     ActiveTrack,
     CyclingRouteMapItem,
@@ -62,6 +64,17 @@ type UserLocation = {
 
 type GpsStatus = 'idle' | 'requesting' | 'granted' | 'denied';
 type MapLayer = 'standard' | 'satellite';
+type ApproachState = {
+    slug: string;
+    positions: [number, number][];
+    distanceKm: number;
+    minutes: number;
+};
+type ApproachPayload = {
+    geojson?: { coordinates?: [number, number][] };
+    distance_km?: number;
+    estimated_time_minutes?: number;
+};
 type OverlayFilters = {
     tracks: boolean;
     endpoints: boolean;
@@ -110,6 +123,13 @@ const userTrackPathOptions = {
     opacity: 0.95,
     weight: 6,
 };
+/* Punteada para distinguir el camino de aproximación de las rutas oficiales. */
+const approachPathOptions = {
+    color: '#2f80ed',
+    dashArray: '6 10',
+    opacity: 0.9,
+    weight: 4,
+};
 const poiIconPaths: Record<string, string> = {
     Comida: '<path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/>',
     Tienda: '<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/>',
@@ -129,6 +149,43 @@ const mapMarkerIconPaths = {
         '<path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
 };
 
+/*
+ * La vista del mapa de Explorar sobrevive a la navegación entre pestañas: el
+ * componente se desmonta al ir a Rutas/Favoritas y sin esto, al volver, el
+ * encuadre y la capa elegida vuelven a empezar de cero.
+ */
+type SavedMapView = { center: [number, number]; zoom: number };
+const savedOverviewState: {
+    view: SavedMapView | null;
+    layer: MapLayer;
+    location: UserLocation | null;
+} = {
+    view: null,
+    layer: 'standard',
+    location: null,
+};
+
+function rememberOverviewLocation(location: UserLocation): void {
+    savedOverviewState.location = location;
+}
+
+function rememberOverviewView(map: L.Map): void {
+    const center = map.getCenter();
+
+    savedOverviewState.view = {
+        center: [center.lat, center.lng],
+        zoom: map.getZoom(),
+    };
+}
+
+function SaveMapView() {
+    const map = useMapEvents({
+        moveend: () => rememberOverviewView(map),
+    });
+
+    return null;
+}
+
 export default function RouteMap({
     routes,
     selectedSlug,
@@ -141,9 +198,78 @@ export default function RouteMap({
     onRouteSelect,
     onReportIncident,
 }: RouteMapProps) {
-    const [gpsStatus, setGpsStatus] = useState<GpsStatus>('idle');
-    const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
-    const [mapLayer, setMapLayer] = useState<MapLayer>('standard');
+    const persistView = mode === 'overview';
+    /* Congelada al montar: MapContainer ignora cambios de center/zoom después. */
+    const [restoredView] = useState(() =>
+        persistView ? savedOverviewState.view : null,
+    );
+    const [gpsStatus, setGpsStatus] = useState<GpsStatus>(() =>
+        persistView && savedOverviewState.location ? 'granted' : 'idle',
+    );
+    const [userLocation, setUserLocation] = useState<UserLocation | null>(() =>
+        persistView ? savedOverviewState.location : null,
+    );
+    const [mapLayer, setMapLayer] = useState<MapLayer>(() =>
+        persistView ? savedOverviewState.layer : 'standard',
+    );
+
+    useEffect(() => {
+        if (persistView) {
+            savedOverviewState.layer = mapLayer;
+        }
+    }, [persistView, mapLayer]);
+    /*
+     * Con ubicación conocida y una ruta seleccionada, OSRM calcula el camino
+     * hasta su punto de partida y se dibuja como línea punteada.
+     */
+    const [approach, setApproach] = useState<ApproachState | null>(null);
+    /* Puede quedar uno viejo de otra selección; solo cuenta el de la actual. */
+    const activeApproach =
+        approach && approach.slug === selectedSlug ? approach : null;
+
+    useEffect(() => {
+        if (mode !== 'overview' || !selectedSlug || !userLocation) {
+            return;
+        }
+
+        const abortController = new AbortController();
+
+        fetch(
+            approachShow.url(selectedSlug, {
+                query: {
+                    latitude: userLocation.latitude,
+                    longitude: userLocation.longitude,
+                },
+            }),
+            {
+                headers: { Accept: 'application/json' },
+                signal: abortController.signal,
+            },
+        )
+            .then((response) => (response.ok ? response.json() : null))
+            .then((payload: ApproachPayload | null) => {
+                const coordinates = payload?.geojson?.coordinates;
+
+                if (!Array.isArray(coordinates) || coordinates.length < 2) {
+                    setApproach(null);
+
+                    return;
+                }
+
+                setApproach({
+                    slug: selectedSlug,
+                    positions: coordinates.map(([longitude, latitude]) => [
+                        latitude,
+                        longitude,
+                    ]),
+                    distanceKm: payload?.distance_km ?? 0,
+                    minutes: payload?.estimated_time_minutes ?? 0,
+                });
+            })
+            .catch(() => undefined);
+
+        return () => abortController.abort();
+    }, [mode, selectedSlug, userLocation]);
     const [filters, setFilters] = useState<OverlayFilters>(() => ({
         tracks: mode === 'detail' || selectedSlug !== undefined,
         endpoints: true,
@@ -159,12 +285,18 @@ export default function RouteMap({
 
         void getCurrentAppLocation()
             .then((location) => {
-                setUserLocation({
+                const nextLocation = {
                     latitude: location.latitude,
                     longitude: location.longitude,
                     accuracy: location.accuracyM ?? 0,
-                });
+                };
+
+                setUserLocation(nextLocation);
                 setGpsStatus('granted');
+
+                if (persistView) {
+                    rememberOverviewLocation(nextLocation);
+                }
             })
             .catch(() => setGpsStatus('denied'));
     };
@@ -209,7 +341,12 @@ export default function RouteMap({
                                 <Filter className="size-6" />
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent side="left" align="end">
+                        {/*
+                         * Hacia abajo: a la izquierda no hay espacio (el botón
+                         * pega al borde) y Radix lo volteaba sobre el botón de
+                         * capas.
+                         */}
+                        <DropdownMenuContent side="bottom" align="start">
                             <DropdownMenuGroup>
                                 <DropdownMenuCheckboxItem
                                     checked={filters.tracks}
@@ -320,8 +457,8 @@ export default function RouteMap({
                 )}
             >
                 <MapContainer
-                    center={center}
-                    zoom={12}
+                    center={restoredView?.center ?? center}
+                    zoom={restoredView?.zoom ?? 12}
                     zoomControl={false}
                     scrollWheelZoom={false}
                     className={cn(
@@ -335,14 +472,37 @@ export default function RouteMap({
                         url={activeLayer.url}
                     />
 
+                    {persistView && <SaveMapView />}
                     <FitRouteBounds
                         routes={routes}
                         filters={filters}
                         activeTrack={activeTrack}
                         selectedSlug={selectedSlug}
                         focusSelected={focusSelected}
+                        extraPoints={activeApproach?.positions}
+                        skipInitialFit={
+                            Boolean(restoredView) &&
+                            !(focusSelected && selectedSlug)
+                        }
                     />
                     <FlyToUserLocation location={userLocation} />
+
+                    {activeApproach && (
+                        <Polyline
+                            positions={activeApproach.positions}
+                            pathOptions={approachPathOptions}
+                        >
+                            <Popup>
+                                <div className="flex flex-col gap-1 text-sm">
+                                    <strong>Camino al punto de partida</strong>
+                                    <span>
+                                        {activeApproach.distanceKm.toLocaleString()}{' '}
+                                        km · {activeApproach.minutes} min aprox.
+                                    </span>
+                                </div>
+                            </Popup>
+                        </Polyline>
+                    )}
                     <UserTrackLine
                         activeTrack={activeTrack}
                         userLocation={userLocation}
@@ -599,21 +759,39 @@ function FitRouteBounds({
     activeTrack,
     selectedSlug,
     focusSelected,
+    extraPoints,
+    skipInitialFit = false,
 }: {
     routes: RouteMapItem[];
     filters: OverlayFilters;
     activeTrack: ActiveTrack | null;
     selectedSlug?: string;
     focusSelected: boolean;
+    extraPoints?: [number, number][];
+    skipInitialFit?: boolean;
 }) {
     const map = useMap();
+    /*
+     * Con una vista restaurada, el primer encuadre automático pisaría la
+     * posición donde el usuario dejó el mapa; los siguientes (cambiar filtros,
+     * seleccionar ruta) sí deben ejecutarse.
+     */
+    const skipNextFit = useRef(skipInitialFit);
 
     useEffect(() => {
+        if (skipNextFit.current) {
+            skipNextFit.current = false;
+
+            return;
+        }
+
         const points: L.LatLngExpression[] = [];
 
         activeTrack?.points.forEach((point) => {
             points.push([point.latitude, point.longitude]);
         });
+
+        extraPoints?.forEach((point) => points.push(point));
 
         const routesToFit =
             focusSelected && selectedSlug
@@ -654,7 +832,15 @@ function FitRouteBounds({
         if (bounds.isValid()) {
             map.fitBounds(bounds, { padding: [24, 24], maxZoom: 15 });
         }
-    }, [activeTrack, filters, focusSelected, map, routes, selectedSlug]);
+    }, [
+        activeTrack,
+        extraPoints,
+        filters,
+        focusSelected,
+        map,
+        routes,
+        selectedSlug,
+    ]);
 
     return null;
 }

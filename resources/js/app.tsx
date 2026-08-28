@@ -27,7 +27,13 @@ createInertiaApp({
                 return AppLayout;
             case name.startsWith('admin/'):
                 return [AppLayout, AdminLayout];
-            case name.startsWith('maps/'):
+            /*
+             * Las tres pestañas del mapa comparten layout: al persistir entre
+             * visitas, cambiar de pestaña no desmonta la navegación inferior.
+             */
+            case name.startsWith('maps/') ||
+                name === 'routes/index' ||
+                name === 'favorites/index':
                 return MapsLayout;
             default:
                 return AppLayout;

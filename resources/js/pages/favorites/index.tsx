@@ -1,5 +1,5 @@
 import { Form, Head, Link } from '@inertiajs/react';
-import { HeartOff, ImageIcon, Star, X } from 'lucide-react';
+import { HeartOff, ImageIcon, Star } from 'lucide-react';
 import FavoriteRouteController from '@/actions/App/Http/Controllers/Cyclist/FavoriteRouteController';
 import CyclistRouteController from '@/actions/App/Http/Controllers/Cyclist/RouteController';
 import { CatalogPagination } from '@/components/catalog-pagination';
@@ -24,7 +24,6 @@ import {
     EmptyTitle,
 } from '@/components/ui/empty';
 import { mediaUrl } from '@/lib/media';
-import { index as mapsIndex } from '@/routes/maps';
 import type { CatalogOption, RouteMetric } from '@/types';
 
 type FavoriteRouteItem = {
@@ -67,67 +66,65 @@ export default function FavoritesIndex({ favorites }: Props) {
         <>
             <Head title="Favoritas" />
 
-            <div className="flex w-full flex-col gap-6">
-                <div className="flex items-start justify-between gap-3">
-                    <Heading
-                        title="Rutas favoritas"
-                        description="Encuentra rápidamente las rutas que guardaste para tu próxima salida."
-                    />
-                    <Button asChild variant="ghost" size="icon">
-                        <Link
-                            href={mapsIndex.url()}
-                            replace
-                            aria-label="Volver al mapa"
-                            title="Volver al mapa"
-                        >
-                            <X />
-                        </Link>
-                    </Button>
-                </div>
-
-                {favorites.data.length > 0 ? (
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                        {favorites.data.map((favorite) =>
-                            favorite.route ? (
-                                <FavoriteCard
-                                    key={favorite.route.id}
-                                    favorite={favorite}
-                                />
-                            ) : null,
-                        )}
+            {/* El layout del mapa no tiene scroll propio; la lista lo maneja aquí. */}
+            <div className="h-full overflow-y-auto">
+                <div className="safe-bottom-pad mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 pt-[calc(var(--safe-top,0px)+0.75rem)]">
+                    {/* `pr-14` esquiva el botón de salir que superpone el layout. */}
+                    <div className="pr-14">
+                        <Heading
+                            title="Rutas favoritas"
+                            description="Encuentra rápidamente las rutas que guardaste para tu próxima salida."
+                        />
                     </div>
-                ) : (
-                    <Empty className="min-h-72 border border-dashed">
-                        <EmptyHeader>
-                            <EmptyMedia variant="icon">
-                                <HeartOff />
-                            </EmptyMedia>
-                            <EmptyTitle>No tienes rutas favoritas</EmptyTitle>
-                            <EmptyDescription>
-                                Guarda una ruta para encontrarla rápidamente
-                                antes de tu próxima salida.
-                            </EmptyDescription>
-                        </EmptyHeader>
-                        <EmptyContent>
-                            <Button asChild variant="outline" size="sm">
-                                <Link
-                                    href={CyclistRouteController.index.url()}
-                                    prefetch
-                                >
-                                    Explorar rutas
-                                </Link>
-                            </Button>
-                        </EmptyContent>
-                    </Empty>
-                )}
 
-                <CatalogPagination
-                    pagination={favorites}
-                    itemLabel="favoritas"
-                    buildPageUrl={(page) =>
-                        FavoriteRouteController.index.url({ query: { page } })
-                    }
-                />
+                    {favorites.data.length > 0 ? (
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                            {favorites.data.map((favorite) =>
+                                favorite.route ? (
+                                    <FavoriteCard
+                                        key={favorite.route.id}
+                                        favorite={favorite}
+                                    />
+                                ) : null,
+                            )}
+                        </div>
+                    ) : (
+                        <Empty className="min-h-72 border border-dashed">
+                            <EmptyHeader>
+                                <EmptyMedia variant="icon">
+                                    <HeartOff />
+                                </EmptyMedia>
+                                <EmptyTitle>
+                                    No tienes rutas favoritas
+                                </EmptyTitle>
+                                <EmptyDescription>
+                                    Guarda una ruta para encontrarla rápidamente
+                                    antes de tu próxima salida.
+                                </EmptyDescription>
+                            </EmptyHeader>
+                            <EmptyContent>
+                                <Button asChild variant="outline" size="sm">
+                                    <Link
+                                        href={CyclistRouteController.index.url()}
+                                        prefetch
+                                    >
+                                        Explorar rutas
+                                    </Link>
+                                </Button>
+                            </EmptyContent>
+                        </Empty>
+                    )}
+
+                    <CatalogPagination
+                        pagination={favorites}
+                        itemLabel="favoritas"
+                        buildPageUrl={(page) =>
+                            FavoriteRouteController.index.url({
+                                query: { page },
+                            })
+                        }
+                    />
+                </div>
             </div>
         </>
     );

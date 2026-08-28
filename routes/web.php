@@ -24,6 +24,7 @@ use App\Http\Controllers\Cyclist\MapController as CyclistMapController;
 use App\Http\Controllers\Cyclist\OfflineRouteController;
 use App\Http\Controllers\Cyclist\PoiReportController;
 use App\Http\Controllers\Cyclist\PoiSuggestionController;
+use App\Http\Controllers\Cyclist\RouteApproachController;
 use App\Http\Controllers\Cyclist\RouteController as CyclistRouteController;
 use App\Http\Controllers\Cyclist\RouteRatingController;
 use App\Http\Controllers\Cyclist\SyncController;
@@ -48,6 +49,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('routes', [CyclistRouteController::class, 'index'])->name('routes.index');
         Route::get('favorites', [FavoriteRouteController::class, 'index'])->name('favorites.index');
         Route::get('routes/{route:slug}', [CyclistRouteController::class, 'show'])->name('routes.show');
+        Route::get('routes/{route:slug}/approach', RouteApproachController::class)->middleware('throttle:30,1')->name('routes.approach.show');
         Route::get('routes/{route:slug}/offline-package', [OfflineRouteController::class, 'show'])->name('routes.offline-package.show');
         Route::post('routes/{route:slug}/downloads', [OfflineRouteController::class, 'store'])->name('routes.downloads.store');
         Route::post('routes/{route:slug}/favorite', [FavoriteRouteController::class, 'store'])->name('routes.favorite.store');

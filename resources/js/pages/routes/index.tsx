@@ -6,12 +6,12 @@ import {
     MapPinned,
     RouteIcon,
     Star,
-    X,
 } from 'lucide-react';
 import CyclistRouteController from '@/actions/App/Http/Controllers/Cyclist/RouteController';
 import { CatalogPagination } from '@/components/catalog-pagination';
 import { DataTableToolbar } from '@/components/data-table';
 import type { DataTableQuery } from '@/components/data-table';
+import Heading from '@/components/heading';
 import ImageWithFallback from '@/components/image-with-fallback';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -73,46 +73,46 @@ export default function RoutesIndex({
         <>
             <Head title="Rutas" />
 
-            <div className="flex w-full flex-col gap-5">
-                <div className="flex justify-end">
-                    <Button asChild variant="ghost" size="icon">
-                        <Link
-                            href={mapsIndex.url()}
-                            replace
-                            aria-label="Volver al mapa"
-                            title="Volver al mapa"
-                        >
-                            <X />
-                        </Link>
-                    </Button>
+            {/* El layout del mapa no tiene scroll propio; la lista lo maneja aquí. */}
+            <div className="h-full overflow-y-auto">
+                <div className="safe-bottom-pad mx-auto flex w-full max-w-5xl flex-col gap-5 px-4 pt-[calc(var(--safe-top,0px)+0.75rem)]">
+                    {/* `pr-14` esquiva el botón de salir que superpone el layout. */}
+                    <div className="pr-14">
+                        <Heading
+                            title="Rutas"
+                            description="Explora el catálogo y filtra según tu próxima salida."
+                        />
+                    </div>
+                    <RouteFiltersToolbar
+                        categories={categories}
+                        difficulties={difficulties}
+                        filters={filters}
+                        onQueryChange={changeQuery}
+                    />
+
+                    <RoutesList
+                        routes={routes.data}
+                        hasFilters={hasFilters}
+                        showLatestBadge={
+                            routes.current_page === 1 && !hasFilters
+                        }
+                    />
+
+                    <CatalogPagination
+                        pagination={routes}
+                        itemLabel="rutas"
+                        buildPageUrl={(page) =>
+                            CyclistRouteController.index.url({
+                                query: {
+                                    search: filters.search || undefined,
+                                    category: filters.category || undefined,
+                                    difficulty: filters.difficulty || undefined,
+                                    page,
+                                },
+                            })
+                        }
+                    />
                 </div>
-                <RouteFiltersToolbar
-                    categories={categories}
-                    difficulties={difficulties}
-                    filters={filters}
-                    onQueryChange={changeQuery}
-                />
-
-                <RoutesList
-                    routes={routes.data}
-                    hasFilters={hasFilters}
-                    showLatestBadge={routes.current_page === 1 && !hasFilters}
-                />
-
-                <CatalogPagination
-                    pagination={routes}
-                    itemLabel="rutas"
-                    buildPageUrl={(page) =>
-                        CyclistRouteController.index.url({
-                            query: {
-                                search: filters.search || undefined,
-                                category: filters.category || undefined,
-                                difficulty: filters.difficulty || undefined,
-                                page,
-                            },
-                        })
-                    }
-                />
             </div>
         </>
     );
