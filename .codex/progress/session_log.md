@@ -496,6 +496,12 @@
 - Se creó directamente en PostgreSQL remoto una cuenta administradora solicitada, con rol válido, cuenta activa y contraseña bcrypt compatible con Laravel.
 - Se comprobó tras la transacción que la cuenta está activa, no eliminada y autorizada como administradora. No se usaron seeders ni se expusieron credenciales.
 
+## 2026-08-27 — Submenú administrativo de POIs
+
+- Se separaron POIs oficiales, sugerencias y reportes en rutas y vistas administrativas independientes, usando un submenú local y rutas Wayfinder tipadas.
+- La vista principal de POIs ahora usa la tabla operativa reutilizable con búsqueda, filtros por categoría/estado, paginación y acciones de edición o activación.
+- Se añadieron policies, validación de query y pruebas de autorización/aislamiento de las tres vistas; no hubo cambios de esquema ni de datos remotos.
+
 ## 2026-08-27 — Landing adaptable
 
 - Se consultó el MCP de 21st.dev y se adaptó la referencia `Feature Bento` a la landing existente.

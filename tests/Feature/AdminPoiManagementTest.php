@@ -5,12 +5,15 @@ use App\Models\CyclingRoute;
 use App\Models\FoodDetail;
 use App\Models\PoiCategory;
 use App\Models\PointOfInterest;
+use App\Models\PoiReport;
+use App\Models\PoiSuggestion;
 use App\Models\PriceRange;
 use App\Models\RouteCategory;
 use App\Models\RouteDifficulty;
 use App\Models\RouteStatus;
 use App\Models\User;
 use Database\Seeders\CatalogSeeder;
+use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function () {
     $this->seed(CatalogSeeder::class);
@@ -90,6 +93,14 @@ test('administrator can view poi management pages', function () {
     $this->actingAs($admin)
         ->get(route('admin.pois.create'))
         ->assertOk();
+
+    $this->actingAs($admin)
+        ->get(route('admin.pois.suggestions.index'))
+        ->assertOk();
+
+    $this->actingAs($admin)
+        ->get(route('admin.pois.reports.index'))
+        ->assertOk();
 });
 
 test('cyclist can not access poi administration', function () {
@@ -102,6 +113,72 @@ test('cyclist can not access poi administration', function () {
     $this->actingAs($cyclist)
         ->post(route('admin.pois.store'), adminPoiPayload())
         ->assertForbidden();
+
+    $this->actingAs($cyclist)
+        ->get(route('admin.pois.suggestions.index'))
+        ->assertForbidden();
+
+    $this->actingAs($cyclist)
+        ->get(route('admin.pois.reports.index'))
+        ->assertForbidden();
+});
+
+test('administrator can browse POIs, suggestions and reports in separate views', function () {
+    $this->withoutVite();
+
+    $admin = User::factory()->administrator()->create();
+    $cyclist = User::factory()->cyclist()->create();
+    $category = PoiCategory::query()->where('name', 'comida')->firstOrFail();
+    $poi = PointOfInterest::query()->create([
+        'poi_category_id' => $category->id,
+        'name' => 'POI para retroalimentación',
+        'description' => 'POI usado para comprobar el submenú administrativo.',
+        'latitude' => -1.405,
+        'longitude' => -79.021,
+        'active' => true,
+    ]);
+
+    PoiSuggestion::query()->create([
+        'user_id' => $cyclist->id,
+        'poi_category_id' => $category->id,
+        'name' => 'Sugerencia separada',
+        'description' => 'Debe aparecer solo en la vista de sugerencias.',
+        'status' => 'pendiente',
+        'suggested_at' => now(),
+    ]);
+
+    PoiReport::query()->create([
+        'user_id' => $cyclist->id,
+        'point_of_interest_id' => $poi->id,
+        'report_type' => 'cerrado',
+        'description' => 'Debe aparecer solo en la vista de reportes.',
+        'status' => 'pendiente',
+        'reported_at' => now(),
+    ]);
+
+    $this->actingAs($admin)
+        ->get(route('admin.pois.index'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('admin/pois/index')
+            ->has('pois.data', 1)
+            ->where('pois.data.0.name', 'POI para retroalimentación'));
+
+    $this->actingAs($admin)
+        ->get(route('admin.pois.suggestions.index'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('admin/pois/suggestions/index')
+            ->has('suggestions.data', 1)
+            ->where('suggestions.data.0.name', 'Sugerencia separada'));
+
+    $this->actingAs($admin)
+        ->get(route('admin.pois.reports.index'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('admin/pois/reports/index')
+            ->has('reports.data', 1)
+            ->where('reports.data.0.poi.name', 'POI para retroalimentación'));
 });
 
 test('administrator can create a complete poi with details and route association', function () {

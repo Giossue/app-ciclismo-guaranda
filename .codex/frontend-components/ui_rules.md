@@ -42,6 +42,7 @@ Los estilos reutilizables se definen en `resources/css/app.css`; no crear otra f
 - Para **texto o iconos de marca** usa `--link`/`--link-hover` (oscuros en claro, claros en oscuro) o `--brand-accent`; no uses `--primary` como color de texto porque en tema oscuro no alcanza 4.5:1 sobre el fondo.
 - Si `--brand-accent` se usa como fondo, el texto va con `--brand-accent-foreground`, que invierte según el tema.
 - `Badge` tiene **solo dos variantes**: `default` (sólido de marca) para el estado vigente o el dato que exige atención, y `outline` (neutro) para metadatos, taxonomías, contadores informativos y estados apagados. No se añaden variantes por color de estado: el significado lo lleva el texto del badge.
+- Su tipografía vive únicamente en el componente (`text-[var(--fs-xs)]`, `font-semibold`, `uppercase`, `tracking-[0.04em]`): peso intermedio, por debajo de los títulos. No redefinir badges desde `app.css` ni con clases por pantalla.
 - El resto de verdes (`--ring`, `--focus-ring`, `--info`, `--chart-1`, `--chart-2`, `--primary-glow`, `--sidebar-primary`) se derivan del mismo tono OKLCH (H≈142.5) variando solo luminosidad; `--success`, `--warning` y `--destructive` siguen siendo colores de estado independientes.
 - `rounded-full` y `rounded-none` solo se usan cuando la forma es intencionalmente circular/píldora o sin radio. Evitar valores arbitrarios como `rounded-[18px]` o `border-radius: 16px`.
 

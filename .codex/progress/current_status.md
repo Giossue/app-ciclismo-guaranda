@@ -139,3 +139,8 @@ Después de esa prueba manual, marcar Fase 12 y Fase 14 como `Completado` si tod
 ## Operación de datos remota 2026-08-27
 
 - Se creó y verificó una cuenta administradora solicitada directamente en PostgreSQL remoto, con rol `administrador`, estado activo y contraseña almacenada únicamente como hash bcrypt compatible con Laravel. No se usaron seeders ni se registraron credenciales.
+
+## Administración de POIs 2026-08-27
+
+- El módulo de POIs separa POIs oficiales, sugerencias y reportes mediante un submenú local; las tres vistas están protegidas para administradores.
+- El listado de POIs oficiales se migró de tarjetas a tabla con búsqueda, filtros, paginación y acciones de edición/activación.

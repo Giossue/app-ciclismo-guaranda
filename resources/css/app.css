@@ -438,14 +438,6 @@
         font-weight: 900;
     }
 
-    [data-slot='badge'] {
-        border-radius: var(--radius-control);
-        font-size: var(--fs-xs);
-        font-weight: 900;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-    }
-
     [data-slot='dialog-overlay'],
     [data-slot='sheet-overlay'] {
         background: var(--overlay);

@@ -173,6 +173,11 @@
 - La landing dispone de un único control de tema por icono en su encabezado: alterna claro, oscuro y sistema sin depender de un texto visible. Se apoya en `useAppearance`, que persiste y aplica la preferencia existente.
 - Las superficies oscuras no reutilizan `background` como color de texto: se usan tokens inversos globales para que el contraste no dependa del modo activo.
 
+## 2026-08-27 — Navegación del módulo administrativo de POIs
+
+- POIs oficiales, sugerencias y reportes se presentan como secciones locales del módulo de POIs, en vez de concentrar la retroalimentación pendiente sobre el listado principal.
+- La navegación global no añade un tercer nivel; cada sección conserva URL propia, autorización administrativa y paginación.
+
 ## 2026-08-27 — Autodespliegue directo en Dokploy
 
 - Dokploy realiza el despliegue por su detección nativa de `push`; el flujo habitual no depende de GitHub Actions como condición previa.

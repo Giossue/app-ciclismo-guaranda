@@ -4,6 +4,8 @@ use App\Http\Controllers\Admin\CatalogController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\IncidentController as AdminIncidentController;
 use App\Http\Controllers\Admin\PoiController as AdminPoiController;
+use App\Http\Controllers\Admin\PoiReportController as AdminPoiReportController;
+use App\Http\Controllers\Admin\PoiSuggestionController as AdminPoiSuggestionController;
 use App\Http\Controllers\Admin\RatingController as AdminRatingController;
 use App\Http\Controllers\Admin\RouteController as AdminRouteController;
 use App\Http\Controllers\Admin\RouteElevationController;
@@ -67,6 +69,8 @@ Route::middleware(['auth', 'verified', 'admin'])
 
         Route::post('routes/elevation-preview', RouteElevationController::class)->middleware('throttle:20,1')->name('routes.elevation-preview');
         Route::resource('routes', AdminRouteController::class)->except(['show']);
+        Route::get('pois/suggestions', AdminPoiSuggestionController::class)->name('pois.suggestions.index');
+        Route::get('pois/reports', AdminPoiReportController::class)->name('pois.reports.index');
         Route::resource('pois', AdminPoiController::class)->except(['show'])->withTrashed(['edit', 'update']);
         Route::patch('pois/{poi}/restore', [AdminPoiController::class, 'restore'])->withTrashed()->name('pois.restore');
         Route::resource('incidents', AdminIncidentController::class)->only(['index', 'update']);
