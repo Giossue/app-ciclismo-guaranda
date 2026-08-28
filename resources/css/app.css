@@ -130,6 +130,9 @@
     --safe-bottom: env(safe-area-inset-bottom, 0px);
     --bottom-nav-height: 58px;
 
+    /* Scrollbars y widgets nativos siguen el tema. */
+    color-scheme: light;
+
     /* Semantic color tokens — light mode. */
     --background: #f8f9fa;
     --foreground: #1a1a1a;
@@ -188,6 +191,8 @@
 }
 
 .dark {
+    color-scheme: dark;
+
     /* Semantic color tokens — dark mode. */
     --background: #0d0f0d;
     --foreground: #ffffff;
@@ -250,6 +255,10 @@
 @layer base {
     * {
         @apply border-border;
+    }
+
+    html {
+        scrollbar-gutter: stable;
     }
 
     html,
@@ -384,6 +393,11 @@
     [data-slot='select-trigger'],
     [data-slot='date-picker-trigger'] {
         height: var(--control-height) !important;
+    }
+
+    .data-table [data-slot='input'],
+    .data-table [data-slot='select-trigger'] {
+        height: var(--action-height-sm) !important;
     }
 
     [data-slot='input']::placeholder,

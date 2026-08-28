@@ -83,8 +83,8 @@ type Props<T> = {
     pagination: DataTablePagination;
     query: DataTableQuery;
     searchPlaceholder?: string;
-    headerAction?: React.ReactNode;
     title?: string;
+    toolbarAction?: React.ReactNode;
 };
 
 export function DataTable<T>({
@@ -98,8 +98,8 @@ export function DataTable<T>({
     pagination,
     query,
     searchPlaceholder = 'Buscar…',
-    headerAction,
     title,
+    toolbarAction,
 }: Props<T>) {
     const [hiddenColumns, setHiddenColumns] = useState<Set<string>>(new Set());
     const visibleColumns = useMemo(
@@ -133,17 +133,14 @@ export function DataTable<T>({
     };
 
     return (
-        <Card>
-            {(title || description || headerAction) && (
+        <Card className="data-table">
+            {(title || description) && (
                 <CardHeader>
-                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                        <div className="flex flex-col gap-1.5">
-                            {title && <CardTitle>{title}</CardTitle>}
-                            {description && (
-                                <CardDescription>{description}</CardDescription>
-                            )}
-                        </div>
-                        {headerAction}
+                    <div className="flex flex-col gap-1.5">
+                        {title && <CardTitle>{title}</CardTitle>}
+                        {description && (
+                            <CardDescription>{description}</CardDescription>
+                        )}
                     </div>
                 </CardHeader>
             )}
@@ -217,45 +214,54 @@ export function DataTable<T>({
                         </div>
                     </div>
 
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                className="shrink-0"
-                            >
-                                <Settings2 data-icon="inline-start" />
-                                Ver
-                                <ChevronDown data-icon="inline-end" />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-48">
-                            <DropdownMenuLabel>
-                                Columnas visibles
-                            </DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuGroup>
-                                {columns
-                                    .filter(
-                                        (column) => column.hideable !== false,
-                                    )
-                                    .map((column) => (
-                                        <DropdownMenuCheckboxItem
-                                            key={column.id}
-                                            checked={
-                                                !hiddenColumns.has(column.id)
-                                            }
-                                            onCheckedChange={(checked) =>
-                                                toggleColumn(column.id, checked)
-                                            }
-                                        >
-                                            {column.label}
-                                        </DropdownMenuCheckboxItem>
-                                    ))}
-                            </DropdownMenuGroup>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                    <div className="flex shrink-0 items-center gap-2">
+                        {toolbarAction}
+
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                >
+                                    <Settings2 data-icon="inline-start" />
+                                    Ver
+                                    <ChevronDown data-icon="inline-end" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-48">
+                                <DropdownMenuLabel>
+                                    Columnas visibles
+                                </DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuGroup>
+                                    {columns
+                                        .filter(
+                                            (column) =>
+                                                column.hideable !== false,
+                                        )
+                                        .map((column) => (
+                                            <DropdownMenuCheckboxItem
+                                                key={column.id}
+                                                checked={
+                                                    !hiddenColumns.has(
+                                                        column.id,
+                                                    )
+                                                }
+                                                onCheckedChange={(checked) =>
+                                                    toggleColumn(
+                                                        column.id,
+                                                        checked,
+                                                    )
+                                                }
+                                            >
+                                                {column.label}
+                                            </DropdownMenuCheckboxItem>
+                                        ))}
+                                </DropdownMenuGroup>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
                 </div>
 
                 <div className="overflow-hidden rounded-[var(--radius-control)] border">
