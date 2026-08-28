@@ -813,3 +813,9 @@
   opcional para activar la ubicación. Las sugerencias genéricas de tipo de
   viaje/pernocta se rechazan tanto antes de persistir como al presentar
   mensajes históricos.
+
+## Dashboard ciclista simplificado — 2026-08-28
+
+- Se retiraron las tarjetas de accesos rápidos del dashboard; la navegación global conserva el acceso a los módulos.
+- La pantalla muestra una bienvenida y progreso real del usuario: recorridos finalizados, distancia acumulada y tiempo total. La agregación excluye recorridos no finalizados y actividad de otros usuarios.
+- Validación focalizada: 5 pruebas Pest / 34 aserciones, Pint, ESLint, Prettier y build Vite aprobados. `types:check` sigue bloqueado por cambios ajenos sin terminar en la transición de apariencia.

@@ -1,7 +1,6 @@
-import { Head, Link, usePage } from '@inertiajs/react';
-import { Bot, Heart, Map, Route } from 'lucide-react';
+import { Head, usePage } from '@inertiajs/react';
+import { Bike, Clock3, Route } from 'lucide-react';
 import Heading from '@/components/heading';
-import { Button } from '@/components/ui/button';
 import {
     Card,
     CardContent,
@@ -9,48 +8,23 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { cn } from '@/lib/utils';
-import { index as chatIndex } from '@/routes/chat';
-import { index as favoritesIndex } from '@/routes/favorites';
-import { index as mapsIndex } from '@/routes/maps';
-import { index as routesIndex } from '@/routes/routes';
 import type { Auth } from '@/types';
 
 type PageProps = {
     auth: Auth;
+    progress: {
+        completed_tracks: number;
+        distance_km: number;
+        total_time_seconds: number;
+    };
 };
 
-const quickActions = [
-    {
-        title: 'Explorar mapa',
-        description: 'Encuentra rutas, paradas y alertas cerca de ti.',
-        href: mapsIndex.url(),
-        icon: Map,
-        primary: true,
-    },
-    {
-        title: 'Ver rutas',
-        description: 'Busca el próximo recorrido.',
-        href: routesIndex.url(),
-        icon: Route,
-    },
-    {
-        title: 'Favoritas',
-        description: 'Retoma tus rutas guardadas.',
-        href: favoritesIndex.url(),
-        icon: Heart,
-    },
-    {
-        title: 'Explorar con IA',
-        description: 'Pide una recomendación para salir.',
-        href: chatIndex.url(),
-        icon: Bot,
-    },
-];
-
 export default function UserDashboard() {
-    const { auth } = usePage<PageProps>().props;
+    const { auth, progress } = usePage<PageProps>().props;
     const name = auth.user?.name ?? 'ciclista';
+    const distance = new Intl.NumberFormat('es-EC', {
+        maximumFractionDigits: 1,
+    }).format(progress.distance_km);
 
     return (
         <>
@@ -58,53 +32,64 @@ export default function UserDashboard() {
 
             <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
                 <Heading
-                    title={`Hola, ${name}`}
-                    description="¿A dónde quieres pedalear hoy?"
+                    title={`¡Bienvenido, ${name}!`}
+                    description="Qué bueno tenerte de vuelta. Cada recorrido suma a tu historia."
                 />
 
-                <section
-                    aria-label="Acciones rápidas"
-                    className="grid gap-4 sm:grid-cols-2"
-                >
-                    {quickActions.map((action) => {
-                        const Icon = action.icon;
-
-                        return (
-                            <Card
-                                key={action.title}
-                                className={cn(
-                                    action.primary && 'sm:col-span-2',
-                                )}
-                            >
-                                <CardHeader>
-                                    <Icon aria-hidden="true" />
-                                    <CardTitle>{action.title}</CardTitle>
-                                    <CardDescription>
-                                        {action.description}
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    <Button
-                                        asChild
-                                        className="w-full"
-                                        variant={
-                                            action.primary
-                                                ? 'default'
-                                                : 'outline'
-                                        }
-                                    >
-                                        <Link href={action.href} prefetch>
-                                            {action.primary
-                                                ? 'Abrir mapa'
-                                                : action.title}
-                                        </Link>
-                                    </Button>
-                                </CardContent>
-                            </Card>
-                        );
-                    })}
-                </section>
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Tu progreso</CardTitle>
+                        <CardDescription>
+                            Resumen de tus recorridos finalizados.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <dl className="grid grid-cols-3 divide-x divide-border">
+                            <div className="flex min-w-0 flex-col items-center gap-2 px-2 text-center">
+                                <dt className="flex items-center gap-1 text-[var(--fs-caption)] text-muted-foreground">
+                                    <Route aria-hidden="true" />
+                                    Recorridos
+                                </dt>
+                                <dd className="font-bold text-[var(--fs-lg)] text-foreground">
+                                    {progress.completed_tracks}
+                                </dd>
+                            </div>
+                            <div className="flex min-w-0 flex-col items-center gap-2 px-2 text-center">
+                                <dt className="flex items-center gap-1 text-[var(--fs-caption)] text-muted-foreground">
+                                    <Bike aria-hidden="true" />
+                                    Distancia
+                                </dt>
+                                <dd className="font-bold text-[var(--fs-lg)] text-foreground">
+                                    {distance} km
+                                </dd>
+                            </div>
+                            <div className="flex min-w-0 flex-col items-center gap-2 px-2 text-center">
+                                <dt className="flex items-center gap-1 text-[var(--fs-caption)] text-muted-foreground">
+                                    <Clock3 aria-hidden="true" />
+                                    Tiempo
+                                </dt>
+                                <dd className="font-bold text-[var(--fs-lg)] text-foreground">
+                                    {formatDuration(
+                                        progress.total_time_seconds,
+                                    )}
+                                </dd>
+                            </div>
+                        </dl>
+                    </CardContent>
+                </Card>
             </div>
         </>
     );
+}
+
+function formatDuration(totalSeconds: number): string {
+    const totalMinutes = Math.floor(totalSeconds / 60);
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+
+    if (hours === 0) {
+        return `${totalMinutes} min`;
+    }
+
+    return minutes === 0 ? `${hours} h` : `${hours} h ${minutes} min`;
 }

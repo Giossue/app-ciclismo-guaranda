@@ -41,9 +41,7 @@ export default function AppearanceCycleButton({
                     size="icon"
                     className={className}
                     aria-label={`Tema actual: ${current.label}. Cambiar a tema ${next.label}.`}
-                    onClick={(event) =>
-                        updateAppearance(next.value, event.currentTarget)
-                    }
+                    onClick={() => updateAppearance(next.value)}
                 >
                     <Icon />
                 </Button>

@@ -396,3 +396,8 @@ Notas:
 
 - Se retiró Boneyard, sus capturas y su configuración: la app mantiene los `Skeleton` locales de shadcn cuando una superficie concreta los requiere.
 - Los sheets se normalizan como paneles laterales derechos; los editores de rutas y POIs dejan de sobrescribir esa transición con una entrada desde abajo.
+
+## Dashboard ciclista simplificado 2026-08-28
+
+- La entrada `/user/dashboard` se limita a una bienvenida y un resumen de progreso personal; no repite accesos disponibles en la navegación global.
+- El progreso se obtiene de recorridos finalizados del usuario autenticado y presenta cantidad, distancia acumulada y tiempo total sin cargar puntos GPS ni historiales completos.

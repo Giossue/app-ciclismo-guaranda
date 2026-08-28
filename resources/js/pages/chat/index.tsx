@@ -74,8 +74,9 @@ import {
     stopSpeaking,
 } from '@/lib/native/speech';
 import { cn } from '@/lib/utils';
+import { dashboard } from '@/routes';
 import { index as chatIndex } from '@/routes/chat';
-import { index as routesIndex, show as routeShow } from '@/routes/routes';
+import { show as routeShow } from '@/routes/routes';
 import type { Auth } from '@/types';
 
 type ChatMessage = {
@@ -350,20 +351,12 @@ export default function ChatIndex({
                             asChild
                             className="shrink-0"
                         >
-                            <Link href={routesIndex.url()} prefetch>
+                            <Link href={dashboard.url()} prefetch>
                                 <ArrowLeft data-icon="inline-start" />
                                 Volver
                             </Link>
                         </Button>
-                        <div className="min-w-0 flex-1">
-                            <p className="text-xs text-muted-foreground">
-                                Guía local de Guaranda
-                            </p>
-                            <p className="truncate text-sm font-bold text-foreground">
-                                {activeConversation?.title ??
-                                    'Planifica tu próxima salida'}
-                            </p>
-                        </div>
+                        <div className="min-w-0 flex-1" />
                         <ChatOverflowMenu
                             conversations={conversations}
                             activeConversation={activeConversation}

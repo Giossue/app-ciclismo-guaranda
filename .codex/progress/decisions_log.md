@@ -358,7 +358,7 @@
 ## 2026-08-28 — Entrada del ciclista y navegación del explorador
 
 - `/dashboard` continúa siendo la entrada neutral por rol: para ciclistas redirige a `/user/dashboard`; para administradores conserva `/admin/dashboard`.
-- El dashboard ciclista no duplica métricas administrativas: concentra los accesos a mapa, rutas, favoritas y guía IA.
+- El dashboard ciclista no duplica accesos que ya existen en la navegación: muestra una bienvenida y el progreso personal acumulado desde recorridos finalizados (cantidad, distancia y tiempo).
 - El mapa es una superficie inmersiva con navegación local propia y una salida explícita al dashboard. Rutas y favoritas se consideran vistas derivadas del mapa y regresan a él mediante cierre explícito, sin navbar móvil global.
 - El detalle de una ruta también es inmersivo: no monta header, campana, sidebar ni navbar global. Al abrir un reporte de incidencia, la ficha de ruta se oculta y la sheet pasa a ser el único panel interactivo.
 

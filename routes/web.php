@@ -17,6 +17,7 @@ use App\Http\Controllers\Admin\SystemSettingsController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AppNotificationController;
 use App\Http\Controllers\Cyclist\ChatController;
+use App\Http\Controllers\Cyclist\DashboardController as CyclistDashboardController;
 use App\Http\Controllers\Cyclist\FavoriteRouteController;
 use App\Http\Controllers\Cyclist\IncidentController as CyclistIncidentController;
 use App\Http\Controllers\Cyclist\MapController as CyclistMapController;
@@ -29,7 +30,6 @@ use App\Http\Controllers\Cyclist\SyncController;
 use App\Http\Controllers\Cyclist\TrackController as CyclistTrackController;
 use App\Http\Controllers\DashboardRedirectController;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
 Route::inertia('/', 'welcome')->name('home');
 
@@ -37,7 +37,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', DashboardRedirectController::class)->name('dashboard');
 
     Route::prefix('user')->group(function () {
-        Route::get('dashboard', fn () => Inertia::render('user/dashboard'))->name('user.dashboard');
+        Route::get('dashboard', CyclistDashboardController::class)->name('user.dashboard');
         Route::get('maps', CyclistMapController::class)->name('maps.index');
         Route::get('notifications', [AppNotificationController::class, 'index'])->name('notifications.index');
         Route::patch('notifications/read-all', [AppNotificationController::class, 'markAllAsRead'])->name('notifications.read-all');

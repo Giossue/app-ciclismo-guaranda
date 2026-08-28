@@ -6,27 +6,11 @@ export type Appearance = ResolvedAppearance;
 export type UseAppearanceReturn = {
     readonly appearance: Appearance;
     readonly resolvedAppearance: ResolvedAppearance;
-    readonly updateAppearance: (
-        mode: Appearance,
-        origin?: HTMLElement | null,
-    ) => void;
+    readonly updateAppearance: (mode: Appearance) => void;
 };
 
 const listeners = new Set<() => void>();
 let currentAppearance: Appearance = 'light';
-
-type ViewTransition = {
-    ready: Promise<void>;
-    finished: Promise<void>;
-};
-
-type ViewTransitionDocument = Document & {
-    startViewTransition?: (update: () => void) => ViewTransition;
-};
-
-type ViewTransitionAnimationOptions = KeyframeAnimationOptions & {
-    pseudoElement: string;
-};
 
 const prefersDark = (): boolean => {
     if (typeof window === 'undefined') {
@@ -60,7 +44,7 @@ const getStoredAppearance = (): Appearance => {
     return prefersDark() ? 'dark' : 'light';
 };
 
-const applyTheme = (appearance: Appearance, updateColorScheme = true): void => {
+const applyTheme = (appearance: Appearance): void => {
     if (typeof document === 'undefined') {
         return;
     }
@@ -68,10 +52,7 @@ const applyTheme = (appearance: Appearance, updateColorScheme = true): void => {
     const isDark = appearance === 'dark';
 
     document.documentElement.classList.toggle('dark', isDark);
-
-    if (updateColorScheme) {
-        document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
-    }
+    document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
 };
 
 const subscribe = (callback: () => void) => {
@@ -100,92 +81,16 @@ export function useAppearance(): UseAppearanceReturn {
         () => 'light',
     );
 
-    const updateAppearance = (
-        mode: Appearance,
-        origin?: HTMLElement | null,
-    ): void => {
+    const updateAppearance = (mode: Appearance): void => {
         if (mode === currentAppearance) {
             return;
         }
 
-        const applyAppearance = (updateColorScheme = true): void => {
-            currentAppearance = mode;
-            localStorage.setItem('appearance', mode);
-            setCookie('appearance', mode);
-            applyTheme(mode, updateColorScheme);
-            notify();
-        };
-
-        const transitionDocument = document as ViewTransitionDocument;
-        const reduceMotion = window.matchMedia(
-            '(prefers-reduced-motion: reduce)',
-        ).matches;
-
-        if (
-            !origin ||
-            !transitionDocument.startViewTransition ||
-            reduceMotion
-        ) {
-            applyAppearance();
-
-            return;
-        }
-
-        const bounds = origin.getBoundingClientRect();
-        const x = bounds.left + bounds.width / 2;
-        const y = bounds.top + bounds.height / 2;
-        const radius = Math.hypot(
-            Math.max(x, window.innerWidth - x),
-            Math.max(y, window.innerHeight - y),
-        );
-        const root = document.documentElement;
-
-        root.style.setProperty('--theme-transition-x', `${x}px`);
-        root.style.setProperty('--theme-transition-y', `${y}px`);
-        root.classList.add('theme-transitioning');
-
-        let transition: ViewTransition;
-
-        try {
-            transition = transitionDocument.startViewTransition(() =>
-                applyAppearance(false),
-            );
-        } catch {
-            root.classList.remove('theme-transitioning');
-            root.style.removeProperty('--theme-transition-x');
-            root.style.removeProperty('--theme-transition-y');
-            applyAppearance();
-
-            return;
-        }
-
-        void transition.ready
-            .then(() => {
-                const revealAnimation = root.animate(
-                    {
-                        clipPath: [
-                            `circle(1px at ${x}px ${y}px)`,
-                            `circle(${radius}px at ${x}px ${y}px)`,
-                        ],
-                    },
-                    {
-                        duration: 1400,
-                        easing: 'cubic-bezier(0.45, 0, 0.2, 1)',
-                        fill: 'both',
-                        pseudoElement: '::view-transition-new(root)',
-                    } satisfies ViewTransitionAnimationOptions,
-                );
-
-                return revealAnimation.finished;
-            })
-            .catch(() => undefined);
-
-        void transition.finished.finally(() => {
-            root.style.colorScheme = mode;
-            root.classList.remove('theme-transitioning');
-            root.style.removeProperty('--theme-transition-x');
-            root.style.removeProperty('--theme-transition-y');
-        });
+        currentAppearance = mode;
+        localStorage.setItem('appearance', mode);
+        setCookie('appearance', mode);
+        applyTheme(mode);
+        notify();
     };
 
     return {
