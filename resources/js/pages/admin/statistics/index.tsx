@@ -6,9 +6,9 @@ import {
     Eye,
     Star,
     TriangleAlert,
+    X,
 } from 'lucide-react';
 import { useState } from 'react';
-import type { FormEvent } from 'react';
 import {
     Area,
     AreaChart,
@@ -50,7 +50,7 @@ import {
     EmptyMedia,
     EmptyTitle,
 } from '@/components/ui/empty';
-import { Field, FieldGroup, FieldLabel } from '@/components/ui/field';
+import { Field, FieldLabel } from '@/components/ui/field';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
     Table,
@@ -174,13 +174,23 @@ export default function AdminStatisticsIndex({
         0,
     );
 
-    const submit = (event: FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
+    /** Cada cambio de fecha recarga el análisis, sin botón de por medio. */
+    const applyRange = (nextFrom: string, nextTo: string) => {
+        setFrom(nextFrom);
+        setTo(nextTo);
 
-        router.get(StatisticsController.index.url(), query, {
-            preserveScroll: true,
-            preserveState: true,
-        });
+        router.get(
+            StatisticsController.index.url(),
+            {
+                from: nextFrom || undefined,
+                to: nextTo || undefined,
+            },
+            {
+                preserveScroll: true,
+                preserveState: true,
+                replace: true,
+            },
+        );
     };
 
     return (
@@ -188,49 +198,60 @@ export default function AdminStatisticsIndex({
             <Head title="Estadísticas" />
 
             <div className="flex flex-col gap-6">
-                <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
-                    <Heading
-                        title="Análisis operativo"
-                        description="Uso, actividad offline y calidad de las rutas en el período seleccionado."
-                    />
+                <Heading
+                    title="Análisis operativo"
+                    description="Uso, actividad offline y calidad de las rutas en el período seleccionado."
+                />
 
-                    <form onSubmit={submit} className="w-full xl:w-auto">
-                        <FieldGroup className="grid gap-3 sm:grid-cols-3 sm:items-end">
-                            <Field>
-                                <FieldLabel htmlFor="from">Desde</FieldLabel>
-                                <DatePicker
-                                    id="from"
-                                    value={from}
-                                    onChange={setFrom}
-                                />
-                            </Field>
-                            <Field>
-                                <FieldLabel htmlFor="to">Hasta</FieldLabel>
-                                <DatePicker
-                                    id="to"
-                                    value={to}
-                                    onChange={setTo}
-                                />
-                            </Field>
-                            <div className="flex gap-2 sm:pb-px">
-                                <Button type="submit" className="flex-1">
-                                    <BarChart3 data-icon="inline-start" />
-                                    Actualizar
-                                </Button>
-                                <Button variant="outline" size="icon" asChild>
-                                    <a
-                                        href={StatisticsController.export.url({
-                                            query,
-                                        })}
-                                        aria-label="Exportar estadísticas en CSV"
-                                    >
-                                        <Download />
-                                    </a>
-                                </Button>
-                            </div>
-                        </FieldGroup>
-                    </form>
-                </div>
+                {/* Mismo patrón que los filtros de las tablas: se aplican al elegir. */}
+                <Card>
+                    <CardContent className="flex flex-col gap-3 lg:flex-row lg:items-end">
+                        <Field className="lg:max-w-48">
+                            <FieldLabel htmlFor="from">Desde</FieldLabel>
+                            <DatePicker
+                                id="from"
+                                value={from}
+                                onChange={(value) => applyRange(value, to)}
+                            />
+                        </Field>
+                        <Field className="lg:max-w-48">
+                            <FieldLabel htmlFor="to">Hasta</FieldLabel>
+                            <DatePicker
+                                id="to"
+                                value={to}
+                                onChange={(value) => applyRange(from, value)}
+                            />
+                        </Field>
+
+                        {(from || to) && (
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => applyRange('', '')}
+                            >
+                                <X data-icon="inline-start" />
+                                Limpiar
+                            </Button>
+                        )}
+
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            asChild
+                            className="lg:ml-auto"
+                        >
+                            <a
+                                href={StatisticsController.export.url({
+                                    query,
+                                })}
+                            >
+                                <Download data-icon="inline-start" />
+                                Exportar CSV
+                            </a>
+                        </Button>
+                    </CardContent>
+                </Card>
 
                 <section
                     aria-label="Resumen del período"
