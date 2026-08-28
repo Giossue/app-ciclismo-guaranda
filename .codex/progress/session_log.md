@@ -780,6 +780,13 @@
 - El explorador mantiene su navbar local y agrega una salida al dashboard. Rutas y favoritas ahora regresan al mapa con una X y ocultan la navbar móvil global.
 - Validación focalizada: 26 pruebas Pest / 59 aserciones; Pint, TypeScript, ESLint, Prettier y build Vite aprobados.
 
+## 2026-08-28 — Jerarquía del detalle de ruta y reporte de alerta
+
+- El detalle de ruta dejó de montarse bajo el header/sidebar global; mapa y ficha ocupan un único viewport inmersivo.
+- La sheet de alerta cubre completamente el móvil, queda por encima de Leaflet y desmonta temporalmente la ficha inferior para evitar dos paneles activos.
+- El reporte ordena tipo, descripción, ubicación y foto; “Mi ubicación” aparece antes del selector cartográfico.
+- Validación aprobada: 9 pruebas Pest / 114 aserciones, TypeScript, ESLint, Prettier, build Vite y revisión de diff.
+
 ## 2026-08-28 — Chat móvil inmersivo
 
 - En `/chat` se oculta la navegación inferior móvil y el contenido usa la
