@@ -60,7 +60,7 @@ const getStoredAppearance = (): Appearance => {
     return prefersDark() ? 'dark' : 'light';
 };
 
-const applyTheme = (appearance: Appearance): void => {
+const applyTheme = (appearance: Appearance, updateColorScheme = true): void => {
     if (typeof document === 'undefined') {
         return;
     }
@@ -68,7 +68,10 @@ const applyTheme = (appearance: Appearance): void => {
     const isDark = appearance === 'dark';
 
     document.documentElement.classList.toggle('dark', isDark);
-    document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
+
+    if (updateColorScheme) {
+        document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
+    }
 };
 
 const subscribe = (callback: () => void) => {
@@ -105,11 +108,11 @@ export function useAppearance(): UseAppearanceReturn {
             return;
         }
 
-        const applyAppearance = (): void => {
+        const applyAppearance = (updateColorScheme = true): void => {
             currentAppearance = mode;
             localStorage.setItem('appearance', mode);
             setCookie('appearance', mode);
-            applyTheme(mode);
+            applyTheme(mode, updateColorScheme);
             notify();
         };
 
@@ -137,32 +140,51 @@ export function useAppearance(): UseAppearanceReturn {
         );
         const root = document.documentElement;
 
+        root.style.setProperty('--theme-transition-x', `${x}px`);
+        root.style.setProperty('--theme-transition-y', `${y}px`);
         root.classList.add('theme-transitioning');
 
-        const transition =
-            transitionDocument.startViewTransition(applyAppearance);
+        let transition: ViewTransition;
+
+        try {
+            transition = transitionDocument.startViewTransition(() =>
+                applyAppearance(false),
+            );
+        } catch {
+            root.classList.remove('theme-transitioning');
+            root.style.removeProperty('--theme-transition-x');
+            root.style.removeProperty('--theme-transition-y');
+            applyAppearance();
+
+            return;
+        }
 
         void transition.ready
             .then(() => {
-                root.animate(
+                const revealAnimation = root.animate(
                     {
                         clipPath: [
-                            `circle(0 at ${x}px ${y}px)`,
+                            `circle(1px at ${x}px ${y}px)`,
                             `circle(${radius}px at ${x}px ${y}px)`,
                         ],
                     },
                     {
-                        duration: 700,
-                        easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
+                        duration: 1400,
+                        easing: 'cubic-bezier(0.45, 0, 0.2, 1)',
                         fill: 'both',
                         pseudoElement: '::view-transition-new(root)',
                     } satisfies ViewTransitionAnimationOptions,
                 );
+
+                return revealAnimation.finished;
             })
             .catch(() => undefined);
 
         void transition.finished.finally(() => {
+            root.style.colorScheme = mode;
             root.classList.remove('theme-transitioning');
+            root.style.removeProperty('--theme-transition-x');
+            root.style.removeProperty('--theme-transition-y');
         });
     };
 

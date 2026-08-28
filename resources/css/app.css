@@ -520,12 +520,26 @@
     mix-blend-mode: normal;
 }
 
+::view-transition-group(root) {
+    animation: none;
+}
+
+::view-transition-image-pair(root) {
+    isolation: auto;
+}
+
 ::view-transition-old(root) {
     z-index: 0;
 }
 
 ::view-transition-new(root) {
     z-index: 1;
+}
+
+html.theme-transitioning::view-transition-new(root) {
+    clip-path: circle(
+        1px at var(--theme-transition-x) var(--theme-transition-y)
+    );
 }
 
 .theme-transitioning *,

@@ -23,7 +23,7 @@ export default function AuthClassicLayout({ children }: AuthLayoutProps) {
             <div
                 className={cn(
                     'flex w-full max-w-sm flex-col md:max-w-md',
-                    isLogin ? 'lg:max-w-5xl' : 'lg:max-w-3xl',
+                    isLogin ? 'lg:max-w-6xl' : 'lg:max-w-3xl',
                 )}
             >
                 {children}

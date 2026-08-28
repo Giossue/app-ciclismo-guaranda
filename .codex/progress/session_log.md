@@ -523,3 +523,19 @@
 - Se conservaron las 12 primitives shadcn personalizadas que el registry ofrecía sobrescribir y se añadieron únicamente las primitives faltantes.
 - Se adaptaron las APIs locales de Button, Badge y Dialog, se corrigieron actualizaciones de estado durante render provenientes del registry, se localizaron los defaults y se mantuvieron visibles las acciones táctiles de adjuntos.
 - Validaciones aprobadas: instalación reproducible con `npm ci`, ESLint focalizado, TypeScript, Prettier, build Vite y `git diff --check`. `npm audit --omit=dev` conserva 3 alertas altas en cadenas ya existentes de `concurrently`/`shell-quote` y PostCSS; ninguna dependencia directa nueva de AI Elements aparece señalada.
+
+## 2026-08-27 — Catálogo responsive de rutas y favoritas
+
+- Se eliminaron el ancho de tableta y la tarjeta destacada de la vista de rutas; el contenido ahora ocupa el shell y usa una retícula uniforme de 1/2/3 columnas.
+- Filtros y selector Rutas/Mapa conservan el centro visual y el desplazamiento táctil en móvil.
+- Se creó `CatalogPagination` con el patrón de contador, página y controles del administrador; rutas y favoritas generan sus URLs con Wayfinder.
+- Favoritos ahora muestra portada y cards equivalentes al catálogo, con acción pendiente al quitar y un empty state accionable.
+- Validaciones aprobadas: Pint, TypeScript, ESLint, Prettier, build Vite y 6 pruebas focalizadas de rutas/mapa/favoritos (79 aserciones). La suite completa de favoritos no se ejecutó porque el entorno carece de GD; el escenario modificado pasó con una clave de aplicación efímera.
+
+## 2026-08-27 — Login más amplio y transición de tema estable
+
+- El login desktop pasó a `max-w-6xl`, columnas equilibradas, introducción centrada, padding horizontal mayor y radio `radius-map`; móvil conserva 27 px de margen por lado a 390 px sin overflow.
+- La transición circular pasó a 1,4 segundos con curva progresiva; se anuló la animación implícita del grupo y se difirió `color-scheme` hasta el final para eliminar el parpadeo.
+- Tras detectar un frame oscuro completo antes de la onda, se adelantó el `clip-path` inicial a CSS usando coordenadas escritas antes de `startViewTransition`. La primera muestra a 7 ms ya permanece recortada a 1 px y el tema nuevo comienza a expandirse desde 68 ms.
+- Se verificó visualmente en Chrome a 1440×900 y 390×844. Las capturas intermedias a 180 y 500 ms mostraron una onda continua desde el botón, sin crossfade global.
+- Validaciones aprobadas: TypeScript, ESLint, Prettier y build Vite. Laravel y Vite locales continúan respondiendo HTTP 200.

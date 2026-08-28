@@ -44,7 +44,7 @@ export default function Login({ status, canResetPassword }: Props) {
 
             <Card
                 aria-labelledby="login-title"
-                className="w-full gap-0 overflow-hidden py-0 lg:grid lg:min-h-[34rem] lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]"
+                className="w-full gap-0 overflow-hidden rounded-[var(--radius-map)] py-0 lg:grid lg:min-h-[34rem] lg:grid-cols-2"
             >
                 <section className="relative hidden overflow-hidden bg-[var(--map-background)] p-10 text-inverse-foreground lg:flex lg:flex-col lg:justify-between">
                     <LoginTerrain />
@@ -80,7 +80,7 @@ export default function Login({ status, canResetPassword }: Props) {
                 </section>
 
                 <section className="flex min-w-0 flex-col justify-center py-6 sm:py-8 lg:py-10">
-                    <CardHeader className="items-center px-5 text-center sm:px-8 lg:items-start lg:px-10 lg:text-left">
+                    <CardHeader className="items-center px-5 text-center sm:px-8 lg:px-12">
                         <Link
                             href={home()}
                             className="mb-2 flex items-center gap-2 rounded-md text-foreground outline-none lg:hidden"
@@ -94,13 +94,13 @@ export default function Login({ status, canResetPassword }: Props) {
                         <CardTitle>
                             <h1 id="login-title">Bienvenido de nuevo</h1>
                         </CardTitle>
-                        <CardDescription className="max-w-sm">
+                        <CardDescription className="max-w-md text-balance">
                             Ingresa tus credenciales para continuar tu próxima
                             aventura en bicicleta.
                         </CardDescription>
                     </CardHeader>
 
-                    <CardContent className="mt-5 px-5 sm:px-8 lg:px-10">
+                    <CardContent className="mt-5 px-5 sm:px-8 lg:px-12">
                         <Form
                             {...store.form()}
                             resetOnSuccess={['password']}
@@ -221,7 +221,7 @@ export default function Login({ status, canResetPassword }: Props) {
                         </Form>
                     </CardContent>
 
-                    <CardFooter className="mt-5 justify-center px-5 sm:px-8 lg:px-10">
+                    <CardFooter className="mt-5 justify-center px-5 sm:px-8 lg:px-12">
                         <FieldDescription className="text-center">
                             ¿Aún no tienes una cuenta?{' '}
                             <Link href={register()}>Crear cuenta</Link>

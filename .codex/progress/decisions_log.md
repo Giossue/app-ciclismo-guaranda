@@ -219,6 +219,20 @@
 - La ubicación compartida con el asistente es transitoria (`latitude`, `longitude`, `accuracy_m`, `recorded_at`) y se envía al webhook n8n sin guardarse en `conversaciones_ia` ni `mensajes_ia`.
 - `buscar_rutas` debe tolerar consultas genéricas: si `query` no devuelve resultados, Laravel responde rutas activas generales para que el agente aún pueda recomendar sin inventar.
 
+## 2026-08-27 — Retícula de rutas del ciclista
+
+- El catálogo de rutas no usa una tarjeta destacada que cambie la escala del primer resultado; todas las rutas mantienen la misma jerarquía para facilitar comparación y aprovechar el escritorio.
+- La retícula responsive queda en 1/2/3 columnas para móvil/tablet/laptop y ocupa el ancho disponible del shell sin el límite histórico de 760 px.
+- La paginación de catálogos replica el patrón operativo del administrador y se implementa como componente compartido para rutas y favoritas.
+- La portada forma parte del contrato de favoritas; se expone solo el path ya autorizado que consume `mediaUrl`, sin modificar permisos ni almacenamiento.
+
+## 2026-08-27 — Refinamiento de login y onda de tema
+
+- El ancho y radio mayores se aplican solo al login de escritorio; no se modifica la escala global de superficies ni el ancho del registro.
+- La introducción del formulario permanece centrada en todos los breakpoints, mientras labels y campos conservan alineación de lectura a la izquierda.
+- La onda de tema usa una curva de entrada progresiva de 1,4 segundos. El `color-scheme` nativo se difiere hasta el cierre de la transición para que scrollbar y controles no cambien antes que la superficie visible.
+- El estado inicial del pseudo-elemento nuevo se define en CSS con coordenadas preparadas antes de `startViewTransition`; JavaScript anima desde ese mismo círculo. Esto elimina la carrera de un frame donde el tema nuevo podía aparecer completo antes del recorte.
+
 ## 2026-07-02 — Modelo IA generando texto corrupto (glitch tokens)
 
 - Se detectó que el nodo `ia` de n8n (modelo configurado como `"gpt-5.4"`, no es un modelo oficial de OpenAI) genera texto de salida con basura mezclada: sintaxis de tool-call filtrada como texto plano (`to=functions.rutas ... json\n{...}`) y tokens en chino/tailandés/malabar tipo spam de casino, intercalados dentro de la llamada a la tool.\n- La respuesta final visible para el usuario seguía siendo correcta porque el texto limpio queda al final del string, después del último bloque `to=functions...{...}`.\n- Causa raíz: el modelo/endpoint configurado no es un modelo oficial confiable; probablemente un proxy o alias de un modelo cuantizado/contaminado. No es un bug de Laravel ni de los endpoints `/api/agent/*`.\n- Mitigación aplicada (band-aid, no soluciona la causa raíz): se reforzó el nodo `Normalizar respuesta` en `.codex/project/n8n_workflow.md` para detectar el patrón `to=functions.NOMBRE` y quedarse solo con el texto posterior al último bloque de ese tipo, antes de aplicar el parseo de JSON existente.\n- Recomendación pendiente para el usuario: cambiar el modelo configurado en el nodo `ia` por un modelo real y confiable (ej. un modelo oficial de OpenAI o un endpoint de DeepSeek verificado), ya que el parche solo esconde el síntoma.\n
