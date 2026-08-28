@@ -371,3 +371,9 @@ Notas:
 - El encabezado incorpora un botón de icono permanente que alterna únicamente entre tema claro y oscuro; conserva la preferencia explícita mediante el hook de apariencia y revela el nuevo tema con una onda circular que nace en el control.
 - El hero usa tokens semánticos de contenido inverso para conservar contraste sobre su superficie oscura en ambos modos.
 - Las tarjetas siguen una estructura homogénea de icono, etiqueta, título y descripción; se retiraron el icono de escudo redundante, las notas de pie y etiquetas decorativas del hero.
+
+## Base visual para el futuro agente 2026-08-27
+
+- AI Elements queda instalado como código fuente bajo `resources/js/components/ai-elements/`, sin sustituir todavía el chat Inertia ni modificar la frontera Laravel → n8n.
+- La base disponible cubre conversación, mensajes, prompt, adjuntos, sugerencias, fuentes, razonamiento, tools y confirmaciones. La integración se realizará cuando exista el nuevo contrato del agente.
+- Las primitives shadcn personalizadas no se sobrescriben; cualquier actualización futura parte de un dry-run y un diff del registry `@ai-elements`.

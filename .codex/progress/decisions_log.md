@@ -184,6 +184,13 @@
 - Dokploy realiza el despliegue por su detección nativa de `push`; el flujo habitual no depende de GitHub Actions como condición previa.
 - `android-apk`, `tests` y `linter` se conservan para ejecución manual mediante `workflow_dispatch`, sin checks automáticos en pushes ni pull requests mientras esta decisión esté activa.
 
+## 2026-08-27 — AI Elements desacoplado del proveedor
+
+- AI Elements se incorpora exclusivamente como biblioteca fuente de interfaz; no reemplaza n8n, no modifica endpoints y no introduce todavía `useChat` en la pantalla existente.
+- Se instala un conjunto acotado para conversación, mensajes, prompt, adjuntos, sugerencias, fuentes, razonamiento, tools y confirmaciones. No se instala el catálogo completo.
+- La futura integración depende del contrato que entregue el nuevo backend del agente. Hasta entonces los componentes permanecen compilables, localizados y sin consumidores de producción.
+- Las primitives locales de shadcn tienen prioridad sobre el registry externo y no se sobrescriben durante instalación o actualización.
+
 ## 2026-07-01 — Historial local posterior a n8n
 
 - Decisión: Laravel puede persistir `conversaciones_ia`/`mensajes_ia` después de que n8n responda, para mostrar historial en la app sin guardar mensajes al momento de escribir.

@@ -4,6 +4,7 @@
 | --- | --- |
 | n8n | Laravel actúa como proxy del webhook. n8n ejecuta el agente, memoria y clima; frontend/APK no conocen webhook ni token. |
 | Tools del agente | `/api/agent/*` usa token servidor-a-servidor y devuelve solo datos autorizados. |
+| AI Elements | Biblioteca fuente de UI preparada pero todavía desacoplada del chat. No cambia n8n ni decide el futuro transporte del agente. |
 | OpenTopoData | Servicio Laravel configurable por entorno; nunca petición directa desde frontend/APK. |
 | Mapas/rutas | Leaflet y OSM/Nominatim se encapsulan en UI/servicios; validar la API actual antes de cambiarla. |
 | Capacitor | Adaptadores nativos con fallback web y prueba real Android para GPS, cámara, SQLite, archivos y notificaciones. |

@@ -515,3 +515,11 @@
 - El nuevo tema se expande desde el control pulsado mediante una revelación circular de 700 ms. Navegadores sin View Transitions y usuarios con movimiento reducido reciben un cambio inmediato y funcional.
 - Se mantuvo el preprocesado de tema en Blade para evitar destellos al cargar y se unificó el selector de ajustes con `ToggleGroup` de shadcn.
 - Se verificó visualmente la onda claro/oscuro en viewport móvil y de escritorio, además de la migración de `system` y el comportamiento con movimiento reducido.
+
+## 2026-08-27 — Preparación de AI Elements
+
+- Se registró `@ai-elements` y se añadieron `attachments`, `conversation`, `message`, `prompt-input`, `suggestion`, `sources`, `reasoning`, `tool` y `confirmation`, además de sus componentes internos.
+- El código quedó bajo `resources/js/components/ai-elements/`; no se conectó a la página de chat, no se cambió el controlador Laravel y no se tocó n8n.
+- Se conservaron las 12 primitives shadcn personalizadas que el registry ofrecía sobrescribir y se añadieron únicamente las primitives faltantes.
+- Se adaptaron las APIs locales de Button, Badge y Dialog, se corrigieron actualizaciones de estado durante render provenientes del registry, se localizaron los defaults y se mantuvieron visibles las acciones táctiles de adjuntos.
+- Validaciones aprobadas: instalación reproducible con `npm ci`, ESLint focalizado, TypeScript, Prettier, build Vite y `git diff --check`. `npm audit --omit=dev` conserva 3 alertas altas en cadenas ya existentes de `concurrently`/`shell-quote` y PostCSS; ninguna dependencia directa nueva de AI Elements aparece señalada.
