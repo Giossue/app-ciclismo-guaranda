@@ -1,6 +1,6 @@
 import { Link, router, usePage } from '@inertiajs/react';
 import type { LucideIcon } from 'lucide-react';
-import { LogOut, Palette, ShieldCheck, UserRound } from 'lucide-react';
+import { LogOut, ShieldCheck, UserRound } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { useSidebar } from '@/components/ui/sidebar';
 import { useCurrentUrl } from '@/hooks/use-current-url';
@@ -32,12 +32,6 @@ const accountItems: AccountItem[] = [
         description: 'Contraseña y acceso',
         href: '/settings/security',
         icon: ShieldCheck,
-    },
-    {
-        title: 'Apariencia',
-        description: 'Tema de la app',
-        href: '/settings/appearance',
-        icon: Palette,
     },
 ];
 
