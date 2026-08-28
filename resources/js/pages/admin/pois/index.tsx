@@ -82,6 +82,7 @@ export default function AdminPoisIndex({ categories, filters, pois }: Props) {
         {
             id: 'category',
             label: 'Categoría',
+            mobileCell: (poi) => poi.category?.name ?? 'Sin categoría',
             cell: (poi) =>
                 poi.category ? (
                     <Badge variant="outline">{poi.category.name}</Badge>
@@ -92,6 +93,10 @@ export default function AdminPoisIndex({ categories, filters, pois }: Props) {
         {
             id: 'routes',
             label: 'Rutas',
+            mobileCell: (poi) =>
+                poi.routes.length > 0
+                    ? poi.routes.map((route) => route.name).join(', ')
+                    : 'Sin rutas asociadas',
             cellClassName: 'max-w-xs whitespace-normal',
             cell: (poi) =>
                 poi.routes.length > 0 ? (

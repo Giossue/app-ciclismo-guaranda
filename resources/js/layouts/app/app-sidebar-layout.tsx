@@ -3,6 +3,7 @@ import { AppMobileNav } from '@/components/app-mobile-nav';
 import { AppShell } from '@/components/app-shell';
 import { AppSidebar } from '@/components/app-sidebar';
 import { AppSidebarHeader } from '@/components/app-sidebar-header';
+import { PullToRefresh } from '@/components/pull-to-refresh';
 import type { AppLayoutProps } from '@/types';
 
 export default function AppSidebarLayout({
@@ -20,6 +21,7 @@ export default function AppSidebarLayout({
                 // hace `body`.
                 className="min-w-0"
             >
+                <PullToRefresh />
                 <AppSidebarHeader breadcrumbs={breadcrumbs} />
                 <main className="safe-bottom-pad ueb-admin-page flex flex-1 flex-col gap-[var(--page-gap)] px-[var(--page-pad-x)] pt-[var(--page-pad-y)] md:pb-[var(--page-pad-y)]">
                     {children}

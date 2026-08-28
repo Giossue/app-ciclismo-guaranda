@@ -70,6 +70,8 @@ export default function AdminPoiSuggestionsIndex({
         {
             id: 'category',
             label: 'Categoría',
+            mobileCell: (suggestion) =>
+                suggestion.category?.name ?? 'Sin categoría',
             cell: (suggestion) =>
                 suggestion.category ? (
                     <Badge variant="outline">{suggestion.category.name}</Badge>

@@ -117,6 +117,7 @@ export default function AdminUsersIndex({
         {
             id: 'role',
             label: 'Rol',
+            mobileCell: (user) => user.role?.name ?? 'Sin rol',
             cell: (user) =>
                 user.role ? (
                     <Badge variant="outline">{user.role.name}</Badge>

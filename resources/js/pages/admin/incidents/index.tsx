@@ -138,6 +138,7 @@ export default function AdminIncidentsIndex({
         {
             id: 'type',
             label: 'Tipo',
+            mobileCell: (incident) => incident.type?.name ?? 'Sin tipo',
             cell: (incident) =>
                 incident.type ? (
                     <Badge variant="outline">{incident.type.name}</Badge>

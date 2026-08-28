@@ -8,7 +8,7 @@ import {
     Settings2,
     X,
 } from 'lucide-react';
-import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -57,6 +57,11 @@ export type DataTableColumn<T> = {
     hideable?: boolean;
     headerClassName?: string;
     cellClassName?: string;
+    /**
+     * Contenido alternativo para la tarjeta móvil. Sirve para bajar el ruido:
+     * una taxonomía que en la tabla es badge aquí se lee mejor en texto plano.
+     */
+    mobileCell?: (row: T) => React.ReactNode;
     /** En móvil encabeza la tarjeta. Por defecto, la primera columna. */
     primary?: boolean;
     /** En móvil va al extremo de la cabecera. Por defecto, la columna `actions`. */
@@ -331,16 +336,22 @@ export function DataTable<T>({
                                 </div>
 
                                 {detailColumns.length > 0 && (
-                                    <dl className="grid grid-cols-[minmax(0,auto)_minmax(0,1fr)] gap-x-3 gap-y-1.5 border-t pt-3">
+                                    <dl className="flex flex-col gap-1.5 border-t pt-3">
                                         {detailColumns.map((column) => (
-                                            <Fragment key={column.id}>
-                                                <dt className="text-xs text-muted-foreground">
+                                            <div
+                                                key={column.id}
+                                                className="flex items-baseline justify-between gap-4"
+                                            >
+                                                <dt className="shrink-0 text-xs text-muted-foreground">
                                                     {column.label}
                                                 </dt>
-                                                <dd className="min-w-0 text-sm">
-                                                    {column.cell(row)}
+                                                <dd className="min-w-0 text-right text-sm text-foreground">
+                                                    {(
+                                                        column.mobileCell ??
+                                                        column.cell
+                                                    )(row)}
                                                 </dd>
-                                            </Fragment>
+                                            </div>
                                         ))}
                                     </dl>
                                 )}

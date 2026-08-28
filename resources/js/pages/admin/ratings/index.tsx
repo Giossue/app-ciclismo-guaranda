@@ -150,6 +150,7 @@ export default function AdminRatingsIndex({
         {
             id: 'score',
             label: 'Puntuación',
+            mobileCell: (rating) => `${rating.rating}/5`,
             cell: (rating) => (
                 <Badge variant="outline">
                     <Star data-icon="inline-start" />

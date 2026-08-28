@@ -299,6 +299,8 @@
          * barra y compensa con margen igual, desplazando la página.
          */
         overflow-x: hidden;
+        /* El refresco al deslizar es propio: se evita el del navegador. */
+        overscroll-behavior-y: contain;
         background:
             radial-gradient(
                 circle at 12% -8%,
