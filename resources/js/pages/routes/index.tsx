@@ -55,10 +55,7 @@ export default function RoutesIndex({
                             content: (
                                 <Card className="overflow-hidden">
                                     <CardHeader>
-                                        <Badge
-                                            variant="outline"
-                                            className="w-fit"
-                                        >
+                                        <Badge variant="outline">
                                             <RouteIcon data-icon="inline-start" />
                                             Mapa
                                         </Badge>
