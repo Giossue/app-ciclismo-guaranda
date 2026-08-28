@@ -273,3 +273,7 @@
 ## 2026-08-28 — Tipografía Arial como base visual
 
 - Arial pasa a ser la tipografía principal de interfaz y de títulos, con Helvetica/sans-serif como respaldo. Se retira la importación de Inter Variable para evitar una apariencia demasiado pesada y una descarga de fuente innecesaria.
+
+## 2026-08-28 — Readiness rápida y segura en Docker
+
+- Se conserva la espera de PHP-FPM y el health check `/up` para no reintroducir 502 durante los despliegues. En Docker Engine 29, el health check sondea cada 2 s solo durante el periodo de arranque y pasa a su intervalo normal de 10 s tras el primer éxito.

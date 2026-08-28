@@ -607,3 +607,7 @@
 ## 2026-08-28 — Tipografía base Arial
 
 - Se reemplazó Inter Variable como fuente principal por Arial con respaldo Helvetica/sans-serif y se retiró su importación del CSS. La apariencia general reduce el peso percibido sin modificar la jerarquía semántica de títulos y acciones.
+
+## 2026-08-28 — Ajuste de readiness del despliegue
+
+- Se mantuvo la protección contra 502 de Nginx/PHP-FPM y se redujo la primera comprobación de salud de Docker a 2 s durante el arranque; tras estar sano, el chequeo vuelve al intervalo de 10 s.
