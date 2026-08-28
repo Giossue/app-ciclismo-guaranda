@@ -531,3 +531,8 @@
 - Se añadió al encabezado de la landing un botón de icono que cicla claro, oscuro y sistema con la preferencia persistente existente.
 - Se corrigió el contraste del hero oscuro mediante tokens semánticos inversos, se eliminó el contenedor visual del logo, las etiquetas decorativas y las notas inferiores.
 - La tarjeta de preparación se compuso con la misma estructura de icono, etiqueta, título y descripción del resto, sin icono de escudo adicional.
+
+## 2026-08-27 — Información técnica administrativa
+
+- La antigua configuración administrativa pasó a `/settings`: muestra todos los estados técnicos en una sola vista, sin tabs ni navegación secundaria.
+- `/admin/settings` se conserva únicamente como redirección protegida para enlaces previos; la pantalla no expone secretos, credenciales ni URLs privadas.

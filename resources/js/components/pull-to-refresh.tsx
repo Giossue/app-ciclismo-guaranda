@@ -106,9 +106,7 @@ export function PullToRefresh() {
             // Corta el rebote nativo solo mientras el gesto está activo.
             event.preventDefault();
             setDragging(true);
-            updateDistance(
-                Math.min(deltaY * DRAG_RESISTANCE, MAX_DISTANCE),
-            );
+            updateDistance(Math.min(deltaY * DRAG_RESISTANCE, MAX_DISTANCE));
         };
 
         const handleTouchEnd = () => {

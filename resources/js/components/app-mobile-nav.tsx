@@ -8,17 +8,17 @@ import type { Auth } from '@/types';
 
 type PageProps = {
     auth: Auth;
-    notifications?: {
+    notificationCenter?: {
         unread_count?: number;
     };
 };
 
 export function AppMobileNav() {
-    const { auth, notifications } = usePage<PageProps>().props;
+    const { auth, notificationCenter } = usePage<PageProps>().props;
     const { isCurrentUrl } = useCurrentUrl();
     const { openMobile, setOpenMobile } = useSidebar();
     const primaryItems = mobilePrimaryNavItems(auth);
-    const unreadCount = notifications?.unread_count ?? 0;
+    const unreadCount = notificationCenter?.unread_count ?? 0;
 
     if (!auth.user) {
         return null;

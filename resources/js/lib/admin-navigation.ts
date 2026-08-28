@@ -14,6 +14,7 @@ import {
 import PoiController from '@/actions/App/Http/Controllers/Admin/PoiController';
 import PoiReportController from '@/actions/App/Http/Controllers/Admin/PoiReportController';
 import PoiSuggestionController from '@/actions/App/Http/Controllers/Admin/PoiSuggestionController';
+import SystemSettingsController from '@/actions/App/Http/Controllers/Admin/SystemSettingsController';
 import type { NavItem } from '@/types';
 
 export const adminNavItems: NavItem[] = [
@@ -81,8 +82,8 @@ export const adminNavItems: NavItem[] = [
         icon: BarChart3,
     },
     {
-        title: 'Configuración',
-        href: '/admin/settings',
+        title: 'Información técnica',
+        href: SystemSettingsController(),
         icon: Settings,
     },
 ];

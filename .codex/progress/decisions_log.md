@@ -1,5 +1,10 @@
 # Registro de decisiones
 
+## 2026-08-27 — Información técnica administrativa
+
+- El estado técnico de Guaranda Go se publica únicamente en `/settings`, protegido por `auth`, `verified`, rol administrador y la Policy de usuarios; `/admin/settings` queda como redirección compatible bajo la misma protección.
+- La pantalla presenta todos los grupos de estado consecutivamente en una sola vista, sin tabs ni navegación secundaria. Expone estados y nombres de drivers, nunca secretos, credenciales ni URLs privadas de integraciones.
+
 ## 2026-08-27 — Fechas consistentes entre web y Android
 
 - Las fechas de formularios usan un DatePicker propio basado en `Calendar` y `Popover` de shadcn, no `input[type="date"]` ni el selector nativo.

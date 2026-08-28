@@ -61,6 +61,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 Route::middleware(['auth', 'verified', 'admin'])
+    ->get('settings', SystemSettingsController::class)
+    ->name('admin.settings.index');
+
+Route::middleware(['auth', 'verified', 'admin'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
@@ -81,7 +85,7 @@ Route::middleware(['auth', 'verified', 'admin'])
         Route::patch('catalogs/{catalog}/{record}', [CatalogController::class, 'update'])->name('catalogs.update');
         Route::get('statistics', [StatisticsController::class, 'index'])->name('statistics.index');
         Route::get('statistics/export', [StatisticsController::class, 'export'])->name('statistics.export');
-        Route::get('settings', SystemSettingsController::class)->name('settings.index');
+        Route::redirect('settings', '/settings')->name('settings.legacy');
 
         Route::get('users', [UserController::class, 'index'])->name('users.index');
         Route::patch('users/{user}', [UserController::class, 'update'])->name('users.update');

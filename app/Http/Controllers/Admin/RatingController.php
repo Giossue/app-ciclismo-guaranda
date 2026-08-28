@@ -81,6 +81,7 @@ class RatingController extends Controller
             'type' => 'rating_reviewed',
             'title' => 'Tu valoración fue revisada',
             'message' => "Tu valoración de {$rating->route?->name} cambió a estado {$status->name}.",
+            'link' => $rating->route === null ? null : "/routes/{$rating->route->slug}",
         ]);
 
         Inertia::flash('toast', ['type' => 'info', 'message' => __('Valoración actualizada.')]);

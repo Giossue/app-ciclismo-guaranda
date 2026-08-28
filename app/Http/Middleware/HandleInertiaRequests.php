@@ -10,6 +10,7 @@ use App\Models\PoiSuggestion;
 use App\Models\RouteRating;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -48,8 +49,12 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $this->serializeUser($request->user()),
             ],
-            'notifications' => [
+            // Nombre propio: la pantalla de notificaciones publica su propio
+            // prop `notifications` con el listado paginado y lo sombrearía.
+            'notificationCenter' => [
                 'unread_count' => fn (): int => $this->unreadNotificationsCount($request),
+                // Opcional: la lista solo viaja cuando el panel la pide.
+                'latest' => Inertia::optional(fn (): array => $this->latestNotifications($request)),
             ],
             'adminCounters' => fn (): ?array => $this->adminCounters($request),
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
@@ -80,6 +85,37 @@ class HandleInertiaRequests extends Middleware
             'poiSuggestions' => PoiSuggestion::query()->where('status', 'pendiente')->count(),
             'poiReports' => PoiReport::query()->where('status', 'pendiente')->count(),
         ];
+    }
+
+    /**
+     * Últimas notificaciones para el panel de la campana.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function latestNotifications(Request $request): array
+    {
+        $user = $request->user();
+
+        if (! $user instanceof User) {
+            return [];
+        }
+
+        return AppNotification::query()
+            ->where('user_id', $user->id)
+            ->latest('created_at')
+            ->latest('id')
+            ->limit(8)
+            ->get(['id', 'type', 'title', 'message', 'link', 'read', 'created_at'])
+            ->map(fn (AppNotification $notification): array => [
+                'id' => $notification->id,
+                'type' => $notification->type,
+                'title' => $notification->title,
+                'message' => $notification->message,
+                'link' => $notification->link,
+                'read' => (bool) $notification->read,
+                'created_at' => $notification->created_at?->toAtomString(),
+            ])
+            ->all();
     }
 
     private function unreadNotificationsCount(Request $request): int

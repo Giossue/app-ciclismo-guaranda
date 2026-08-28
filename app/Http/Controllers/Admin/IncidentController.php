@@ -99,6 +99,7 @@ class IncidentController extends Controller
             'type' => 'incident_reviewed',
             'title' => 'Tu incidencia fue revisada',
             'message' => "La incidencia {$incident->title} cambió a estado {$status->name}.",
+            'link' => $incident->route === null ? null : "/routes/{$incident->route->slug}",
         ]);
 
         Inertia::flash('toast', ['type' => 'info', 'message' => __('Incidencia actualizada.')]);

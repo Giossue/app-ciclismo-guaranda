@@ -36,6 +36,19 @@ test('cyclist can not access operational admin modules', function (string $route
     'admin.settings.index',
 ]);
 
+test('legacy admin settings URL redirects administrators to technical information', function () {
+    $admin = User::factory()->administrator()->create();
+
+    $this->actingAs($admin)
+        ->get(route('admin.settings.legacy'))
+        ->assertRedirect(route('admin.settings.index'));
+});
+
+test('guests cannot reach technical information through the legacy URL', function () {
+    $this->get(route('admin.settings.legacy'))
+        ->assertRedirect(route('login'));
+});
+
 test('administrator can browse catalog records with search and pagination', function () {
     $this->withoutVite();
 

@@ -1,24 +1,9 @@
 import { Head, Link } from '@inertiajs/react';
-import type { LucideIcon } from 'lucide-react';
-import {
-    AlertTriangle,
-    Bell,
-    CheckCheck,
-    MessageSquareText,
-    ShieldCheck,
-} from 'lucide-react';
+import { Bell, CheckCheck } from 'lucide-react';
+import type { AppNotification } from '@/components/notification-item';
+import { NotificationItem } from '@/components/notification-item';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-
-type AppNotification = {
-    id: number;
-    type: string;
-    title: string;
-    message: string;
-    read: boolean;
-    read_at: string | null;
-    created_at: string | null;
-};
 
 type PaginatedNotifications = {
     data: AppNotification[];
@@ -41,18 +26,6 @@ type NotificationGroup = {
     key: string;
     label: string;
     items: AppNotification[];
-};
-
-const notificationIcons: Record<string, LucideIcon> = {
-    incident_reported: AlertTriangle,
-    incident_reviewed: ShieldCheck,
-    rating_reviewed: MessageSquareText,
-};
-
-const notificationLabels: Record<string, string> = {
-    incident_reported: 'Incidencia',
-    incident_reviewed: 'Incidencia revisada',
-    rating_reviewed: 'Valoración',
 };
 
 export default function NotificationsIndex({
@@ -114,10 +87,15 @@ export default function NotificationsIndex({
 
                         <ul className="flex flex-col">
                             {group.items.map((notification) => (
-                                <NotificationRow
+                                <li
                                     key={notification.id}
-                                    notification={notification}
-                                />
+                                    className="border-b border-border/60 last:border-b-0"
+                                >
+                                    <NotificationItem
+                                        notification={notification}
+                                        timeLabel="time"
+                                    />
+                                </li>
                             ))}
                         </ul>
                     </section>
@@ -198,81 +176,6 @@ function FilterTab({
     );
 }
 
-function NotificationRow({ notification }: { notification: AppNotification }) {
-    const Icon = notificationIcons[notification.type] ?? Bell;
-    const typeLabel = notificationLabels[notification.type] ?? 'Aviso';
-
-    const body = (
-        <>
-            <span
-                className={cn(
-                    'mt-0.5 grid size-10 shrink-0 place-items-center rounded-2xl',
-                    notification.read
-                        ? 'bg-muted text-muted-foreground'
-                        : 'bg-primary/12 text-link',
-                )}
-            >
-                <Icon className="size-4" />
-                <span className="sr-only">{typeLabel}</span>
-            </span>
-
-            <span className="flex min-w-0 flex-1 flex-col gap-1">
-                <span className="flex items-baseline justify-between gap-3">
-                    <span
-                        className={cn(
-                            'min-w-0 text-sm font-bold',
-                            notification.read
-                                ? 'text-foreground/90'
-                                : 'text-foreground',
-                        )}
-                    >
-                        {notification.title}
-                    </span>
-                    <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
-                        {formatTime(notification.created_at)}
-                    </span>
-                </span>
-                <span className="text-sm leading-relaxed text-muted-foreground">
-                    {notification.message}
-                </span>
-            </span>
-
-            <span
-                aria-hidden="true"
-                className={cn(
-                    'mt-2 size-2 shrink-0 rounded-full',
-                    notification.read ? 'bg-transparent' : 'bg-primary',
-                )}
-            />
-        </>
-    );
-
-    const rowClassName =
-        'flex w-full items-start gap-3 rounded-[var(--radius-control)] px-2 py-3 text-left transition-colors';
-
-    return (
-        <li className="border-b border-border/60 last:border-b-0">
-            {notification.read ? (
-                <div className={rowClassName}>{body}</div>
-            ) : (
-                <Link
-                    href={`/notifications/${notification.id}/read`}
-                    method="patch"
-                    as="button"
-                    preserveScroll
-                    aria-label={`Marcar como leída: ${notification.title}`}
-                    className={cn(
-                        rowClassName,
-                        'touch-manipulation hover:bg-muted/60 active:scale-[0.995]',
-                    )}
-                >
-                    {body}
-                </Link>
-            )}
-        </li>
-    );
-}
-
 function groupByDay(items: AppNotification[]): NotificationGroup[] {
     const groups: NotificationGroup[] = [];
 
@@ -325,17 +228,6 @@ function formatDayLabel(value: string | null): string {
     }).format(date);
 
     return label.charAt(0).toUpperCase() + label.slice(1);
-}
-
-function formatTime(value: string | null): string {
-    if (!value) {
-        return '';
-    }
-
-    return new Intl.DateTimeFormat('es-EC', {
-        hour: '2-digit',
-        minute: '2-digit',
-    }).format(new Date(value));
 }
 
 NotificationsIndex.layout = {

@@ -41,7 +41,7 @@ Fecha: 2026-06-30
 - El entrypoint Docker ya no ejecuta seeders por defecto; solo los ejecuta si `RUN_SEEDERS=true`.
 - Se eliminaron restos visibles del starter: dashboard vacío, links Repository/Documentation, welcome genérico, header global de “Centro de control” y componente visual `placeholder-pattern` sin uso.
 - Navegación actual: desktop/tablet usa sidebar; móvil usa bottom navbar fija con menú “Más”. Cada módulo tiene su propio título.
-- Fase 13 completada: `/admin/catalogs`, `/admin/statistics` y `/admin/settings` son módulos reales; se eliminó el placeholder administrativo genérico.
+- Fase 13 completada: `/admin/catalogs`, `/admin/statistics` y `/settings` son módulos reales; `/admin/settings` redirige de forma compatible a `/settings`.
 - Catálogos permite crear/actualizar registros de catálogos del sistema; estadísticas registra consultas de rutas, muestra métricas/rankings con filtros por fecha y exporta CSV; configuración muestra estado operativo sin exponer secretos.
 - Fase 14 queda en revisión: validación local completa aprobada, pero falta evidencia de prueba física del APK en Android 13+ para cerrar la entrega final sin mentir.
 
