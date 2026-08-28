@@ -581,3 +581,9 @@
 - Se creó una prueba de `GET /up` y un endpoint JSON mínimo sin SSR para el health check de Dokploy.
 - Se añadió y ejecutó `scripts/audit_ssr_browser_usage.py`; la cadena estática de todas las páginas Inertia queda libre de dependencias exclusivas del navegador.
 - Validaciones aprobadas: Pint, Pest focalizado (15 pruebas), tipos, ESLint, Prettier, build SSR, chequeo de salud SSR y render SSR real de `/admin/routes` tanto listado como formulario de creación.
+
+## 2026-08-28 — Coordenadas vacías en el editor de rutas
+
+- Se corrigió el editor administrativo de rutas para que valores vacíos o nulos no se conviertan mediante JavaScript en las coordenadas `0,0` ni provoquen un salto del mapa al océano.
+- La validación defensiva se aplica al fallback de inicio/final, los POIs nuevos y las coordenadas leídas desde GeoJSON; el trazado sigue usando la ubicación visible seleccionada en Leaflet.
+- Validaciones aprobadas: TypeScript, ESLint, Prettier, build Vite y `git diff --check`.
