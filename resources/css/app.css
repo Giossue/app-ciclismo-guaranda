@@ -456,6 +456,21 @@
         color: var(--destructive);
     }
 
+    .map-user-marker {
+        background: transparent;
+        border: 0;
+    }
+
+    .map-user-marker-dot {
+        display: block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid #fff;
+        border-radius: var(--radius-circle);
+        background: #2f80ed;
+        box-shadow: var(--elevation-raised);
+    }
+
     .safe-bottom-pad {
         padding-bottom: calc(
             var(--bottom-nav-height) + var(--safe-bottom) + 20px

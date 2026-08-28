@@ -11,7 +11,6 @@ import {
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import {
-    CircleMarker,
     GeoJSON,
     MapContainer,
     Marker,
@@ -95,13 +94,17 @@ const routeHaloPathOptions = {
     opacity: 0.85,
     weight: 9,
 };
-const userPathOptions = {
-    color: 'var(--card)',
-    fillColor: '#2f80ed',
-    fillOpacity: 0.9,
-    opacity: 1,
-    weight: 3,
-};
+/*
+ * Marcador DOM en vez de CircleMarker: los panes vectoriales se escalan con
+ * CSS durante la animación de zoom y el punto se veía gigante hasta terminar.
+ */
+const userLocationIcon = L.divIcon({
+    className: 'map-user-marker',
+    html: '<span class="map-user-marker-dot" aria-hidden="true"></span>',
+    iconSize: [20, 20],
+    iconAnchor: [10, 10],
+    popupAnchor: [0, -10],
+});
 const userTrackPathOptions = {
     color: 'var(--secondary)',
     opacity: 0.95,
@@ -357,13 +360,12 @@ export default function RouteMap({
                     ))}
 
                     {userLocation && (
-                        <CircleMarker
-                            center={[
+                        <Marker
+                            position={[
                                 userLocation.latitude,
                                 userLocation.longitude,
                             ]}
-                            pathOptions={userPathOptions}
-                            radius={9}
+                            icon={userLocationIcon}
                         >
                             <Popup>
                                 <div className="flex flex-col gap-1 text-sm">
@@ -374,7 +376,7 @@ export default function RouteMap({
                                     </span>
                                 </div>
                             </Popup>
-                        </CircleMarker>
+                        </Marker>
                     )}
                 </MapContainer>
             </div>
