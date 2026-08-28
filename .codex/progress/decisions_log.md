@@ -334,11 +334,14 @@
 - Se adopta Laravel como frontera única del asistente y OpenAI Responses como proveedor externo, con `store: false`, configuración exclusiva de servidor y contrato JSON Schema validado.
 - Las tools HTTP y el token de n8n se retiran porque Laravel recupera los datos públicos vivos directamente; no se elimina el servicio n8n compartido del VPS.
 
-## 2026-08-28 — Configuración inicial de modelos OpenAI
+## 2026-08-28 — Configuración de modelos OpenAI GPT-5.6
 
-- Para la primera activación se recomienda `gpt-4o-mini` para chat y visión:
-  soporta entradas de texto/imagen, Responses y Structured Outputs; las claves
-  y nombres de modelo siguen siendo secretos de Dokploy.
+- El chat usa una lista cerrada configurable por administrador: `gpt-5.6-luna`,
+  `gpt-5.6-terra` o `gpt-5.6-sol`, junto con el esfuerzo de razonamiento
+  permitido. La clave sigue siendo un secreto exclusivo de Dokploy.
+- Las descripciones editoriales de imagen usan por defecto `gpt-5.6-luna`,
+  detalle bajo y esfuerzo `none`, para mantener costo bajo sin procesar fotos
+  de incidencias.
 - `text-embedding-3-large` queda reservado para retrieval semántico tras un
   preflight pgvector correcto; no se convierte en dependencia del chat vivo ni
   dispara migraciones antes de tiempo.

@@ -12,8 +12,6 @@ import { CatalogPagination } from '@/components/catalog-pagination';
 import { DataTableToolbar } from '@/components/data-table';
 import type { DataTableQuery } from '@/components/data-table';
 import ImageWithFallback from '@/components/image-with-fallback';
-import { MobileTabs } from '@/components/mobile-tabs';
-import RouteMap from '@/components/routes/client-only-route-map';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -33,6 +31,7 @@ import {
     EmptyTitle,
 } from '@/components/ui/empty';
 import { mediaUrl } from '@/lib/media';
+import { index as mapsIndex } from '@/routes/maps';
 import type {
     CatalogOption,
     CyclingRouteMapItem,
@@ -69,10 +68,6 @@ export default function RoutesIndex({
         });
     };
 
-    const openRoute = (route: CyclingRouteMapItem) => {
-        router.visit(CyclistRouteController.show.url(route.slug));
-    };
-
     return (
         <>
             <Head title="Rutas" />
@@ -85,53 +80,10 @@ export default function RoutesIndex({
                     onQueryChange={changeQuery}
                 />
 
-                <MobileTabs
-                    defaultValue="map"
-                    items={[
-                        {
-                            value: 'list',
-                            label: 'Rutas',
-                            badge: routes.total,
-                            content: (
-                                <RoutesList
-                                    routes={routes.data}
-                                    hasFilters={hasFilters}
-                                    showLatestBadge={
-                                        routes.current_page === 1 && !hasFilters
-                                    }
-                                />
-                            ),
-                        },
-                        {
-                            value: 'map',
-                            label: 'Mapa',
-                            content: (
-                                <Card className="overflow-hidden">
-                                    <CardHeader>
-                                        <Badge variant="outline">
-                                            <RouteIcon data-icon="inline-start" />
-                                            Mapa
-                                        </Badge>
-                                        <CardTitle>
-                                            Mapa cicloturístico
-                                        </CardTitle>
-                                        <CardDescription>
-                                            Revisa el trazado y los puntos de
-                                            interés antes de salir.
-                                        </CardDescription>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <RouteMap
-                                            routes={routes.data}
-                                            mode="overview"
-                                            onRouteSelect={openRoute}
-                                            className="[&_.leaflet-container]:h-[calc(100svh-260px)] [&_.leaflet-container]:min-h-96"
-                                        />
-                                    </CardContent>
-                                </Card>
-                            ),
-                        },
-                    ]}
+                <RoutesList
+                    routes={routes.data}
+                    hasFilters={hasFilters}
+                    showLatestBadge={routes.current_page === 1 && !hasFilters}
                 />
 
                 <CatalogPagination
@@ -260,13 +212,13 @@ function RouteCard({
     isLatest: boolean;
     route: CyclingRouteMapItem;
 }) {
-    const routeUrl = CyclistRouteController.show.url(route.slug);
+    const routeUrl = mapsIndex.url({ query: { route: route.slug } });
 
     return (
         <Link
             href={routeUrl}
             prefetch
-            aria-label={`Ver ${route.name}`}
+            aria-label={`Explorar ${route.name} en el mapa`}
             className="block h-full"
         >
             <Card className="h-full overflow-hidden transition-[border-color,transform] duration-200 hover:-translate-y-0.5 hover:border-primary">

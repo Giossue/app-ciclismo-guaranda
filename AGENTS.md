@@ -27,7 +27,7 @@ El agente tiene a disposición el MCP de **Context7** para consultar documentaci
 
 Reglas:
 
-- Usa Context7 cuando necesites documentación actualizada de librerías externas o APIs: Capacitor, Leaflet, shadcn/ui, React, Inertia, Laravel, PostGIS, TileServer GL, OSRM, GraphHopper, OpenRouteService, n8n, etc.
+- Usa Context7 cuando necesites documentación actualizada de librerías externas o APIs: Capacitor, Leaflet, shadcn/ui, React, Inertia, Laravel, OpenAI, PostGIS, pgvector, TileServer GL, OSRM, GraphHopper u OpenRouteService.
 - Primero resuelve el ID de librería con `resolve-library-id` y luego consulta con `query-docs`.
 - No inventes APIs, métodos, parámetros ni configuraciones cuando se puedan verificar con Context7.
 - Para paquetes Laravel instalados en este repositorio, si Laravel Boost está disponible, prioriza sus herramientas/documentación específica del proyecto. Usa Context7 como apoyo cuando Boost no cubra la duda o cuando sea una librería externa.
@@ -73,7 +73,7 @@ Ver también `docs/architecture/frontend.md`, `docs/architecture/component-syste
 | Android híbrido/Capacitor | `.codex/architecture/mobile_capacitor_android.md` |
 | Offline, SQLite y sincronización | `.codex/architecture/offline_sync.md` |
 | Mapas, rutas y geodatos | `.codex/architecture/maps_routing.md` |
-| Integración con n8n/IA | `.codex/architecture/n8n_webhook_agent.md` |
+| Asistente Laravel/OpenAI | `.codex/domain/chatbot_ia.md`, `.codex/plans/17_agente_laravel_openai.md` |
 | Usuarios y autenticación | `.codex/domain/users_auth.md` |
 | Rutas ciclistas | `.codex/domain/routes.md` |
 | POIs | `.codex/domain/pois.md` |
@@ -94,7 +94,7 @@ Ver también `docs/architecture/frontend.md`, `docs/architecture/component-syste
 - La app Android se empaquetará con Capacitor.
 - La base de datos objetivo es PostgreSQL + PostGIS.
 - El modo offline requiere SQLite local, filesystem y cola de sincronización.
-- El chatbot no es nativo: se consume un webhook externo de n8n y se muestra/procesa el JSON de `Respond to Webhook`.
+- El chatbot es una frontera nativa Laravel/OpenAI: Laravel recupera datos públicos vivos, valida el contrato de respuesta y nunca expone la clave al frontend ni al APK. La proyección vectorial solo se habilita después de un preflight pgvector correcto.
 - No se deben hardcodear claves de IA, mapas, APIs, webhooks ni credenciales en frontend o APK.
 
 ## 5. Reglas para trabajar en este repositorio

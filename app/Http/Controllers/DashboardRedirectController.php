@@ -15,6 +15,6 @@ class DashboardRedirectController extends Controller
             return redirect()->route('admin.dashboard');
         }
 
-        return redirect()->route('routes.index');
+        return redirect()->route('maps.index');
     }
 }

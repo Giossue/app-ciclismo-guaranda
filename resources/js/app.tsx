@@ -6,6 +6,7 @@ import AdminLayout from '@/layouts/admin-layout';
 import AppLayout from '@/layouts/app-layout';
 import AuthClassicLayout from '@/layouts/auth/auth-classic-layout';
 import AuthLayout from '@/layouts/auth-layout';
+import MapsLayout from '@/layouts/maps-layout';
 import { setupNativeBackButton } from '@/lib/native/capacitor';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Guaranda Go';
@@ -26,6 +27,8 @@ createInertiaApp({
                 return AppLayout;
             case name.startsWith('admin/'):
                 return [AppLayout, AdminLayout];
+            case name.startsWith('maps/'):
+                return MapsLayout;
             default:
                 return AppLayout;
         }

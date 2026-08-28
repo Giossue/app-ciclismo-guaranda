@@ -63,12 +63,11 @@ Aunque el alcance funcional sea amplio, conviene construir por hitos verificable
 - Moderación.
 - Respuesta admin.
 
-## 9. n8n chatbot
+## 9. Asistente Laravel/OpenAI
 
-- Proxy/backend o consumo seguro del webhook.
-- Mostrar JSON `Respond to Webhook`.
-- Manejo de errores/timeouts.
-- Historial con eliminación lógica.
+- Frontera servidor a servidor con OpenAI Responses y `store: false`.
+- Datos públicos vivos rehidratados por Laravel; sin webhook ni tools HTTP n8n.
+- Manejo seguro de errores/timeouts e historial con eliminación lógica.
 
 ## 10. Capacitor Android
 

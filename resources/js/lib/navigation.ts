@@ -1,11 +1,17 @@
-import { Bot, Heart, Route } from 'lucide-react';
+import { Bot, Heart, Map, Route } from 'lucide-react';
 import { adminNavItems } from '@/lib/admin-navigation';
 import { index as chatIndex } from '@/routes/chat';
 import { index as favoritesIndex } from '@/routes/favorites';
+import { index as mapsIndex } from '@/routes/maps';
 import { index as routesIndex } from '@/routes/routes';
 import type { Auth, NavItem } from '@/types';
 
 const cyclistNavItems: NavItem[] = [
+    {
+        title: 'Explorar',
+        href: mapsIndex.url(),
+        icon: Map,
+    },
     {
         title: 'Rutas',
         href: routesIndex.url(),
@@ -28,7 +34,7 @@ export function isAdmin(auth: Auth): boolean {
 }
 
 export function homePath(auth: Auth): string {
-    return isAdmin(auth) ? '/admin/dashboard' : routesIndex.url();
+    return isAdmin(auth) ? '/admin/dashboard' : mapsIndex.url();
 }
 
 export function mainNavItems(auth: Auth): NavItem[] {
@@ -38,9 +44,9 @@ export function mainNavItems(auth: Auth): NavItem[] {
 export function mobilePrimaryNavItems(auth: Auth): NavItem[] {
     if (!isAdmin(auth)) {
         return [
+            cyclistNavItems.find((item) => item.href === mapsIndex.url()),
             cyclistNavItems.find((item) => item.href === routesIndex.url()),
             cyclistNavItems.find((item) => item.href === favoritesIndex.url()),
-            cyclistNavItems.find((item) => item.href === chatIndex.url()),
         ].filter((item): item is NavItem => Boolean(item));
     }
 

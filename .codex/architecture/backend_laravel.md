@@ -37,7 +37,7 @@ app/
     ├── Maps/
     ├── Routing/
     ├── Offline/
-    └── N8n/
+    └── Ai/
 ```
 
 Crear carpetas nuevas solo cuando exista necesidad real.

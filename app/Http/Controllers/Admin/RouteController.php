@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreRouteRequest;
 use App\Http\Requests\Admin\UpdateRouteRequest;
 use App\Jobs\GenerateImageDescription;
-use App\Services\Ai\AssistantConfiguration;
 use App\Models\CyclingRoute;
 use App\Models\PoiCategory;
 use App\Models\PointOfInterest;
@@ -16,6 +15,7 @@ use App\Models\RouteGeometry;
 use App\Models\RouteStatus;
 use App\Models\RoutingEngine;
 use App\Models\TransportMode;
+use App\Services\Ai\AssistantConfiguration;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Http\FormRequest;
@@ -31,6 +31,8 @@ use Inertia\Response;
 
 class RouteController extends Controller
 {
+    public function __construct(private readonly AssistantConfiguration $assistantConfiguration) {}
+
     public function index(Request $request): Response
     {
         $this->authorize('viewAny', CyclingRoute::class);
@@ -592,7 +594,7 @@ class RouteController extends Controller
 
     private function queueImageDescription(int $imageId): void
     {
-        if (! app(AssistantConfiguration::class)->configuredForVision()) {
+        if (! $this->assistantConfiguration->configuredForVision()) {
             return;
         }
 

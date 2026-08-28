@@ -1,0 +1,78 @@
+import { Link } from '@inertiajs/react';
+import { Heart, Map, Route } from 'lucide-react';
+import AppearanceCycleButton from '@/components/appearance-cycle-button';
+import { NotificationBellLink } from '@/components/notification-bell-link';
+import { Button } from '@/components/ui/button';
+import { useCurrentUrl } from '@/hooks/use-current-url';
+import { index as favoritesIndex } from '@/routes/favorites';
+import { index as mapsIndex } from '@/routes/maps';
+import { index as routesIndex } from '@/routes/routes';
+
+export default function MapsLayout({
+    children,
+}: {
+    children: React.ReactNode;
+}) {
+    const { isCurrentUrl } = useCurrentUrl();
+
+    return (
+        <div className="relative h-[100dvh] overflow-hidden bg-background">
+            {children}
+
+            <div className="pointer-events-none fixed top-3 right-3 z-[700] flex gap-1">
+                <div className="pointer-events-auto rounded-[var(--radius-control)] border bg-background/90 p-1 shadow-lg backdrop-blur">
+                    <NotificationBellLink />
+                    <AppearanceCycleButton />
+                </div>
+            </div>
+
+            <nav
+                aria-label="Navegación del mapa"
+                className="fixed inset-x-0 bottom-[calc(var(--safe-bottom)+0.75rem)] z-[700] flex justify-center px-4"
+            >
+                <div className="flex items-center gap-1 rounded-[var(--radius-emphasis)] border bg-background/90 p-1.5 shadow-lg backdrop-blur">
+                    <Button
+                        asChild
+                        variant={
+                            isCurrentUrl(mapsIndex.url()) ? 'default' : 'ghost'
+                        }
+                        size="sm"
+                    >
+                        <Link href={mapsIndex.url()} prefetch>
+                            <Map data-icon="inline-start" />
+                            Explorar
+                        </Link>
+                    </Button>
+                    <Button
+                        asChild
+                        variant={
+                            isCurrentUrl(routesIndex.url())
+                                ? 'default'
+                                : 'ghost'
+                        }
+                        size="sm"
+                    >
+                        <Link href={routesIndex.url()} prefetch>
+                            <Route data-icon="inline-start" />
+                            Rutas
+                        </Link>
+                    </Button>
+                    <Button
+                        asChild
+                        variant={
+                            isCurrentUrl(favoritesIndex.url())
+                                ? 'default'
+                                : 'ghost'
+                        }
+                        size="sm"
+                    >
+                        <Link href={favoritesIndex.url()} prefetch>
+                            <Heart data-icon="inline-start" />
+                            Favoritas
+                        </Link>
+                    </Button>
+                </div>
+            </nav>
+        </div>
+    );
+}

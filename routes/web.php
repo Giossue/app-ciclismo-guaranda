@@ -1,7 +1,7 @@
 <?php
 
-use App\Http\Controllers\Admin\CatalogController;
 use App\Http\Controllers\Admin\AssistantConfigurationController;
+use App\Http\Controllers\Admin\CatalogController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\IncidentController as AdminIncidentController;
 use App\Http\Controllers\Admin\NotificationController as AdminNotificationController;
@@ -19,6 +19,7 @@ use App\Http\Controllers\AppNotificationController;
 use App\Http\Controllers\Cyclist\ChatController;
 use App\Http\Controllers\Cyclist\FavoriteRouteController;
 use App\Http\Controllers\Cyclist\IncidentController as CyclistIncidentController;
+use App\Http\Controllers\Cyclist\MapController as CyclistMapController;
 use App\Http\Controllers\Cyclist\OfflineRouteController;
 use App\Http\Controllers\Cyclist\PoiReportController;
 use App\Http\Controllers\Cyclist\PoiSuggestionController;
@@ -35,6 +36,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', DashboardRedirectController::class)->name('dashboard');
 
     Route::prefix('user')->group(function () {
+        Route::get('maps', CyclistMapController::class)->name('maps.index');
         Route::get('notifications', [AppNotificationController::class, 'index'])->name('notifications.index');
         Route::patch('notifications/read-all', [AppNotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
         Route::patch('notifications/{notification}/read', [AppNotificationController::class, 'markAsRead'])->name('notifications.read');
@@ -69,7 +71,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::redirect('favorites', '/user/favorites');
     Route::redirect('notifications', '/user/notifications');
     Route::redirect('chat', '/user/chat');
-    Route::redirect('user', '/user/routes');
+    Route::redirect('user', '/user/maps');
 });
 
 Route::middleware(['auth', 'verified', 'admin'])

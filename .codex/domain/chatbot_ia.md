@@ -60,28 +60,33 @@ Laravel solo lee configuración mediante `config('guaranda.assistant.openai.*')`
 
 ```dotenv
 OPENAI_API_KEY=
-GUARANDA_GO_OPENAI_MODEL=
+GUARANDA_GO_OPENAI_MODEL=gpt-5.6-luna
+GUARANDA_GO_OPENAI_REASONING_EFFORT=medium
 GUARANDA_GO_OPENAI_TIMEOUT_SECONDS=20
 GUARANDA_GO_OPENAI_CONNECT_TIMEOUT_SECONDS=3
 GUARANDA_GO_OPENAI_MAX_OUTPUT_TOKENS=700
-GUARANDA_GO_OPENAI_VISION_MODEL=
+GUARANDA_GO_OPENAI_VISION_MODEL=gpt-5.6-luna
+GUARANDA_GO_OPENAI_VISION_REASONING_EFFORT=none
 GUARANDA_GO_OPENAI_VISION_MAX_IMAGE_BYTES=5242880
 ```
 
-La clave y el modelo se definen como secretos en Dokploy. Si faltan, el chat no
-envía solicitudes y muestra un error seguro. Se usa `store: false`; no se
-envían secretos, nombres, emails, roles ni cabeceras al proveedor.
+La clave se define como secreto en Dokploy. Si falta, el chat no envía
+solicitudes y muestra un error seguro. El administrador puede elegir solo los
+modelos `gpt-5.6-luna`, `gpt-5.6-terra` y `gpt-5.6-sol`, además de un esfuerzo
+de razonamiento permitido; esa preferencia queda en
+`configuracion_asistente_ia`, no contiene claves y se valida en servidor. Se
+usa `store: false`; no se envían secretos, nombres, emails, roles ni cabeceras
+al proveedor.
 
-Para iniciar se puede usar `gpt-4o-mini` tanto en
-`GUARANDA_GO_OPENAI_MODEL` como en `GUARANDA_GO_OPENAI_VISION_MODEL`: admite
-texto e imagen de entrada, Structured Outputs y el endpoint Responses. Esto no
-configura embeddings; `text-embedding-3-large` queda reservado para la Etapa 3
-cuando el preflight de pgvector sea correcto.
+El valor inicial para visión es `gpt-5.6-luna`, con detalle bajo y esfuerzo
+`none`, para minimizar coste en descripciones editoriales. Esto no configura
+embeddings; `text-embedding-3-large` queda reservado para la Etapa 3 cuando el
+preflight de pgvector sea correcto.
 
-Para descripciones de imágenes editoriales administradas se añade
-`GUARANDA_GO_OPENAI_VISION_MODEL`; sin ese secreto no se encola nada. El job
-acepta solamente JPEG, PNG o WebP de hasta 5 MB desde el disco público
-gestionado, usa `store: false`, un detalle de visión bajo y un único intento.
+Para descripciones de imágenes editoriales administradas se usa
+`GUARANDA_GO_OPENAI_VISION_MODEL`; sin `OPENAI_API_KEY` no se encola nada. El
+job acepta solamente JPEG, PNG o WebP de hasta 5 MB desde el disco público
+gestionado, usa `store: false`, detalle de visión bajo y un único intento.
 Conserva una descripción humana ya presente y nunca procesa archivos de
 incidencias de ciclistas.
 
@@ -91,6 +96,15 @@ La Fase 17 deja preparada la transición a pgvector con
 `text-embedding-3-large` y descripciones automáticas de imágenes admin. No se
 crea ni modifica todavía ninguna tabla vectorial hasta reparar el runtime de
 PostGIS y planificar una ventana de mantenimiento. Plan: `17_agente_laravel_openai.md`.
+
+`KnowledgeDocumentBuilder` es la preparación de contenido: recorre rutas
+activas, POIs activos y alertas visibles y genera fragmentos deterministas con
+checksum, idioma, sección y metadatos mínimos. Solo incorpora la descripción
+editorial de imágenes, nunca sus archivos, IDs de usuarios ni coordenadas de
+incidencias. Incluye las fichas públicas de comida, hospedaje, tiendas,
+talleres y salud para cubrir los cuatro momentos del visitante. Cuando pgvector
+esté listo, un job podrá persistir estos mismos fragmentos como proyección
+idempotente.
 
 El preflight no destructivo `php artisan ai:vector-preflight` consulta la base
 actual y falla de forma segura si `vector` no está disponible o no carga en

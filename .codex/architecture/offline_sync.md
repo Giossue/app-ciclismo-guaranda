@@ -31,7 +31,7 @@ Permitir que el ciclista use rutas descargadas, mapa offline, POIs, recorrido GP
 
 ## Qué no funciona offline
 
-- Chatbot n8n.
+- Asistente Laravel/OpenAI.
 - Clima actualizado.
 - Nuevas rutas no descargadas.
 - Actualización en tiempo real de incidencias.

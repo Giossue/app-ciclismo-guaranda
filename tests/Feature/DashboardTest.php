@@ -12,7 +12,7 @@ test('authenticated users are redirected to the cyclist home', function () {
     $this->actingAs($user);
 
     $response = $this->get(route('dashboard'));
-    $response->assertRedirect(route('routes.index'));
+    $response->assertRedirect(route('maps.index'));
 });
 
 test('legacy cyclist entry points redirect to the user namespace', function () {

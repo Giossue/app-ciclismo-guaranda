@@ -57,7 +57,7 @@ test('dashboard route redirects users to their role home', function (string $sta
         ->assertRedirect(route($expectedRoute));
 })->with([
     'administrator' => ['administrator', 'admin.dashboard'],
-    'cyclist' => ['cyclist', 'routes.index'],
+    'cyclist' => ['cyclist', 'maps.index'],
 ]);
 
 test('cyclist can not access admin dashboard', function () {

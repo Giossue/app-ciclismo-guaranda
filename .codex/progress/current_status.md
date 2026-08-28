@@ -184,7 +184,7 @@ Después de esa prueba manual, marcar Fase 12 y Fase 14 como `Completado` si tod
 
 - Se aprueba sustituir el flujo del asistente desde n8n a una frontera nativa Laravel/OpenAI. AI Elements ya compone el chat real para Markdown, sugerencias, fuentes desplegables y tarjetas verificadas de rutas/POIs.
 - El agente incorporará los momentos cómo llegar, dónde comer, qué hacer y dónde dormir, usando contexto de viaje temporal (local, visitante de día o turista con pernoctación), no un rol adicional persistente.
-- La vectorización y visión quedan bloqueadas hasta resolver de forma planificada la infraestructura PostgreSQL: se detectó una instalación PostGIS registrada pero sin biblioteca en la imagen actual de `database-centraldb`. No se cambió imagen, esquema ni datos; se generó un respaldo físico del volumen de datos antes de cualquier cambio.
+- La vectorización queda bloqueada hasta resolver de forma planificada la infraestructura PostgreSQL: se detectó una instalación PostGIS registrada pero sin biblioteca en la imagen actual de `database-centraldb`. No se cambió imagen, esquema ni datos; se generó un respaldo físico del volumen de datos antes de cualquier cambio.
 - Plan de trabajo: `.codex/plans/17_agente_laravel_openai.md`.
 - Primera entrega implementada localmente: `ChatController` ya delega en
   `OpenAiAssistant` y `LiveTourismContext`, usa Responses API con `store: false`,
@@ -218,7 +218,20 @@ Después de esa prueba manual, marcar Fase 12 y Fase 14 como `Completado` si tod
 - Información técnica de administración distingue ahora instalación de PostGIS,
   disponibilidad de pgvector y carga real de ambos runtimes, sin exponer el
   detalle de conexión ni intentar reparar extensiones desde la aplicación.
-- Las fotos nuevas subidas por administración para rutas o POIs pueden recibir
-  una descripción automática por cola de base de datos, solo cuando se configure
-  el modelo de visión. El worker vive bajo Supervisor en el contenedor actual;
-  no se crea una base de datos ni un servicio extra y se excluyen incidencias.
+- Las fotos nuevas subidas por administración para rutas o POIs reciben una
+  descripción automática por cola cuando existe `OPENAI_API_KEY`. Usan
+  `gpt-5.6-luna`, detalle bajo y esfuerzo `none`; el worker vive bajo Supervisor
+  en el contenedor actual, no se crea una base de datos ni un servicio extra y
+  se excluyen incidencias.
+- Administración permite seleccionar el modelo del chat (`gpt-5.6-luna`,
+  `gpt-5.6-terra` o `gpt-5.6-sol`) y su esfuerzo. La selección se guarda en
+  `configuracion_asistente_ia`, se valida en servidor y jamás expone la clave.
+- La migración de `configuracion_asistente_ia` fue aplicada y verificada en la
+  base local de desarrollo; queda pendiente de aplicar por el flujo normal de
+  migraciones del próximo deploy, sin intervención manual sobre la BD central.
+- `KnowledgeDocumentBuilder` prepara en memoria los documentos fuente para la
+  futura vectorización: rutas activas, POIs activos y alertas visibles, con
+  checksum estable, fichas públicas por categoría y descripciones editoriales
+  de fotos de ruta/POI, sin datos personales ni coordenadas de incidencias. No
+  crea tablas, embeddings ni modifica la base central mientras pgvector siga
+  pendiente.

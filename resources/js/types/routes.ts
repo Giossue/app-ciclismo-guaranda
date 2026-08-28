@@ -126,6 +126,46 @@ export type CyclingRouteMapItem = {
     user_interaction: RouteUserInteraction;
 };
 
+/** Payload liviano del explorador de mapa; el detalle completo vive en la ruta. */
+export type MapRouteItem = {
+    id: number;
+    name: string;
+    slug: string;
+    start_name: string;
+    start_latitude: number;
+    start_longitude: number;
+    end_name: string;
+    end_latitude: number;
+    end_longitude: number;
+    main_image_path: string | null;
+    route_version: number;
+    geojson: RouteGeoJson | null;
+    category: CatalogOption | null;
+    difficulty: CatalogOption | null;
+    metric: Pick<RouteMetric, 'distance_km' | 'estimated_time_minutes'> | null;
+    points_of_interest: Array<
+        Pick<RoutePoi, 'id' | 'name' | 'latitude' | 'longitude' | 'category'> &
+            Partial<
+                Pick<
+                    RoutePoi,
+                    | 'description'
+                    | 'address'
+                    | 'images'
+                    | 'distance_from_start_km'
+                    | 'route_observation'
+                >
+            >
+    >;
+    incidents: Array<
+        Pick<
+            RouteIncident,
+            'id' | 'title' | 'latitude' | 'longitude' | 'type'
+        > &
+            Partial<Pick<RouteIncident, 'description'>>
+    >;
+    is_favorite: boolean;
+};
+
 export type ActiveTrackPoint = {
     id: number;
     latitude: number;

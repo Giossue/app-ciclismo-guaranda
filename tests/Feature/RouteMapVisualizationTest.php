@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\CyclingRoute;
+use App\Models\FavoriteRoute;
 use App\Models\IncidentStatus;
 use App\Models\IncidentType;
 use App\Models\PoiCategory;
@@ -17,6 +18,11 @@ use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function () {
     $this->seed(CatalogSeeder::class);
+});
+
+test('guest is redirected from the cyclist map explorer', function () {
+    $this->get(route('maps.index'))
+        ->assertRedirect(route('login'));
 });
 
 function createRouteForMapVisualization(string $statusName = 'Activa'): CyclingRoute
@@ -140,6 +146,40 @@ test('cyclist can view active routes on map with geojson points and incidents', 
             expect($query)->not->toContain('select *');
         }
     }
+});
+
+test('cyclist map explorer only exposes active routes and its selected route', function () {
+    $this->withoutVite();
+
+    $cyclist = User::factory()->cyclist()->create();
+    $activeRoute = createRouteForMapVisualization();
+    $inactiveRoute = createRouteForMapVisualization('Inactiva');
+
+    FavoriteRoute::query()->create([
+        'user_id' => $cyclist->id,
+        'route_id' => $activeRoute->id,
+        'favorited_at' => now(),
+    ]);
+
+    $this->actingAs($cyclist)
+        ->get(route('maps.index', ['route' => $activeRoute->slug]))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('maps/index')
+            ->has('routes', 1)
+            ->where('routes.0.slug', $activeRoute->slug)
+            ->where('routes.0.geojson.type', 'LineString')
+            ->where('routes.0.points_of_interest.0.name', 'Mirador de prueba')
+            ->where('routes.0.incidents.0.title', 'Piedras en la vía')
+            ->where('routes.0.is_favorite', true)
+            ->where('selectedRouteSlug', $activeRoute->slug));
+
+    $this->actingAs($cyclist)
+        ->get(route('maps.index', ['route' => $inactiveRoute->slug]))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('maps/index')
+            ->where('selectedRouteSlug', null));
 });
 
 test('cyclist can view route detail with metrics recommendations and map payload', function () {

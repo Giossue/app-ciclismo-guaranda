@@ -699,3 +699,24 @@
 - La página administrativa de información técnica ahora expone estados seguros
   de instalación/runtime de PostGIS y pgvector para diagnóstico, sin mostrar
   secretos ni ejecutar reparaciones desde la UI.
+- Se añadió la configuración administrativa del asistente: solo acepta
+  `gpt-5.6-luna`, `gpt-5.6-terra` o `gpt-5.6-sol` y los esfuerzos permitidos.
+  La preferencia persiste en `configuracion_asistente_ia`; `OPENAI_API_KEY`
+  permanece exclusivamente en Dokploy.
+- Las fotos editoriales nuevas de rutas y POIs usan por defecto
+  `gpt-5.6-luna`, `detail: low` y esfuerzo `none`; guardan su descripción en
+  los campos de imagen existentes mediante el job de cola y excluyen incidencias.
+- Validación de esta entrega: 187 pruebas Pest / 1356 aserciones, Pint,
+  TypeScript, ESLint, Prettier y build Vite aprobados.
+- Se aplicó y comprobó la migración `2026_08_28_082846_create_ai_assistant_settings_table`
+  solo en PostgreSQL local; el despliegue aplicará la misma migración mediante
+  Laravel, sin usar seeders ni SQL manual en producción.
+- Se añadió `KnowledgeDocumentBuilder` como preparación no persistente para la
+  etapa vectorial. Genera documentos reproducibles de rutas activas, POIs
+  activos y alertas visibles con checksum; incorpora descripciones editoriales
+  de fotos y las fichas públicas de comida, hospedaje, tiendas, talleres y
+  salud. Excluye borradores, recursos inactivos, IDs de usuario y coordenadas
+  de incidencias. Sus dos pruebas Pest cubren filtrado de visibilidad y
+  estabilidad/invalidez del checksum.
+- Validación posterior: 190 pruebas Pest / 1409 aserciones, Pint, TypeScript,
+  ESLint, Prettier, `git diff --check` y build Vite aprobados.

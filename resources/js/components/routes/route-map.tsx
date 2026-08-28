@@ -31,16 +31,25 @@ import { Button } from '@/components/ui/button';
 import { mediaUrl } from '@/lib/media';
 import { getCurrentAppLocation } from '@/lib/native/capacitor';
 import { cn } from '@/lib/utils';
-import type { ActiveTrack, CyclingRouteMapItem, RoutePoi } from '@/types';
+import type {
+    ActiveTrack,
+    CyclingRouteMapItem,
+    MapRouteItem,
+    RoutePoi,
+} from '@/types';
+
+type RouteMapItem = CyclingRouteMapItem | MapRouteItem;
 
 export type RouteMapProps = {
-    routes: CyclingRouteMapItem[];
+    routes: RouteMapItem[];
     selectedSlug?: string;
+    focusSelected?: boolean;
     className?: string;
+    immersive?: boolean;
     mode?: 'overview' | 'detail';
     activeTrack?: ActiveTrack | null;
     onPoiSelect?: (poi: RoutePoi) => void;
-    onRouteSelect?: (route: CyclingRouteMapItem) => void;
+    onRouteSelect?: (route: RouteMapItem) => void;
 };
 
 type UserLocation = {
@@ -108,8 +117,8 @@ const incidentPathOptions = {
     opacity: 1,
 };
 const userPathOptions = {
-    color: 'var(--secondary)',
-    fillColor: 'var(--secondary)',
+    color: '#2f80ed',
+    fillColor: '#2f80ed',
     fillOpacity: 0.9,
     opacity: 1,
 };
@@ -122,7 +131,9 @@ const userTrackPathOptions = {
 export default function RouteMap({
     routes,
     selectedSlug,
+    focusSelected = false,
     className,
+    immersive = false,
     mode = 'detail',
     activeTrack = null,
     onPoiSelect,
@@ -182,8 +193,19 @@ export default function RouteMap({
     };
 
     return (
-        <div className="flex flex-col gap-3">
-            <div className="flex flex-wrap items-center gap-2 rounded-[var(--radius-emphasis)] border border-primary/10 bg-card/80 p-2 shadow-sm shadow-primary/10 backdrop-blur">
+        <div
+            className={cn(
+                'flex flex-col gap-3',
+                immersive && 'relative h-full overflow-hidden',
+            )}
+        >
+            <div
+                className={cn(
+                    'flex flex-wrap items-center gap-2 rounded-[var(--radius-emphasis)] border border-primary/10 bg-card/80 p-2 shadow-sm shadow-primary/10 backdrop-blur',
+                    immersive &&
+                        'absolute top-3 left-3 z-[500] max-w-[calc(100%-1.5rem)]',
+                )}
+            >
                 <Badge variant={isOnline ? 'default' : 'outline'}>
                     {isOnline ? (
                         <Wifi data-icon="inline-start" />
@@ -236,7 +258,13 @@ export default function RouteMap({
             </div>
 
             {showOverviewFilters && (
-                <div className="flex flex-wrap gap-2">
+                <div
+                    className={cn(
+                        'flex flex-wrap gap-2',
+                        immersive &&
+                            'absolute top-16 left-3 z-[500] max-w-[calc(100%-1.5rem)]',
+                    )}
+                >
                     <FilterButton
                         active={filters.endpoints}
                         onClick={() => toggleFilter('endpoints')}
@@ -265,7 +293,11 @@ export default function RouteMap({
             )}
 
             {(gpsStatus === 'denied' || gpsStatus === 'unsupported') && (
-                <Alert>
+                <Alert
+                    className={cn(
+                        immersive && 'absolute top-28 left-3 z-[500] max-w-sm',
+                    )}
+                >
                     <Navigation />
                     <AlertTitle>Ubicación no disponible</AlertTitle>
                     <AlertDescription>
@@ -279,6 +311,8 @@ export default function RouteMap({
             <div
                 className={cn(
                     'relative isolate z-0 overflow-hidden rounded-[var(--radius-map)] border border-primary/10 bg-card shadow-lg shadow-primary/10',
+                    immersive &&
+                        'absolute inset-0 rounded-none border-0 shadow-none',
                     className,
                 )}
             >
@@ -286,7 +320,10 @@ export default function RouteMap({
                     center={center}
                     zoom={12}
                     scrollWheelZoom={false}
-                    className="relative z-0 h-[420px] w-full md:h-[520px]"
+                    className={cn(
+                        'relative z-0 h-[420px] w-full md:h-[520px]',
+                        immersive && 'h-full md:h-full',
+                    )}
                 >
                     <TileLayer
                         key={mapLayer}
@@ -298,6 +335,8 @@ export default function RouteMap({
                         routes={routes}
                         filters={filters}
                         activeTrack={activeTrack}
+                        selectedSlug={selectedSlug}
+                        focusSelected={focusSelected}
                     />
                     <FlyToUserLocation location={userLocation} />
                     <UserTrackLine
@@ -418,11 +457,11 @@ function RouteLayers({
     onPoiSelect,
     onRouteSelect,
 }: {
-    route: CyclingRouteMapItem;
+    route: RouteMapItem;
     selected: boolean;
     filters: OverlayFilters;
     onPoiSelect?: (poi: RoutePoi) => void;
-    onRouteSelect?: (route: CyclingRouteMapItem) => void;
+    onRouteSelect?: (route: RouteMapItem) => void;
 }) {
     return (
         <>
@@ -496,7 +535,7 @@ function RouteLayers({
                         pathOptions={poiPathOptions}
                         radius={6}
                         eventHandlers={{
-                            click: () => onPoiSelect?.(poi),
+                            click: () => onPoiSelect?.(poi as RoutePoi),
                         }}
                     >
                         <Popup>
@@ -519,7 +558,10 @@ function RouteLayers({
                                 {incident.type && (
                                     <span>{incident.type.name}</span>
                                 )}
-                                <span>{incident.description}</span>
+                                {'description' in incident &&
+                                    incident.description && (
+                                        <span>{incident.description}</span>
+                                    )}
                             </div>
                         </Popup>
                     </CircleMarker>
@@ -528,7 +570,7 @@ function RouteLayers({
     );
 }
 
-function RoutePopup({ route }: { route: CyclingRouteMapItem }) {
+function RoutePopup({ route }: { route: RouteMapItem }) {
     return (
         <div className="flex max-w-56 flex-col gap-2 text-sm">
             {route.main_image_path && (
@@ -559,7 +601,11 @@ function RoutePopup({ route }: { route: CyclingRouteMapItem }) {
     );
 }
 
-function PoiPopup({ poi }: { poi: RoutePoi }) {
+function PoiPopup({
+    poi,
+}: {
+    poi: RoutePoi | MapRouteItem['points_of_interest'][number];
+}) {
     const image = poi.images?.[0];
 
     return (
@@ -575,7 +621,7 @@ function PoiPopup({ poi }: { poi: RoutePoi }) {
             {poi.category && <span>{poi.category.name}</span>}
             {poi.description && <span>{poi.description}</span>}
             {poi.address && <span>{poi.address}</span>}
-            {poi.distance_from_start_km !== null && (
+            {poi.distance_from_start_km != null && (
                 <span>Km {poi.distance_from_start_km.toLocaleString()}</span>
             )}
             {poi.route_observation && <span>{poi.route_observation}</span>}
@@ -587,10 +633,14 @@ function FitRouteBounds({
     routes,
     filters,
     activeTrack,
+    selectedSlug,
+    focusSelected,
 }: {
-    routes: CyclingRouteMapItem[];
+    routes: RouteMapItem[];
     filters: OverlayFilters;
     activeTrack: ActiveTrack | null;
+    selectedSlug?: string;
+    focusSelected: boolean;
 }) {
     const map = useMap();
 
@@ -601,7 +651,12 @@ function FitRouteBounds({
             points.push([point.latitude, point.longitude]);
         });
 
-        routes.forEach((route) => {
+        const routesToFit =
+            focusSelected && selectedSlug
+                ? routes.filter((route) => route.slug === selectedSlug)
+                : routes;
+
+        routesToFit.forEach((route) => {
             if (filters.tracks && route.geojson) {
                 route.geojson.coordinates.forEach(([longitude, latitude]) => {
                     points.push([latitude, longitude]);
@@ -635,7 +690,7 @@ function FitRouteBounds({
         if (bounds.isValid()) {
             map.fitBounds(bounds, { padding: [24, 24], maxZoom: 15 });
         }
-    }, [activeTrack, filters, map, routes]);
+    }, [activeTrack, filters, focusSelected, map, routes, selectedSlug]);
 
     return null;
 }
@@ -675,7 +730,7 @@ function degreesToRadians(value: number): number {
     return (value * Math.PI) / 180;
 }
 
-function mapCenter(routes: CyclingRouteMapItem[]): [number, number] {
+function mapCenter(routes: RouteMapItem[]): [number, number] {
     const firstRoute = routes[0];
 
     if (!firstRoute) {
@@ -686,9 +741,9 @@ function mapCenter(routes: CyclingRouteMapItem[]): [number, number] {
 }
 
 function selectedRoute(
-    routes: CyclingRouteMapItem[],
+    routes: RouteMapItem[],
     selectedSlug?: string,
-): CyclingRouteMapItem | null {
+): RouteMapItem | null {
     if (selectedSlug) {
         return routes.find((route) => route.slug === selectedSlug) ?? null;
     }
@@ -696,10 +751,7 @@ function selectedRoute(
     return routes[0] ?? null;
 }
 
-function navigationUrl(
-    location: UserLocation,
-    route: CyclingRouteMapItem,
-): string {
+function navigationUrl(location: UserLocation, route: RouteMapItem): string {
     const origin = `${location.latitude},${location.longitude}`;
     const destination = `${route.start_latitude},${route.start_longitude}`;
 

@@ -1,8 +1,18 @@
-import { Head } from '@inertiajs/react';
-import { AppWindow, Database, Plug, Rocket, ShieldCheck } from 'lucide-react';
+import { Form, Head } from '@inertiajs/react';
+import {
+    AppWindow,
+    Bot,
+    Database,
+    Plug,
+    Rocket,
+    ShieldCheck,
+} from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import AssistantConfigurationController from '@/actions/App/Http/Controllers/Admin/AssistantConfigurationController';
 import SystemSettingsController from '@/actions/App/Http/Controllers/Admin/SystemSettingsController';
 import Heading from '@/components/heading';
+import InputError from '@/components/input-error';
+import { Button } from '@/components/ui/button';
 import {
     Card,
     CardContent,
@@ -10,6 +20,19 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import {
+    Field,
+    FieldDescription,
+    FieldGroup,
+    FieldLabel,
+} from '@/components/ui/field';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 
 type SettingValue = string | number | boolean | null;
@@ -20,7 +43,15 @@ type SettingSection =
 type Settings = Partial<Record<SettingSection, Record<string, SettingValue>>>;
 
 type Props = {
+    assistantConfiguration: AssistantConfiguration;
     settings: Settings;
+};
+
+type AssistantConfiguration = {
+    chat_model: string | null;
+    chat_reasoning_effort: string;
+    vision_model: string | null;
+    vision_reasoning_effort: string;
 };
 
 type SettingSectionOption = {
@@ -91,7 +122,10 @@ const valueLabels: Record<string, string> = {
     migrations_table_exists: 'Tabla de migraciones',
 };
 
-export default function AdminSettingsIndex({ settings }: Props) {
+export default function AdminSettingsIndex({
+    assistantConfiguration,
+    settings,
+}: Props) {
     const availableSections = sections.filter(
         (section) => settings[section.id],
     );
@@ -104,6 +138,10 @@ export default function AdminSettingsIndex({ settings }: Props) {
                 <Heading
                     title="Información técnica"
                     description="Estado actual de la aplicación y sus servicios. Los valores sensibles no se exponen."
+                />
+
+                <AssistantConfigurationForm
+                    configuration={assistantConfiguration}
                 />
 
                 <Card>
@@ -170,6 +208,159 @@ export default function AdminSettingsIndex({ settings }: Props) {
                 </Card>
             </div>
         </>
+    );
+}
+
+function AssistantConfigurationForm({
+    configuration,
+}: {
+    configuration: AssistantConfiguration;
+}) {
+    return (
+        <Card>
+            <CardHeader>
+                <div className="flex items-start gap-3">
+                    <Bot
+                        aria-hidden="true"
+                        className="mt-0.5 text-muted-foreground"
+                    />
+                    <div className="flex min-w-0 flex-col gap-1">
+                        <CardTitle>Asistente de Guaranda Go</CardTitle>
+                        <CardDescription>
+                            Define el modelo y nivel de razonamiento del chat.
+                            La clave de OpenAI nunca se muestra ni se edita
+                            aquí.
+                        </CardDescription>
+                    </div>
+                </div>
+            </CardHeader>
+            <CardContent>
+                <Form
+                    {...AssistantConfigurationController.update.form()}
+                    options={{ preserveScroll: true }}
+                    className="flex flex-col gap-5"
+                >
+                    {({ errors, processing }) => (
+                        <>
+                            <FieldGroup className="grid gap-4 sm:grid-cols-2">
+                                <Field
+                                    data-invalid={Boolean(errors.chat_model)}
+                                >
+                                    <FieldLabel htmlFor="assistant-chat-model">
+                                        Modelo del chat
+                                    </FieldLabel>
+                                    <Select
+                                        name="chat_model"
+                                        defaultValue={
+                                            configuration.chat_model ??
+                                            'gpt-5.6-luna'
+                                        }
+                                    >
+                                        <SelectTrigger
+                                            id="assistant-chat-model"
+                                            aria-invalid={Boolean(
+                                                errors.chat_model,
+                                            )}
+                                        >
+                                            <SelectValue placeholder="Selecciona el modelo" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="gpt-5.6-luna">
+                                                GPT-5.6 Luna · económico
+                                            </SelectItem>
+                                            <SelectItem value="gpt-5.6-terra">
+                                                GPT-5.6 Terra · equilibrado
+                                            </SelectItem>
+                                            <SelectItem value="gpt-5.6-sol">
+                                                GPT-5.6 Sol · máxima capacidad
+                                            </SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <FieldDescription>
+                                        Luna es la opción de costo contenido
+                                        para el uso cotidiano.
+                                    </FieldDescription>
+                                    <InputError message={errors.chat_model} />
+                                </Field>
+
+                                <Field
+                                    data-invalid={Boolean(
+                                        errors.chat_reasoning_effort,
+                                    )}
+                                >
+                                    <FieldLabel htmlFor="assistant-reasoning-effort">
+                                        Esfuerzo de razonamiento
+                                    </FieldLabel>
+                                    <Select
+                                        name="chat_reasoning_effort"
+                                        defaultValue={
+                                            configuration.chat_reasoning_effort
+                                        }
+                                    >
+                                        <SelectTrigger
+                                            id="assistant-reasoning-effort"
+                                            aria-invalid={Boolean(
+                                                errors.chat_reasoning_effort,
+                                            )}
+                                        >
+                                            <SelectValue placeholder="Selecciona el esfuerzo" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="none">
+                                                Sin razonamiento
+                                            </SelectItem>
+                                            <SelectItem value="low">
+                                                Bajo
+                                            </SelectItem>
+                                            <SelectItem value="medium">
+                                                Medio
+                                            </SelectItem>
+                                            <SelectItem value="high">
+                                                Alto
+                                            </SelectItem>
+                                            <SelectItem value="xhigh">
+                                                Muy alto
+                                            </SelectItem>
+                                            <SelectItem value="max">
+                                                Máximo
+                                            </SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <FieldDescription>
+                                        Medio equilibra calidad, costo y tiempo
+                                        de respuesta.
+                                    </FieldDescription>
+                                    <InputError
+                                        message={errors.chat_reasoning_effort}
+                                    />
+                                </Field>
+                            </FieldGroup>
+
+                            <div className="rounded-lg border bg-muted/40 p-4 text-sm text-muted-foreground">
+                                Las fotos editoriales nuevas de rutas y POIs se
+                                describen con{' '}
+                                <span className="text-foreground">
+                                    {configuration.vision_model ??
+                                        'gpt-5.6-luna'}
+                                </span>{' '}
+                                con esfuerzo{' '}
+                                <span className="text-foreground">
+                                    {configuration.vision_reasoning_effort}
+                                </span>
+                                . No se envían imágenes de incidencias de
+                                ciclistas.
+                            </div>
+
+                            <div className="flex justify-end">
+                                <Button type="submit" disabled={processing}>
+                                    Guardar configuración
+                                </Button>
+                            </div>
+                        </>
+                    )}
+                </Form>
+            </CardContent>
+        </Card>
     );
 }
 

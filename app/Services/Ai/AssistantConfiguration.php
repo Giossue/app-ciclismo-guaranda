@@ -36,7 +36,7 @@ class AssistantConfiguration
         $defaultEffort = config('guaranda.assistant.openai.reasoning_effort', 'medium');
 
         return [
-            'model' => $this->allowedModel($setting?->chat_model) ?? $this->allowedModel($defaultModel),
+            'model' => $this->allowedModel($setting?->chat_model) ?? $this->configuredModel($defaultModel),
             'reasoning_effort' => $this->allowedEffort($setting?->chat_reasoning_effort)
                 ?? $this->allowedEffort($defaultEffort)
                 ?? 'medium',
@@ -49,7 +49,7 @@ class AssistantConfiguration
     public function vision(): array
     {
         return [
-            'model' => $this->allowedModel(config('guaranda.assistant.openai.vision_model')),
+            'model' => $this->configuredModel(config('guaranda.assistant.openai.vision_model')),
             'reasoning_effort' => $this->allowedEffort(config('guaranda.assistant.openai.vision_reasoning_effort')) ?? 'none',
         ];
     }
@@ -89,5 +89,10 @@ class AssistantConfiguration
     private function allowedEffort(mixed $effort): ?string
     {
         return is_string($effort) && in_array($effort, self::REASONING_EFFORTS, true) ? $effort : null;
+    }
+
+    private function configuredModel(mixed $model): ?string
+    {
+        return is_string($model) && $model !== '' ? $model : null;
     }
 }

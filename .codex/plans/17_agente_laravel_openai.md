@@ -60,8 +60,9 @@ predeterminada se usa `--connection=nombre`.
 
 ## Etapa 1 — Contrato nativo y chat confiable
 
-- Crear `AiAssistantService` como frontera OpenAI con HTTP de Laravel; secretos
-  solo en entorno (`OPENAI_API_KEY`, modelo de respuesta y timeout).
+- Crear `OpenAiAssistant` como frontera OpenAI con HTTP de Laravel; la clave
+  solo vive en entorno y el administrador elige, de una lista cerrada, el
+  modelo GPT-5.6 y esfuerzo de razonamiento.
 - Reemplazar en `ChatController` el webhook n8n por una Action/Service.
 - Mantener `conversaciones_ia` y `mensajes_ia`; guardar proveedor/modelo,
   contexto de viaje y referencias de recursos como metadatos seguros.
@@ -75,7 +76,8 @@ a n8n, no se exponen secretos y las referencias inactivas se excluyen.
 
 **Avance 2026-08-28:** implementado localmente con Responses API, JSON Schema,
 datos vivos, contexto de viaje, rehidratación de referencias y persistencia
-transaccional. Falta configurar los secretos de OpenAI en Dokploy y desplegar.
+transaccional. El administrador puede elegir Luna, Terra o Sol y su esfuerzo;
+falta configurar solo el secreto `OPENAI_API_KEY` en Dokploy y desplegar.
 
 ### Configuración de despliegue inicial
 
@@ -83,18 +85,23 @@ En Dokploy se agregan como secretos de la aplicación, nunca en el repositorio:
 
 ```dotenv
 OPENAI_API_KEY=clave-servidor
-GUARANDA_GO_OPENAI_MODEL=gpt-4o-mini
-# Activar solo si se desea describir fotos nuevas de rutas/POIs.
-GUARANDA_GO_OPENAI_VISION_MODEL=gpt-4o-mini
+GUARANDA_GO_OPENAI_MODEL=gpt-5.6-luna
+GUARANDA_GO_OPENAI_REASONING_EFFORT=medium
+# Visión editorial económica para fotos nuevas de rutas/POIs.
+GUARANDA_GO_OPENAI_VISION_MODEL=gpt-5.6-luna
+GUARANDA_GO_OPENAI_VISION_REASONING_EFFORT=none
 ```
 
-`gpt-4o-mini` es un punto de inicio eficiente para este flujo: acepta texto e
-imágenes, funciona con Responses y Structured Outputs. No configurar todavía
-un modelo de embeddings ni crear una migración vectorial: esa variable entra
-en la Etapa 3 únicamente después de un preflight correcto. Tras el deploy se
-comprueba `/up`, el estado sin secretos en `/admin/settings`, una consulta de
-chat y, si se activó visión, el worker de cola. La clave no se pega en terminal,
-logs, frontend ni APK.
+El valor inicial del chat y de visión es `gpt-5.6-luna`. En Administración se
+puede cambiar el chat entre `gpt-5.6-luna`, `gpt-5.6-terra` y `gpt-5.6-sol`, y
+elegir su esfuerzo permitido. La clave no sale del entorno y nunca se muestra
+en esa pantalla. Luna usa visión con detalle bajo y esfuerzo `none` para las
+descripciones editoriales; no procesa fotos de incidencias. No configurar aún
+un modelo de embeddings ni crear una migración vectorial: esa variable entra en
+la Etapa 3 únicamente después de un preflight correcto. Tras el deploy se
+comprueba `/up`, el estado sin secretos en `/settings`, una consulta de chat y,
+si se activó visión, el worker de cola. La clave no se pega en terminal, logs,
+frontend ni APK.
 
 ## Etapa 2 — UI de conversación
 
@@ -116,6 +123,12 @@ almacenada como texto alternativo; el modelo no aporta imágenes ni URLs.
 
 ## Etapa 3 — Base de conocimiento vectorial
 
+- `KnowledgeDocumentBuilder` ya construye en memoria documentos deterministas
+  de rutas activas, POIs activos y alertas visibles. Incluye texto editorial de
+  imágenes de rutas/POIs y fichas públicas de comida, hospedaje, tiendas,
+  talleres y salud, con checksum y metadatos mínimos; excluye usuario,
+  coordenadas de incidencias, borradores, POIs inactivos y alertas no visibles.
+  Aún no escribe ni genera embeddings.
 - Crear por migración la tabla de fragmentos de conocimiento (fuente, sección,
   contenido, checksum, metadata JSONB, idioma, modelo y embedding).
 - Usar `text-embedding-3-large`; con 3072 dimensiones, usar `halfvec(3072)` e
@@ -146,8 +159,8 @@ las descripciones aprobadas aparecen como alt text y contexto del agente.
 nuevas subidas por administración en rutas y POIs. Respeta descripciones
 manuales, limita formato/tamaño y usa Responses con `store: false`; no procesa
 imágenes de incidencias. El worker `database` queda supervisado dentro del
-contenedor. Debe configurarse un modelo de visión antes de que se encole o
-envíe una imagen.
+contenedor. El valor de visión por defecto es Luna; únicamente hace falta
+`OPENAI_API_KEY` para que nuevas imágenes editoriales se encolen y describan.
 
 ## Etapa 5 — Calidad, transición y retiro de n8n
 

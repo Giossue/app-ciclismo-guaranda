@@ -7,7 +7,6 @@ use App\Http\Requests\Admin\ListPointsOfInterestRequest;
 use App\Http\Requests\Admin\StorePoiRequest;
 use App\Http\Requests\Admin\UpdatePoiRequest;
 use App\Jobs\GenerateImageDescription;
-use App\Services\Ai\AssistantConfiguration;
 use App\Models\CuisineType;
 use App\Models\CyclingRoute;
 use App\Models\HealthCenterType;
@@ -20,6 +19,7 @@ use App\Models\StoreType;
 use App\Models\WorkshopDetail;
 use App\Models\WorkshopService;
 use App\Models\WorkshopSpecialty;
+use App\Services\Ai\AssistantConfiguration;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\Pivot;
@@ -34,6 +34,8 @@ use Inertia\Response;
 
 class PoiController extends Controller
 {
+    public function __construct(private readonly AssistantConfiguration $assistantConfiguration) {}
+
     public function index(ListPointsOfInterestRequest $request): Response
     {
         $this->authorize('viewAny', PointOfInterest::class);
@@ -338,7 +340,7 @@ class PoiController extends Controller
 
     private function queueImageDescription(int $imageId): void
     {
-        if (! app(AssistantConfiguration::class)->configuredForVision()) {
+        if (! $this->assistantConfiguration->configuredForVision()) {
             return;
         }
 

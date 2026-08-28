@@ -107,7 +107,7 @@ La aplicación será híbrida:
 | Motores de rutas | OSRM, GraphHopper y OpenRouteService según necesidad |
 | Offline local | SQLite local + almacenamiento de archivos en el dispositivo |
 | IA | Laravel consulta OpenAI Responses desde servidor con datos públicos verificados |
-| Modelos IA | Modelo OpenAI configurable solo por entorno; sin claves en frontend/APK |
+| Modelos IA | Chat GPT-5.6 Luna/Terra/Sol configurable por administrador; clave OpenAI solo por entorno, sin claves en frontend/APK |
 | Clima | Integración backend pendiente; el asistente no inventa condiciones actuales |
 | Colas | Laravel Jobs + Redis |
 | Monitoreo | Registro de errores y actividad |
@@ -1604,7 +1604,7 @@ Las siguientes decisiones reemplazan los puntos pendientes anteriores:
 1. Las incidencias no se muestran públicamente apenas se reportan. Primero deben pasar por revisión/validación administrativa.
 2. El asistente se integra desde Laravel con OpenAI; servicios como TileServer GL, OSRM o GraphHopper pueden desplegarse mediante Dokploy/Docker si se decide instalarlos.
 3. La distribución inicial será por APK. No se prioriza Google Play Store en esta versión.
-4. Laravel es la frontera nativa del asistente: construye datos públicos vivos y consulta un modelo OpenAI configurable solo por entorno. El frontend y APK nunca reciben la clave.
+4. Laravel es la frontera nativa del asistente: construye datos públicos vivos y consulta GPT-5.6. El administrador elige Luna, Terra o Sol y su esfuerzo; el frontend y APK nunca reciben la clave.
 5. La firma y actualización del APK serán básicas, acordes a un proyecto universitario. No se requiere un flujo avanzado de publicación o actualización automática.
 6. Los puntos GPS se conservarán mientras exista el recorrido. No se define una política avanzada de purga automática para esta versión.
 7. El administrador podrá ver tanto métricas agregadas como recorridos completos con puntos GPS.
