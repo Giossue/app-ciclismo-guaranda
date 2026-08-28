@@ -819,3 +819,9 @@
 - Se retiraron las tarjetas de accesos rápidos del dashboard; la navegación global conserva el acceso a los módulos.
 - La pantalla muestra una bienvenida y progreso real del usuario: recorridos finalizados, distancia acumulada y tiempo total. La agregación excluye recorridos no finalizados y actividad de otros usuarios.
 - Validación focalizada: 5 pruebas Pest / 34 aserciones, Pint, ESLint, Prettier y build Vite aprobados. `types:check` sigue bloqueado por cambios ajenos sin terminar en la transición de apariencia.
+
+## 2026-08-28 — Coordenadas vacías en el editor de rutas
+
+- Se corrigió el editor administrativo de rutas para que valores vacíos o nulos no se conviertan mediante JavaScript en las coordenadas `0,0` ni provoquen un salto del mapa al océano.
+- La validación defensiva se aplica al fallback de inicio/final, los POIs nuevos y las coordenadas leídas desde GeoJSON; el trazado sigue usando la ubicación visible seleccionada en Leaflet.
+- Validaciones aprobadas: TypeScript, ESLint, Prettier, build Vite y `git diff --check`.

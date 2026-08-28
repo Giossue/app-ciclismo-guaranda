@@ -449,10 +449,10 @@ function PoiPlacementLayer({
     return (
         <>
             {poiDrafts.map((poi) => {
-                const latitude = Number(poi.latitude);
-                const longitude = Number(poi.longitude);
+                const latitude = coordinateFromValue(poi.latitude, -90, 90);
+                const longitude = coordinateFromValue(poi.longitude, -180, 180);
 
-                if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+                if (latitude === null || longitude === null) {
                     return null;
                 }
 
@@ -752,8 +752,8 @@ function parseLineString(
                 (coordinate): coordinate is [number, number] =>
                     Array.isArray(coordinate) &&
                     coordinate.length >= 2 &&
-                    Number.isFinite(Number(coordinate[0])) &&
-                    Number.isFinite(Number(coordinate[1])),
+                    coordinateFromValue(coordinate[0], -180, 180) !== null &&
+                    coordinateFromValue(coordinate[1], -90, 90) !== null,
             )
             .map(
                 ([longitude, latitude]) =>
@@ -775,15 +775,16 @@ function lineFromCoordinates(
     endLatitude?: string | number | null,
     endLongitude?: string | number | null,
 ): [number, number][] | undefined {
-    const startLat = Number(startLatitude);
-    const startLng = Number(startLongitude);
-    const endLat = Number(endLatitude);
-    const endLng = Number(endLongitude);
+    const startLat = coordinateFromValue(startLatitude, -90, 90);
+    const startLng = coordinateFromValue(startLongitude, -180, 180);
+    const endLat = coordinateFromValue(endLatitude, -90, 90);
+    const endLng = coordinateFromValue(endLongitude, -180, 180);
 
     if (
-        [startLat, startLng, endLat, endLng].every((value) =>
-            Number.isFinite(value),
-        )
+        startLat !== null &&
+        startLng !== null &&
+        endLat !== null &&
+        endLng !== null
     ) {
         return [
             [startLat, startLng],
@@ -792,6 +793,28 @@ function lineFromCoordinates(
     }
 
     return undefined;
+}
+
+function coordinateFromValue(
+    value: unknown,
+    minimum: number,
+    maximum: number,
+): number | null {
+    if (
+        value === null ||
+        value === undefined ||
+        (typeof value === 'string' && value.trim() === '')
+    ) {
+        return null;
+    }
+
+    const coordinate = Number(value);
+
+    return Number.isFinite(coordinate) &&
+        coordinate >= minimum &&
+        coordinate <= maximum
+        ? coordinate
+        : null;
 }
 
 function flattenLatLngs(latLngs: unknown): L.LatLng[] {

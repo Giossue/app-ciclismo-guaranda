@@ -133,6 +133,7 @@ Pendiente de aprobación.
 - Se refuerza UX multipunto con advertencia cuando solo hay inicio/final.
 - Se agregó preview horizontal de imágenes adicionales de rutas antes de guardar.
 - Se mejoró color/contraste del trazo en mapas.
+- Corregido el salto del editor al punto `0,0`: coordenadas vacías o nulas ya no se convierten en un marcador válido ni cambian la vista del mapa. Inicio, final, POIs y GeoJSON solo aceptan coordenadas informadas dentro de sus rangos geográficos.
 
 ## Pendiente
 
