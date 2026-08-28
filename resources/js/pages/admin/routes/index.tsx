@@ -175,7 +175,7 @@ export default function AdminRoutesIndex({
                 </div>
 
                 {/* Misma superficie que la barra dentro de DataTable. */}
-                <Card>
+                <Card className="data-table">
                     <CardContent>
                         <DataTableToolbar
                             query={filters}

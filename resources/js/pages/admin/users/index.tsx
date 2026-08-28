@@ -326,6 +326,7 @@ function UserRowActions({
                         user={user}
                         roles={roles}
                         genders={genders}
+                        onCancel={() => setEditOpen(false)}
                         onSuccess={() => setEditOpen(false)}
                     />
                 </SheetContent>
@@ -336,11 +337,13 @@ function UserRowActions({
 
 function UserEditForm({
     genders,
+    onCancel,
     onSuccess,
     roles,
     user,
 }: {
     genders: CatalogOption[];
+    onCancel: () => void;
     onSuccess: () => void;
     roles: CatalogOption[];
     user: ManagedUser;
@@ -484,6 +487,13 @@ function UserEditForm({
                     </FieldGroup>
 
                     <SheetFooter>
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            onClick={onCancel}
+                        >
+                            Cancelar
+                        </Button>
                         <Button type="submit" disabled={processing}>
                             Guardar cambios
                         </Button>

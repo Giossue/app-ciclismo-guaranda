@@ -1206,7 +1206,7 @@ export default function RouteForm({
                             </div>
                         </CardContent>
                         <Separator />
-                        <CardFooter className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <CardFooter className="sticky bottom-0 flex flex-col items-stretch gap-3 border-t bg-card/95 sm:flex-row sm:items-center sm:justify-between">
                             {isEdit ? (
                                 <Alert className="sm:max-w-md">
                                     <AlertTitle>

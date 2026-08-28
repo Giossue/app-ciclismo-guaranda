@@ -16,6 +16,7 @@
 - Usar `Skeleton` para carga.
 - Usar `Empty` para estados vacíos.
 - Usar `Dialog`, `Sheet` o `Drawer` con título accesible.
+- Los sheets de crear, editar, moderar o confirmar llevan un pie fijo con `Cancelar` seguido de la acción principal; el contenido debe poder desplazarse sin ocultar esos botones. Los sheets solo informativos o de navegación no requieren acción principal.
 - Usar `FieldGroup` y `Field` para formularios.
 - Usar `sonner` para toasts si ya está disponible.
 - Para fechas, usar `DatePicker` compuesto por `Calendar` y `Popover` de shadcn; no usar `input[type="date"]`, para evitar el selector nativo del dispositivo y mantener una experiencia consistente en Android.

@@ -294,6 +294,7 @@ function IncidentRowActions({
                             <IncidentReviewForm
                                 incident={incident}
                                 statuses={statuses}
+                                onCancel={() => setOpen(false)}
                                 onSuccess={() => setOpen(false)}
                             />
                         </section>
@@ -445,10 +446,12 @@ function IncidentSummary({ incident }: { incident: ManagedIncident }) {
 
 function IncidentReviewForm({
     incident,
+    onCancel,
     onSuccess,
     statuses,
 }: {
     incident: ManagedIncident;
+    onCancel: () => void;
     onSuccess: () => void;
     statuses: CatalogOption[];
 }) {
@@ -517,6 +520,13 @@ function IncidentReviewForm({
                     </FieldGroup>
 
                     <SheetFooter>
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            onClick={onCancel}
+                        >
+                            Cancelar
+                        </Button>
                         <Button type="submit" disabled={processing}>
                             Guardar revisión
                         </Button>

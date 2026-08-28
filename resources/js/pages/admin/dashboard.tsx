@@ -1,4 +1,4 @@
-import { Head, Link } from '@inertiajs/react';
+import { Deferred, Head, Link } from '@inertiajs/react';
 import {
     AlertTriangle,
     ArrowRight,
@@ -29,6 +29,7 @@ import {
     EmptyMedia,
     EmptyTitle,
 } from '@/components/ui/empty';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
     Table,
     TableBody,
@@ -91,18 +92,28 @@ type RecentIncident = {
     reporter: { id: number; name: string } | null;
 };
 
+type Activity = {
+    period: string;
+    newUsers: number;
+    completedTracks: number;
+    days: DayActivity[];
+};
+
 type Props = {
     overview: OverviewMetric[];
-    activity: {
-        period: string;
-        newUsers: number;
-        completedTracks: number;
-        days: DayActivity[];
-    };
-    routeStatuses: RouteStatus[];
-    popularRoutes: PopularRoute[];
-    attention: AttentionItem[];
-    recentIncidents: RecentIncident[];
+    /** Diferidos: llegan en una segunda respuesta, con esqueleto mientras tanto. */
+    activity?: Activity;
+    routeStatuses?: RouteStatus[];
+    popularRoutes?: PopularRoute[];
+    attention?: AttentionItem[];
+    recentIncidents?: RecentIncident[];
+};
+
+const emptyActivity: Activity = {
+    period: 'Últimos 7 días',
+    newUsers: 0,
+    completedTracks: 0,
+    days: [],
 };
 
 const overviewIcons = {
@@ -128,11 +139,11 @@ const attentionDestinations = {
 
 export default function AdminDashboard({
     overview,
-    activity,
-    routeStatuses,
-    popularRoutes,
-    attention,
-    recentIncidents,
+    activity = emptyActivity,
+    routeStatuses = [],
+    popularRoutes = [],
+    attention = [],
+    recentIncidents = [],
 }: Props) {
     const totalRoutes = routeStatuses.reduce(
         (total, status) => total + status.count,
@@ -158,20 +169,35 @@ export default function AdminDashboard({
                     ))}
                 </section>
 
-                <section className="ueb-stagger grid gap-4 xl:grid-cols-5">
-                    <ActivityCard activity={activity} />
-                    <PopularRoutesCard routes={popularRoutes} />
-                </section>
+                <Deferred
+                    data={['activity', 'popularRoutes']}
+                    fallback={<PanelSkeleton />}
+                >
+                    <section className="ueb-stagger grid gap-4 xl:grid-cols-5">
+                        <ActivityCard activity={activity} />
+                        <PopularRoutesCard routes={popularRoutes} />
+                    </section>
+                </Deferred>
 
-                <section className="ueb-stagger grid gap-4 xl:grid-cols-5">
-                    <RouteStatusCard
-                        statuses={routeStatuses}
-                        totalRoutes={totalRoutes}
-                    />
-                    <AttentionCard attention={attention} />
-                </section>
+                <Deferred
+                    data={['routeStatuses', 'attention']}
+                    fallback={<PanelSkeleton />}
+                >
+                    <section className="ueb-stagger grid gap-4 xl:grid-cols-5">
+                        <RouteStatusCard
+                            statuses={routeStatuses}
+                            totalRoutes={totalRoutes}
+                        />
+                        <AttentionCard attention={attention} />
+                    </section>
+                </Deferred>
 
-                <RecentIncidentsCard incidents={recentIncidents} />
+                <Deferred
+                    data="recentIncidents"
+                    fallback={<Skeleton className="h-64 w-full" />}
+                >
+                    <RecentIncidentsCard incidents={recentIncidents} />
+                </Deferred>
             </div>
         </>
     );
@@ -208,7 +234,16 @@ function OverviewCard({ metric }: { metric: OverviewMetric }) {
     );
 }
 
-function ActivityCard({ activity }: { activity: Props['activity'] }) {
+function PanelSkeleton() {
+    return (
+        <div className="grid gap-4 xl:grid-cols-5">
+            <Skeleton className="h-72 w-full xl:col-span-3" />
+            <Skeleton className="h-72 w-full xl:col-span-2" />
+        </div>
+    );
+}
+
+function ActivityCard({ activity }: { activity: Activity }) {
     return (
         <Card className="xl:col-span-3">
             <CardHeader>

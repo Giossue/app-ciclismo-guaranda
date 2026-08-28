@@ -48,7 +48,13 @@ createInertiaApp({
             </TooltipProvider>
         );
     },
-    progress: false,
+    // Barra de progreso en cada navegación: sin ella, tocar un enlace no da
+    // ninguna señal hasta que la página nueva llega.
+    progress: {
+        color: 'var(--primary)',
+        delay: 120,
+        showSpinner: false,
+    },
 });
 
 setupNativeBackButton();

@@ -33,6 +33,7 @@ import {
     Sheet,
     SheetContent,
     SheetDescription,
+    SheetFooter,
     SheetHeader,
     SheetTitle,
 } from '@/components/ui/sheet';
@@ -304,6 +305,7 @@ function RatingRowActions({
                     <ModerationForm
                         rating={rating}
                         statuses={statuses}
+                        onCancel={() => setOpen(false)}
                         onSuccess={() => setOpen(false)}
                     />
                 </SheetContent>
@@ -313,10 +315,12 @@ function RatingRowActions({
 }
 
 function ModerationForm({
+    onCancel,
     onSuccess,
     rating,
     statuses,
 }: {
+    onCancel: () => void;
     onSuccess: () => void;
     rating: ManagedRating;
     statuses: CatalogOption[];
@@ -389,10 +393,19 @@ function ModerationForm({
                         </Field>
                     </FieldGroup>
 
-                    <Button disabled={processing}>
-                        <MessageSquareText data-icon="inline-start" />
-                        Guardar moderación
-                    </Button>
+                    <SheetFooter>
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            onClick={onCancel}
+                        >
+                            Cancelar
+                        </Button>
+                        <Button type="submit" disabled={processing}>
+                            <MessageSquareText data-icon="inline-start" />
+                            Guardar moderación
+                        </Button>
+                    </SheetFooter>
                 </>
             )}
         </Form>

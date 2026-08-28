@@ -10,6 +10,10 @@ const TRIGGER_DISTANCE = 72;
 const MAX_DISTANCE = 120;
 /** El indicador avanza a la mitad del dedo, para que el gesto se sienta con peso. */
 const DRAG_RESISTANCE = 0.5;
+/** Distancia mínima para decidir si el gesto es horizontal o vertical. */
+const DIRECTION_LOCK_DISTANCE = 12;
+
+type GestureDirection = 'pending' | 'horizontal' | 'vertical';
 
 /**
  * Gesto de «deslizar hacia abajo para actualizar» en móvil. Recarga los props
@@ -20,7 +24,9 @@ export function PullToRefresh() {
     const [distance, setDistance] = useState(0);
     const [dragging, setDragging] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
+    const startX = useRef<number | null>(null);
     const startY = useRef<number | null>(null);
+    const direction = useRef<GestureDirection>('pending');
     const distanceRef = useRef(0);
     const refreshingRef = useRef(false);
 
@@ -46,21 +52,51 @@ export function PullToRefresh() {
                 window.scrollY > 0
             ) {
                 startY.current = null;
+                startX.current = null;
+                direction.current = 'pending';
 
                 return;
             }
 
+            startX.current = event.touches[0].clientX;
             startY.current = event.touches[0].clientY;
+            direction.current = 'pending';
         };
 
         const handleTouchMove = (event: TouchEvent) => {
-            if (startY.current === null || isBlocked()) {
+            if (
+                startX.current === null ||
+                startY.current === null ||
+                isBlocked()
+            ) {
                 return;
             }
 
-            const delta = event.touches[0].clientY - startY.current;
+            const touch = event.touches[0];
+            const deltaX = touch.clientX - startX.current;
+            const deltaY = touch.clientY - startY.current;
 
-            if (delta <= 0 || window.scrollY > 0) {
+            if (direction.current === 'pending') {
+                if (
+                    Math.max(Math.abs(deltaX), Math.abs(deltaY)) <
+                    DIRECTION_LOCK_DISTANCE
+                ) {
+                    return;
+                }
+
+                // El gesto horizontal pertenece a galerías/carruseles: nunca
+                // interceptarlo ni convertirlo en una recarga por accidente.
+                direction.current =
+                    Math.abs(deltaX) >= Math.abs(deltaY)
+                        ? 'horizontal'
+                        : 'vertical';
+            }
+
+            if (direction.current === 'horizontal') {
+                return;
+            }
+
+            if (deltaY <= 0 || window.scrollY > 0) {
                 setDragging(false);
                 updateDistance(0);
 
@@ -70,7 +106,9 @@ export function PullToRefresh() {
             // Corta el rebote nativo solo mientras el gesto está activo.
             event.preventDefault();
             setDragging(true);
-            updateDistance(Math.min(delta * DRAG_RESISTANCE, MAX_DISTANCE));
+            updateDistance(
+                Math.min(deltaY * DRAG_RESISTANCE, MAX_DISTANCE),
+            );
         };
 
         const handleTouchEnd = () => {
@@ -78,10 +116,16 @@ export function PullToRefresh() {
                 return;
             }
 
+            startX.current = null;
             startY.current = null;
+            const gestureDirection = direction.current;
+            direction.current = 'pending';
             setDragging(false);
 
-            if (distanceRef.current < TRIGGER_DISTANCE) {
+            if (
+                gestureDirection !== 'vertical' ||
+                distanceRef.current < TRIGGER_DISTANCE
+            ) {
                 updateDistance(0);
 
                 return;

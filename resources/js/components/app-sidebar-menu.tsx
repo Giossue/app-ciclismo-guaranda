@@ -1,12 +1,11 @@
-import { Link, router, usePage } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import type { LucideIcon } from 'lucide-react';
-import { LogOut, ShieldCheck, UserRound } from 'lucide-react';
+import { ShieldCheck, UserRound } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { useSidebar } from '@/components/ui/sidebar';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
 import { cn } from '@/lib/utils';
-import { logout } from '@/routes';
 import type { Auth, NavItem } from '@/types';
 
 type PageProps = {
@@ -53,11 +52,6 @@ export function AppSidebarMenu({ items }: { items: NavItem[] }) {
     const close = () => {
         setOpenMobile(false);
         cleanup();
-    };
-
-    const handleLogout = () => {
-        close();
-        router.flushAll();
     };
 
     return (
@@ -113,19 +107,6 @@ export function AppSidebarMenu({ items }: { items: NavItem[] }) {
                     ))}
                 </div>
             </section>
-
-            {/* Log Out Button */}
-            <Link
-                href={logout()}
-                method="post"
-                as="button"
-                onClick={handleLogout}
-                data-test="sidebar-logout-button"
-                className="mt-auto flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl border border-red-500/20 bg-secondary px-4 text-xs font-black tracking-wider text-red-400 uppercase transition-all duration-200 hover:-translate-y-0.5 hover:border-red-500/40 hover:bg-red-500/10 active:translate-y-0 active:scale-[0.99]"
-            >
-                <LogOut className="size-4 shrink-0" />
-                <span>Cerrar sesión</span>
-            </Link>
         </div>
     );
 }

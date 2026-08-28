@@ -511,6 +511,8 @@
 - El conteo de reportes de la tabla se muestra como número simple, sin badge, y se eliminó la descripción redundante sobre la tabla.
 - Los filtros de POIs descartan valores vacíos, la primera página y el tamaño por defecto de la URL; `Limpiar` devuelve al listado base sin parámetros.
 - La navegación de POIs se trasladó de pestañas locales a un submenú desplegable en el sidebar, con POIs oficiales, sugerencias y reportes.
+- Los sheets de acción usan un pie fijo y reutilizable con `Cancelar` y la acción principal; el contenido se mantiene desplazable.
+- En el layout de sidebar, el cierre de sesión se retiró del menú móvil y se ubicó en el menú del avatar del encabezado.
 
 ## 2026-08-27 — Landing adaptable
 

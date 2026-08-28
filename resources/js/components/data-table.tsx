@@ -52,6 +52,14 @@ export type DataTableQuery = Record<string, number | string | undefined>;
 /** Radix no admite un item con valor vacío, así que «todos» viaja con centinela. */
 const ALL_FILTER_VALUE = '__all';
 
+function formatFilterOptionLabel(label: string): string {
+    if (label === '') {
+        return label;
+    }
+
+    return `${label.charAt(0).toLocaleUpperCase('es-EC')}${label.slice(1)}`;
+}
+
 export type DataTableColumn<T> = {
     id: string;
     label: string;
@@ -195,7 +203,9 @@ export function DataTableToolbar({
                                             key={option.value}
                                             value={option.value}
                                         >
-                                            {option.label}
+                                            {formatFilterOptionLabel(
+                                                option.label,
+                                            )}
                                         </SelectItem>
                                     ))}
                                 </SelectGroup>

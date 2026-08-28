@@ -31,13 +31,16 @@ class StatisticsController extends Controller
                 'from' => $from?->toDateString(),
                 'to' => $to?->toDateString(),
             ],
+            // Los indicadores son baratos y encabezan la pantalla: van en la
+            // primera respuesta. Las agregaciones de las gráficas se difieren,
+            // así el panel se dibuja de inmediato y ellas llegan después.
             'metrics' => $this->metrics($from, $to),
-            'activitySeries' => $this->activitySeries($from, $to),
-            'ratingsDistribution' => $this->ratingsDistribution($from, $to),
-            'topViewedRoutes' => $this->topViewedRoutes($from, $to),
-            'topDownloadedRoutes' => $this->topDownloadedRoutes($from, $to),
-            'topRatedRoutes' => $this->topRatedRoutes($from, $to),
-            'incidentsByStatus' => $this->incidentsByStatus($from, $to),
+            'activitySeries' => Inertia::defer(fn (): array => $this->activitySeries($from, $to), 'charts'),
+            'ratingsDistribution' => Inertia::defer(fn (): array => $this->ratingsDistribution($from, $to), 'charts'),
+            'topViewedRoutes' => Inertia::defer(fn (): array => $this->topViewedRoutes($from, $to), 'charts'),
+            'topDownloadedRoutes' => Inertia::defer(fn (): array => $this->topDownloadedRoutes($from, $to), 'charts'),
+            'topRatedRoutes' => Inertia::defer(fn (): array => $this->topRatedRoutes($from, $to), 'charts'),
+            'incidentsByStatus' => Inertia::defer(fn (): array => $this->incidentsByStatus($from, $to), 'charts'),
         ]);
     }
 

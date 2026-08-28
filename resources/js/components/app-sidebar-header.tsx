@@ -1,15 +1,35 @@
+import { usePage } from '@inertiajs/react';
 import AppearanceCycleButton from '@/components/appearance-cycle-button';
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { NotificationBellLink } from '@/components/notification-bell-link';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Separator } from '@/components/ui/separator';
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import type { BreadcrumbItem as BreadcrumbItemType } from '@/types';
+import { UserMenuContent } from '@/components/user-menu-content';
+import { useInitials } from '@/hooks/use-initials';
+import type { Auth, BreadcrumbItem as BreadcrumbItemType } from '@/types';
+
+type PageProps = {
+    auth: Auth;
+};
 
 export function AppSidebarHeader({
     breadcrumbs = [],
 }: {
     breadcrumbs?: BreadcrumbItemType[];
 }) {
+    const { auth } = usePage<PageProps>().props;
+    const getInitials = useInitials();
+    const userFullName = auth.user
+        ? [auth.user.name, auth.user.last_name].filter(Boolean).join(' ')
+        : '';
+
     return (
         <header
             data-slot="app-sidebar-header"
@@ -39,6 +59,31 @@ export function AppSidebarHeader({
             <div className="flex items-center gap-1">
                 <NotificationBellLink />
                 <AppearanceCycleButton />
+                {auth.user && (
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                aria-label="Abrir menú de usuario"
+                                className="size-9 rounded-full p-1"
+                            >
+                                <Avatar className="size-7">
+                                    <AvatarImage
+                                        src={auth.user.avatar}
+                                        alt={userFullName}
+                                    />
+                                    <AvatarFallback>
+                                        {getInitials(userFullName)}
+                                    </AvatarFallback>
+                                </Avatar>
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="w-56" align="end">
+                            <UserMenuContent user={auth.user} />
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                )}
             </div>
         </header>
     );

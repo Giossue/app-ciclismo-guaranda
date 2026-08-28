@@ -439,6 +439,7 @@ function CreateRecordFields({
                     </Field>
                 </>
             }
+            onCancel={() => onOpenChange(false)}
         />
     );
 }
@@ -487,6 +488,7 @@ function CatalogRecordRowActions({
                     <CatalogRecordForm
                         catalog={catalog}
                         record={record}
+                        onCancel={() => setEditOpen(false)}
                         onSuccess={() => setEditOpen(false)}
                     />
                 </SheetContent>
@@ -497,11 +499,13 @@ function CatalogRecordRowActions({
 
 function CatalogRecordForm({
     catalog,
+    onCancel,
     onSuccess,
     record,
     target,
 }: {
     catalog: CatalogFormTarget;
+    onCancel: () => void;
     onSuccess: () => void;
     record?: CatalogRecord;
     target?: React.ReactNode;
@@ -576,6 +580,13 @@ function CatalogRecordForm({
                     </FieldGroup>
 
                     <SheetFooter>
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            onClick={onCancel}
+                        >
+                            Cancelar
+                        </Button>
                         <Button type="submit" disabled={processing}>
                             {record ? 'Guardar cambios' : 'Crear registro'}
                         </Button>
