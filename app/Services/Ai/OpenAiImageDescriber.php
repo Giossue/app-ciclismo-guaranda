@@ -11,6 +11,8 @@ use RuntimeException;
 
 class OpenAiImageDescriber
 {
+    public function __construct(private readonly AssistantConfiguration $configuration) {}
+
     public function configured(): bool
     {
         return $this->apiKey() !== null && $this->model() !== null;
@@ -64,6 +66,7 @@ class OpenAiImageDescriber
             ->post('/responses', [
                 'model' => $model,
                 'store' => false,
+                'reasoning' => ['effort' => $this->configuration->vision()['reasoning_effort']],
                 'max_output_tokens' => 180,
                 'instructions' => 'Escribe una descripción accesible, objetiva y breve en español para una imagen editorial de Guaranda Go. No identifiques personas, no infieras datos sensibles, no inventes ubicaciones ni datos que no se vean. Devuelve solamente el JSON solicitado.',
                 'text' => [
@@ -138,9 +141,7 @@ class OpenAiImageDescriber
 
     private function model(): ?string
     {
-        $model = config('guaranda.assistant.openai.vision_model');
-
-        return is_string($model) && $model !== '' ? $model : null;
+        return $this->configuration->vision()['model'];
     }
 
     /**

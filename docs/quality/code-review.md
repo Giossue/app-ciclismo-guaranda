@@ -8,7 +8,7 @@ Revisar como mínimo:
 - Validación, Policies, roles, propiedad de recursos, archivos y secretos.
 - Migraciones, compatibilidad PostgreSQL/PostGIS, N+1, paginación y operaciones costosas.
 - Contratos Laravel ↔ Inertia/API, Wayfinder y estados de UI.
-- Fallos de n8n/servicios externos, offline/sync y comportamiento Android cuando sea afectado.
+- Fallos de OpenAI/servicios externos, offline/sync y comportamiento Android cuando sea afectado.
 - Pruebas, comandos de verificación y documentación/progreso faltantes.
 
 Si no hay hallazgos, declararlo junto con riesgos residuales. No sustituir una revisión por un resumen del diff.

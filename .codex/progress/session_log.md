@@ -692,3 +692,10 @@
 - Validación final del bloque local: Pint, 181 pruebas Pest (1313 aserciones),
   TypeScript, ESLint, Prettier, build Vite, caché de configuración y caché de
   rutas aprobados.
+- Se añadió el comando de solo lectura `ai:vector-preflight` y su prueba SQLite
+  aislada. El comando no instala extensiones ni ejecuta DDL/DML; detecta si la
+  conexión PostgreSQL candidata puede cargar pgvector y PostGIS antes de que
+  exista cualquier migración de embeddings.
+- La página administrativa de información técnica ahora expone estados seguros
+  de instalación/runtime de PostGIS y pgvector para diagnóstico, sin mostrar
+  secretos ni ejecutar reparaciones desde la UI.

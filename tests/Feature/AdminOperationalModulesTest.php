@@ -36,6 +36,20 @@ test('cyclist can not access operational admin modules', function (string $route
     'admin.settings.index',
 ]);
 
+test('technical information reports unavailable vector capabilities safely outside PostgreSQL', function () {
+    $this->withoutVite();
+
+    $admin = User::factory()->administrator()->create();
+
+    $this->actingAs($admin)
+        ->get(route('admin.settings.index'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('settings.integrations.pgvector_available', false)
+            ->where('settings.integrations.pgvector_runtime', 'no_postgresql')
+            ->where('settings.integrations.postgis_runtime', 'no_postgresql'));
+});
+
 test('legacy admin settings URL redirects administrators to technical information', function () {
     $admin = User::factory()->administrator()->create();
 

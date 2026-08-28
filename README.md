@@ -111,9 +111,9 @@ La aplicación será híbrida:
 | Clima | Integración backend pendiente; el asistente no inventa condiciones actuales |
 | Colas | Laravel Jobs + Redis |
 | Monitoreo | Registro de errores y actividad |
-| Despliegue | Servidor/VPS para backend, base de datos, n8n, almacenamiento y servicios de mapas/rutas |
+| Despliegue | Servidor/VPS para backend, base de datos, almacenamiento, cola y servicios de mapas/rutas |
 
-> Nota importante: aunque la app sea un APK instalado en Android, el sistema necesita servidor. En el servidor deben vivir la API, base de datos, almacenamiento de archivos, n8n, servicios de mapas/rutas y procesos de sincronización.
+> Nota importante: aunque la app sea un APK instalado en Android, el sistema necesita servidor. En el servidor deben vivir la API, base de datos, almacenamiento de archivos, worker de cola, servicios de mapas/rutas y procesos de sincronización.
 
 ---
 
@@ -135,11 +135,10 @@ flowchart TD
     D --> E[PostgreSQL + PostGIS]
     D --> F[Redis + Jobs]
     D --> G[Storage de archivos]
-    D --> H[n8n]
+    D --> H[OpenAI Responses]
     D --> I[Servicios de mapas y rutas]
 
-    H --> J[Proveedor IA]
-    H --> K[Open-Meteo]
+    D --> J[Open-Meteo cuando se habilite]
 ```
 
 ### Componentes del servidor
@@ -152,7 +151,7 @@ El servidor no solo almacena la base de datos. Debe proveer:
 - Base de datos PostgreSQL/PostGIS.
 - Almacenamiento de imágenes y archivos.
 - Procesamiento de jobs/colas.
-- n8n para chatbot IA y orquestaciones.
+- Asistente Laravel/OpenAI y worker de cola para tareas IA.
 - Servicios propios o integraciones para mapas/rutas.
 - Logs, auditoría y backups.
 
@@ -892,7 +891,6 @@ Deben registrarse acciones relevantes como:
 - Laravel API.
 - PostgreSQL + PostGIS.
 - Redis.
-- n8n ya desplegado mediante Dokploy.
 - Storage de archivos.
 - Servicio de mapas para TileServer GL y/o generación del mapa offline de Ecuador.
 - Servicio de enrutamiento si se instala OSRM/GraphHopper propio.
@@ -914,7 +912,7 @@ Por limitaciones de tiempo se plantea despliegue directo a producción, pero se 
 ### Docker
 
 - La app Android y Laravel no dependen directamente de Docker.
-- n8n ya está implementado en el servidor mediante Dokploy.
+- El asistente usa OpenAI desde Laravel; la clave vive únicamente como secreto de Dokploy.
 - Servicios como TileServer GL, OSRM o GraphHopper pueden desplegarse mediante Dokploy/Docker si se decide instalarlos en el servidor.
 
 ---
@@ -1631,7 +1629,7 @@ App móvil: Capacitor Android
 Offline: SQLite local + Filesystem
 Mapas: Leaflet + OpenStreetMap / TileServer GL + mapa offline de Ecuador
 Rutas: OSRM / GraphHopper / OpenRouteService
-IA: webhook externo n8n; la app muestra JSON del agente
+IA: Laravel → OpenAI Responses; contexto vivo y contrato JSON validado
 Clima: Open-Meteo
 Colas: Laravel Jobs + Redis
 Servidor: VPS o servidor institucional

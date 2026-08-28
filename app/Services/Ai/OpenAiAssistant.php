@@ -10,6 +10,8 @@ use RuntimeException;
 
 class OpenAiAssistant
 {
+    public function __construct(private readonly AssistantConfiguration $configuration) {}
+
     public function configured(): bool
     {
         return $this->apiKey() !== null && $this->model() !== null;
@@ -43,6 +45,7 @@ class OpenAiAssistant
                 'model' => $model,
                 'store' => false,
                 'safety_identifier' => $safetyIdentifier,
+                'reasoning' => ['effort' => $this->configuration->chat()['reasoning_effort']],
                 'max_output_tokens' => max(100, (int) config('guaranda.assistant.openai.max_output_tokens', 700)),
                 'instructions' => $this->instructions(),
                 'text' => [
@@ -96,9 +99,7 @@ class OpenAiAssistant
 
     private function model(): ?string
     {
-        $model = config('guaranda.assistant.openai.model');
-
-        return is_string($model) && $model !== '' ? $model : null;
+        return $this->configuration->chat()['model'];
     }
 
     /**

@@ -42,6 +42,22 @@ Vercel AI Gateway ni un proveedor de modelos.
 **Criterio de salida:** extensión `vector` disponible en la base elegida,
 respaldo verificable, health check y rollback documentados.
 
+### Preflight sin mutaciones
+
+Antes de proponer una migración vectorial se ejecuta dentro del contenedor de
+Laravel conectado a la base candidata:
+
+```bash
+php artisan ai:vector-preflight
+```
+
+El comando solo consulta catálogos de PostgreSQL y pruebas de carga de runtime:
+no ejecuta `CREATE EXTENSION`, migraciones, `INSERT`, `UPDATE` ni `DELETE`.
+Debe mostrar `Runtime pgvector = ok`. Si PostGIS está instalado también debe
+mostrar `Runtime PostGIS = ok`; cualquier `error` obliga a detenerse y reparar
+la imagen/instancia elegida antes de tocar schema. Para una conexión Laravel no
+predeterminada se usa `--connection=nombre`.
+
 ## Etapa 1 — Contrato nativo y chat confiable
 
 - Crear `AiAssistantService` como frontera OpenAI con HTTP de Laravel; secretos
@@ -61,6 +77,25 @@ a n8n, no se exponen secretos y las referencias inactivas se excluyen.
 datos vivos, contexto de viaje, rehidratación de referencias y persistencia
 transaccional. Falta configurar los secretos de OpenAI en Dokploy y desplegar.
 
+### Configuración de despliegue inicial
+
+En Dokploy se agregan como secretos de la aplicación, nunca en el repositorio:
+
+```dotenv
+OPENAI_API_KEY=clave-servidor
+GUARANDA_GO_OPENAI_MODEL=gpt-4o-mini
+# Activar solo si se desea describir fotos nuevas de rutas/POIs.
+GUARANDA_GO_OPENAI_VISION_MODEL=gpt-4o-mini
+```
+
+`gpt-4o-mini` es un punto de inicio eficiente para este flujo: acepta texto e
+imágenes, funciona con Responses y Structured Outputs. No configurar todavía
+un modelo de embeddings ni crear una migración vectorial: esa variable entra
+en la Etapa 3 únicamente después de un preflight correcto. Tras el deploy se
+comprueba `/up`, el estado sin secretos en `/admin/settings`, una consulta de
+chat y, si se activó visión, el worker de cola. La clave no se pega en terminal,
+logs, frontend ni APK.
+
 ## Etapa 2 — UI de conversación
 
 - Adaptar la pantalla existente a AI Elements ya versionado: `Conversation`,
@@ -75,7 +110,9 @@ internas navegables y sin dependencia visual de n8n.
 
 **Avance 2026-08-28:** `MessageResponse`, sugerencias, fuentes desplegables y
 tarjetas verificadas están integrados. Una ruta abre su detalle mediante
-Wayfinder; un POI se presenta como ficha hasta implementar detalle público.
+Wayfinder; un POI se presenta como ficha hasta implementar detalle público. Las
+tarjetas pueden incluir la foto editorial pública rehidratada y su descripción
+almacenada como texto alternativo; el modelo no aporta imágenes ni URLs.
 
 ## Etapa 3 — Base de conocimiento vectorial
 

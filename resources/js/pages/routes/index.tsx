@@ -69,6 +69,10 @@ export default function RoutesIndex({
         });
     };
 
+    const openRoute = (route: CyclingRouteMapItem) => {
+        router.visit(CyclistRouteController.show.url(route.slug));
+    };
+
     return (
         <>
             <Head title="Rutas" />
@@ -82,7 +86,7 @@ export default function RoutesIndex({
                 />
 
                 <MobileTabs
-                    defaultValue="list"
+                    defaultValue="map"
                     items={[
                         {
                             value: 'list',
@@ -120,6 +124,7 @@ export default function RoutesIndex({
                                         <RouteMap
                                             routes={routes.data}
                                             mode="overview"
+                                            onRouteSelect={openRoute}
                                             className="[&_.leaflet-container]:h-[calc(100svh-260px)] [&_.leaflet-container]:min-h-96"
                                         />
                                     </CardContent>

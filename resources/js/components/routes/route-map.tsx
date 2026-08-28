@@ -24,6 +24,7 @@ import {
     TileLayer,
     useMap,
 } from 'react-leaflet';
+import CyclistRouteController from '@/actions/App/Http/Controllers/Cyclist/RouteController';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -38,6 +39,8 @@ export type RouteMapProps = {
     className?: string;
     mode?: 'overview' | 'detail';
     activeTrack?: ActiveTrack | null;
+    onPoiSelect?: (poi: RoutePoi) => void;
+    onRouteSelect?: (route: CyclingRouteMapItem) => void;
 };
 
 type UserLocation = {
@@ -122,6 +125,8 @@ export default function RouteMap({
     className,
     mode = 'detail',
     activeTrack = null,
+    onPoiSelect,
+    onRouteSelect,
 }: RouteMapProps) {
     const [isOnline, setIsOnline] = useState(() =>
         typeof navigator === 'undefined' ? true : navigator.onLine,
@@ -306,6 +311,8 @@ export default function RouteMap({
                             route={route}
                             selected={selectedSlug === route.slug}
                             filters={filters}
+                            onPoiSelect={onPoiSelect}
+                            onRouteSelect={onRouteSelect}
                         />
                     ))}
 
@@ -408,10 +415,14 @@ function RouteLayers({
     route,
     selected,
     filters,
+    onPoiSelect,
+    onRouteSelect,
 }: {
     route: CyclingRouteMapItem;
     selected: boolean;
     filters: OverlayFilters;
+    onPoiSelect?: (poi: RoutePoi) => void;
+    onRouteSelect?: (route: CyclingRouteMapItem) => void;
 }) {
     return (
         <>
@@ -430,6 +441,9 @@ function RouteLayers({
                             ...routePathOptions,
                             weight: selected ? 7 : 5,
                         }}
+                        eventHandlers={{
+                            click: () => onRouteSelect?.(route),
+                        }}
                     >
                         <Popup>
                             <RoutePopup route={route} />
@@ -444,6 +458,9 @@ function RouteLayers({
                         center={[route.start_latitude, route.start_longitude]}
                         pathOptions={startPathOptions}
                         radius={selected ? 8 : 7}
+                        eventHandlers={{
+                            click: () => onRouteSelect?.(route),
+                        }}
                     >
                         <Popup>
                             <div className="flex flex-col gap-1 text-sm">
@@ -457,6 +474,9 @@ function RouteLayers({
                         center={[route.end_latitude, route.end_longitude]}
                         pathOptions={endPathOptions}
                         radius={selected ? 8 : 7}
+                        eventHandlers={{
+                            click: () => onRouteSelect?.(route),
+                        }}
                     >
                         <Popup>
                             <div className="flex flex-col gap-1 text-sm">
@@ -475,6 +495,9 @@ function RouteLayers({
                         center={[poi.latitude, poi.longitude]}
                         pathOptions={poiPathOptions}
                         radius={6}
+                        eventHandlers={{
+                            click: () => onPoiSelect?.(poi),
+                        }}
                     >
                         <Popup>
                             <PoiPopup poi={poi} />
@@ -526,7 +549,8 @@ function RoutePopup({ route }: { route: CyclingRouteMapItem }) {
                 </span>
             )}
             <Link
-                href={`/routes/${route.slug}`}
+                href={CyclistRouteController.show.url(route.slug)}
+                prefetch
                 className="font-medium text-link underline-offset-4 hover:text-link-hover hover:underline"
             >
                 Ver detalle

@@ -10,8 +10,10 @@ return [
     'assistant' => [
         'openai' => [
             'api_key' => env('OPENAI_API_KEY'),
-            'model' => env('GUARANDA_GO_OPENAI_MODEL'),
-            'vision_model' => env('GUARANDA_GO_OPENAI_VISION_MODEL'),
+            'model' => env('GUARANDA_GO_OPENAI_MODEL', 'gpt-5.6-luna'),
+            'reasoning_effort' => env('GUARANDA_GO_OPENAI_REASONING_EFFORT', 'medium'),
+            'vision_model' => env('GUARANDA_GO_OPENAI_VISION_MODEL', 'gpt-5.6-luna'),
+            'vision_reasoning_effort' => env('GUARANDA_GO_OPENAI_VISION_REASONING_EFFORT', 'none'),
             'timeout_seconds' => (int) env('GUARANDA_GO_OPENAI_TIMEOUT_SECONDS', 20),
             'connect_timeout_seconds' => (int) env('GUARANDA_GO_OPENAI_CONNECT_TIMEOUT_SECONDS', 3),
             'max_output_tokens' => (int) env('GUARANDA_GO_OPENAI_MAX_OUTPUT_TOKENS', 700),

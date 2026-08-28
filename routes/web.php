@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\CatalogController;
+use App\Http\Controllers\Admin\AssistantConfigurationController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\IncidentController as AdminIncidentController;
 use App\Http\Controllers\Admin\NotificationController as AdminNotificationController;
@@ -74,6 +75,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 Route::middleware(['auth', 'verified', 'admin'])
     ->get('settings', SystemSettingsController::class)
     ->name('admin.settings.index');
+
+Route::middleware(['auth', 'verified', 'admin'])
+    ->patch('settings/assistant', [AssistantConfigurationController::class, 'update'])
+    ->name('admin.settings.assistant.update');
 
 Route::middleware(['auth', 'verified', 'admin'])
     ->prefix('admin')

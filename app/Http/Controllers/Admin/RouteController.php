@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreRouteRequest;
 use App\Http\Requests\Admin\UpdateRouteRequest;
 use App\Jobs\GenerateImageDescription;
+use App\Services\Ai\AssistantConfiguration;
 use App\Models\CyclingRoute;
 use App\Models\PoiCategory;
 use App\Models\PointOfInterest;
@@ -591,8 +592,7 @@ class RouteController extends Controller
 
     private function queueImageDescription(int $imageId): void
     {
-        if (! filled(config('guaranda.assistant.openai.api_key'))
-            || ! filled(config('guaranda.assistant.openai.vision_model'))) {
+        if (! app(AssistantConfiguration::class)->configuredForVision()) {
             return;
         }
 

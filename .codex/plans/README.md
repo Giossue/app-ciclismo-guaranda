@@ -48,7 +48,6 @@ Antes de implementar una fase, el agente debe:
 Implementación activa:
 
 ```txt
-15_agente_n8n_tools.md
 16_refactor_frontend_mobile_design.md
 17_agente_laravel_openai.md
 ```

@@ -333,5 +333,14 @@
 
 - Se adopta Laravel como frontera única del asistente y OpenAI Responses como proveedor externo, con `store: false`, configuración exclusiva de servidor y contrato JSON Schema validado.
 - Las tools HTTP y el token de n8n se retiran porque Laravel recupera los datos públicos vivos directamente; no se elimina el servicio n8n compartido del VPS.
+
+## 2026-08-28 — Configuración inicial de modelos OpenAI
+
+- Para la primera activación se recomienda `gpt-4o-mini` para chat y visión:
+  soporta entradas de texto/imagen, Responses y Structured Outputs; las claves
+  y nombres de modelo siguen siendo secretos de Dokploy.
+- `text-embedding-3-large` queda reservado para retrieval semántico tras un
+  preflight pgvector correcto; no se convierte en dependencia del chat vivo ni
+  dispara migraciones antes de tiempo.
 - La ubicación no forma parte de la persistencia de conversaciones. El modelo recibe solo contexto público acotado, ubicación temporal si fue autorizada y ocho mensajes recientes truncados.
 - AI Elements se usa sin plugins de Markdown avanzados que no corresponden al producto, para proteger la descarga de la app móvil.

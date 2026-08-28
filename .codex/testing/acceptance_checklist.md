@@ -53,15 +53,15 @@
 - Cada archivo multimedia tiene límite de 20 MB.
 - Comentarios y archivos se muestran públicamente solo cuando la valoración está aprobada.
 
-## Chatbot n8n
+## Asistente Laravel/OpenAI
 
-- App envía solicitud al webhook configurado.
-- Recibe JSON de `Respond to Webhook`.
-- Muestra respuesta correctamente.
-- Maneja error o timeout.
+- Laravel consulta OpenAI únicamente si sus secretos están configurados.
+- OpenAI devuelve JSON Schema y Laravel valida la respuesta antes de persistirla.
+- Muestra respuesta, sugerencias y tarjetas rehidratadas correctamente.
+- Maneja error o timeout sin exponer detalles internos.
 - No funciona offline.
 - No expone secretos en APK/frontend.
-- Si n8n todavía no está configurado, muestra aviso claro y no se cuenta como bug de la app.
+- Si OpenAI todavía no está configurado, muestra aviso claro y no se cuenta como bug de la app.
 
 ## Administración sin placeholders
 
@@ -84,7 +84,7 @@
 - `APP_URL` usa HTTPS.
 - `RUN_SEEDERS` está ausente o en `false` para no resembrar en cada deploy.
 - Migraciones se ejecutan en deploy.
-- No se exponen secretos de n8n, base de datos o APP_KEY.
+- No se exponen secretos de OpenAI, base de datos o APP_KEY.
 
 ## Android
 

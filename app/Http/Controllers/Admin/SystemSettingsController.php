@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\Ai\AssistantConfiguration;
+use App\Services\Ai\VectorRuntimeInspector;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Inertia\Inertia;
@@ -11,9 +13,15 @@ use Inertia\Response;
 
 class SystemSettingsController extends Controller
 {
+    public function __construct(
+        private readonly AssistantConfiguration $assistantConfiguration,
+        private readonly VectorRuntimeInspector $vectorRuntimeInspector,
+    ) {}
+
     public function __invoke(): Response
     {
         $this->authorize('viewAny', User::class);
+        $databaseCapabilities = $this->vectorRuntimeInspector->inspect(DB::connection());
 
         return Inertia::render('admin/settings/index', [
             'settings' => [
@@ -34,9 +42,14 @@ class SystemSettingsController extends Controller
                 ],
                 'integrations' => [
                     'openai_configured' => filled(config('guaranda.assistant.openai.api_key'))
-                        && filled(config('guaranda.assistant.openai.model')),
+                        && $this->assistantConfiguration->chat()['model'] !== null,
+                    'openai_vision_configured' => filled(config('guaranda.assistant.openai.api_key'))
+                        && $this->assistantConfiguration->vision()['model'] !== null,
                     'openai_timeout_seconds' => config('guaranda.assistant.openai.timeout_seconds'),
-                    'postgis_available' => $this->postgisAvailable(),
+                    'postgis_available' => $databaseCapabilities['postgis_installed'],
+                    'postgis_runtime' => $databaseCapabilities['postgis_runtime'],
+                    'pgvector_available' => $databaseCapabilities['vector_available'],
+                    'pgvector_runtime' => $databaseCapabilities['vector_runtime'],
                     'public_storage_linked' => is_link(public_path('storage')),
                 ],
                 'security' => [
@@ -50,19 +63,12 @@ class SystemSettingsController extends Controller
                     'migrations_table_exists' => Schema::hasTable(config('database.migrations.table', 'migrations')),
                 ],
             ],
+            'assistantConfiguration' => [
+                'chat_model' => $this->assistantConfiguration->chat()['model'],
+                'chat_reasoning_effort' => $this->assistantConfiguration->chat()['reasoning_effort'],
+                'vision_model' => $this->assistantConfiguration->vision()['model'],
+                'vision_reasoning_effort' => $this->assistantConfiguration->vision()['reasoning_effort'],
+            ],
         ]);
-    }
-
-    private function postgisAvailable(): bool
-    {
-        if (DB::connection()->getDriverName() !== 'pgsql') {
-            return false;
-        }
-
-        try {
-            return DB::scalar("select exists (select 1 from pg_extension where extname = 'postgis')") === true;
-        } catch (\Throwable) {
-            return false;
-        }
     }
 }

@@ -7,6 +7,7 @@ use App\Http\Requests\Admin\ListPointsOfInterestRequest;
 use App\Http\Requests\Admin\StorePoiRequest;
 use App\Http\Requests\Admin\UpdatePoiRequest;
 use App\Jobs\GenerateImageDescription;
+use App\Services\Ai\AssistantConfiguration;
 use App\Models\CuisineType;
 use App\Models\CyclingRoute;
 use App\Models\HealthCenterType;
@@ -337,8 +338,7 @@ class PoiController extends Controller
 
     private function queueImageDescription(int $imageId): void
     {
-        if (! filled(config('guaranda.assistant.openai.api_key'))
-            || ! filled(config('guaranda.assistant.openai.vision_model'))) {
+        if (! app(AssistantConfiguration::class)->configuredForVision()) {
             return;
         }
 

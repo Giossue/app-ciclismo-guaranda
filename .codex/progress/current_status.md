@@ -212,6 +212,12 @@ Después de esa prueba manual, marcar Fase 12 y Fase 14 como `Completado` si tod
 - Observabilidad mínima: las llamadas completadas registran solo modelo,
   latencia y conteo de tokens; los fallos registran el tipo de excepción y el
   ID del usuario, sin mensajes, imágenes, ubicación ni secretos.
+- Se añadió `ai:vector-preflight`: prueba por lectura la disponibilidad y carga
+  de pgvector/PostGIS y falla sin mutar schema ni datos. Su resultado correcto
+  será el requisito previo para crear la migración de embeddings.
+- Información técnica de administración distingue ahora instalación de PostGIS,
+  disponibilidad de pgvector y carga real de ambos runtimes, sin exponer el
+  detalle de conexión ni intentar reparar extensiones desde la aplicación.
 - Las fotos nuevas subidas por administración para rutas o POIs pueden recibir
   una descripción automática por cola de base de datos, solo cuando se configure
   el modelo de visión. El worker vive bajo Supervisor en el contenedor actual;

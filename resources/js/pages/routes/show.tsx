@@ -2,9 +2,11 @@ import { Form, Head, Link, router } from '@inertiajs/react';
 import {
     AlertTriangle,
     ArrowLeft,
+    Bike,
+    ChevronDown,
+    Clock,
     Database,
     Download,
-    ImageIcon,
     LocateFixed,
     Heart,
     HeartOff,
@@ -16,9 +18,10 @@ import {
     Trash2,
     Wifi,
     WifiOff,
+    X,
 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { FormEvent } from 'react';
+import type { FormEvent, ReactNode } from 'react';
 import FavoriteRouteController from '@/actions/App/Http/Controllers/Cyclist/FavoriteRouteController';
 import IncidentController from '@/actions/App/Http/Controllers/Cyclist/IncidentController';
 import OfflineRouteController from '@/actions/App/Http/Controllers/Cyclist/OfflineRouteController';
@@ -30,7 +33,6 @@ import ImageFileInput from '@/components/image-file-input';
 import ImageGallery from '@/components/image-gallery';
 import type { GalleryImage } from '@/components/image-gallery';
 import InputError from '@/components/input-error';
-import { MobileTabs } from '@/components/mobile-tabs';
 import LocationPickerMap from '@/components/routes/client-only-location-picker-map';
 import RouteMap from '@/components/routes/client-only-route-map';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -43,6 +45,11 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import {
+    Collapsible,
+    CollapsibleContent,
+    CollapsibleTrigger,
+} from '@/components/ui/collapsible';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -92,122 +99,234 @@ export default function RoutesShow({
     incidentTypes,
     activeTrack,
 }: Props) {
+    const [selectedPoi, setSelectedPoi] = useState<RoutePoi | null>(null);
+
     return (
         <>
             <Head title={route.name} />
 
-            <div className="flex flex-col gap-4">
-                <RouteHeader route={route} />
-
-                <MobileTabs
-                    defaultValue="map"
-                    align="start"
-                    items={[
-                        {
-                            value: 'map',
-                            label: 'Mapa',
-                            content: (
-                                <div className="flex flex-col gap-3">
-                                    {route.incidents.length > 0 && (
-                                        <Alert variant="destructive">
-                                            <AlertTriangle />
-                                            <AlertTitle>
-                                                Revisa las alertas
-                                            </AlertTitle>
-                                            <AlertDescription>
-                                                Hay reportes visibles en esta
-                                                ruta.
-                                            </AlertDescription>
-                                        </Alert>
-                                    )}
-                                    <Card className="overflow-hidden">
-                                        <CardHeader>
-                                            <CardTitle>Mapa</CardTitle>
-                                            <CardDescription>
-                                                Trazado, inicio, final y puntos
-                                                útiles.
-                                            </CardDescription>
-                                        </CardHeader>
-                                        <CardContent>
-                                            <RouteMap
-                                                routes={[route]}
-                                                selectedSlug={route.slug}
-                                                mode="detail"
-                                                activeTrack={activeTrack}
-                                                className="[&_.leaflet-container]:h-[calc(100svh-280px)] [&_.leaflet-container]:min-h-96 md:[&_.leaflet-container]:h-[560px]"
-                                            />
-                                        </CardContent>
-                                    </Card>
-                                    <TrackPanel
-                                        route={route}
-                                        activeTrack={activeTrack}
-                                    />
-                                </div>
-                            ),
-                        },
-                        {
-                            value: 'route',
-                            label: 'Ruta',
-                            content: (
-                                <div className="flex flex-col gap-3">
-                                    <RouteDetailPanel route={route} />
-                                    <TrackPanel
-                                        route={route}
-                                        activeTrack={activeTrack}
-                                    />
-                                </div>
-                            ),
-                        },
-                        {
-                            value: 'pois',
-                            label: 'POIs',
-                            badge: route.points_of_interest.length,
-                            content: (
-                                <div className="flex flex-col gap-3">
-                                    <PoisPanel route={route} />
-                                    <PoiSuggestionForm
-                                        route={route}
-                                        categories={poiCategories}
-                                    />
-                                </div>
-                            ),
-                        },
-                        {
-                            value: 'reports',
-                            label: 'Reportar',
-                            badge: route.incidents.length || null,
-                            content: (
-                                <div className="flex flex-col gap-3">
-                                    <IncidentReportForm
-                                        route={route}
-                                        types={incidentTypes}
-                                    />
-                                    {route.incidents.length > 0 && (
-                                        <IncidentsPanel route={route} />
-                                    )}
-                                </div>
-                            ),
-                        },
-                        {
-                            value: 'ratings',
-                            label: 'Opiniones',
-                            badge: route.approved_ratings.length || null,
-                            content: <FavoriteRatingPanel route={route} />,
-                        },
-                        {
-                            value: 'offline',
-                            label: 'Sin conexión',
-                            content: (
-                                <OfflinePanel
-                                    route={route}
-                                    incidentTypes={incidentTypes}
-                                />
-                            ),
-                        },
-                    ]}
+            <div className="-mx-[var(--page-pad-x)] -mt-[var(--page-pad-y)] flex flex-col">
+                <RouteMap
+                    routes={[route]}
+                    selectedSlug={route.slug}
+                    mode="detail"
+                    activeTrack={activeTrack}
+                    onPoiSelect={setSelectedPoi}
+                    className="rounded-none border-x-0 [&_.leaflet-container]:h-[calc(100svh-10rem)] [&_.leaflet-container]:min-h-[36rem] md:[&_.leaflet-container]:h-[calc(100svh-3rem)]"
+                />
+                <RouteExplorerSheet
+                    route={route}
+                    poiCategories={poiCategories}
+                    incidentTypes={incidentTypes}
+                    activeTrack={activeTrack}
+                    selectedPoi={selectedPoi}
+                    onClearSelectedPoi={() => setSelectedPoi(null)}
                 />
             </div>
         </>
+    );
+}
+
+function RouteExplorerSheet({
+    route,
+    poiCategories,
+    incidentTypes,
+    activeTrack,
+    selectedPoi,
+    onClearSelectedPoi,
+}: Props & {
+    selectedPoi: RoutePoi | null;
+    onClearSelectedPoi: () => void;
+}) {
+    return (
+        <section className="relative z-10 -mt-72 flex flex-col gap-5 rounded-t-[var(--radius-emphasis)] border-t bg-background px-4 pt-3 pb-[calc(var(--bottom-nav-height)+var(--safe-bottom)+1.5rem)] shadow-[0_-16px_40px_color-mix(in_oklch,var(--foreground)_18%,transparent)] md:mx-auto md:-mt-[32rem] md:mr-6 md:w-[min(34rem,42vw)] md:rounded-[var(--radius-emphasis)] md:border">
+            <div
+                aria-hidden="true"
+                className="mx-auto h-1.5 w-12 rounded-full bg-muted-foreground/35"
+            />
+            <RouteSummary route={route} />
+
+            {selectedPoi && (
+                <SelectedPoiSummary
+                    poi={selectedPoi}
+                    onClose={onClearSelectedPoi}
+                />
+            )}
+
+            {route.incidents.length > 0 && (
+                <Alert variant="destructive">
+                    <AlertTriangle />
+                    <AlertTitle>Revisa las alertas</AlertTitle>
+                    <AlertDescription>
+                        Hay reportes visibles en esta ruta.
+                    </AlertDescription>
+                </Alert>
+            )}
+
+            <TrackPanel route={route} activeTrack={activeTrack} />
+
+            <div className="flex flex-col divide-y border-y">
+                <RouteSection title="Detalles de la ruta" defaultOpen>
+                    <RouteDetailPanel route={route} />
+                </RouteSection>
+                <RouteSection
+                    key={selectedPoi?.id ?? 'points-of-interest'}
+                    title="Puntos útiles"
+                    count={route.points_of_interest.length}
+                    defaultOpen={selectedPoi !== null}
+                >
+                    <div className="flex flex-col gap-3">
+                        <PoisPanel route={route} />
+                        <PoiSuggestionForm
+                            route={route}
+                            categories={poiCategories}
+                        />
+                    </div>
+                </RouteSection>
+                <RouteSection
+                    title="Alertas y reportes"
+                    count={route.incidents.length || undefined}
+                >
+                    <div className="flex flex-col gap-3">
+                        <IncidentReportForm
+                            route={route}
+                            types={incidentTypes}
+                        />
+                        {route.incidents.length > 0 && (
+                            <IncidentsPanel route={route} />
+                        )}
+                    </div>
+                </RouteSection>
+                <RouteSection
+                    title="Favoritos y opiniones"
+                    count={route.approved_ratings.length || undefined}
+                >
+                    <FavoriteRatingPanel route={route} />
+                </RouteSection>
+                <RouteSection title="Disponible sin conexión">
+                    <OfflinePanel route={route} incidentTypes={incidentTypes} />
+                </RouteSection>
+            </div>
+        </section>
+    );
+}
+
+function SelectedPoiSummary({
+    poi,
+    onClose,
+}: {
+    poi: RoutePoi;
+    onClose: () => void;
+}) {
+    return (
+        <div className="flex items-start justify-between gap-3 rounded-[var(--radius-surface)] border border-primary/20 bg-primary/5 p-3">
+            <div className="min-w-0">
+                <p className="text-xs font-medium text-muted-foreground">
+                    Punto útil seleccionado
+                </p>
+                <h2 className="mt-0.5 font-medium">{poi.name}</h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                    {poi.category?.name ?? 'Servicio de la ruta'}
+                    {poi.distance_from_start_km !== null
+                        ? ` · Km ${poi.distance_from_start_km.toLocaleString()}`
+                        : ''}
+                </p>
+            </div>
+            <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={onClose}
+                aria-label="Cerrar punto útil seleccionado"
+            >
+                <X />
+            </Button>
+        </div>
+    );
+}
+
+function RouteSummary({ route }: { route: CyclingRouteMapItem }) {
+    return (
+        <div className="flex flex-col gap-3">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                    <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+                        {route.name}
+                    </h1>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                        {route.start_name} → {route.end_name}
+                    </p>
+                </div>
+                <div className="flex flex-wrap justify-end gap-1.5">
+                    <Button asChild variant="ghost" size="icon">
+                        <Link
+                            href={routesIndex.url()}
+                            prefetch
+                            aria-label="Volver al mapa de rutas"
+                        >
+                            <ArrowLeft />
+                        </Link>
+                    </Button>
+                    {route.category && <Badge>{route.category.name}</Badge>}
+                    {route.difficulty && (
+                        <Badge variant="outline">{route.difficulty.name}</Badge>
+                    )}
+                </div>
+            </div>
+
+            <div className="flex flex-wrap gap-4 text-sm">
+                <div className="flex items-center gap-1.5 text-muted-foreground">
+                    <Bike className="size-4" />
+                    <span>
+                        {route.metric
+                            ? `${route.metric.distance_km.toLocaleString()} km`
+                            : 'Distancia sin dato'}
+                    </span>
+                </div>
+                <div className="flex items-center gap-1.5 text-muted-foreground">
+                    <Clock className="size-4" />
+                    <span>
+                        {route.metric
+                            ? `${route.metric.estimated_time_minutes} min`
+                            : 'Tiempo sin dato'}
+                    </span>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function RouteSection({
+    children,
+    count,
+    defaultOpen = false,
+    title,
+}: {
+    children: ReactNode;
+    count?: number;
+    defaultOpen?: boolean;
+    title: string;
+}) {
+    return (
+        <Collapsible defaultOpen={defaultOpen}>
+            <CollapsibleTrigger asChild>
+                <button
+                    type="button"
+                    className="group flex min-h-12 w-full touch-manipulation items-center justify-between gap-3 px-4 py-3 text-left font-medium"
+                >
+                    <span className="flex items-center gap-2">
+                        {title}
+                        {count !== undefined && (
+                            <Badge variant="outline">{count}</Badge>
+                        )}
+                    </span>
+                    <ChevronDown className="size-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
+                </button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="overflow-hidden px-3 pb-3 data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down">
+                {children}
+            </CollapsibleContent>
+        </Collapsible>
     );
 }
 
@@ -309,77 +428,6 @@ function IncidentsPanel({ route }: { route: CyclingRouteMapItem }) {
                     </div>
                 ))}
             </CardContent>
-        </Card>
-    );
-}
-
-function RouteHeader({ route }: { route: CyclingRouteMapItem }) {
-    const placeholder = (
-        <div className="flex min-h-52 items-center justify-center bg-muted text-muted-foreground md:min-h-72">
-            <div className="flex flex-col items-center gap-2 text-center">
-                <ImageIcon className="size-4" />
-                <span className="text-sm font-medium">Ruta sin portada</span>
-            </div>
-        </div>
-    );
-
-    const images: GalleryImage[] =
-        route.gallery.length > 0
-            ? route.gallery.map((image) => ({
-                  src: mediaUrl(image.image_path),
-                  alt: route.name,
-                  description: image.description,
-              }))
-            : route.main_image_path
-              ? [{ src: mediaUrl(route.main_image_path), alt: route.name }]
-              : [];
-
-    return (
-        <Card className="overflow-hidden">
-            <div className="relative">
-                <ImageGallery
-                    images={images}
-                    slideClassName="h-52 md:h-72"
-                    fallback={placeholder}
-                />
-                <Button
-                    asChild
-                    size="icon"
-                    variant="overlay"
-                    className="absolute top-3 left-3 z-[5] size-9"
-                >
-                    <Link
-                        href={routesIndex.url()}
-                        prefetch
-                        aria-label="Volver a rutas"
-                    >
-                        <ArrowLeft className="size-4" />
-                    </Link>
-                </Button>
-            </div>
-
-            <div className="flex flex-col gap-2 p-4">
-                <h1 className="text-xl font-black tracking-tight text-foreground">
-                    {route.name}
-                </h1>
-                <p className="text-sm font-semibold text-muted-foreground">
-                    {route.start_name} → {route.end_name}
-                </p>
-                <div className="flex flex-wrap gap-2">
-                    {route.category && (
-                        <Badge variant="outline">{route.category.name}</Badge>
-                    )}
-                    {route.difficulty && (
-                        <Badge variant="outline">{route.difficulty.name}</Badge>
-                    )}
-                    {route.incidents.length > 0 && (
-                        <Badge>
-                            {route.incidents.length} alerta
-                            {route.incidents.length === 1 ? '' : 's'}
-                        </Badge>
-                    )}
-                </div>
-            </div>
         </Card>
     );
 }

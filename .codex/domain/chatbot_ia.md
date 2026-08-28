@@ -64,11 +64,19 @@ GUARANDA_GO_OPENAI_MODEL=
 GUARANDA_GO_OPENAI_TIMEOUT_SECONDS=20
 GUARANDA_GO_OPENAI_CONNECT_TIMEOUT_SECONDS=3
 GUARANDA_GO_OPENAI_MAX_OUTPUT_TOKENS=700
+GUARANDA_GO_OPENAI_VISION_MODEL=
+GUARANDA_GO_OPENAI_VISION_MAX_IMAGE_BYTES=5242880
 ```
 
 La clave y el modelo se definen como secretos en Dokploy. Si faltan, el chat no
 envía solicitudes y muestra un error seguro. Se usa `store: false`; no se
 envían secretos, nombres, emails, roles ni cabeceras al proveedor.
+
+Para iniciar se puede usar `gpt-4o-mini` tanto en
+`GUARANDA_GO_OPENAI_MODEL` como en `GUARANDA_GO_OPENAI_VISION_MODEL`: admite
+texto e imagen de entrada, Structured Outputs y el endpoint Responses. Esto no
+configura embeddings; `text-embedding-3-large` queda reservado para la Etapa 3
+cuando el preflight de pgvector sea correcto.
 
 Para descripciones de imágenes editoriales administradas se añade
 `GUARANDA_GO_OPENAI_VISION_MODEL`; sin ese secreto no se encola nada. El job
@@ -83,3 +91,8 @@ La Fase 17 deja preparada la transición a pgvector con
 `text-embedding-3-large` y descripciones automáticas de imágenes admin. No se
 crea ni modifica todavía ninguna tabla vectorial hasta reparar el runtime de
 PostGIS y planificar una ventana de mantenimiento. Plan: `17_agente_laravel_openai.md`.
+
+El preflight no destructivo `php artisan ai:vector-preflight` consulta la base
+actual y falla de forma segura si `vector` no está disponible o no carga en
+runtime. No se autoriza una migración de embeddings hasta que el preflight sea
+correcto en la base elegida.
