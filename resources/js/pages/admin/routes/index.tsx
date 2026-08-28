@@ -1,7 +1,9 @@
 import { Form, Head, Link } from '@inertiajs/react';
-import { Bike, Clock, MapPinned, Pencil, Plus, Power } from 'lucide-react';
+import { Bike, Clock, Ellipsis, MapPinned, Pencil, Plus, Power } from 'lucide-react';
+import type { ReactNode } from 'react';
 import RouteController from '@/actions/App/Http/Controllers/Admin/RouteController';
 import Heading from '@/components/heading';
+import ImageWithFallback from '@/components/image-with-fallback';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -12,6 +14,15 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuGroup,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { mediaUrl } from '@/lib/media';
 import type { CatalogOption } from '@/types';
 
 type RouteSummary = {
@@ -43,6 +54,9 @@ type PaginationLink = {
 type PaginatedRoutes = {
     data: RouteSummary[];
     links: PaginationLink[];
+    current_page: number;
+    last_page: number;
+    per_page: number;
     from: number | null;
     to: number | null;
     total: number;
@@ -61,21 +75,34 @@ export default function AdminRoutesIndex({ routes }: Props) {
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <Heading
                         title="Rutas oficiales"
-                        description="Crea, publica e inactiva rutas disponibles para ciclistas"
+                        description="Gestiona las rutas disponibles para ciclistas."
                     />
                     <Button asChild>
-                        <Link href="/admin/routes/create" prefetch>
+                        <Link href={RouteController.create.url()} prefetch>
                             <Plus data-icon="inline-start" />
                             Nueva ruta
                         </Link>
                     </Button>
                 </div>
 
-                <div className="grid gap-4">
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     {routes.data.map((route) => (
-                        <Card key={route.id}>
+                        <Card key={route.id} className="overflow-hidden">
+                            <ImageWithFallback
+                                src={mediaUrl(route.main_image_path)}
+                                alt={`Vista de ${route.name}`}
+                                className="h-36 w-full object-cover"
+                                fallback={
+                                    <div className="flex h-36 items-center justify-center bg-muted text-muted-foreground">
+                                        <MapPinned aria-hidden="true" />
+                                        <span className="sr-only">
+                                            Esta ruta no tiene imagen principal
+                                        </span>
+                                    </div>
+                                }
+                            />
                             <CardHeader>
-                                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                                <div className="flex items-start justify-between gap-3">
                                     <div className="flex flex-col gap-2">
                                         <div className="flex flex-wrap gap-2">
                                             {route.status && (
@@ -97,39 +124,42 @@ export default function AdminRoutesIndex({ routes }: Props) {
                                                     {route.difficulty.name}
                                                 </Badge>
                                             )}
-                                            <Badge variant="outline">
-                                                v{route.route_version}
-                                            </Badge>
                                         </div>
-                                        <CardTitle>{route.name}</CardTitle>
-                                        <CardDescription>
+                                        <CardTitle className="font-normal tracking-normal">
+                                            {route.name}
+                                        </CardTitle>
+                                        <CardDescription className="line-clamp-2">
                                             {route.description}
                                         </CardDescription>
                                     </div>
+                                    <RouteCardActions route={route} />
                                 </div>
                             </CardHeader>
-                            <CardContent className="grid gap-3 text-sm text-muted-foreground sm:grid-cols-3">
-                                <div className="flex items-center gap-2">
+                            <CardContent className="flex flex-col gap-4 text-sm">
+                                <div className="flex items-start gap-2 text-muted-foreground">
                                     <MapPinned />
-                                    <span>
+                                    <span className="line-clamp-2">
                                         {route.start_name} → {route.end_name}
                                     </span>
                                 </div>
                                 {route.metric && (
-                                    <>
-                                        <div className="flex items-center gap-2">
-                                            <Bike />
-                                            <span>
+                                    <div className="grid grid-cols-2 gap-3 border-t pt-4 text-muted-foreground">
+                                        <div className="flex flex-col gap-1">
+                                            <span className="text-xs">
+                                                Distancia
+                                            </span>
+                                            <span className="flex items-center gap-2 text-foreground">
+                                                <Bike />
                                                 {route.metric.distance_km.toLocaleString()}{' '}
                                                 km
-                                                {route.metric.transport_mode
-                                                    ? ` · ${route.metric.transport_mode}`
-                                                    : ''}
                                             </span>
                                         </div>
-                                        <div className="flex items-center gap-2">
-                                            <Clock />
-                                            <span>
+                                        <div className="flex flex-col gap-1">
+                                            <span className="text-xs">
+                                                Tiempo estimado
+                                            </span>
+                                            <span className="flex items-center gap-2 text-foreground">
+                                                <Clock />
                                                 {
                                                     route.metric
                                                         .estimated_time_minutes
@@ -137,38 +167,14 @@ export default function AdminRoutesIndex({ routes }: Props) {
                                                 min
                                             </span>
                                         </div>
-                                    </>
+                                    </div>
+                                )}
+                                {route.metric?.transport_mode && (
+                                    <p className="text-xs text-muted-foreground">
+                                        Medio: {route.metric.transport_mode}
+                                    </p>
                                 )}
                             </CardContent>
-                            <CardFooter className="flex flex-wrap gap-2">
-                                <Button variant="outline" asChild>
-                                    <Link
-                                        href={`/admin/routes/${route.id}/edit`}
-                                        prefetch
-                                    >
-                                        <Pencil data-icon="inline-start" />
-                                        Editar
-                                    </Link>
-                                </Button>
-                                {route.status?.name !== 'inactiva' && (
-                                    <Form
-                                        {...RouteController.destroy.form(
-                                            route.id,
-                                        )}
-                                        options={{ preserveScroll: true }}
-                                    >
-                                        {({ processing }) => (
-                                            <Button
-                                                variant="destructive"
-                                                disabled={processing}
-                                            >
-                                                <Power data-icon="inline-start" />
-                                                Inactivar
-                                            </Button>
-                                        )}
-                                    </Form>
-                                )}
-                            </CardFooter>
                         </Card>
                     ))}
                 </div>
@@ -184,7 +190,10 @@ export default function AdminRoutesIndex({ routes }: Props) {
                         </CardHeader>
                         <CardFooter>
                             <Button asChild>
-                                <Link href="/admin/routes/create" prefetch>
+                                <Link
+                                    href={RouteController.create.url()}
+                                    prefetch
+                                >
                                     <Plus data-icon="inline-start" />
                                     Crear ruta
                                 </Link>
@@ -193,12 +202,145 @@ export default function AdminRoutesIndex({ routes }: Props) {
                     </Card>
                 )}
 
-                <div className="text-sm text-muted-foreground">
-                    Mostrando {routes.from ?? 0}-{routes.to ?? 0} de{' '}
-                    {routes.total} rutas.
+                <div className="flex flex-col gap-3 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+                    <p>
+                        Mostrando {routes.from ?? 0}-{routes.to ?? 0} de{' '}
+                        {routes.total} rutas.
+                    </p>
+                    {routes.last_page > 1 && (
+                        <RoutePagination routes={routes} />
+                    )}
                 </div>
             </div>
         </>
+    );
+}
+
+function RoutePagination({ routes }: { routes: PaginatedRoutes }) {
+    const pageLinks = routes.links.slice(1, -1);
+    const previousUrl = routes.links[0]?.url ?? null;
+    const nextUrl = routes.links.at(-1)?.url ?? null;
+
+    return (
+        <nav
+            aria-label="Paginación de rutas"
+            className="flex flex-wrap items-center gap-2"
+        >
+            <PaginationButton label="Página anterior" url={previousUrl}>
+                Anterior
+            </PaginationButton>
+            {pageLinks.map((link) =>
+                link.url === null ? (
+                    <span
+                        key={link.label}
+                        className="px-2 text-muted-foreground"
+                        aria-hidden="true"
+                    >
+                        …
+                    </span>
+                ) : (
+                    <PaginationButton
+                        key={link.label}
+                        label={`Página ${link.label}`}
+                        url={link.url}
+                        active={link.active}
+                    >
+                        {link.label}
+                    </PaginationButton>
+                ),
+            )}
+            <PaginationButton label="Página siguiente" url={nextUrl}>
+                Siguiente
+            </PaginationButton>
+        </nav>
+    );
+}
+
+function PaginationButton({
+    active = false,
+    children,
+    label,
+    url,
+}: {
+    active?: boolean;
+    children: ReactNode;
+    label: string;
+    url: string | null;
+}) {
+    if (url === null) {
+        return (
+            <Button type="button" variant="outline" size="sm" disabled>
+                {children}
+            </Button>
+        );
+    }
+
+    return (
+        <Button
+            asChild
+            type="button"
+            variant={active ? 'secondary' : 'outline'}
+            size="sm"
+        >
+            <Link href={url} preserveScroll aria-label={label}>
+                {children}
+            </Link>
+        </Button>
+    );
+}
+
+function RouteCardActions({ route }: { route: RouteSummary }) {
+    return (
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    aria-label={`Acciones para ${route.name}`}
+                >
+                    <Ellipsis />
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuGroup>
+                    <DropdownMenuItem asChild>
+                        <Link
+                            href={RouteController.edit.url(route.id)}
+                            prefetch
+                        >
+                            <Pencil />
+                            Editar ruta
+                        </Link>
+                    </DropdownMenuItem>
+                </DropdownMenuGroup>
+                {route.status?.name !== 'inactiva' && (
+                    <>
+                        <DropdownMenuSeparator />
+                        <Form
+                            {...RouteController.destroy.form(route.id)}
+                            options={{ preserveScroll: true }}
+                        >
+                            {({ processing }) => (
+                                <DropdownMenuItem
+                                    asChild
+                                    variant="destructive"
+                                    disabled={processing}
+                                >
+                                    <button
+                                        type="submit"
+                                        disabled={processing}
+                                    >
+                                        <Power />
+                                        Inactivar ruta
+                                    </button>
+                                </DropdownMenuItem>
+                            )}
+                        </Form>
+                    </>
+                )}
+            </DropdownMenuContent>
+        </DropdownMenu>
     );
 }
 
@@ -210,7 +352,7 @@ AdminRoutesIndex.layout = {
     breadcrumbs: [
         {
             title: 'Rutas',
-            href: '/admin/routes',
+            href: RouteController.index.url(),
         },
     ],
 };

@@ -160,7 +160,7 @@ export default function AdminDashboard({
 
                 <section
                     aria-label="Indicadores principales"
-                    className="grid gap-4 sm:grid-cols-2 xl:grid-cols-6"
+                    className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-6"
                 >
                     {overview.map((metric) => (
                         <OverviewCard key={metric.key} metric={metric} />
@@ -192,7 +192,7 @@ function OverviewCard({ metric }: { metric: OverviewMetric }) {
 
     return (
         <Link href={destination()} prefetch className="group min-w-0">
-            <Card className="h-full min-h-52 transition-colors group-hover:border-primary">
+            <Card className="h-full min-h-44 transition-colors group-hover:border-primary sm:min-h-52">
                 <CardHeader className="gap-3">
                     <CardTitle className="text-base tracking-[-0.02em]">
                         {metric.label}
@@ -637,8 +637,7 @@ function ProgressBar({
 
 function StatusBadge({ status }: { status: string | null }) {
     const normalizedStatus = status?.toLocaleLowerCase('es-EC');
-    const variant =
-        normalizedStatus === 'en revisión' ? 'default' : 'outline';
+    const variant = normalizedStatus === 'en revisión' ? 'default' : 'outline';
 
     return <Badge variant={variant}>{status ?? 'Sin estado'}</Badge>;
 }

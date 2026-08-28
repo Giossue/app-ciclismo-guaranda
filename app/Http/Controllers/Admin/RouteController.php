@@ -32,7 +32,7 @@ class RouteController extends Controller
         $routes = CyclingRoute::query()
             ->with(['status:id,name', 'category:id,name', 'difficulty:id,name', 'admin:id,name,last_name', 'metrics.transportMode:id,name'])
             ->latest('id')
-            ->paginate(12)
+            ->paginate(9)
             ->through(fn (CyclingRoute $route): array => $this->serializeRouteSummary($route));
 
         return Inertia::render('admin/routes/index', [

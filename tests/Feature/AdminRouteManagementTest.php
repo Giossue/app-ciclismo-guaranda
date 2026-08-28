@@ -13,6 +13,7 @@ use Database\Seeders\CatalogSeeder;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
+use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function () {
     $this->seed(CatalogSeeder::class);
@@ -74,6 +75,51 @@ test('administrator can view route management pages', function () {
     $this->actingAs($admin)
         ->get(route('admin.routes.create'))
         ->assertOk();
+});
+
+test('administrator can paginate routes in groups of nine', function () {
+    $this->withoutVite();
+
+    $admin = User::factory()->administrator()->create();
+    $status = RouteStatus::query()->where('name', 'activa')->firstOrFail();
+    $category = RouteCategory::query()->where('name', 'MTB')->firstOrFail();
+    $difficulty = RouteDifficulty::query()->where('name', 'media')->firstOrFail();
+
+    foreach (range(1, 10) as $number) {
+        CyclingRoute::query()->create([
+            'admin_user_id' => $admin->id,
+            'route_difficulty_id' => $difficulty->id,
+            'route_status_id' => $status->id,
+            'route_category_id' => $category->id,
+            'name' => "Ruta de prueba {$number}",
+            'slug' => "ruta-de-prueba-{$number}",
+            'description' => 'Ruta creada para comprobar la paginación de la administración.',
+            'start_name' => 'Inicio',
+            'start_latitude' => -1.5000000,
+            'start_longitude' => -79.0000000,
+            'end_name' => 'Final',
+            'end_latitude' => -1.5100000,
+            'end_longitude' => -79.0100000,
+        ]);
+    }
+
+    $this->actingAs($admin)
+        ->get(route('admin.routes.index'))
+        ->assertSuccessful()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('admin/routes/index')
+            ->where('routes.per_page', 9)
+            ->where('routes.total', 10)
+            ->where('routes.current_page', 1)
+            ->where('routes.last_page', 2)
+            ->has('routes.data', 9));
+
+    $this->actingAs($admin)
+        ->get(route('admin.routes.index', ['page' => 2]))
+        ->assertSuccessful()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('routes.current_page', 2)
+            ->has('routes.data', 1));
 });
 
 test('cyclist can not access route administration', function () {
