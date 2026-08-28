@@ -135,7 +135,7 @@ export default function RouteMap({
     const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
     const [mapLayer, setMapLayer] = useState<MapLayer>('standard');
     const [filters, setFilters] = useState<OverlayFilters>(() => ({
-        tracks: mode === 'detail',
+        tracks: mode === 'detail' || selectedSlug !== undefined,
         endpoints: true,
         pois: true,
         incidents: true,
@@ -162,6 +162,15 @@ export default function RouteMap({
 
     const toggleFilter = (filter: keyof OverlayFilters) => {
         setFilters((current) => ({ ...current, [filter]: !current[filter] }));
+    };
+
+    const selectRoute = (route: RouteMapItem) => {
+        setFilters((current) => ({
+            ...current,
+            tracks: true,
+            endpoints: true,
+        }));
+        onRouteSelect?.(route);
     };
 
     return (
@@ -327,7 +336,7 @@ export default function RouteMap({
                             selected={selectedSlug === route.slug}
                             filters={filters}
                             onPoiSelect={onPoiSelect}
-                            onRouteSelect={onRouteSelect}
+                            onRouteSelect={selectRoute}
                         />
                     ))}
 

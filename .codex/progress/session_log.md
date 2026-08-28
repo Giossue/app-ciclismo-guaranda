@@ -757,3 +757,12 @@
   conversación fijada al último mensaje, Markdown, shimmer de respuesta,
   sugerencias, fuentes verificadas y entrada contextual compacta.
 - Validación local aprobada: TypeScript, ESLint, Prettier y build Vite.
+
+## 2026-08-28 — Seguimientos efímeros del chat
+
+- Se añadió “Volver” desde el chat hacia rutas y se fijó el compositor en el
+  borde inferior de la conversación.
+- Los chips de seguimiento dejan de renderizarse en mensajes guardados: se
+  muestran solo para la última respuesta recibida en la sesión y al tocarlos
+  envían esa pregunta directamente. El prompt exige que OpenAI los adapte a
+  historial y contexto vivo, o devuelva una lista vacía.

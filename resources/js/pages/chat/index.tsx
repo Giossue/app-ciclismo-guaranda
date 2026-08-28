@@ -1,5 +1,6 @@
 import { Form, Head, Link, router, usePage } from '@inertiajs/react';
 import {
+    ArrowLeft,
     Bot,
     Compass,
     History,
@@ -29,6 +30,7 @@ import {
 } from '@/components/ai-elements/message';
 import {
     PromptInput,
+    PromptInputButton,
     PromptInputFooter,
     PromptInputSubmit,
     PromptInputTextarea,
@@ -83,7 +85,7 @@ import {
 } from '@/lib/native/speech';
 import { cn } from '@/lib/utils';
 import { index as chatIndex } from '@/routes/chat';
-import { show as routeShow } from '@/routes/routes';
+import { index as routesIndex, show as routeShow } from '@/routes/routes';
 import type { Auth } from '@/types';
 
 type ChatMessage = {
@@ -159,12 +161,6 @@ type ChatSubmission = {
     } | null;
 };
 
-const initialSuggestions = [
-    '¿Qué ruta me recomiendas para hoy?',
-    '¿Dónde puedo comer durante la ruta?',
-    '¿Hay alertas antes de salir?',
-];
-
 export default function ChatIndex({
     assistantConfigured,
     conversations,
@@ -192,16 +188,34 @@ export default function ChatIndex({
     const [submissionErrors, setSubmissionErrors] = useState<
         Record<string, string>
     >({});
+    const [visibleSuggestedMessageId, setVisibleSuggestedMessageId] = useState<
+        number | null
+    >(null);
+    const initialLastMessageId = useRef<number | null>(
+        latestMessages.at(-1)?.id ?? null,
+    );
     const speechSupported = useMemo(() => isSpeechSupported(), []);
     const { auth } = usePage<{ auth: Auth }>().props;
     const userInitial = firstUserInitial(auth.user?.name);
+    const lastAssistantMessage = useMemo(() => {
+        const lastMessage = latestMessages.at(-1);
 
-    const useSuggestion = useCallback((suggestion: string) => {
-        if (messageRef.current) {
-            messageRef.current.value = suggestion;
-            messageRef.current.focus();
+        return lastMessage?.role === 'assistant' ? lastMessage : null;
+    }, [latestMessages]);
+    const activeSuggestedActions = useMemo(() => {
+        if (
+            lastAssistantMessage?.id !== visibleSuggestedMessageId ||
+            agentIsLoading
+        ) {
+            return [];
         }
-    }, []);
+
+        return assistantSuggestedActions(lastAssistantMessage.metadata);
+    }, [agentIsLoading, lastAssistantMessage, visibleSuggestedMessageId]);
+    const starterSuggestions = useMemo(
+        () => starterSuggestionsFor(routes),
+        [routes],
+    );
 
     useEffect(() => {
         void getNetworkStatus().then((status) => setIsOnline(status.connected));
@@ -214,6 +228,21 @@ export default function ChatIndex({
             void stopSpeaking();
         };
     }, []);
+
+    useEffect(() => {
+        const lastMessage = latestMessages.at(-1);
+
+        if (
+            agentIsLoading ||
+            lastMessage?.role !== 'assistant' ||
+            lastMessage.id === initialLastMessageId.current
+        ) {
+            return;
+        }
+
+        initialLastMessageId.current = lastMessage.id;
+        setVisibleSuggestedMessageId(lastMessage.id);
+    }, [agentIsLoading, latestMessages]);
 
     const toggleSpeak = useCallback(
         async (id: number, rawMessage: string) => {
@@ -261,43 +290,55 @@ export default function ChatIndex({
         }
     };
 
-    const submitMessage = (value: string): Promise<void> =>
-        new Promise((resolve, reject) => {
-            const submission: ChatSubmission = {
-                message: value,
-                conversation_id: activeConversation?.id ?? null,
-                route_id: routeId === 'none' ? null : Number(routeId),
-                travel_context: travelContext === 'none' ? null : travelContext,
-                location:
-                    location.status === 'ready'
-                        ? {
-                              latitude: location.latitude,
-                              longitude: location.longitude,
-                              accuracy_m: location.accuracyM,
-                              recorded_at: location.recordedAt,
-                          }
-                        : null,
-            };
+    const submitMessage = useCallback(
+        (value: string): Promise<void> =>
+            new Promise((resolve, reject) => {
+                const submission: ChatSubmission = {
+                    message: value,
+                    conversation_id: activeConversation?.id ?? null,
+                    route_id: routeId === 'none' ? null : Number(routeId),
+                    travel_context:
+                        travelContext === 'none' ? null : travelContext,
+                    location:
+                        location.status === 'ready'
+                            ? {
+                                  latitude: location.latitude,
+                                  longitude: location.longitude,
+                                  accuracy_m: location.accuracyM,
+                                  recorded_at: location.recordedAt,
+                              }
+                            : null,
+                };
 
-            setSubmissionErrors({});
+                setSubmissionErrors({});
 
-            router.post(ChatController.store.url(), submission, {
-                preserveScroll: true,
-                preserveState: true,
-                onStart: () => setAgentIsLoading(true),
-                onError: (errors) => {
-                    setSubmissionErrors(errors as Record<string, string>);
+                router.post(ChatController.store.url(), submission, {
+                    preserveScroll: true,
+                    preserveState: true,
+                    onStart: () => {
+                        setVisibleSuggestedMessageId(null);
+                        setAgentIsLoading(true);
+                    },
+                    onError: (errors) => {
+                        setSubmissionErrors(errors as Record<string, string>);
 
-                    if (messageRef.current) {
-                        messageRef.current.value = value;
-                    }
+                        if (messageRef.current) {
+                            messageRef.current.value = value;
+                        }
 
-                    reject(new Error('No se pudo enviar el mensaje.'));
-                },
-                onSuccess: () => resolve(),
-                onFinish: () => setAgentIsLoading(false),
-            });
-        });
+                        reject(new Error('No se pudo enviar el mensaje.'));
+                    },
+                    onSuccess: () => resolve(),
+                    onFinish: () => setAgentIsLoading(false),
+                });
+            }),
+        [activeConversation?.id, location, routeId, travelContext],
+    );
+
+    const useSuggestion = useCallback(
+        (suggestion: string) => submitMessage(suggestion),
+        [submitMessage],
+    );
 
     return (
         <>
@@ -305,6 +346,17 @@ export default function ChatIndex({
 
             <section className="ueb-page flex min-h-0 flex-1 flex-col md:h-[calc(100dvh-64px-(var(--page-pad-y)*2))]">
                 <header className="flex shrink-0 items-center gap-2 border-b pb-3">
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        asChild
+                        className="shrink-0"
+                    >
+                        <Link href={routesIndex.url()} prefetch>
+                            <ArrowLeft data-icon="inline-start" />
+                            Volver
+                        </Link>
+                    </Button>
                     <div className="min-w-0 flex-1">
                         <p className="text-xs text-muted-foreground">
                             Guía local de Guaranda
@@ -372,11 +424,30 @@ export default function ChatIndex({
                                     speechSupported={speechSupported}
                                     isSpeaking={speakingId === message.id}
                                     onToggleSpeak={toggleSpeak}
-                                    onUseSuggestion={useSuggestion}
                                 />
                             ))}
 
                             {agentIsLoading && <AgentLoadingBubble />}
+
+                            {activeSuggestedActions.length > 0 && (
+                                <div className="flex flex-col gap-2 px-1">
+                                    <p className="text-xs font-medium text-muted-foreground">
+                                        Puedes continuar con una de estas
+                                        preguntas
+                                    </p>
+                                    <Suggestions className="max-w-full px-0">
+                                        {activeSuggestedActions.map(
+                                            (suggestion) => (
+                                                <Suggestion
+                                                    key={suggestion}
+                                                    suggestion={suggestion}
+                                                    onClick={useSuggestion}
+                                                />
+                                            ),
+                                        )}
+                                    </Suggestions>
+                                </div>
+                            )}
 
                             {latestMessages.length === 0 && !agentIsLoading && (
                                 <ConversationEmptyState
@@ -403,7 +474,7 @@ export default function ChatIndex({
                                         </p>
                                     </div>
                                     <Suggestions className="max-w-full px-1 pt-2">
-                                        {initialSuggestions.map(
+                                        {starterSuggestions.map(
                                             (suggestion) => (
                                                 <Suggestion
                                                     key={suggestion}
@@ -420,7 +491,7 @@ export default function ChatIndex({
                     </Conversation>
                 </div>
 
-                <div className="shrink-0 border-t bg-background pt-3">
+                <div className="sticky bottom-0 z-10 shrink-0 border-t bg-background/95 pt-3 backdrop-blur supports-[backdrop-filter]:bg-background/80">
                     <div className="mx-auto flex w-full max-w-3xl flex-col gap-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:px-4">
                         <div className="flex items-center justify-between gap-2">
                             <p className="text-xs text-muted-foreground">
@@ -428,15 +499,6 @@ export default function ChatIndex({
                                     ? 'Ubicación activa para recomendaciones cercanas.'
                                     : 'Recomendaciones basadas en información pública.'}
                             </p>
-                            <ContextControls
-                                location={location}
-                                onRequestLocation={requestLocation}
-                                routeId={routeId}
-                                routes={routes}
-                                setRouteId={setRouteId}
-                                setTravelContext={setTravelContext}
-                                travelContext={travelContext}
-                            />
                         </div>
                         {location.status === 'error' && (
                             <p className="text-xs text-warning">
@@ -461,6 +523,15 @@ export default function ChatIndex({
                             />
                             <PromptInputFooter>
                                 <PromptInputTools>
+                                    <ContextControls
+                                        location={location}
+                                        onRequestLocation={requestLocation}
+                                        routeId={routeId}
+                                        routes={routes}
+                                        setRouteId={setRouteId}
+                                        setTravelContext={setTravelContext}
+                                        travelContext={travelContext}
+                                    />
                                     <span className="text-xs text-muted-foreground">
                                         Enter para enviar
                                     </span>
@@ -513,6 +584,18 @@ function firstUserInitial(name: string | null | undefined): string {
     return initial && initial.length > 0 ? initial : 'U';
 }
 
+function starterSuggestionsFor(routes: RouteContextOption[]): string[] {
+    const route = routes.at(0);
+
+    return [
+        route
+            ? `¿Cómo es la ruta ${route.name}?`
+            : '¿Qué puedo hacer hoy en Guaranda?',
+        '¿Dónde puedo comer durante mi salida?',
+        '¿Hay alertas antes de salir?',
+    ];
+}
+
 function ContextControls({
     location,
     onRequestLocation,
@@ -533,15 +616,13 @@ function ContextControls({
     return (
         <Popover>
             <PopoverTrigger asChild>
-                <Button
+                <PromptInputButton
                     type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="shrink-0"
+                    tooltip="Personalizar la recomendación"
                 >
-                    <Compass data-icon="inline-start" />
+                    <Compass className="size-4" />
                     Personalizar
-                </Button>
+                </PromptInputButton>
             </PopoverTrigger>
             <PopoverContent align="end" className="grid w-80 gap-4">
                 <div className="grid gap-1">
@@ -782,18 +863,15 @@ function MessageBubble({
     speechSupported,
     isSpeaking,
     onToggleSpeak,
-    onUseSuggestion,
 }: {
     message: ChatMessage;
     userInitial: string;
     speechSupported: boolean;
     isSpeaking: boolean;
     onToggleSpeak: (id: number, rawMessage: string) => void;
-    onUseSuggestion: (suggestion: string) => void;
 }) {
     const isUser = message.role === 'user';
     const canSpeak = !isUser && speechSupported;
-    const suggestedActions = assistantSuggestedActions(message.metadata);
     const resources = assistantResources(message.metadata);
 
     return (
@@ -831,17 +909,6 @@ function MessageBubble({
                             {message.message}
                         </MessageResponse>
                     </MessageContent>
-                    {suggestedActions.length > 0 && (
-                        <Suggestions className="max-w-[min(78vw,42rem)] px-1">
-                            {suggestedActions.map((suggestion) => (
-                                <Suggestion
-                                    key={suggestion}
-                                    suggestion={suggestion}
-                                    onClick={onUseSuggestion}
-                                />
-                            ))}
-                        </Suggestions>
-                    )}
                     {resources.length > 0 && (
                         <Sources className="max-w-[min(78vw,42rem)] px-1 text-muted-foreground">
                             <SourcesTrigger

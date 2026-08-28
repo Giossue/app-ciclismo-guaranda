@@ -204,6 +204,9 @@ Después de esa prueba manual, marcar Fase 12 y Fase 14 como `Completado` si tod
 - AI Elements ya se usa en el chat para Markdown y sugerencias. Se retiraron
   plugins de código, matemáticas, Mermaid y CJK que no aportaban al turismo y
   elevaban innecesariamente el bundle móvil.
+- El chat ya ofrece “Volver” a rutas, compositor fijo y sugerencias efímeras:
+  no quedan pegadas a mensajes antiguos y un toque inicia de inmediato el
+  siguiente turno contextual.
 - OpenAI puede proponer hasta tres referencias internas de ruta/POI; Laravel
   las rehidrata desde la BD viva, descarta recursos inactivos o inexistentes y
   solo entonces persiste y muestra las tarjetas. Las rutas usan navegación

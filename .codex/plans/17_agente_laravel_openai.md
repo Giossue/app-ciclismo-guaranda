@@ -145,6 +145,11 @@ detalle público. Las tarjetas pueden incluir la foto editorial pública
 rehidratada y su descripción almacenada como texto alternativo; el modelo no
 aporta imágenes ni URLs.
 
+**Ajuste 2026-08-28:** las sugerencias de seguimiento son efímeras y se envían
+al tocarlas; no se conservan como chips dentro de mensajes históricos. El
+prompt exige que sean pertinentes al intercambio y puede responder con una
+lista vacía.
+
 ## Etapa 3 — Base de conocimiento vectorial
 
 - `KnowledgeDocumentBuilder` ya construye en memoria documentos deterministas

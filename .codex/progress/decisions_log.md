@@ -373,3 +373,7 @@
   se incorpora un segundo transporte de chat ni se expone OpenAI al cliente.
 - Los controles opcionales de ruta, tipo de visita y ubicación se agrupan en
   “Personalizar”; la entrada principal se mantiene como una sola pregunta.
+- Las sugerencias no son metadatos persistentes de cada burbuja: la interfaz
+  muestra únicamente las de la respuesta nueva, las envía al tocarlas y las
+  oculta al iniciar el siguiente turno. El contrato conserva hasta tres para
+  que OpenAI pueda devolver ninguna cuando no haya seguimiento útil.

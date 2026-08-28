@@ -134,3 +134,10 @@ Markdown seguro, `PromptInput` mantiene la acción de envío, y `Suggestion` /
 de red y ubicación transitoria se conservan. Ruta, tipo de visita y ubicación
 quedan dentro de “Personalizar” para que la pregunta normal no se convierta en
 un formulario; siguen siendo opcionales y se envían únicamente con la consulta.
+El encabezado incluye “Volver” hacia rutas. Las sugerencias de seguimiento no
+pertenecen a mensajes históricos: aparecen una sola vez bajo la respuesta
+recién recibida y se envían inmediatamente al tocarlas. Al enviar cualquier
+pregunta desaparecen; la siguiente respuesta puede proponer de cero a tres
+acciones nuevas, ajustadas por OpenAI al historial y al contexto vivo. En una
+conversación nueva, las preguntas iniciales usan la primera ruta activa que
+Laravel ya entregó a la pantalla.

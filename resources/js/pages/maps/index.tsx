@@ -46,6 +46,20 @@ export default function MapsIndex({ routes, selectedRouteSlug }: Props) {
         );
     };
 
+    const clearSelection = () => {
+        setSelectedPoi(null);
+
+        router.get(
+            mapsIndex.url(),
+            {},
+            {
+                preserveScroll: true,
+                preserveState: true,
+                replace: true,
+            },
+        );
+    };
+
     return (
         <>
             <Head title="Explorar" />
@@ -62,10 +76,7 @@ export default function MapsIndex({ routes, selectedRouteSlug }: Props) {
             />
 
             {selectedPoi ? (
-                <MapPoiSheet
-                    poi={selectedPoi}
-                    onClose={() => setSelectedPoi(null)}
-                />
+                <MapPoiSheet poi={selectedPoi} onClose={clearSelection} />
             ) : (
                 selectedRoute && <MapRouteSheet route={selectedRoute} />
             )}
@@ -81,18 +92,32 @@ function MapPoiSheet({ poi, onClose }: { poi: MapPoi; onClose: () => void }) {
     }));
 
     return (
-        <section className="fixed inset-x-0 bottom-0 z-[600] flex max-h-[min(72dvh,44rem)] flex-col rounded-t-[var(--radius-emphasis)] border-t bg-background/98 shadow-[0_-16px_40px_color-mix(in_oklch,var(--foreground)_28%,transparent)] backdrop-blur md:inset-x-auto md:right-6 md:bottom-6 md:w-[min(30rem,calc(100vw-3rem))] md:rounded-[var(--radius-emphasis)] md:border">
-            <div
-                aria-hidden="true"
-                className="mx-auto mt-3 h-1.5 w-12 shrink-0 rounded-full bg-muted-foreground/35"
+        <>
+            <button
+                type="button"
+                aria-label="Cerrar detalle del punto de interés"
+                className="fixed inset-0 z-[800] bg-foreground/20"
+                onClick={onClose}
             />
-            <div className="min-h-0 overflow-y-auto px-4 pt-3 pb-[calc(var(--bottom-nav-height)+var(--safe-bottom)+1.5rem)] md:pb-5">
-                <div className="flex items-start justify-between gap-3">
+            <section
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby={`poi-sheet-title-${poi.id}`}
+                className="fixed inset-x-0 bottom-0 z-[810] flex max-h-[min(72dvh,44rem)] flex-col rounded-t-[var(--radius-emphasis)] border-t bg-background shadow-[0_-16px_40px_color-mix(in_oklch,var(--foreground)_28%,transparent)] md:inset-x-auto md:right-6 md:bottom-6 md:w-[min(30rem,calc(100vw-3rem))] md:rounded-[var(--radius-emphasis)] md:border"
+            >
+                <div
+                    aria-hidden="true"
+                    className="mx-auto mt-3 h-1.5 w-12 shrink-0 rounded-full bg-muted-foreground/35"
+                />
+                <header className="flex shrink-0 items-start justify-between gap-3 px-4 pt-3 pb-4">
                     <div className="min-w-0">
                         <p className="text-xs font-medium text-muted-foreground">
                             {poi.category?.name ?? 'Punto de interés'}
                         </p>
-                        <h1 className="mt-0.5 text-xl font-semibold tracking-tight">
+                        <h1
+                            id={`poi-sheet-title-${poi.id}`}
+                            className="mt-0.5 text-xl font-semibold tracking-tight"
+                        >
                             {poi.name}
                         </h1>
                     </div>
@@ -105,33 +130,31 @@ function MapPoiSheet({ poi, onClose }: { poi: MapPoi; onClose: () => void }) {
                     >
                         <X />
                     </Button>
-                </div>
+                </header>
 
-                {images.length > 0 && (
-                    <ImageGallery
-                        images={images}
-                        className="mt-4"
-                        slideClassName="h-52"
-                    />
-                )}
+                <div className="min-h-0 overflow-y-auto px-4 pb-[calc(var(--bottom-nav-height)+var(--safe-bottom)+1.5rem)] md:pb-5">
+                    {images.length > 0 && (
+                        <ImageGallery images={images} slideClassName="h-52" />
+                    )}
 
-                <div className="mt-4 flex flex-col gap-3 text-sm">
-                    {poi.description && <p>{poi.description}</p>}
-                    {poi.address && (
-                        <p className="flex items-start gap-2 text-muted-foreground">
-                            <MapPin className="mt-0.5 size-4 shrink-0" />
-                            <span>{poi.address}</span>
-                        </p>
-                    )}
-                    {poi.phone && (
-                        <p className="flex items-center gap-2 text-muted-foreground">
-                            <Phone className="size-4 shrink-0" />
-                            <span>{poi.phone}</span>
-                        </p>
-                    )}
+                    <div className="mt-4 flex flex-col gap-3 text-sm">
+                        {poi.description && <p>{poi.description}</p>}
+                        {poi.address && (
+                            <p className="flex items-start gap-2 text-muted-foreground">
+                                <MapPin className="mt-0.5 size-4 shrink-0" />
+                                <span>{poi.address}</span>
+                            </p>
+                        )}
+                        {poi.phone && (
+                            <p className="flex items-center gap-2 text-muted-foreground">
+                                <Phone className="size-4 shrink-0" />
+                                <span>{poi.phone}</span>
+                            </p>
+                        )}
+                    </div>
                 </div>
-            </div>
-        </section>
+            </section>
+        </>
     );
 }
 
