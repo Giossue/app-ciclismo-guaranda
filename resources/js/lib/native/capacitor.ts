@@ -45,6 +45,10 @@ export function setupNativeBackButton(): void {
     }
 
     void CapacitorApp.addListener('backButton', ({ canGoBack }) => {
+        if (closeTopOverlay()) {
+            return;
+        }
+
         if (canGoBack) {
             window.history.back();
 
@@ -53,6 +57,30 @@ export function setupNativeBackButton(): void {
 
         void CapacitorApp.exitApp();
     });
+}
+
+/**
+ * El botón atrás de Android debe cerrar la capa abierta (sheet del sidebar,
+ * diálogos) antes de navegar. Radix las cierra con Escape.
+ */
+function closeTopOverlay(): boolean {
+    if (typeof document === 'undefined') {
+        return false;
+    }
+
+    const overlay = document.querySelector(
+        '[data-state="open"][role="dialog"], [data-state="open"][role="alertdialog"]',
+    );
+
+    if (!overlay) {
+        return false;
+    }
+
+    document.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }),
+    );
+
+    return true;
 }
 
 export function browserNetworkStatus(): ConnectionStatus {
