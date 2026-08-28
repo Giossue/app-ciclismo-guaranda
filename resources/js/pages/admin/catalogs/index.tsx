@@ -178,18 +178,18 @@ export default function AdminCatalogsIndex({
             <Head title="Catálogos" />
 
             <div className="flex flex-col gap-6">
-                <Heading
-                    title="Catálogos"
-                    description="Administra los valores operativos que usa cada módulo de Guaranda Go."
-                />
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <Heading
+                        title="Catálogos"
+                        description="Administra los valores operativos que usa cada módulo de Guaranda Go."
+                    />
+                    <PrimaryActionButton
+                        label="Nuevo registro"
+                        onClick={() => setCreateOpen(true)}
+                    />
+                </div>
 
                 <DataTable
-                    toolbarAction={
-                        <PrimaryActionButton
-                            label="Nuevo registro"
-                            onClick={() => setCreateOpen(true)}
-                        />
-                    }
                     data={records.data}
                     columns={columns}
                     getRowId={(record) => record.id}
@@ -204,6 +204,7 @@ export default function AdminCatalogsIndex({
                     filters={[
                         {
                             id: 'domain',
+                            persistent: true,
                             label: 'Filtrar por sección',
                             placeholder: 'Todas las secciones',
                             options: domains.map((option) => ({
@@ -213,6 +214,7 @@ export default function AdminCatalogsIndex({
                         },
                         {
                             id: 'catalog',
+                            persistent: true,
                             label: 'Filtrar por catálogo',
                             placeholder: 'Todos los catálogos',
                             options:

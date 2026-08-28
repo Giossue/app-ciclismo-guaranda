@@ -67,6 +67,9 @@ test('administrator can view route management pages', function () {
     $this->withoutVite();
 
     $admin = User::factory()->administrator()->create();
+    $draftStatus = RouteStatus::query()->where('name', 'borrador')->firstOrFail();
+    $bicycle = TransportMode::query()->where('name', 'bicicleta')->firstOrFail();
+    $routingEngine = RoutingEngine::query()->where('active', true)->orderBy('id')->firstOrFail();
 
     $this->actingAs($admin)
         ->get(route('admin.routes.index'))
@@ -74,7 +77,12 @@ test('administrator can view route management pages', function () {
 
     $this->actingAs($admin)
         ->get(route('admin.routes.create'))
-        ->assertOk();
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('admin/routes/create')
+            ->where('defaults.route_status_id', $draftStatus->id)
+            ->where('defaults.transport_mode_id', $bicycle->id)
+            ->where('defaults.routing_engine_id', $routingEngine->id));
 });
 
 test('administrator can paginate routes in groups of nine', function () {

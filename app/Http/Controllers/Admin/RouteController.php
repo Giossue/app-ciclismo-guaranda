@@ -44,8 +44,15 @@ class RouteController extends Controller
     {
         $this->authorize('create', CyclingRoute::class);
 
+        $catalogs = $this->catalogProps();
+
         return Inertia::render('admin/routes/create', [
-            ...$this->catalogProps(),
+            ...$catalogs,
+            'defaults' => [
+                'route_status_id' => $catalogs['statuses']->firstWhere('name', 'borrador')?->id,
+                'transport_mode_id' => $catalogs['transportModes']->firstWhere('name', 'bicicleta')?->id,
+                'routing_engine_id' => $catalogs['routingEngines']->first()?->id,
+            ],
             'defaultGeojson' => null,
         ]);
     }

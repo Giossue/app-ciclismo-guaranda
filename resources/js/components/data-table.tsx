@@ -61,6 +61,11 @@ export type DataTableFilter = {
     label: string;
     placeholder: string;
     options: Array<{ label: string; value: string }>;
+    /**
+     * El selector siempre tiene un valor (p. ej. elegir sección o catálogo):
+     * no cuenta como filtro activo ni se descarta al limpiar.
+     */
+    persistent?: boolean;
 };
 
 export type DataTablePagination = {
@@ -84,7 +89,6 @@ type Props<T> = {
     query: DataTableQuery;
     searchPlaceholder?: string;
     title?: string;
-    toolbarAction?: React.ReactNode;
 };
 
 export function DataTable<T>({
@@ -99,7 +103,6 @@ export function DataTable<T>({
     query,
     searchPlaceholder = 'Buscar…',
     title,
-    toolbarAction,
 }: Props<T>) {
     const [hiddenColumns, setHiddenColumns] = useState<Set<string>>(new Set());
     const visibleColumns = useMemo(
@@ -107,8 +110,18 @@ export function DataTable<T>({
         [columns, hiddenColumns],
     );
     const hasActiveFilters = filters.some(
-        (filter) => String(query[filter.id] ?? '') !== '',
+        (filter) => !filter.persistent && String(query[filter.id] ?? '') !== '',
     );
+
+    const clearQuery = () => {
+        const preserved = Object.fromEntries(
+            filters
+                .filter((filter) => filter.persistent)
+                .map((filter) => [filter.id, query[filter.id]]),
+        );
+
+        onQueryChange({ ...preserved, per_page: pagination.perPage });
+    };
 
     const updateFilter = (id: string, value: string) => {
         onQueryChange({
@@ -201,11 +214,7 @@ export function DataTable<T>({
                                     type="button"
                                     variant="ghost"
                                     size="sm"
-                                    onClick={() => {
-                                        onQueryChange({
-                                            per_page: pagination.perPage,
-                                        });
-                                    }}
+                                    onClick={clearQuery}
                                 >
                                     <X data-icon="inline-start" />
                                     Limpiar
@@ -215,8 +224,6 @@ export function DataTable<T>({
                     </div>
 
                     <div className="flex shrink-0 items-center gap-2">
-                        {toolbarAction}
-
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button

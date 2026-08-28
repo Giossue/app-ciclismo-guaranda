@@ -1,9 +1,16 @@
 import { Head } from '@inertiajs/react';
+import RouteController from '@/actions/App/Http/Controllers/Admin/RouteController';
 import Heading from '@/components/heading';
 import type { CatalogOption } from '@/types';
 import RouteForm from './partials/route-form';
 
 type RoutePoiOption = Parameters<typeof RouteForm>[0]['pois'][number];
+
+type RouteDefaults = {
+    route_status_id: number | null;
+    transport_mode_id: number | null;
+    routing_engine_id: number | null;
+};
 
 type Props = {
     statuses: CatalogOption[];
@@ -13,6 +20,7 @@ type Props = {
     routingEngines: CatalogOption[];
     poiCategories: CatalogOption[];
     pois: RoutePoiOption[];
+    defaults: RouteDefaults;
     defaultGeojson?: string | null;
 };
 
@@ -24,6 +32,7 @@ export default function AdminRoutesCreate({
     routingEngines,
     poiCategories,
     pois,
+    defaults,
     defaultGeojson,
 }: Props) {
     return (
@@ -33,7 +42,7 @@ export default function AdminRoutesCreate({
             <div className="flex flex-col gap-6">
                 <Heading
                     title="Nueva ruta oficial"
-                    description="Dibuja el recorrido, carga portada y conecta POIs turísticos desde una sola pantalla"
+                    description="Completa primero lo esencial. Los detalles complementarios se muestran solo cuando los necesites."
                 />
 
                 <RouteForm
@@ -45,6 +54,7 @@ export default function AdminRoutesCreate({
                     routingEngines={routingEngines}
                     poiCategories={poiCategories}
                     pois={pois}
+                    defaults={defaults}
                     defaultGeojson={defaultGeojson}
                 />
             </div>
@@ -56,11 +66,11 @@ AdminRoutesCreate.layout = {
     breadcrumbs: [
         {
             title: 'Rutas',
-            href: '/admin/routes',
+            href: RouteController.index.url(),
         },
         {
             title: 'Nueva ruta',
-            href: '/admin/routes/create',
+            href: RouteController.create.url(),
         },
     ],
 };
