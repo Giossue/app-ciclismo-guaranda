@@ -1,4 +1,3 @@
-import { router } from '@inertiajs/react';
 import {
     ChevronDown,
     ChevronLeft,
@@ -46,6 +45,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { usePartialReload } from '@/hooks/use-partial-reload';
 
 export type DataTableQuery = Record<string, number | string | undefined>;
 
@@ -105,36 +105,12 @@ type Props<T> = {
     title?: string;
 };
 
-/**
- * Marca la espera de una recarga parcial de Inertia —búsqueda, filtros o
- * paginación—, que es el único momento en que la tabla espera datos.
- */
 /** Claves estables para las filas fantasma: tantas como haya en pantalla. */
 function skeletonRows(count: number): string[] {
     return Array.from(
         { length: Math.min(Math.max(count, 3), 8) },
         (_, index) => `skeleton-${index}`,
     );
-}
-
-function usePartialReload(): boolean {
-    const [loading, setLoading] = useState(false);
-
-    useEffect(() => {
-        const stopStart = router.on('start', (event) => {
-            if ((event.detail.visit.only?.length ?? 0) > 0) {
-                setLoading(true);
-            }
-        });
-        const stopFinish = router.on('finish', () => setLoading(false));
-
-        return () => {
-            stopStart();
-            stopFinish();
-        };
-    }, []);
-
-    return loading;
 }
 
 /**

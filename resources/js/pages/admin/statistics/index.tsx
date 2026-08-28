@@ -51,6 +51,7 @@ import {
     EmptyTitle,
 } from '@/components/ui/empty';
 import { Field, FieldGroup, FieldLabel } from '@/components/ui/field';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
     Table,
     TableBody,
@@ -59,6 +60,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { usePartialReload } from '@/hooks/use-partial-reload';
 
 type Metric = {
     key: string;
@@ -154,6 +156,7 @@ export default function AdminStatisticsIndex({
     topRatedRoutes,
     incidentsByStatus,
 }: Props) {
+    const loading = usePartialReload(['metrics']);
     const [from, setFrom] = useState(filters.from ?? '');
     const [to, setTo] = useState(filters.to ?? '');
     const query = {
@@ -176,6 +179,16 @@ export default function AdminStatisticsIndex({
         event.preventDefault();
 
         router.get(StatisticsController.index.url(), query, {
+            only: [
+                'metrics',
+                'activitySeries',
+                'ratingsDistribution',
+                'topViewedRoutes',
+                'topDownloadedRoutes',
+                'topRatedRoutes',
+                'incidentsByStatus',
+                'filters',
+            ],
             preserveScroll: true,
             preserveState: true,
         });
@@ -234,33 +247,44 @@ export default function AdminStatisticsIndex({
                     aria-label="Resumen del período"
                     className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4"
                 >
-                    {periodMetrics.map((metric) => {
-                        const Icon =
-                            periodMetricIcons[
-                                metric.key as keyof typeof periodMetricIcons
-                            ] ?? BarChart3;
+                    {loading
+                        ? Array.from({ length: 4 }, (_, index) => (
+                              <Card
+                                  key={`metric-skeleton-${index}`}
+                                  className="min-h-36 gap-3 p-5"
+                              >
+                                  <Skeleton className="h-3 w-1/2" />
+                                  <Skeleton className="h-8 w-2/3" />
+                                  <Skeleton className="mt-auto h-3 w-full" />
+                              </Card>
+                          ))
+                        : periodMetrics.map((metric) => {
+                              const Icon =
+                                  periodMetricIcons[
+                                      metric.key as keyof typeof periodMetricIcons
+                                  ] ?? BarChart3;
 
-                        return (
-                            <Card key={metric.key} className="min-h-36">
-                                <CardHeader className="gap-2">
-                                    <div className="flex items-center gap-2 text-muted-foreground">
-                                        <Icon aria-hidden="true" />
-                                        <span className="text-sm">
-                                            {metric.label}
-                                        </span>
-                                    </div>
-                                    <p className="text-3xl leading-none tracking-[-0.04em] text-foreground tabular-nums">
-                                        {formatNumber(metric.value)}
-                                    </p>
-                                </CardHeader>
-                                <CardContent className="mt-auto">
-                                    <p className="text-xs leading-relaxed text-muted-foreground">
-                                        {metric.description}
-                                    </p>
-                                </CardContent>
-                            </Card>
-                        );
-                    })}
+                              return (
+                                  <Card key={metric.key} className="min-h-36">
+                                      <CardHeader className="gap-2">
+                                          <div className="flex items-center gap-2 text-muted-foreground">
+                                              <Icon aria-hidden="true" />
+                                              <span className="text-sm">
+                                                  {metric.label}
+                                              </span>
+                                          </div>
+                                          <p className="text-3xl leading-none tracking-[-0.04em] text-foreground tabular-nums">
+                                              {formatNumber(metric.value)}
+                                          </p>
+                                      </CardHeader>
+                                      <CardContent className="mt-auto">
+                                          <p className="text-xs leading-relaxed text-muted-foreground">
+                                              {metric.description}
+                                          </p>
+                                      </CardContent>
+                                  </Card>
+                              );
+                          })}
                 </section>
 
                 <Card>
@@ -274,7 +298,9 @@ export default function AdminStatisticsIndex({
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        {hasActivity ? (
+                        {loading ? (
+                            <Skeleton className="h-64 w-full" />
+                        ) : hasActivity ? (
                             <ChartContainer
                                 config={activityConfig}
                                 className="aspect-auto h-64 w-full"
@@ -348,6 +374,7 @@ export default function AdminStatisticsIndex({
 
                 <section className="grid gap-4 xl:grid-cols-2">
                     <RankingChart
+                        loading={loading}
                         title="Rutas más consultadas"
                         description="Aperturas de detalle por ciclistas."
                         empty="Aún no hay consultas registradas."
@@ -355,6 +382,7 @@ export default function AdminStatisticsIndex({
                         valueKey="views_count"
                     />
                     <RankingChart
+                        loading={loading}
                         title="Rutas más descargadas"
                         description="Paquetes offline guardados para usar sin conexión."
                         empty="Aún no hay descargas offline."
@@ -372,7 +400,9 @@ export default function AdminStatisticsIndex({
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            {hasRatings ? (
+                            {loading ? (
+                                <Skeleton className="h-56 w-full" />
+                            ) : hasRatings ? (
                                 <ChartContainer
                                     config={ratingsConfig}
                                     className="aspect-auto h-56 w-full"
@@ -423,7 +453,9 @@ export default function AdminStatisticsIndex({
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            {incidentsTotal > 0 ? (
+                            {loading ? (
+                                <Skeleton className="mx-auto aspect-square h-56 rounded-full" />
+                            ) : incidentsTotal > 0 ? (
                                 <ChartContainer
                                     config={incidentsConfig(incidentsByStatus)}
                                     className="mx-auto aspect-square h-56"
@@ -485,7 +517,9 @@ export default function AdminStatisticsIndex({
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            {topRatedRoutes.length > 0 ? (
+                            {loading ? (
+                                <Skeleton className="h-40 w-full" />
+                            ) : topRatedRoutes.length > 0 ? (
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
@@ -541,12 +575,14 @@ export default function AdminStatisticsIndex({
 function RankingChart({
     description,
     empty,
+    loading,
     rows,
     title,
     valueKey,
 }: {
     description: string;
     empty: string;
+    loading: boolean;
     rows: RankedRoute[];
     title: string;
     valueKey: 'views_count' | 'downloads_count';
@@ -565,7 +601,9 @@ function RankingChart({
                 <CardDescription>{description}</CardDescription>
             </CardHeader>
             <CardContent>
-                {data.length > 0 ? (
+                {loading ? (
+                    <Skeleton className="h-64 w-full" />
+                ) : data.length > 0 ? (
                     <ChartContainer
                         config={rankingConfig}
                         className="aspect-auto h-64 w-full"

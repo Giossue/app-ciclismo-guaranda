@@ -1,16 +1,11 @@
 import { Form, Head, Link, router } from '@inertiajs/react';
-import {
-    EllipsisVertical,
-    FileImage,
-    MapPin,
-    RouteIcon,
-    ShieldCheck,
-} from 'lucide-react';
+import { EllipsisVertical, MapPin, ShieldCheck } from 'lucide-react';
 import { useState } from 'react';
 import IncidentController from '@/actions/App/Http/Controllers/Admin/IncidentController';
 import { DataTable } from '@/components/data-table';
 import type { DataTableColumn, DataTableQuery } from '@/components/data-table';
 import Heading from '@/components/heading';
+import ImageGallery from '@/components/image-gallery';
 import InputError from '@/components/input-error';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -39,6 +34,7 @@ import {
     SheetTitle,
 } from '@/components/ui/sheet';
 import { Textarea } from '@/components/ui/textarea';
+import { mediaUrl } from '@/lib/media';
 import type { CatalogOption } from '@/types';
 
 type ManagedIncident = {
@@ -283,20 +279,24 @@ function IncidentRowActions({
                     <SheetHeader>
                         <SheetTitle>{incident.title}</SheetTitle>
                         <SheetDescription>
-                            Reportada por{' '}
-                            {incident.user?.name ?? 'usuario no disponible'} el{' '}
-                            {formatDate(incident.reported_at)}.
+                            Verifica el reporte y define en qué estado queda
+                            para los ciclistas.
                         </SheetDescription>
                     </SheetHeader>
 
                     <div className="flex flex-col gap-5 px-5 pb-5">
                         <IncidentSummary incident={incident} />
 
-                        <IncidentReviewForm
-                            incident={incident}
-                            statuses={statuses}
-                            onSuccess={() => setOpen(false)}
-                        />
+                        <section className="flex flex-col gap-3 rounded-[var(--radius-control)] border bg-muted/40 p-4">
+                            <h3 className="text-xs font-semibold tracking-[0.04em] text-muted-foreground uppercase">
+                                Revisión
+                            </h3>
+                            <IncidentReviewForm
+                                incident={incident}
+                                statuses={statuses}
+                                onSuccess={() => setOpen(false)}
+                            />
+                        </section>
                     </div>
                 </SheetContent>
             </Sheet>
@@ -305,57 +305,141 @@ function IncidentRowActions({
 }
 
 function IncidentSummary({ incident }: { incident: ManagedIncident }) {
+    const images = incident.files
+        .filter((file) => file.file_type.startsWith('image'))
+        .map((file, index) => ({
+            src: mediaUrl(file.file_path),
+            alt: `Evidencia ${index + 1} de ${incident.title}`,
+        }));
+
     return (
-        <section className="flex flex-col gap-3 rounded-[var(--radius-control)] border bg-muted/40 p-4">
-            <div className="flex flex-wrap gap-2">
-                {incident.status && <Badge>{incident.status.name}</Badge>}
-                {incident.type && (
-                    <Badge variant="outline">{incident.type.name}</Badge>
-                )}
-            </div>
-
-            <p className="text-sm leading-relaxed text-foreground">
-                {incident.full_description}
-            </p>
-
-            <dl className="grid gap-2 text-sm text-muted-foreground">
-                <div className="flex items-center gap-2">
-                    <MapPin aria-hidden="true" />
-                    <dt className="sr-only">Coordenadas</dt>
-                    <dd className="tabular-nums">
-                        {incident.latitude}, {incident.longitude}
-                    </dd>
+        <div className="flex flex-col gap-5">
+            {/* 1. Qué pasó */}
+            <section className="flex flex-col gap-2">
+                <div className="flex flex-wrap items-center gap-2">
+                    {incident.status && <Badge>{incident.status.name}</Badge>}
+                    {incident.type && (
+                        <Badge variant="outline">{incident.type.name}</Badge>
+                    )}
                 </div>
+                <p className="text-sm leading-relaxed text-foreground">
+                    {incident.full_description}
+                </p>
+            </section>
 
-                {incident.route && (
-                    <div className="flex items-center gap-2">
-                        <RouteIcon aria-hidden="true" />
-                        <dt className="sr-only">Ruta</dt>
-                        <dd className="min-w-0 truncate">
-                            <Link
-                                href={`/routes/${incident.route.slug}`}
-                                prefetch
-                                className="text-link underline-offset-4 hover:underline"
+            {/* 2. Dónde: lo primero que el admin necesita para verificar */}
+            <section className="flex flex-col gap-2">
+                <h3 className="text-xs font-semibold tracking-[0.04em] text-muted-foreground uppercase">
+                    Ubicación
+                </h3>
+                <dl className="flex flex-col gap-1.5 text-sm">
+                    <div className="flex items-baseline justify-between gap-4">
+                        <dt className="shrink-0 text-muted-foreground">Ruta</dt>
+                        <dd className="min-w-0 text-right">
+                            {incident.route ? (
+                                <Link
+                                    href={`/routes/${incident.route.slug}`}
+                                    prefetch
+                                    className="text-link underline-offset-4 hover:underline"
+                                >
+                                    {incident.route.name}
+                                </Link>
+                            ) : (
+                                <span className="text-muted-foreground">
+                                    Sin ruta asociada
+                                </span>
+                            )}
+                        </dd>
+                    </div>
+                    <div className="flex items-baseline justify-between gap-4">
+                        <dt className="shrink-0 text-muted-foreground">
+                            Coordenadas
+                        </dt>
+                        <dd className="min-w-0 text-right">
+                            <a
+                                href={`https://www.openstreetmap.org/?mlat=${incident.latitude}&mlon=${incident.longitude}#map=17/${incident.latitude}/${incident.longitude}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                data-selectable
+                                className="inline-flex items-center gap-1 text-link tabular-nums underline-offset-4 hover:underline"
                             >
-                                {incident.route.name}
-                            </Link>
+                                <MapPin aria-hidden="true" />
+                                {incident.latitude}, {incident.longitude}
+                            </a>
                         </dd>
                     </div>
-                )}
+                </dl>
+            </section>
 
-                {incident.files.length > 0 && (
-                    <div className="flex items-center gap-2">
-                        <FileImage aria-hidden="true" />
-                        <dt className="sr-only">Adjuntos</dt>
-                        <dd>
-                            {incident.files.length} archivo
-                            {incident.files.length === 1 ? '' : 's'} adjunto
-                            {incident.files.length === 1 ? '' : 's'}
+            {/* 3. Evidencia: se muestra, no se cuenta */}
+            <section className="flex flex-col gap-2">
+                <h3 className="text-xs font-semibold tracking-[0.04em] text-muted-foreground uppercase">
+                    Evidencia
+                </h3>
+                {images.length > 0 ? (
+                    <ImageGallery
+                        images={images}
+                        variant="thumbnails"
+                        thumbnailClassName="h-28 w-28"
+                    />
+                ) : (
+                    <p className="text-sm text-muted-foreground">
+                        El ciclista no adjuntó imágenes.
+                    </p>
+                )}
+            </section>
+
+            {/* 4. Quién y cuándo */}
+            <section className="flex flex-col gap-2">
+                <h3 className="text-xs font-semibold tracking-[0.04em] text-muted-foreground uppercase">
+                    Reporte
+                </h3>
+                <dl className="flex flex-col gap-1.5 text-sm">
+                    <div className="flex items-baseline justify-between gap-4">
+                        <dt className="shrink-0 text-muted-foreground">
+                            Ciclista
+                        </dt>
+                        <dd
+                            className="min-w-0 truncate text-right"
+                            data-selectable
+                        >
+                            {incident.user?.name ?? 'Usuario no disponible'}
                         </dd>
                     </div>
-                )}
-            </dl>
-        </section>
+                    {incident.user?.email && (
+                        <div className="flex items-baseline justify-between gap-4">
+                            <dt className="shrink-0 text-muted-foreground">
+                                Correo
+                            </dt>
+                            <dd
+                                className="min-w-0 truncate text-right"
+                                data-selectable
+                            >
+                                {incident.user.email}
+                            </dd>
+                        </div>
+                    )}
+                    <div className="flex items-baseline justify-between gap-4">
+                        <dt className="shrink-0 text-muted-foreground">
+                            Reportada
+                        </dt>
+                        <dd className="text-right tabular-nums">
+                            {formatDate(incident.reported_at)}
+                        </dd>
+                    </div>
+                    {incident.resolved_at && (
+                        <div className="flex items-baseline justify-between gap-4">
+                            <dt className="shrink-0 text-muted-foreground">
+                                Resuelta
+                            </dt>
+                            <dd className="text-right tabular-nums">
+                                {formatDate(incident.resolved_at)}
+                            </dd>
+                        </div>
+                    )}
+                </dl>
+            </section>
+        </div>
     );
 }
 
@@ -373,7 +457,7 @@ function IncidentReviewForm({
             {...IncidentController.update.form(incident.id)}
             onSuccess={onSuccess}
             options={{ preserveScroll: true }}
-            className="flex flex-col gap-5"
+            className="flex flex-col gap-4"
         >
             {({ errors, processing }) => (
                 <>
