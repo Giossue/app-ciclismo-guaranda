@@ -8,7 +8,6 @@ import {
     Card,
     CardContent,
     CardDescription,
-    CardFooter,
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
@@ -79,6 +78,8 @@ type Props = {
     workshopSpecialties: CatalogOption[];
     workshopServices: CatalogOption[];
     healthCenterTypes: CatalogOption[];
+    /** Cierra la sheet contenedora sin abandonar el listado. */
+    onCancel?: () => void;
 };
 
 export default function PoiForm({
@@ -93,6 +94,7 @@ export default function PoiForm({
     workshopSpecialties,
     workshopServices,
     healthCenterTypes,
+    onCancel,
 }: Props) {
     const isEdit = mode === 'edit' && poi !== undefined;
     const formAction = isEdit
@@ -614,17 +616,27 @@ export default function PoiForm({
                                 />
                             </section>
                         </CardContent>
-                        <CardFooter className="flex flex-wrap justify-end gap-2">
+                    </Card>
+                    <div className="sticky bottom-0 z-10 -mx-5 flex flex-wrap justify-between gap-2 border-t bg-popover/95 px-5 py-3 backdrop-blur">
+                        {onCancel ? (
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={onCancel}
+                            >
+                                Cancelar
+                            </Button>
+                        ) : (
                             <Button variant="outline" asChild>
-                                <Link href="/admin/pois" prefetch>
+                                <Link href={PoiController.index()} prefetch>
                                     Cancelar
                                 </Link>
                             </Button>
-                            <Button disabled={processing || isCompressing}>
-                                {isEdit ? 'Guardar cambios' : 'Crear POI'}
-                            </Button>
-                        </CardFooter>
-                    </Card>
+                        )}
+                        <Button disabled={processing || isCompressing}>
+                            {isEdit ? 'Guardar cambios' : 'Crear POI'}
+                        </Button>
+                    </div>
                 </div>
             )}
         </Form>

@@ -166,6 +166,10 @@ Después de esa prueba manual, marcar Fase 12 y Fase 14 como `Completado` si tod
 
 ## Editor guiado de rutas 2026-08-28
 
-- La hoja administrativa de rutas pasa a un cuadro centrado con encabezado y acciones estables; solo el contenido se desplaza.
+- La hoja administrativa de rutas pasa a un cuadro centrado amplio (hasta 1152 px en escritorio) con encabezado y acciones estables; solo el contenido se desplaza.
 - El formulario se divide en cuatro pasos de lenguaje operativo: Datos, Mapa, Detalles y Publicar. Se eliminó de la interfaz el selector técnico de motor de enrutamiento, preservando su valor interno por defecto.
 - El editor de Leaflet invalida su tamaño al hacerse visible y el interruptor de capas comunica claramente “Ver satélite”/“Ver mapa”.
+
+## Alta administrativa de POIs 2026-08-28
+
+- La creación de POIs se abre en una sheet amplia sobre el listado y preserva filtros/paginación; la ruta histórica `/admin/pois/create` redirige de forma compatible al mismo flujo.

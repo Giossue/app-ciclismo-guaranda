@@ -267,8 +267,13 @@
 ## 2026-08-28 — Editor de rutas guiado y sin jerga técnica
 
 - La creación/edición de rutas se presenta como un flujo de cuatro pasos dentro de un cuadro centrado, porque la captura completa de una ruta es demasiado extensa para una hoja lateral convencional.
+- En escritorio el cuadro aprovecha el ancho disponible hasta 1152 px; en móvil conserva márgenes táctiles y se adapta a la pantalla.
 - El valor de `routing_engine_id` permanece interno y se envía con el valor por defecto existente; el administrador no debe elegir el motor que genera el trazado.
 - La capa satelital se mantiene mediante Esri World Imagery como conmutador visual del editor, sin claves ni llamadas desde el backend.
+
+## 2026-08-28 — Alta de POIs dentro del listado
+
+- Crear un POI es un flujo administrativo que conserva el contexto de búsqueda; se resuelve en una sheet con pie fijo y no en una página independiente. La URL histórica de creación redirige al listado con la sheet abierta para no romper accesos existentes.
 
 ## 2026-08-28 — Tipografía Arial como base visual
 

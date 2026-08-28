@@ -26,6 +26,7 @@ class ListPointsOfInterestRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'form' => ['nullable', Rule::in(['create'])],
             'search' => ['nullable', 'string', 'max:120'],
             'category' => ['nullable', 'integer', Rule::exists(PoiCategory::class, 'id')],
             'status' => ['nullable', Rule::in(['active', 'inactive'])],

@@ -600,9 +600,14 @@
 ## 2026-08-28 — Refinamiento del editor administrativo de rutas
 
 - Se centró el cuadro de alta/edición, se mantuvieron sus acciones fijas y se convirtió el formulario en cuatro pasos: Datos, Mapa, Detalles y Publicar.
+- El cuadro usa el ancho disponible de escritorio hasta 1152 px, sin perder los márgenes de seguridad ni el comportamiento compacto móvil.
 - Se ocultó el selector técnico de enrutamiento preservando el valor por defecto, y se corrigió la actualización del tamaño de Leaflet cuando el paso de mapa se hace visible.
 - Se aclaró el conmutador OpenStreetMap/Esri World Imagery como “Ver satélite”/“Ver mapa”.
 - Validaciones ejecutadas: TypeScript, ESLint, Prettier, build Vite, build SSR, Pest focalizado de enrutamiento, auditoría SSR y `git diff --check`.
+
+## 2026-08-28 — Alta de POIs en sheet
+
+- El botón “Nuevo POI” conserva el listado administrativo y abre una sheet amplia con los catálogos necesarios cargados bajo demanda. La URL directa anterior redirige a `admin/pois?form=create` y el formulario incorpora `Cancelar` y acción principal en un pie fijo.
 
 ## 2026-08-28 — Tipografía base Arial
 

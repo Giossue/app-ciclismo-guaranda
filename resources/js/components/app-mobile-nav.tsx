@@ -55,11 +55,10 @@ export function AppMobileNav() {
                                 )}
                                 {item.href === '/notifications' &&
                                     unreadCount > 0 && (
-                                        <span className="absolute -top-1.5 -right-2 grid min-w-4 place-items-center rounded-full bg-primary px-1 leading-4 font-black text-[var(--fs-caption)] text-primary-foreground">
-                                            {unreadCount > 9
-                                                ? '9+'
-                                                : unreadCount}
-                                        </span>
+                                        <span
+                                            aria-hidden="true"
+                                            className="absolute -top-0.5 -right-1 size-2 rounded-full bg-destructive"
+                                        />
                                     )}
                             </span>
                             <span className="max-w-full truncate">

@@ -15,7 +15,15 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetHeader,
+    SheetTitle,
+} from '@/components/ui/sheet';
 import type { CatalogOption } from '@/types';
+import PoiForm from './partials/poi-form';
 
 type ManagedPoi = {
     active: boolean;
@@ -46,16 +54,57 @@ type PoiFilters = {
     status: string;
 };
 
+type PoiFormOptions = Omit<
+    Parameters<typeof PoiForm>[0],
+    'mode' | 'onCancel' | 'poi'
+>;
+
 type Props = {
     categories: CatalogOption[];
     filters: PoiFilters;
+    form: 'create' | null;
+    formOptions: PoiFormOptions | null;
     pois: PaginatedPois;
 };
 
-export default function AdminPoisIndex({ categories, filters, pois }: Props) {
+export default function AdminPoisIndex({
+    categories,
+    filters,
+    form,
+    formOptions,
+    pois,
+}: Props) {
     const changeQuery = (query: DataTableQuery) => {
-        router.get(PoiController.index.url(), compactPoiQuery(query), {
-            only: ['pois', 'filters'],
+        router.get(
+            PoiController.index.url(),
+            {
+                ...compactPoiQuery(query),
+                ...(form === 'create' ? { form } : {}),
+            },
+            {
+                only: ['pois', 'filters'],
+                preserveScroll: true,
+                preserveState: true,
+                replace: true,
+            },
+        );
+    };
+
+    const openPoiForm = () => {
+        router.get(
+            PoiController.index.url(),
+            { ...compactPoiQuery(filters), form: 'create' },
+            {
+                only: ['form', 'formOptions'],
+                preserveScroll: true,
+                preserveState: true,
+            },
+        );
+    };
+
+    const closePoiForm = () => {
+        router.get(PoiController.index.url(), compactPoiQuery(filters), {
+            only: ['form', 'formOptions'],
             preserveScroll: true,
             preserveState: true,
             replace: true,
@@ -155,8 +204,8 @@ export default function AdminPoisIndex({ categories, filters, pois }: Props) {
                         description="Gestiona POIs oficiales, categorías, detalles y relación con rutas."
                     />
                     <PrimaryActionButton
-                        href={PoiController.create()}
                         label="Nuevo POI"
+                        onClick={openPoiForm}
                     />
                 </div>
 
@@ -198,6 +247,41 @@ export default function AdminPoisIndex({ categories, filters, pois }: Props) {
                     }}
                 />
             </div>
+
+            <Sheet
+                open={form === 'create'}
+                onOpenChange={(open) => {
+                    if (!open) {
+                        closePoiForm();
+                    }
+                }}
+            >
+                <SheetContent
+                    side="right"
+                    className="top-1/2 right-auto bottom-auto left-1/2 h-[calc(100dvh-1.5rem)] w-[calc(100vw-1.5rem)] max-w-none -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-3xl border p-0 data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom sm:h-[calc(100dvh-4rem)] sm:w-[min(72rem,calc(100vw-4rem))] sm:max-w-[min(72rem,calc(100vw-4rem))]"
+                >
+                    <SheetHeader className="shrink-0 border-b bg-popover">
+                        <SheetTitle>Nuevo punto de interés</SheetTitle>
+                        <SheetDescription>
+                            Crea un POI oficial, su información útil y su
+                            relación con las rutas.
+                        </SheetDescription>
+                    </SheetHeader>
+
+                    {formOptions && (
+                        <div className="min-h-0 flex-1 overflow-y-auto">
+                            <div className="mx-auto w-full max-w-5xl px-5 py-5">
+                                <PoiForm
+                                    key="create"
+                                    mode="create"
+                                    onCancel={closePoiForm}
+                                    {...formOptions}
+                                />
+                            </div>
+                        </div>
+                    )}
+                </SheetContent>
+            </Sheet>
         </>
     );
 }

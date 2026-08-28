@@ -88,11 +88,23 @@ test('administrator can view poi management pages', function () {
 
     $this->actingAs($admin)
         ->get(route('admin.pois.index'))
-        ->assertOk();
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('admin/pois/index')
+            ->where('form', null)
+            ->where('formOptions', null));
 
     $this->actingAs($admin)
         ->get(route('admin.pois.create'))
-        ->assertOk();
+        ->assertRedirect(route('admin.pois.index', ['form' => 'create']));
+
+    $this->actingAs($admin)
+        ->get(route('admin.pois.index', ['form' => 'create']))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('admin/pois/index')
+            ->where('form', 'create')
+            ->has('formOptions.categories'));
 
     $this->actingAs($admin)
         ->get(route('admin.pois.suggestions.index'))
@@ -108,6 +120,14 @@ test('cyclist can not access poi administration', function () {
 
     $this->actingAs($cyclist)
         ->get(route('admin.pois.index'))
+        ->assertForbidden();
+
+    $this->actingAs($cyclist)
+        ->get(route('admin.pois.index', ['form' => 'create']))
+        ->assertForbidden();
+
+    $this->actingAs($cyclist)
+        ->get(route('admin.pois.create'))
         ->assertForbidden();
 
     $this->actingAs($cyclist)

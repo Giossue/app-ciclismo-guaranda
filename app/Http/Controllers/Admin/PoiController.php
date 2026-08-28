@@ -37,10 +37,15 @@ class PoiController extends Controller
         $this->authorize('viewAny', PointOfInterest::class);
 
         $filters = $request->validated();
+        $form = $filters['form'] ?? null;
         $search = $filters['search'] ?? null;
         $categoryId = isset($filters['category']) ? (int) $filters['category'] : null;
         $status = $filters['status'] ?? null;
         $perPage = (int) ($filters['per_page'] ?? 15);
+
+        if ($form === 'create') {
+            $this->authorize('create', PointOfInterest::class);
+        }
 
         $pois = PointOfInterest::query()
             ->withTrashed()
@@ -80,16 +85,16 @@ class PoiController extends Controller
                 'status' => $status ?? '',
                 'per_page' => $perPage,
             ],
+            'form' => $form,
+            'formOptions' => $form === 'create' ? $this->catalogProps() : null,
         ]);
     }
 
-    public function create(): Response
+    public function create(): RedirectResponse
     {
         $this->authorize('create', PointOfInterest::class);
 
-        return Inertia::render('admin/pois/create', [
-            ...$this->catalogProps(),
-        ]);
+        return to_route('admin.pois.index', ['form' => 'create']);
     }
 
     public function store(StorePoiRequest $request): RedirectResponse

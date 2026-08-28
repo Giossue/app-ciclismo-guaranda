@@ -1,6 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
 import { ChevronDown } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
 import {
     Collapsible,
     CollapsibleContent,
@@ -24,6 +23,21 @@ import { cn, toUrl } from '@/lib/utils';
 import type { NavItem } from '@/types';
 
 type AdminCounters = Partial<Record<NonNullable<NavItem['badgeKey']>, number>>;
+
+/** Marca de pendientes: un punto basta; el número queda para lectores de pantalla. */
+function PendingDot({ count }: { count: number }) {
+    return (
+        <>
+            <span
+                aria-hidden="true"
+                className="block size-2 rounded-full bg-destructive"
+            />
+            <span className="sr-only">
+                {count} pendiente{count === 1 ? '' : 's'}
+            </span>
+        </>
+    );
+}
 
 export function NavMain({ items = [] }: { items: NavItem[] }) {
     const { isCurrentOrParentUrl, isCurrentUrl } = useCurrentUrl();
@@ -108,11 +122,10 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
                                             </Link>
                                         </SidebarMenuButton>
                                         {itemPending > 0 && (
-                                            <SidebarMenuBadge
-                                                variant="pending"
-                                                className="right-8"
-                                            >
-                                                {itemPending}
+                                            <SidebarMenuBadge className="right-8">
+                                                <PendingDot
+                                                    count={itemPending}
+                                                />
                                             </SidebarMenuBadge>
                                         )}
                                         <CollapsibleTrigger asChild>
@@ -166,14 +179,13 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
                                                                     </span>
                                                                     {childPending >
                                                                         0 && (
-                                                                        <Badge
-                                                                            variant="destructive"
-                                                                            className="ml-auto h-5 min-w-5 px-1 py-0 font-medium tracking-normal normal-case"
-                                                                        >
-                                                                            {
-                                                                                childPending
-                                                                            }
-                                                                        </Badge>
+                                                                        <span className="ml-auto">
+                                                                            <PendingDot
+                                                                                count={
+                                                                                    childPending
+                                                                                }
+                                                                            />
+                                                                        </span>
                                                                     )}
                                                                 </Link>
                                                             </SidebarMenuSubButton>
@@ -216,8 +228,8 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
                                     </Link>
                                 </SidebarMenuButton>
                                 {itemPending > 0 && (
-                                    <SidebarMenuBadge variant="pending">
-                                        {itemPending}
+                                    <SidebarMenuBadge>
+                                        <PendingDot count={itemPending} />
                                     </SidebarMenuBadge>
                                 )}
                             </SidebarMenuItem>
