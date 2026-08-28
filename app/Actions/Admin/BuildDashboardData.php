@@ -29,11 +29,9 @@ class BuildDashboardData
         $periodStart = $now->subDays(29)->startOfDay();
         $periodEnd = $now->endOfDay();
         $weekStart = $now->subDays(6)->startOfDay();
-        $activeRouteStatusId = RouteStatus::query()->where('name', 'activa')->value('id');
         $completedTrackStatusId = TrackStatus::query()->where('name', 'finalizado')->value('id');
         $pendingRatingStatusId = ModerationStatus::query()->where('name', 'pendiente')->value('id');
 
-        $newUsers = User::query()->whereBetween('created_at', [$periodStart, $periodEnd])->count();
         $routeViews = RouteView::query()->whereBetween('viewed_at', [$periodStart, $periodEnd])->count();
         $downloads = RouteDownload::query()->whereBetween('downloaded_at', [$periodStart, $periodEnd])->count();
         $dailyActivity = $this->dailyActivity($now);
@@ -44,21 +42,13 @@ class BuildDashboardData
                     'key' => 'users',
                     'label' => 'Usuarios registrados',
                     'value' => User::query()->withTrashed()->count(),
-                    'description' => "{$newUsers} creados en los últimos 30 días",
+                    'description' => 'Total histórico, incluidas las cuentas dadas de baja',
                 ],
                 [
                     'key' => 'activeUsers',
                     'label' => 'Usuarios activos',
                     'value' => User::query()->where('active', true)->count(),
                     'description' => 'Cuentas habilitadas para usar la aplicación',
-                ],
-                [
-                    'key' => 'activeRoutes',
-                    'label' => 'Rutas activas',
-                    'value' => $activeRouteStatusId === null
-                        ? 0
-                        : CyclingRoute::query()->where('route_status_id', $activeRouteStatusId)->count(),
-                    'description' => 'Rutas publicadas y disponibles para ciclistas',
                 ],
                 [
                     'key' => 'pois',
@@ -86,8 +76,6 @@ class BuildDashboardData
                     ->when($completedTrackStatusId, fn ($query) => $query->where('track_status_id', $completedTrackStatusId))
                     ->whereBetween('ended_at', [$weekStart, $periodEnd])
                     ->count(),
-                'routeViews' => array_sum(array_column($dailyActivity, 'views')),
-                'downloads' => array_sum(array_column($dailyActivity, 'downloads')),
                 'days' => $dailyActivity,
             ],
             'routeStatuses' => RouteStatus::query()

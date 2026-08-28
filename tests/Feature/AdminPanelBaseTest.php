@@ -18,7 +18,7 @@ test('administrator can access admin dashboard', function () {
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('admin/dashboard')
-            ->has('overview', 6)
+            ->has('overview', 5)
             ->has('activity.days', 7)
             ->has('routeStatuses')
             ->has('popularRoutes')

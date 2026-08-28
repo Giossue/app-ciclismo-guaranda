@@ -45,12 +45,7 @@ import { index as statisticsIndex } from '@/routes/admin/statistics';
 import { index as usersIndex } from '@/routes/admin/users';
 
 type OverviewKey =
-    | 'users'
-    | 'activeUsers'
-    | 'activeRoutes'
-    | 'pois'
-    | 'routeViews'
-    | 'downloads';
+    'users' | 'activeUsers' | 'pois' | 'routeViews' | 'downloads';
 
 type OverviewMetric = {
     key: OverviewKey;
@@ -102,8 +97,6 @@ type Props = {
         period: string;
         newUsers: number;
         completedTracks: number;
-        routeViews: number;
-        downloads: number;
         days: DayActivity[];
     };
     routeStatuses: RouteStatus[];
@@ -115,7 +108,6 @@ type Props = {
 const overviewIcons = {
     users: Users,
     activeUsers: Bike,
-    activeRoutes: Route,
     pois: MapPin,
     routeViews: Eye,
     downloads: Download,
@@ -124,7 +116,6 @@ const overviewIcons = {
 const overviewDestinations = {
     users: usersIndex,
     activeUsers: usersIndex,
-    activeRoutes: routesIndex,
     pois: poisIndex,
     routeViews: statisticsIndex,
     downloads: statisticsIndex,
@@ -160,7 +151,7 @@ export default function AdminDashboard({
 
                 <section
                     aria-label="Indicadores principales"
-                    className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-6"
+                    className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-5"
                 >
                     {overview.map((metric) => (
                         <OverviewCard key={metric.key} metric={metric} />
@@ -237,17 +228,7 @@ function ActivityCard({ activity }: { activity: Props['activity'] }) {
                 </div>
                 <ActivityBars days={activity.days} />
 
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                    <ActivityMetric
-                        label="Consultas"
-                        value={activity.routeViews}
-                        icon={Eye}
-                    />
-                    <ActivityMetric
-                        label="Descargas"
-                        value={activity.downloads}
-                        icon={Download}
-                    />
+                <div className="grid grid-cols-2 gap-3">
                     <ActivityMetric
                         label="Recorridos finalizados"
                         value={activity.completedTracks}
