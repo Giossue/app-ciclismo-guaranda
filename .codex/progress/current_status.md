@@ -56,7 +56,6 @@ Fecha: 2026-06-30
 - Nueva dependencia frontend: `leaflet-draw`, `leaflet-control-geocoder`, `@types/leaflet-draw`.
 - Nueva migración pendiente de deploy/producción: `2026_06_30_000015_create_route_rating_files_table.php`.
 
-
 ## Traducción español 2026-06-30
 
 - Se tradujeron los flujos de auth, ajustes, seguridad, passkeys, 2FA, menú de usuario y mensajes flash backend.
@@ -99,7 +98,6 @@ Después de esa prueba manual, marcar Fase 12 y Fase 14 como `Completado` si tod
 - Desnivel automático integrado con OpenTopoData mediante proxy backend Laravel; configurable por entorno y con muestreo máximo de 100 puntos por solicitud.
 - Chat n8n corregido: Laravel no persiste nuevas conversaciones/mensajes al enviar; la memoria queda a cargo del workflow/nodo Agente de n8n. Tablas locales de IA se conservan intactas para compatibilidad/legado.
 
-
 ## UX móvil flat 2026-06-30
 
 - Se reemplazó la estética muy redondeada/con degradados por flat design: bordes moderados, superficies limpias, navegación inferior plana y componentes base sin sombras decorativas.
@@ -110,7 +108,6 @@ Después de esa prueba manual, marcar Fase 12 y Fase 14 como `Completado` si tod
 - Validación frontend aprobada: tipos, lint, formato y build.
 
 - Navegación Android: agregado `@capacitor/app` y listener global de botón atrás para evitar salidas accidentales desde pantallas internas; sincronizado con Capacitor Android.
-
 
 ## Fase 15 agente n8n tools 2026-07-01
 
@@ -144,3 +141,9 @@ Después de esa prueba manual, marcar Fase 12 y Fase 14 como `Completado` si tod
 
 - El módulo de POIs separa POIs oficiales, sugerencias y reportes mediante un submenú desplegable en el sidebar; las tres vistas están protegidas para administradores y no duplican navegación con pestañas.
 - El listado de POIs oficiales se migró de tarjetas a tabla con búsqueda, filtros, paginación y un menú de tres puntos para editar o activar/desactivar; su URL conserva únicamente filtros activos y `Limpiar` restablece el listado base.
+
+## Centro de notificaciones 2026-08-27
+
+- `notificaciones_app` incorpora la columna `link` para que cada aviso apunte a su destino; la migración se aplicó en la base local y en la remota `guaranda_go_db`, verificada con `migrate:status` contra el remoto.
+- La campana del encabezado abre un panel lateral con los últimos ocho avisos, tiempo relativo y accesos a marcar todas como leídas y ver el listado completo; la lista viaja como prop opcional y solo se consulta al abrir el panel.
+- El prop compartido pasó a llamarse `notificationCenter`: el anterior `notifications` quedaba sombreado por el listado paginado de la propia pantalla y dejaba el contador en cero allí.

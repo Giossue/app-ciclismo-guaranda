@@ -536,3 +536,9 @@
 
 - La antigua configuración administrativa pasó a `/settings`: muestra todos los estados técnicos en una sola vista, sin tabs ni navegación secundaria.
 - `/admin/settings` se conserva únicamente como redirección protegida para enlaces previos; la pantalla no expone secretos, credenciales ni URLs privadas.
+
+## 2026-08-27 — Notificaciones tipo panel
+
+- Se añadió `link` a las notificaciones y se rellena al revisar incidencias y valoraciones (ruta relacionada) y al reportar una incidencia (bandeja administrativa).
+- La fila de notificación se extrajo a un componente compartido entre el panel de la campana y la pantalla completa; el panel usa tiempo relativo y la pantalla mantiene la hora dentro de cada grupo por día.
+- Los módulos del sidebar muestran insignias de pendientes (incidencias, valoraciones, sugerencias y reportes de POIs) calculadas solo para administradores.
