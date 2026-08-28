@@ -10,6 +10,8 @@ import {
 } from 'lucide-react';
 import type { ReactNode } from 'react';
 import RouteController from '@/actions/App/Http/Controllers/Admin/RouteController';
+import { DataTableToolbar } from '@/components/data-table';
+import type { DataTableQuery } from '@/components/data-table';
 import Heading from '@/components/heading';
 import ImageWithFallback from '@/components/image-with-fallback';
 import { PrimaryActionButton } from '@/components/primary-action-button';
@@ -93,7 +95,18 @@ type RouteFormOptions = {
 
 type RouteFormData = NonNullable<Parameters<typeof RouteForm>[0]['route']>;
 
+type RouteFilters = {
+    category: string;
+    difficulty: string;
+    search: string;
+    status: string;
+};
+
 type Props = {
+    categories: CatalogOption[];
+    difficulties: CatalogOption[];
+    filters: RouteFilters;
+    statuses: CatalogOption[];
     form: 'create' | 'edit' | null;
     formOptions: RouteFormOptions | null;
     routeForm: RouteFormData | null;
@@ -110,11 +123,24 @@ function openRouteForm(query: { form: 'create' | 'edit'; route?: number }) {
 }
 
 export default function AdminRoutesIndex({
+    categories,
+    difficulties,
+    filters,
     form,
     formOptions,
     routeForm,
     routes,
+    statuses,
 }: Props) {
+    const changeQuery = (query: DataTableQuery) => {
+        router.get(RouteController.index.url(), query, {
+            only: ['routes', 'filters'],
+            preserveScroll: true,
+            preserveState: true,
+            replace: true,
+        });
+    };
+
     const closeRouteForm = () => {
         router.get(
             RouteController.index.url(),
@@ -143,6 +169,41 @@ export default function AdminRoutesIndex({
                         onClick={() => openRouteForm({ form: 'create' })}
                     />
                 </div>
+
+                <DataTableToolbar
+                    query={filters}
+                    onQueryChange={changeQuery}
+                    searchPlaceholder="Buscar por nombre, descripción u origen"
+                    filters={[
+                        {
+                            id: 'status',
+                            label: 'Filtrar por estado',
+                            placeholder: 'Todos los estados',
+                            options: statuses.map((status) => ({
+                                label: status.name,
+                                value: String(status.id),
+                            })),
+                        },
+                        {
+                            id: 'category',
+                            label: 'Filtrar por categoría',
+                            placeholder: 'Todas las categorías',
+                            options: categories.map((category) => ({
+                                label: category.name,
+                                value: String(category.id),
+                            })),
+                        },
+                        {
+                            id: 'difficulty',
+                            label: 'Filtrar por dificultad',
+                            placeholder: 'Todas las dificultades',
+                            options: difficulties.map((difficulty) => ({
+                                label: difficulty.name,
+                                value: String(difficulty.id),
+                            })),
+                        },
+                    ]}
+                />
 
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     {routes.data.map((route) => (
@@ -241,10 +302,11 @@ export default function AdminRoutesIndex({
                 {routes.data.length === 0 && (
                     <Card>
                         <CardHeader>
-                            <CardTitle>No hay rutas creadas</CardTitle>
+                            <CardTitle>No hay rutas que mostrar</CardTitle>
                             <CardDescription>
-                                Crea la primera ruta oficial para activar la
-                                gestión cicloturística de Guaranda Go.
+                                Ajusta la búsqueda y los filtros, o crea la
+                                primera ruta oficial para activar la gestión
+                                cicloturística de Guaranda Go.
                             </CardDescription>
                         </CardHeader>
                         <CardFooter>

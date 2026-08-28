@@ -14,6 +14,7 @@ use App\Models\RouteGeometry;
 use App\Models\RouteStatus;
 use App\Models\RoutingEngine;
 use App\Models\TransportMode;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\RedirectResponse;
@@ -35,16 +36,49 @@ class RouteController extends Controller
         $filters = $request->validate([
             'form' => ['nullable', Rule::in(['create', 'edit'])],
             'route' => ['nullable', 'integer'],
+            'search' => ['nullable', 'string', 'max:120'],
+            'status' => ['nullable', 'integer', Rule::exists(RouteStatus::class, 'id')],
+            'category' => ['nullable', 'integer', Rule::exists(RouteCategory::class, 'id')],
+            'difficulty' => ['nullable', 'integer', Rule::exists(RouteDifficulty::class, 'id')],
         ]);
+
+        $search = $filters['search'] ?? null;
+        $statusId = isset($filters['status']) ? (int) $filters['status'] : null;
+        $categoryId = isset($filters['category']) ? (int) $filters['category'] : null;
+        $difficultyId = isset($filters['difficulty']) ? (int) $filters['difficulty'] : null;
 
         $routes = CyclingRoute::query()
             ->with(['status:id,name', 'category:id,name', 'difficulty:id,name', 'admin:id,name,last_name', 'metrics.transportMode:id,name'])
+            ->when($search, function (Builder $query, string $search): void {
+                $pattern = "%{$search}%";
+
+                $query->where(function (Builder $query) use ($pattern): void {
+                    $query
+                        ->whereLike('name', $pattern)
+                        ->orWhereLike('description', $pattern)
+                        ->orWhereLike('start_name', $pattern)
+                        ->orWhereLike('end_name', $pattern);
+                });
+            })
+            ->when($statusId, fn (Builder $query, int $statusId) => $query->where('route_status_id', $statusId))
+            ->when($categoryId, fn (Builder $query, int $categoryId) => $query->where('route_category_id', $categoryId))
+            ->when($difficultyId, fn (Builder $query, int $difficultyId) => $query->where('route_difficulty_id', $difficultyId))
             ->latest('id')
             ->paginate(9)
+            ->withQueryString()
             ->through(fn (CyclingRoute $route): array => $this->serializeRouteSummary($route));
 
         return Inertia::render('admin/routes/index', [
             'routes' => $routes,
+            'statuses' => RouteStatus::query()->orderBy('id')->get(['id', 'name']),
+            'categories' => RouteCategory::query()->orderBy('name')->get(['id', 'name']),
+            'difficulties' => RouteDifficulty::query()->orderBy('id')->get(['id', 'name']),
+            'filters' => [
+                'search' => $search ?? '',
+                'status' => $statusId === null ? '' : (string) $statusId,
+                'category' => $categoryId === null ? '' : (string) $categoryId,
+                'difficulty' => $difficultyId === null ? '' : (string) $difficultyId,
+            ],
             ...$this->routeFormProps($filters['form'] ?? null, $filters['route'] ?? null),
         ]);
     }

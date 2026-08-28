@@ -98,6 +98,119 @@ type Props<T> = {
     title?: string;
 };
 
+/**
+ * Barra de búsqueda y filtros. Vive aparte de la tabla para que un listado con
+ * otra presentación —la grilla de rutas, por ejemplo— use el mismo contrato.
+ */
+export function DataTableToolbar({
+    children,
+    filters = [],
+    onQueryChange,
+    query,
+    searchPlaceholder = 'Buscar…',
+}: {
+    children?: React.ReactNode;
+    filters?: DataTableFilter[];
+    onQueryChange: (query: DataTableQuery) => void;
+    query: DataTableQuery;
+    searchPlaceholder?: string;
+}) {
+    const hasActiveFilters = filters.some(
+        (filter) => !filter.persistent && String(query[filter.id] ?? '') !== '',
+    );
+
+    const updateFilter = (id: string, value: string) => {
+        onQueryChange({
+            ...query,
+            [id]: value === ALL_FILTER_VALUE ? undefined : value || undefined,
+            page: 1,
+        });
+    };
+
+    const clearQuery = () => {
+        const preserved = Object.fromEntries(
+            filters
+                .filter((filter) => filter.persistent)
+                .map((filter) => [filter.id, query[filter.id]]),
+        );
+
+        onQueryChange({ ...preserved, per_page: query.per_page });
+    };
+
+    return (
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+            <div className="flex flex-1 flex-col gap-3 sm:flex-row sm:items-center">
+                <DataTableSearch
+                    initialValue={String(query.search ?? '')}
+                    placeholder={searchPlaceholder}
+                    onSearchChange={(search) =>
+                        onQueryChange({
+                            ...query,
+                            page: 1,
+                            search: search || undefined,
+                        })
+                    }
+                />
+
+                <div className="flex flex-row flex-wrap items-center gap-3">
+                    {filters.map((filter) => (
+                        <Select
+                            key={filter.id}
+                            value={String(query[filter.id] ?? '') || undefined}
+                            onValueChange={(value) =>
+                                updateFilter(filter.id, value)
+                            }
+                        >
+                            <SelectTrigger
+                                size="sm"
+                                aria-label={filter.label}
+                                className="w-auto min-w-36"
+                            >
+                                <SelectValue placeholder={filter.placeholder} />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectGroup>
+                                    {!filter.persistent && (
+                                        <SelectItem value={ALL_FILTER_VALUE}>
+                                            {filter.placeholder}
+                                        </SelectItem>
+                                    )}
+                                    {filter.options.map((option) => (
+                                        <SelectItem
+                                            key={option.value}
+                                            value={option.value}
+                                        >
+                                            {option.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectGroup>
+                            </SelectContent>
+                        </Select>
+                    ))}
+                    {(String(query.search ?? '') !== '' ||
+                        hasActiveFilters) && (
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={clearQuery}
+                        >
+                            <X data-icon="inline-start" />
+                            Limpiar
+                        </Button>
+                    )}
+                </div>
+            </div>
+
+            {children && (
+                <div className="hidden shrink-0 items-center gap-2 md:flex">
+                    {children}
+                </div>
+            )}
+        </div>
+    );
+}
+
 export function DataTable<T>({
     columns,
     data,
@@ -116,10 +229,6 @@ export function DataTable<T>({
         () => columns.filter((column) => !hiddenColumns.has(column.id)),
         [columns, hiddenColumns],
     );
-    const hasActiveFilters = filters.some(
-        (filter) => !filter.persistent && String(query[filter.id] ?? '') !== '',
-    );
-
     // En móvil la fila se transforma en tarjeta: sin scroll horizontal ni
     // columnas ocultas, que en una pantalla estrecha esconden datos.
     const primaryColumn =
@@ -130,24 +239,6 @@ export function DataTable<T>({
     const detailColumns = columns.filter(
         (column) => column !== primaryColumn && column !== actionsColumn,
     );
-
-    const clearQuery = () => {
-        const preserved = Object.fromEntries(
-            filters
-                .filter((filter) => filter.persistent)
-                .map((filter) => [filter.id, query[filter.id]]),
-        );
-
-        onQueryChange({ ...preserved, per_page: pagination.perPage });
-    };
-
-    const updateFilter = (id: string, value: string) => {
-        onQueryChange({
-            ...query,
-            [id]: value === ALL_FILTER_VALUE ? undefined : value || undefined,
-            page: 1,
-        });
-    };
 
     const toggleColumn = (columnId: string, visible: boolean) => {
         setHiddenColumns((current) => {
@@ -177,124 +268,47 @@ export function DataTable<T>({
             )}
 
             <CardContent className="flex flex-col gap-4">
-                <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-                    <div className="flex flex-1 flex-col gap-3 sm:flex-row sm:items-center">
-                        <DataTableSearch
-                            initialValue={String(query.search ?? '')}
-                            placeholder={searchPlaceholder}
-                            onSearchChange={(search) =>
-                                onQueryChange({
-                                    ...query,
-                                    page: 1,
-                                    search: search || undefined,
-                                })
-                            }
-                        />
-
-                        <div className="flex flex-row flex-wrap items-center gap-3">
-                            {filters.map((filter) => (
-                                <Select
-                                    key={filter.id}
-                                    value={
-                                        String(query[filter.id] ?? '') ||
-                                        undefined
-                                    }
-                                    onValueChange={(value) =>
-                                        updateFilter(filter.id, value)
-                                    }
-                                >
-                                    <SelectTrigger
-                                        size="sm"
-                                        aria-label={filter.label}
-                                        className="w-auto min-w-36"
-                                    >
-                                        <SelectValue
-                                            placeholder={filter.placeholder}
-                                        />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectGroup>
-                                            {!filter.persistent && (
-                                                <SelectItem
-                                                    value={ALL_FILTER_VALUE}
-                                                >
-                                                    {filter.placeholder}
-                                                </SelectItem>
-                                            )}
-                                            {filter.options.map((option) => (
-                                                <SelectItem
-                                                    key={option.value}
-                                                    value={option.value}
-                                                >
-                                                    {option.label}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectGroup>
-                                    </SelectContent>
-                                </Select>
-                            ))}
-                            {(String(query.search ?? '') !== '' ||
-                                hasActiveFilters) && (
-                                <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={clearQuery}
-                                >
-                                    <X data-icon="inline-start" />
-                                    Limpiar
-                                </Button>
-                            )}
-                        </div>
-                    </div>
-
-                    <div className="hidden shrink-0 items-center gap-2 md:flex">
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="sm"
-                                >
-                                    <Settings2 data-icon="inline-start" />
-                                    Ver
-                                    <ChevronDown data-icon="inline-end" />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-48">
-                                <DropdownMenuLabel>
-                                    Columnas visibles
-                                </DropdownMenuLabel>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuGroup>
-                                    {columns
-                                        .filter(
-                                            (column) =>
-                                                column.hideable !== false,
-                                        )
-                                        .map((column) => (
-                                            <DropdownMenuCheckboxItem
-                                                key={column.id}
-                                                checked={
-                                                    !hiddenColumns.has(
-                                                        column.id,
-                                                    )
-                                                }
-                                                onCheckedChange={(checked) =>
-                                                    toggleColumn(
-                                                        column.id,
-                                                        checked,
-                                                    )
-                                                }
-                                            >
-                                                {column.label}
-                                            </DropdownMenuCheckboxItem>
-                                        ))}
-                                </DropdownMenuGroup>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </div>
-                </div>
+                <DataTableToolbar
+                    filters={filters}
+                    query={query}
+                    onQueryChange={onQueryChange}
+                    searchPlaceholder={searchPlaceholder}
+                >
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button type="button" variant="outline" size="sm">
+                                <Settings2 data-icon="inline-start" />
+                                Ver
+                                <ChevronDown data-icon="inline-end" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48">
+                            <DropdownMenuLabel>
+                                Columnas visibles
+                            </DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuGroup>
+                                {columns
+                                    .filter(
+                                        (column) => column.hideable !== false,
+                                    )
+                                    .map((column) => (
+                                        <DropdownMenuCheckboxItem
+                                            key={column.id}
+                                            checked={
+                                                !hiddenColumns.has(column.id)
+                                            }
+                                            onCheckedChange={(checked) =>
+                                                toggleColumn(column.id, checked)
+                                            }
+                                        >
+                                            {column.label}
+                                        </DropdownMenuCheckboxItem>
+                                    ))}
+                            </DropdownMenuGroup>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </DataTableToolbar>
 
                 <ul className="flex flex-col gap-3 md:hidden">
                     {data.length > 0 ? (
