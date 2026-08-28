@@ -87,7 +87,7 @@ export default function AdminPoiReportsIndex({ filters, reports }: Props) {
             cell: (report) => (
                 <Badge
                     variant={
-                        report.status === 'pendiente' ? 'default' : 'outline'
+                        report.status === 'Pendiente' ? 'default' : 'outline'
                     }
                 >
                     {report.status}

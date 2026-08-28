@@ -18,7 +18,7 @@ class OfflineRouteController extends Controller
 {
     public function show(Request $request, CyclingRoute $route): JsonResponse
     {
-        abort_unless($route->status?->name === 'activa', 404);
+        abort_unless($route->status?->name === 'Activa', 404);
 
         $route->load([
             'status:id,name',
@@ -30,7 +30,7 @@ class OfflineRouteController extends Controller
             'observations',
             'pointsOfInterest' => fn ($query) => $query->where('active', true)->with(['category:id,name', 'hours', 'images']),
             'incidents' => fn ($query) => $query
-                ->whereHas('status', fn ($statusQuery) => $statusQuery->where('name', 'en revisión'))
+                ->whereHas('status', fn ($statusQuery) => $statusQuery->where('name', 'En revisión'))
                 ->with(['type:id,name', 'status:id,name', 'files'])
                 ->latest('reported_at'),
         ]);
@@ -46,7 +46,7 @@ class OfflineRouteController extends Controller
             'route' => $this->serializeRoutePackage($route),
             'download' => $download === null ? null : $this->serializeDownload($download, $route),
             'map' => [
-                'status' => 'pendiente',
+                'status' => 'Pendiente',
                 'description' => 'El paquete cartográfico offline de Ecuador se integrará en la fase Android/Capacitor.',
                 'estimated_size_mb' => null,
             ],
@@ -55,14 +55,14 @@ class OfflineRouteController extends Controller
 
     public function store(StoreRouteDownloadRequest $request, CyclingRoute $route): JsonResponse
     {
-        abort_unless($route->status?->name === 'activa', 404);
+        abort_unless($route->status?->name === 'Activa', 404);
 
         $userId = $request->user()?->id;
         abort_if($userId === null, 403);
 
         $payload = $request->validated();
         $format = ExportFormat::query()->where('name', 'GeoJSON')->first();
-        $status = (string) ($payload['download_status'] ?? 'completada');
+        $status = (string) ($payload['download_status'] ?? 'Completada');
 
         $download = RouteDownload::query()->updateOrCreate(
             [
@@ -74,8 +74,8 @@ class OfflineRouteController extends Controller
                 'route_version' => $route->route_version,
                 'download_status' => $status,
                 'size_mb' => $payload['size_mb'] ?? null,
-                'downloaded_at' => $status === 'completada' ? now() : null,
-                'local_deleted_at' => $status === 'eliminada' ? now() : null,
+                'downloaded_at' => $status === 'Completada' ? now() : null,
+                'local_deleted_at' => $status === 'Eliminada' ? now() : null,
             ]
         );
 

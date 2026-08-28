@@ -138,12 +138,12 @@ class User extends Authenticatable implements PasskeyUser
 
     public function isAdministrator(): bool
     {
-        return $this->role?->name === 'administrador';
+        return $this->role?->name === 'Administrador';
     }
 
     public function isCyclist(): bool
     {
-        return $this->role?->name === 'ciclista';
+        return $this->role?->name === 'Ciclista';
     }
 
     public function isActive(): bool

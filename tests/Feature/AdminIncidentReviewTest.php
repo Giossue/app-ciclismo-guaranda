@@ -22,11 +22,11 @@ function createIncidentForAdminReview(): Incident
     $sequence++;
     $admin = User::factory()->administrator()->create();
     $cyclist = User::factory()->cyclist()->create();
-    $routeStatus = RouteStatus::query()->where('name', 'activa')->firstOrFail();
-    $routeCategory = RouteCategory::query()->where('name', 'turística')->firstOrFail();
-    $difficulty = RouteDifficulty::query()->where('name', 'media')->firstOrFail();
-    $incidentType = IncidentType::query()->where('name', 'vía cerrada')->firstOrFail();
-    $incidentStatus = IncidentStatus::query()->where('name', 'reportada')->firstOrFail();
+    $routeStatus = RouteStatus::query()->where('name', 'Activa')->firstOrFail();
+    $routeCategory = RouteCategory::query()->where('name', 'Turística')->firstOrFail();
+    $difficulty = RouteDifficulty::query()->where('name', 'Media')->firstOrFail();
+    $incidentType = IncidentType::query()->where('name', 'Vía cerrada')->firstOrFail();
+    $incidentStatus = IncidentStatus::query()->where('name', 'Reportada')->firstOrFail();
 
     $route = CyclingRoute::query()->create([
         'admin_user_id' => $admin->id,
@@ -79,7 +79,7 @@ test('administrator can view incident review page', function () {
 test('cyclist can not access incident review page', function () {
     $cyclist = User::factory()->cyclist()->create();
     $incident = createIncidentForAdminReview();
-    $inReview = IncidentStatus::query()->where('name', 'en revisión')->firstOrFail();
+    $inReview = IncidentStatus::query()->where('name', 'En revisión')->firstOrFail();
 
     $this->actingAs($cyclist)
         ->get(route('admin.incidents.index'))
@@ -96,7 +96,7 @@ test('cyclist can not access incident review page', function () {
 test('administrator can review incident and notify reporter', function () {
     $admin = User::factory()->administrator()->create();
     $incident = createIncidentForAdminReview();
-    $inReview = IncidentStatus::query()->where('name', 'en revisión')->firstOrFail();
+    $inReview = IncidentStatus::query()->where('name', 'En revisión')->firstOrFail();
 
     $this->actingAs($admin)
         ->patch(route('admin.incidents.update', $incident), [
@@ -108,7 +108,7 @@ test('administrator can review incident and notify reporter', function () {
 
     $incident->refresh();
 
-    expect($incident->status?->name)->toBe('en revisión')
+    expect($incident->status?->name)->toBe('En revisión')
         ->and($incident->admin_response)->toBe('Validada como riesgo activo para ciclistas.')
         ->and($incident->resolved_at)->toBeNull();
 
@@ -122,7 +122,7 @@ test('administrator can review incident and notify reporter', function () {
 test('resolved incident stores resolved timestamp', function () {
     $admin = User::factory()->administrator()->create();
     $incident = createIncidentForAdminReview();
-    $resolved = IncidentStatus::query()->where('name', 'resuelta')->firstOrFail();
+    $resolved = IncidentStatus::query()->where('name', 'Resuelta')->firstOrFail();
 
     $this->actingAs($admin)
         ->patch(route('admin.incidents.update', $incident), [
@@ -133,6 +133,6 @@ test('resolved incident stores resolved timestamp', function () {
 
     $incident->refresh();
 
-    expect($incident->status?->name)->toBe('resuelta')
+    expect($incident->status?->name)->toBe('Resuelta')
         ->and($incident->resolved_at)->not->toBeNull();
 });

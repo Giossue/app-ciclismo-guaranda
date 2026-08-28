@@ -48,6 +48,7 @@ Fecha: 2026-06-30
 ## Bugfix testers 2026-06-30
 
 - Se usa `.codex/bugfix/` como carpeta de seguimiento por orden de corrección.
+- Pendiente de despliegue: la migración `2026_08_28_055413_capitalize_catalog_and_workflow_values` transforma a inicial mayúscula los catálogos y los estados visibles persistidos, sin modificar protocolos técnicos.
 - Rutas admin: creación/edición con mapa Leaflet.draw, búsqueda OSM/Nominatim, distancia calculada, inicio/final derivados del trazado y selección de POIs activos.
 - Imágenes: portada y galería de rutas por archivo; portadas visibles para ciclistas; POIs con miniaturas cuando existan.
 - Registro: checklist visual de contraseña antes de enviar.

@@ -28,10 +28,10 @@ function createRouteForOfflineSync(float $distanceKm = 10.0): CyclingRoute
 
     $sequence++;
     $admin = User::factory()->administrator()->create();
-    $status = RouteStatus::query()->where('name', 'activa')->firstOrFail();
-    $category = RouteCategory::query()->where('name', 'turística')->firstOrFail();
-    $difficulty = RouteDifficulty::query()->where('name', 'media')->firstOrFail();
-    $transportMode = TransportMode::query()->where('name', 'bicicleta')->firstOrFail();
+    $status = RouteStatus::query()->where('name', 'Activa')->firstOrFail();
+    $category = RouteCategory::query()->where('name', 'Turística')->firstOrFail();
+    $difficulty = RouteDifficulty::query()->where('name', 'Media')->firstOrFail();
+    $transportMode = TransportMode::query()->where('name', 'Bicicleta')->firstOrFail();
     $routingEngine = RoutingEngine::query()->where('name', 'OSRM')->firstOrFail();
 
     /** @var CyclingRoute $route */
@@ -81,9 +81,9 @@ function createRouteForOfflineSync(float $distanceKm = 10.0): CyclingRoute
 test('cyclist can fetch a complete offline package for an active route', function () {
     $cyclist = User::factory()->cyclist()->create();
     $route = createRouteForOfflineSync();
-    $poiCategory = PoiCategory::query()->where('name', 'mirador')->firstOrFail();
-    $incidentType = IncidentType::query()->where('name', 'obstáculo')->firstOrFail();
-    $incidentStatus = IncidentStatus::query()->where('name', 'en revisión')->firstOrFail();
+    $poiCategory = PoiCategory::query()->where('name', 'Mirador')->firstOrFail();
+    $incidentType = IncidentType::query()->where('name', 'Obstáculo')->firstOrFail();
+    $incidentStatus = IncidentStatus::query()->where('name', 'En revisión')->firstOrFail();
 
     /** @var PointOfInterest $poi */
     $poi = PointOfInterest::query()->create([
@@ -128,7 +128,7 @@ test('cyclist can fetch a complete offline package for an active route', functio
         ->assertJsonPath('route.points_of_interest.0.name', 'Mirador offline')
         ->assertJsonPath('route.points_of_interest.0.images.0.image_path', 'pois/mirador.jpg')
         ->assertJsonPath('route.incidents.0.title', 'Rama en vía')
-        ->assertJsonPath('map.status', 'pendiente');
+        ->assertJsonPath('map.status', 'Pendiente');
 });
 
 test('cyclist can register a route download and detect outdated packages', function () {
@@ -137,7 +137,7 @@ test('cyclist can register a route download and detect outdated packages', funct
 
     $this->actingAs($cyclist)
         ->postJson(route('routes.downloads.store', $route->slug), [
-            'download_status' => 'completada',
+            'download_status' => 'Completada',
             'size_mb' => 1.25,
         ])
         ->assertOk()
@@ -147,7 +147,7 @@ test('cyclist can register a route download and detect outdated packages', funct
     $this->assertDatabaseHas('descargas_ruta', [
         'user_id' => $cyclist->id,
         'route_id' => $route->id,
-        'download_status' => 'completada',
+        'download_status' => 'Completada',
     ]);
 
     $route->forceFill(['route_version' => 2])->save();
@@ -165,7 +165,7 @@ test('cyclist can sync an offline incident with a photo', function () {
 
     $cyclist = User::factory()->cyclist()->create();
     $route = createRouteForOfflineSync();
-    $type = IncidentType::query()->where('name', 'derrumbe')->firstOrFail();
+    $type = IncidentType::query()->where('name', 'Derrumbe')->firstOrFail();
 
     $this->actingAs($cyclist)
         ->postJson(route('sync.offline-events.store'), [
@@ -187,11 +187,11 @@ test('cyclist can sync an offline incident with a photo', function () {
         ])
         ->assertOk()
         ->assertJsonPath('results.0.client_id', 'offline-incident-1')
-        ->assertJsonPath('results.0.status', 'enviado');
+        ->assertJsonPath('results.0.status', 'Enviado');
 
     $incident = Incident::query()->where('title', 'Derrumbe offline')->firstOrFail();
 
-    expect($incident->status?->name)->toBe('reportada')
+    expect($incident->status?->name)->toBe('Reportada')
         ->and($incident->files()->count())->toBe(1);
 
     Storage::disk('public')->assertExists($incident->files()->firstOrFail()->file_path);
@@ -199,7 +199,7 @@ test('cyclist can sync an offline incident with a photo', function () {
     $this->assertDatabaseHas('entradas_cola_sincronizacion', [
         'user_id' => $cyclist->id,
         'event_type' => 'offline_incident_reported',
-        'status' => 'enviado',
+        'status' => 'Enviado',
     ]);
 });
 
@@ -236,11 +236,11 @@ test('cyclist can sync a completed offline track', function () {
         ])
         ->assertOk()
         ->assertJsonPath('results.0.client_id', 'offline-track-1')
-        ->assertJsonPath('results.0.status', 'enviado');
+        ->assertJsonPath('results.0.status', 'Enviado');
 
     $track = Track::query()->where('user_id', $cyclist->id)->where('route_id', $route->id)->firstOrFail();
 
-    expect($track->status?->name)->toBe('finalizado')
+    expect($track->status?->name)->toBe('Finalizado')
         ->and($track->gpsPoints()->count())->toBe(2)
         ->and((float) $track->completion_percentage)->toBeGreaterThan(90.0)
         ->and($track->is_valid)->toBeTrue()

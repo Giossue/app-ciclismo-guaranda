@@ -18,16 +18,16 @@ beforeEach(function () {
     $this->seed(CatalogSeeder::class);
 });
 
-function createRouteForChatbotN8n(string $statusName = 'activa'): CyclingRoute
+function createRouteForChatbotN8n(string $statusName = 'Activa'): CyclingRoute
 {
     static $sequence = 0;
 
     $sequence++;
     $admin = User::factory()->administrator()->create();
     $status = RouteStatus::query()->where('name', $statusName)->firstOrFail();
-    $category = RouteCategory::query()->where('name', 'turística')->firstOrFail();
-    $difficulty = RouteDifficulty::query()->where('name', 'media')->firstOrFail();
-    $transportMode = TransportMode::query()->where('name', 'bicicleta')->firstOrFail();
+    $category = RouteCategory::query()->where('name', 'Turística')->firstOrFail();
+    $difficulty = RouteDifficulty::query()->where('name', 'Media')->firstOrFail();
+    $transportMode = TransportMode::query()->where('name', 'Bicicleta')->firstOrFail();
     $routingEngine = RoutingEngine::query()->where('name', 'OSRM')->firstOrFail();
 
     /** @var CyclingRoute $route */
@@ -246,7 +246,7 @@ test('chat route context must be active', function () {
     Http::fake();
 
     $cyclist = User::factory()->cyclist()->create();
-    $inactiveRoute = createRouteForChatbotN8n('inactiva');
+    $inactiveRoute = createRouteForChatbotN8n('Inactiva');
 
     $this->actingAs($cyclist)
         ->post(route('chat.messages.store'), [

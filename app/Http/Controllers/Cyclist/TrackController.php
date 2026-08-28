@@ -23,7 +23,7 @@ class TrackController extends Controller
     public function store(StoreTrackRequest $request, CyclingRoute $route): RedirectResponse
     {
         $payload = $request->validated();
-        $inProgress = TrackStatus::query()->where('name', 'en curso')->firstOrFail();
+        $inProgress = TrackStatus::query()->where('name', 'En curso')->firstOrFail();
 
         /** @var Track $track */
         $track = Track::query()->create([
@@ -94,10 +94,10 @@ class TrackController extends Controller
     public function pause(Track $track): RedirectResponse
     {
         $this->authorize('update', $track);
-        $this->ensureStatus($track, ['en curso']);
+        $this->ensureStatus($track, ['En curso']);
 
         $track->forceFill([
-            'track_status_id' => $this->statusId('pausado'),
+            'track_status_id' => $this->statusId('Pausado'),
         ])->save();
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Recorrido pausado.')]);
@@ -108,10 +108,10 @@ class TrackController extends Controller
     public function resume(Track $track): RedirectResponse
     {
         $this->authorize('update', $track);
-        $this->ensureStatus($track, ['pausado']);
+        $this->ensureStatus($track, ['Pausado']);
 
         $track->forceFill([
-            'track_status_id' => $this->statusId('en curso'),
+            'track_status_id' => $this->statusId('En curso'),
         ])->save();
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Recorrido reanudado.')]);
@@ -122,10 +122,10 @@ class TrackController extends Controller
     public function finish(Track $track): RedirectResponse
     {
         $this->authorize('update', $track);
-        $this->ensureStatus($track, ['en curso', 'pausado']);
+        $this->ensureStatus($track, ['En curso', 'Pausado']);
 
         $track->forceFill([
-            'track_status_id' => $this->statusId('finalizado'),
+            'track_status_id' => $this->statusId('Finalizado'),
             'ended_at' => now(),
         ])->save();
 
@@ -139,10 +139,10 @@ class TrackController extends Controller
     public function cancel(Track $track): RedirectResponse
     {
         $this->authorize('update', $track);
-        $this->ensureStatus($track, ['en curso', 'pausado']);
+        $this->ensureStatus($track, ['En curso', 'Pausado']);
 
         $track->forceFill([
-            'track_status_id' => $this->statusId('cancelado'),
+            'track_status_id' => $this->statusId('Cancelado'),
             'ended_at' => now(),
             'is_valid' => false,
         ])->save();

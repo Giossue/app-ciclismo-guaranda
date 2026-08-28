@@ -356,10 +356,7 @@ export default function AdminRoutesIndex({
                     }
                 }}
             >
-                <SheetContent
-                    side="right"
-                    className="top-1/2 right-auto bottom-auto left-1/2 h-[calc(100dvh-1.5rem)] w-[calc(100vw-1.5rem)] max-w-none -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-3xl border p-0 data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom sm:h-[calc(100dvh-4rem)] sm:w-[min(72rem,calc(100vw-4rem))] sm:max-w-[min(72rem,calc(100vw-4rem))]"
-                >
+                <SheetContent className="w-full overflow-hidden p-0 sm:max-w-[min(72rem,calc(100vw-4rem))]">
                     <SheetHeader className="shrink-0 border-b bg-popover">
                         <SheetTitle>
                             {form === 'edit' && routeForm
@@ -504,7 +501,7 @@ function RouteCardActions({ route }: { route: RouteSummary }) {
                         Editar ruta
                     </DropdownMenuItem>
                 </DropdownMenuGroup>
-                {route.status?.name !== 'inactiva' && (
+                {route.status?.name !== 'Inactiva' && (
                     <>
                         <DropdownMenuSeparator />
                         <Form
@@ -532,7 +529,7 @@ function RouteCardActions({ route }: { route: RouteSummary }) {
 }
 
 function statusVariant(status: string): 'default' | 'outline' {
-    return status === 'activa' ? 'default' : 'outline';
+    return status === 'Activa' ? 'default' : 'outline';
 }
 
 AdminRoutesIndex.layout = {

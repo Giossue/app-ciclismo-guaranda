@@ -19,14 +19,14 @@ beforeEach(function () {
     $this->seed(CatalogSeeder::class);
 });
 
-function createRouteForMapVisualization(string $statusName = 'activa'): CyclingRoute
+function createRouteForMapVisualization(string $statusName = 'Activa'): CyclingRoute
 {
     $admin = User::factory()->administrator()->create();
     $cyclist = User::factory()->cyclist()->create();
     $status = RouteStatus::query()->where('name', $statusName)->firstOrFail();
-    $category = RouteCategory::query()->where('name', 'turística')->firstOrFail();
-    $difficulty = RouteDifficulty::query()->where('name', 'media')->firstOrFail();
-    $transportMode = TransportMode::query()->where('name', 'bicicleta')->firstOrFail();
+    $category = RouteCategory::query()->where('name', 'Turística')->firstOrFail();
+    $difficulty = RouteDifficulty::query()->where('name', 'Media')->firstOrFail();
+    $transportMode = TransportMode::query()->where('name', 'Bicicleta')->firstOrFail();
 
     $route = CyclingRoute::query()->create([
         'admin_user_id' => $admin->id,
@@ -74,7 +74,7 @@ function createRouteForMapVisualization(string $statusName = 'activa'): CyclingR
         ['text' => 'Tramo con viento lateral.'],
     ]);
 
-    $poiCategory = PoiCategory::query()->where('name', 'mirador')->firstOrFail();
+    $poiCategory = PoiCategory::query()->where('name', 'Mirador')->firstOrFail();
     $poi = PointOfInterest::query()->create([
         'poi_category_id' => $poiCategory->id,
         'name' => 'Mirador de prueba',
@@ -91,8 +91,8 @@ function createRouteForMapVisualization(string $statusName = 'activa'): CyclingR
         'route_observation' => 'Parada sugerida.',
     ]);
 
-    $incidentType = IncidentType::query()->where('name', 'obstáculo')->firstOrFail();
-    $incidentStatus = IncidentStatus::query()->where('name', 'en revisión')->firstOrFail();
+    $incidentType = IncidentType::query()->where('name', 'Obstáculo')->firstOrFail();
+    $incidentStatus = IncidentStatus::query()->where('name', 'En revisión')->firstOrFail();
 
     $route->incidents()->create([
         'user_id' => $cyclist->id,
@@ -158,14 +158,14 @@ test('cyclist can view route detail with metrics recommendations and map payload
             ->where('route.recommendations.0', 'Llevar hidratación.')
             ->where('route.observations.0', 'Tramo con viento lateral.')
             ->where('route.points_of_interest.0.is_required', true)
-            ->where('route.incidents.0.status.name', 'en revisión'));
+            ->where('route.incidents.0.status.name', 'En revisión'));
 });
 
 test('inactive route detail is not available to cyclist', function () {
     $this->withoutVite();
 
     $cyclist = User::factory()->cyclist()->create();
-    $route = createRouteForMapVisualization('inactiva');
+    $route = createRouteForMapVisualization('Inactiva');
 
     $this->actingAs($cyclist)
         ->get(route('routes.show', $route->slug))

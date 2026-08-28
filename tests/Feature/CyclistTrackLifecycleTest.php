@@ -17,16 +17,16 @@ beforeEach(function () {
     $this->seed(CatalogSeeder::class);
 });
 
-function createRouteForTrackLifecycle(string $statusName = 'activa', float $distanceKm = 10.0): CyclingRoute
+function createRouteForTrackLifecycle(string $statusName = 'Activa', float $distanceKm = 10.0): CyclingRoute
 {
     static $sequence = 0;
 
     $sequence++;
     $admin = User::factory()->administrator()->create();
     $status = RouteStatus::query()->where('name', $statusName)->firstOrFail();
-    $category = RouteCategory::query()->where('name', 'turística')->firstOrFail();
-    $difficulty = RouteDifficulty::query()->where('name', 'media')->firstOrFail();
-    $transportMode = TransportMode::query()->where('name', 'bicicleta')->firstOrFail();
+    $category = RouteCategory::query()->where('name', 'Turística')->firstOrFail();
+    $difficulty = RouteDifficulty::query()->where('name', 'Media')->firstOrFail();
+    $transportMode = TransportMode::query()->where('name', 'Bicicleta')->firstOrFail();
     $routingEngine = RoutingEngine::query()->where('name', 'OSRM')->firstOrFail();
 
     $route = CyclingRoute::query()->create([
@@ -94,7 +94,7 @@ test('cyclist can start a track for an active route', function () {
         $queries[] = $query->sql;
     });
 
-    expect($track->status?->name)->toBe('en curso')
+    expect($track->status?->name)->toBe('En curso')
         ->and($track->distance_traveled_km)->toBe('0.000')
         ->and($track->is_valid)->toBeFalse();
 
@@ -104,7 +104,7 @@ test('cyclist can start a track for an active route', function () {
         ->assertInertia(fn (Assert $page) => $page
             ->component('routes/show')
             ->where('activeTrack.id', $track->id)
-            ->where('activeTrack.status.name', 'en curso'));
+            ->where('activeTrack.status.name', 'En curso'));
 
     $gpsPointsQuery = collect($queries)->first(
         fn (string $sql): bool => str_contains($sql, 'from "puntos_gps_recorrido"'),
@@ -119,7 +119,7 @@ test('cyclist can start a track for an active route', function () {
 test('cyclist can not start track for inactive route or duplicate active track', function () {
     $cyclist = User::factory()->cyclist()->create();
     $activeRoute = createRouteForTrackLifecycle();
-    $inactiveRoute = createRouteForTrackLifecycle('inactiva');
+    $inactiveRoute = createRouteForTrackLifecycle('Inactiva');
 
     startTrackForUser($cyclist, $activeRoute);
 
@@ -200,7 +200,7 @@ test('cyclist can pause resume finish and produce valid summary', function () {
         ->assertRedirect();
 
     $track->refresh();
-    expect($track->status?->name)->toBe('pausado');
+    expect($track->status?->name)->toBe('Pausado');
 
     $this->actingAs($cyclist)
         ->post(route('tracks.points.store', $track), [
@@ -214,7 +214,7 @@ test('cyclist can pause resume finish and produce valid summary', function () {
         ->assertRedirect();
 
     $track->refresh();
-    expect($track->status?->name)->toBe('en curso');
+    expect($track->status?->name)->toBe('En curso');
 
     foreach ([[0, 0], [0.09, 0]] as $index => [$latitude, $longitude]) {
         $this->actingAs($cyclist)
@@ -232,7 +232,7 @@ test('cyclist can pause resume finish and produce valid summary', function () {
 
     $track->refresh();
 
-    expect($track->status?->name)->toBe('finalizado')
+    expect($track->status?->name)->toBe('Finalizado')
         ->and($track->ended_at)->not->toBeNull()
         ->and($track->is_valid)->toBeTrue()
         ->and($track->summary['is_valid_for_rating'])->toBeTrue();
@@ -249,7 +249,7 @@ test('finished track is not exposed as active on route detail', function () {
 
     $track->refresh();
 
-    expect($track->status?->name)->toBe('finalizado');
+    expect($track->status?->name)->toBe('Finalizado');
 
     $this->actingAs($cyclist)
         ->get(route('routes.show', $route->slug))
@@ -270,7 +270,7 @@ test('cancelled track is not valid', function () {
 
     $track->refresh();
 
-    expect($track->status?->name)->toBe('cancelado')
+    expect($track->status?->name)->toBe('Cancelado')
         ->and($track->is_valid)->toBeFalse();
 });
 

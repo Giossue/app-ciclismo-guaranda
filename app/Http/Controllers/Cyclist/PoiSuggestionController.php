@@ -15,7 +15,7 @@ class PoiSuggestionController extends Controller
         PoiSuggestion::query()->create([
             ...$request->validated(),
             'user_id' => $request->user()?->id,
-            'status' => 'pendiente',
+            'status' => 'Pendiente',
             'suggested_at' => now(),
         ]);
 

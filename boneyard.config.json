@@ -1,9 +1,0 @@
-{
-    "breakpoints": [375, 430, 760, 1280],
-    "out": "./resources/js/bones",
-    "wait": 500,
-    "color": "var(--muted)",
-    "darkColor": "var(--muted)",
-    "animate": "pulse",
-    "transition": 160
-}

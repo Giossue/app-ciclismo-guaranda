@@ -103,8 +103,8 @@ class RouteController extends Controller
                 'formOptions' => [
                     ...$catalogs,
                     'defaults' => [
-                        'route_status_id' => $catalogs['statuses']->firstWhere('name', 'borrador')?->id,
-                        'transport_mode_id' => $catalogs['transportModes']->firstWhere('name', 'bicicleta')?->id,
+                        'route_status_id' => $catalogs['statuses']->firstWhere('name', 'Borrador')?->id,
+                        'transport_mode_id' => $catalogs['transportModes']->firstWhere('name', 'Bicicleta')?->id,
                         'routing_engine_id' => $catalogs['routingEngines']->first()?->id,
                     ],
                     'defaultGeojson' => null,
@@ -189,7 +189,7 @@ class RouteController extends Controller
     {
         $this->authorize('delete', $route);
 
-        $inactiveStatus = RouteStatus::query()->where('name', 'inactiva')->firstOrFail();
+        $inactiveStatus = RouteStatus::query()->where('name', 'Inactiva')->firstOrFail();
 
         $route->forceFill([
             'route_status_id' => $inactiveStatus->id,

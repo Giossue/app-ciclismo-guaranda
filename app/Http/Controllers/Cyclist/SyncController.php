@@ -42,14 +42,14 @@ class SyncController extends Controller
                 ->where('user_id', $userId)
                 ->where('event_type', $eventType)
                 ->where('payload->client_id', $clientId)
-                ->where('status', 'enviado')
+                ->where('status', 'Enviado')
                 ->exists();
 
             if ($alreadySynced) {
                 $results[] = [
                     'client_id' => $clientId,
                     'event_type' => $eventType,
-                    'status' => 'enviado',
+                    'status' => 'Enviado',
                     'server_id' => null,
                 ];
 
@@ -61,7 +61,7 @@ class SyncController extends Controller
                 'user_id' => $userId,
                 'event_type' => $eventType,
                 'payload' => array_merge(['client_id' => $clientId], $payload),
-                'status' => 'pendiente',
+                'status' => 'Pendiente',
                 'attempts' => 1,
             ]);
 
@@ -73,26 +73,26 @@ class SyncController extends Controller
                 });
 
                 $queueEntry->forceFill([
-                    'status' => 'enviado',
+                    'status' => 'Enviado',
                     'synced_at' => now(),
                 ])->save();
 
                 $results[] = [
                     'client_id' => $clientId,
                     'event_type' => $eventType,
-                    'status' => 'enviado',
+                    'status' => 'Enviado',
                     'server_id' => $serverId,
                 ];
             } catch (Throwable $exception) {
                 $queueEntry->forceFill([
-                    'status' => 'error',
+                    'status' => 'Error',
                     'last_error' => $exception->getMessage(),
                 ])->save();
 
                 $results[] = [
                     'client_id' => $clientId,
                     'event_type' => $eventType,
-                    'status' => 'error',
+                    'status' => 'Error',
                     'error' => $exception->getMessage(),
                 ];
             }
@@ -113,7 +113,7 @@ class SyncController extends Controller
             throw new \InvalidArgumentException('Usuario no autenticado.');
         }
 
-        $status = IncidentStatus::query()->where('name', 'reportada')->firstOrFail();
+        $status = IncidentStatus::query()->where('name', 'Reportada')->firstOrFail();
 
         /** @var Incident $incident */
         $incident = Incident::query()->create([
@@ -145,7 +145,7 @@ class SyncController extends Controller
 
         /** @var CyclingRoute $route */
         $route = CyclingRoute::query()->with('metrics')->findOrFail((int) $payload['route_id']);
-        $status = TrackStatus::query()->where('name', 'finalizado')->firstOrFail();
+        $status = TrackStatus::query()->where('name', 'Finalizado')->firstOrFail();
         $pointsPayload = is_array($payload['points'] ?? null) ? $payload['points'] : [];
         $points = collect($pointsPayload)->filter(fn (mixed $point): bool => is_array($point))->values();
 

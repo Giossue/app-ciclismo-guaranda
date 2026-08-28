@@ -68,10 +68,7 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                     <Menu className="size-4" />
                                 </Button>
                             </SheetTrigger>
-                            <SheetContent
-                                side="left"
-                                className="flex h-full w-72 flex-col items-stretch justify-between bg-sidebar"
-                            >
+                            <SheetContent className="flex h-full w-72 flex-col items-stretch justify-between bg-sidebar">
                                 <SheetTitle className="sr-only">
                                     Menú de navegación
                                 </SheetTitle>

@@ -57,7 +57,7 @@ class RouteRating extends Model
 
     public function isApproved(): bool
     {
-        return $this->moderationStatus?->name === 'aprobado';
+        return $this->moderationStatus?->name === 'Aprobado';
     }
 
     /**

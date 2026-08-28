@@ -32,6 +32,7 @@ Usar PostgreSQL como base principal y PostGIS para rutas, POIs, incidencias y pu
 - Usar `created_at`, `updated_at` y `deleted_at` cuando aplique.
 - Preferir eliminación lógica para trazabilidad.
 - Catálogos iniciales mediante seeders.
+- Los nombres de catálogos y estados visibles se almacenan con inicial mayúscula (por ejemplo, `Activa`, `Pendiente`, `En revisión`). Siglas y estándares como `MTB`, `OSRM`, `GPX` y `GeoJSON` conservan su capitalización propia; los identificadores técnicos no son etiquetas de catálogo.
 - No guardar binarios de imágenes en base de datos; guardar ruta/URL y metadatos.
 
 ## Consultas espaciales esperadas

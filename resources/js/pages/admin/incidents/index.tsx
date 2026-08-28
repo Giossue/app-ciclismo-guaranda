@@ -150,7 +150,7 @@ export default function AdminIncidentsIndex({
                 incident.status ? (
                     <Badge
                         variant={
-                            incident.status.name === 'reportada'
+                            incident.status.name === 'Reportada'
                                 ? 'default'
                                 : 'outline'
                         }

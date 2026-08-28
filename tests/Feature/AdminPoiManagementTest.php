@@ -25,9 +25,9 @@ function createRouteForPoiManagement(): CyclingRoute
 
     $sequence++;
     $admin = User::factory()->administrator()->create();
-    $status = RouteStatus::query()->where('name', 'activa')->firstOrFail();
-    $category = RouteCategory::query()->where('name', 'turística')->firstOrFail();
-    $difficulty = RouteDifficulty::query()->where('name', 'media')->firstOrFail();
+    $status = RouteStatus::query()->where('name', 'Activa')->firstOrFail();
+    $category = RouteCategory::query()->where('name', 'Turística')->firstOrFail();
+    $difficulty = RouteDifficulty::query()->where('name', 'Media')->firstOrFail();
 
     return CyclingRoute::query()->create([
         'admin_user_id' => $admin->id,
@@ -51,9 +51,9 @@ function createRouteForPoiManagement(): CyclingRoute
 
 function adminPoiPayload(array $overrides = []): array
 {
-    $category = PoiCategory::query()->where('name', 'comida')->firstOrFail();
-    $cuisineType = CuisineType::query()->where('name', 'ecuatoriana')->firstOrFail();
-    $priceRange = PriceRange::query()->where('name', 'económico')->firstOrFail();
+    $category = PoiCategory::query()->where('name', 'Comida')->firstOrFail();
+    $cuisineType = CuisineType::query()->where('name', 'Ecuatoriana')->firstOrFail();
+    $priceRange = PriceRange::query()->where('name', 'Económico')->firstOrFail();
     $route = createRouteForPoiManagement();
 
     return [
@@ -85,7 +85,7 @@ test('administrator can view poi management pages', function () {
     $this->withoutVite();
 
     $admin = User::factory()->administrator()->create();
-    $category = PoiCategory::query()->where('name', 'comida')->firstOrFail();
+    $category = PoiCategory::query()->where('name', 'Comida')->firstOrFail();
     $poi = PointOfInterest::query()->create([
         'poi_category_id' => $category->id,
         'name' => 'POI para editar en sheet',
@@ -144,7 +144,7 @@ test('administrator can view poi management pages', function () {
 
 test('cyclist can not access poi administration', function () {
     $cyclist = User::factory()->cyclist()->create();
-    $category = PoiCategory::query()->where('name', 'comida')->firstOrFail();
+    $category = PoiCategory::query()->where('name', 'Comida')->firstOrFail();
     $poi = PointOfInterest::query()->create([
         'poi_category_id' => $category->id,
         'name' => 'POI no autorizado',
@@ -194,7 +194,7 @@ test('administrator can browse POIs, suggestions and reports in separate views',
 
     $admin = User::factory()->administrator()->create();
     $cyclist = User::factory()->cyclist()->create();
-    $category = PoiCategory::query()->where('name', 'comida')->firstOrFail();
+    $category = PoiCategory::query()->where('name', 'Comida')->firstOrFail();
     $poi = PointOfInterest::query()->create([
         'poi_category_id' => $category->id,
         'name' => 'POI para retroalimentación',
@@ -209,16 +209,16 @@ test('administrator can browse POIs, suggestions and reports in separate views',
         'poi_category_id' => $category->id,
         'name' => 'Sugerencia separada',
         'description' => 'Debe aparecer solo en la vista de sugerencias.',
-        'status' => 'pendiente',
+        'status' => 'Pendiente',
         'suggested_at' => now(),
     ]);
 
     PoiReport::query()->create([
         'user_id' => $cyclist->id,
         'point_of_interest_id' => $poi->id,
-        'report_type' => 'cerrado',
+        'report_type' => 'Cerrado',
         'description' => 'Debe aparecer solo en la vista de reportes.',
-        'status' => 'pendiente',
+        'status' => 'Pendiente',
         'reported_at' => now(),
     ]);
 
@@ -285,7 +285,7 @@ test('administrator can update poi and replace category details', function () {
         ->assertSessionHasNoErrors();
 
     $poi = PointOfInterest::query()->where('name', 'Cafetería de prueba')->firstOrFail();
-    $miradorCategory = PoiCategory::query()->where('name', 'mirador')->firstOrFail();
+    $miradorCategory = PoiCategory::query()->where('name', 'Mirador')->firstOrFail();
 
     $this->actingAs($admin)
         ->patch(route('admin.pois.update', $poi), adminPoiPayload([
@@ -303,7 +303,7 @@ test('administrator can update poi and replace category details', function () {
     $poi->refresh();
 
     expect($poi->name)->toBe('Mirador actualizado')
-        ->and($poi->category?->name)->toBe('mirador')
+        ->and($poi->category?->name)->toBe('Mirador')
         ->and($poi->hours()->count())->toBe(1)
         ->and(FoodDetail::query()->whereKey($poi->id)->exists())->toBeFalse();
 });
@@ -331,7 +331,7 @@ test('administrator can open a disabled POI in the edit sheet', function () {
     $this->withoutVite();
 
     $admin = User::factory()->administrator()->create();
-    $category = PoiCategory::query()->where('name', 'comida')->firstOrFail();
+    $category = PoiCategory::query()->where('name', 'Comida')->firstOrFail();
     $poi = PointOfInterest::query()->create([
         'poi_category_id' => $category->id,
         'name' => 'POI inactivo para editar',

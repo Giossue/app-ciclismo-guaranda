@@ -130,13 +130,13 @@ const experienceOptions = [
         value: 'Recomendada para familias o salidas recreativas.',
         label: 'Familiar / recreativa',
         description: 'Enfocada en turismo, pausas y menor exigencia técnica.',
-        keywords: ['familia', 'familiar', 'recreativa'],
+        keywords: ['familia', 'Familiar', 'recreativa'],
     },
     {
         value: 'Requiere experiencia media y bicicleta en buen estado.',
         label: 'Experiencia media',
         description: 'Subidas moderadas, tramos mixtos y control básico.',
-        keywords: ['media', 'moderada', 'intermedia'],
+        keywords: ['Media', 'moderada', 'intermedia'],
     },
     {
         value: 'Requiere experiencia avanzada, buena condición física y control técnico.',

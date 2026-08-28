@@ -38,7 +38,7 @@ class StoreTrackPointRequest extends FormRequest
                 return;
             }
 
-            if ($track->status?->name !== 'en curso') {
+            if ($track->status?->name !== 'En curso') {
                 $validator->errors()->add('track', 'Solo se pueden registrar puntos en un recorrido en curso.');
             }
         });

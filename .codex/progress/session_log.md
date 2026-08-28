@@ -622,3 +622,13 @@
 - El paso monolítico de APT, NodeSource, extensiones PHP y PECL terminó con código 1 en Dokploy sin señalar el subproceso. Se dividió en tres capas, se añadieron reintentos y se limitó `docker-php-ext-install` a dos procesos.
 - PhpRedis quedó fijado a `6.3.0`, la versión compatible observada en la compilación previa con PHP 8.4.
 - Se ejecutó una reconstrucción local desde las capas modificadas e incluyendo `main` hasta `b8af501`; la imagen terminó correctamente y el contenedor inició PHP-FPM, Nginx e Inertia SSR con `/up` en 200 y estado `healthy`.
+
+## 2026-08-28 — Sheets y Boneyard
+
+- Se eliminaron las transiciones inferiores personalizadas de los editores de POIs y rutas; todos los sheets ahora se presentan desde la derecha.
+- Se retiraron `boneyard-js`, su configuración, registro y dependencia transitiva de Playwright. Los skeletons de shadcn usados localmente no se eliminaron.
+
+## 2026-08-28 — Capitalización de datos visibles
+
+- Se preparó una migración reversible para convertir catálogos y estados persistidos a inicial mayúscula, junto con las comparaciones backend/frontend, validaciones, seeders y pruebas afectadas.
+- No se aplicó la migración a producción desde el workspace: quedará aplicada de forma atómica por el despliegue Laravel, sin seeders automáticos.

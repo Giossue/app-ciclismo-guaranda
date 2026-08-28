@@ -94,7 +94,7 @@ export default function AdminPoiSuggestionsIndex({
             cell: (suggestion) => (
                 <Badge
                     variant={
-                        suggestion.status === 'pendiente'
+                        suggestion.status === 'Pendiente'
                             ? 'default'
                             : 'outline'
                     }

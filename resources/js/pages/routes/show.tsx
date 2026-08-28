@@ -386,8 +386,8 @@ function TrackPanel({
     route: CyclingRouteMapItem;
     activeTrack: ActiveTrack | null;
 }) {
-    const isInProgress = activeTrack?.status?.name === 'en curso';
-    const isPaused = activeTrack?.status?.name === 'pausado';
+    const isInProgress = activeTrack?.status?.name === 'En curso';
+    const isPaused = activeTrack?.status?.name === 'Pausado';
     const hasActiveTrack = activeTrack !== null && (isInProgress || isPaused);
     const isPostingPoint = useRef(false);
     const [startMessage, setStartMessage] = useState<string | null>(null);
@@ -1031,7 +1031,10 @@ function OfflinePanel({
         setQueueCount(
             items.filter(
                 (item) =>
-                    item.status === 'pendiente' || item.status === 'error',
+                    item.status === 'Pendiente' ||
+                    item.status === 'pendiente' ||
+                    item.status === 'Error' ||
+                    item.status === 'error',
             ).length,
         );
         setStorageEstimate(estimate);
@@ -1084,7 +1087,7 @@ function OfflinePanel({
                         : {}),
                 },
                 body: JSON.stringify({
-                    download_status: 'completada',
+                    download_status: 'Completada',
                     size_mb: Math.round(sizeMb * 100) / 100,
                 }),
             });
@@ -1117,7 +1120,7 @@ function OfflinePanel({
                         ? { 'X-CSRF-TOKEN': csrfToken() as string }
                         : {}),
                 },
-                body: JSON.stringify({ download_status: 'eliminada' }),
+                body: JSON.stringify({ download_status: 'Eliminada' }),
             });
             setMessage('Descarga local eliminada de este dispositivo.');
             await loadOfflineState();
@@ -1139,7 +1142,7 @@ function OfflinePanel({
         try {
             const results = await syncPendingOfflineEvents();
             const sentCount = results.filter(
-                (result) => result.status === 'enviado',
+                (result) => result.status === 'Enviado',
             ).length;
 
             setMessage(
@@ -1552,7 +1555,7 @@ function PoiReportForm({ poiId }: { poiId: number }) {
                     </Label>
                     <Select
                         name="report_type"
-                        defaultValue="datos incorrectos"
+                        defaultValue="Datos incorrectos"
                         required
                     >
                         <SelectTrigger
@@ -1563,11 +1566,11 @@ function PoiReportForm({ poiId }: { poiId: number }) {
                         </SelectTrigger>
                         <SelectContent>
                             <SelectGroup>
-                                <SelectItem value="cerrado">Cerrado</SelectItem>
-                                <SelectItem value="datos incorrectos">
+                                <SelectItem value="Cerrado">Cerrado</SelectItem>
+                                <SelectItem value="Datos incorrectos">
                                     Datos incorrectos
                                 </SelectItem>
-                                <SelectItem value="otro">Otro</SelectItem>
+                                <SelectItem value="Otro">Otro</SelectItem>
                             </SelectGroup>
                         </SelectContent>
                     </Select>

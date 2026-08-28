@@ -39,7 +39,13 @@ export type OfflineQueueItem = {
     client_id: string;
     event_type: OfflineEventType;
     payload: Record<string, unknown>;
-    status: 'pendiente' | 'enviado' | 'error';
+    status:
+        | 'Pendiente'
+        | 'Enviado'
+        | 'Error'
+        | 'pendiente'
+        | 'enviado'
+        | 'error';
     attempts: number;
     last_error: string | null;
     created_at: string;
@@ -176,7 +182,7 @@ export async function enqueueOfflineEvent(
         client_id: clientId(),
         event_type: eventType,
         payload,
-        status: 'pendiente',
+        status: 'Pendiente',
         attempts: 0,
         last_error: null,
         created_at: now,
@@ -198,7 +204,11 @@ export async function pendingQueueItems(): Promise<OfflineQueueItem[]> {
     const items = await listQueueItems();
 
     return items.filter(
-        (item) => item.status === 'pendiente' || item.status === 'error',
+        (item) =>
+            item.status === 'Pendiente' ||
+            item.status === 'pendiente' ||
+            item.status === 'Error' ||
+            item.status === 'error',
     );
 }
 

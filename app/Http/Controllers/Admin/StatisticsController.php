@@ -188,7 +188,7 @@ class StatisticsController extends Controller
      */
     private function metrics(?CarbonImmutable $from, ?CarbonImmutable $to): array
     {
-        $completedStatusId = DB::table('estados_recorrido')->where('name', 'finalizado')->value('id');
+        $completedStatusId = DB::table('estados_recorrido')->where('name', 'Finalizado')->value('id');
 
         return [
             [
@@ -302,7 +302,7 @@ class StatisticsController extends Controller
         return $this->applyQueryDateRange(DB::table('valoraciones_ruta'), 'valoraciones_ruta.rated_at', $from, $to)
             ->join('rutas', 'rutas.id', '=', 'valoraciones_ruta.route_id')
             ->leftJoin('estados_moderacion', 'estados_moderacion.id', '=', 'valoraciones_ruta.moderation_status_id')
-            ->where('estados_moderacion.name', 'aprobado')
+            ->where('estados_moderacion.name', 'Aprobado')
             ->groupBy('rutas.id', 'rutas.name')
             ->orderByDesc(DB::raw('avg(valoraciones_ruta.rating)'))
             ->limit(10)

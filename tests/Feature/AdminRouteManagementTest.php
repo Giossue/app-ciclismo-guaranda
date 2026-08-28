@@ -21,10 +21,10 @@ beforeEach(function () {
 
 function routePayload(array $overrides = []): array
 {
-    $status = RouteStatus::query()->where('name', 'activa')->firstOrFail();
+    $status = RouteStatus::query()->where('name', 'Activa')->firstOrFail();
     $category = RouteCategory::query()->where('name', 'MTB')->firstOrFail();
-    $difficulty = RouteDifficulty::query()->where('name', 'media')->firstOrFail();
-    $transportMode = TransportMode::query()->where('name', 'bicicleta')->firstOrFail();
+    $difficulty = RouteDifficulty::query()->where('name', 'Media')->firstOrFail();
+    $transportMode = TransportMode::query()->where('name', 'Bicicleta')->firstOrFail();
     $routingEngine = RoutingEngine::query()->where('name', 'OSRM')->firstOrFail();
 
     return [
@@ -67,8 +67,8 @@ test('administrator can view route management pages', function () {
     $this->withoutVite();
 
     $admin = User::factory()->administrator()->create();
-    $draftStatus = RouteStatus::query()->where('name', 'borrador')->firstOrFail();
-    $bicycle = TransportMode::query()->where('name', 'bicicleta')->firstOrFail();
+    $draftStatus = RouteStatus::query()->where('name', 'Borrador')->firstOrFail();
+    $bicycle = TransportMode::query()->where('name', 'Bicicleta')->firstOrFail();
     $routingEngine = RoutingEngine::query()->where('active', true)->orderBy('id')->firstOrFail();
 
     $this->actingAs($admin)
@@ -94,9 +94,9 @@ test('administrator opens the edit sheet from the route list', function () {
     $this->withoutVite();
 
     $admin = User::factory()->administrator()->create();
-    $status = RouteStatus::query()->where('name', 'activa')->firstOrFail();
+    $status = RouteStatus::query()->where('name', 'Activa')->firstOrFail();
     $category = RouteCategory::query()->where('name', 'MTB')->firstOrFail();
-    $difficulty = RouteDifficulty::query()->where('name', 'media')->firstOrFail();
+    $difficulty = RouteDifficulty::query()->where('name', 'Media')->firstOrFail();
     $route = CyclingRoute::query()->create([
         'admin_user_id' => $admin->id,
         'route_status_id' => $status->id,
@@ -127,9 +127,9 @@ test('administrator can search and filter routes', function () {
     $this->withoutVite();
 
     $admin = User::factory()->administrator()->create();
-    $status = RouteStatus::query()->where('name', 'activa')->firstOrFail();
+    $status = RouteStatus::query()->where('name', 'Activa')->firstOrFail();
     $category = RouteCategory::query()->where('name', 'MTB')->firstOrFail();
-    $difficulty = RouteDifficulty::query()->where('name', 'media')->firstOrFail();
+    $difficulty = RouteDifficulty::query()->where('name', 'Media')->firstOrFail();
 
     $base = [
         'admin_user_id' => $admin->id,
@@ -150,14 +150,14 @@ test('administrator can search and filter routes', function () {
 
     $this->actingAs($admin)
         ->get(route('admin.routes.index', [
-            'search' => 'mirador',
+            'search' => 'Mirador',
             'status' => $status->id,
             'category' => $category->id,
         ]))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('admin/routes/index')
-            ->where('filters.search', 'mirador')
+            ->where('filters.search', 'Mirador')
             ->where('filters.status', (string) $status->id)
             ->where('filters.category', (string) $category->id)
             ->has('routes.data', 1)
@@ -171,9 +171,9 @@ test('administrator can paginate routes in groups of nine', function () {
     $this->withoutVite();
 
     $admin = User::factory()->administrator()->create();
-    $status = RouteStatus::query()->where('name', 'activa')->firstOrFail();
+    $status = RouteStatus::query()->where('name', 'Activa')->firstOrFail();
     $category = RouteCategory::query()->where('name', 'MTB')->firstOrFail();
-    $difficulty = RouteDifficulty::query()->where('name', 'media')->firstOrFail();
+    $difficulty = RouteDifficulty::query()->where('name', 'Media')->firstOrFail();
 
     foreach (range(1, 10) as $number) {
         CyclingRoute::query()->create([
@@ -279,7 +279,7 @@ test('administrator can create a complete route', function () {
 
 test('administrator can create route scoped points of interest from route form', function () {
     $admin = User::factory()->administrator()->create();
-    $category = PoiCategory::query()->where('name', 'mirador')->firstOrFail();
+    $category = PoiCategory::query()->where('name', 'Mirador')->firstOrFail();
 
     $this->actingAs($admin)
         ->post(route('admin.routes.store'), routePayload([
@@ -373,7 +373,7 @@ test('administrator can inactivate a route without physical deletion', function 
 
     $route->refresh();
 
-    expect($route->status?->name)->toBe('inactiva')
+    expect($route->status?->name)->toBe('Inactiva')
         ->and($route->route_version)->toBe(2)
         ->and(CyclingRoute::query()->whereKey($route->id)->exists())->toBeTrue();
 });

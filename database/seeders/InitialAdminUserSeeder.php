@@ -24,7 +24,7 @@ class InitialAdminUserSeeder extends Seeder
         }
 
         $name = config('guaranda.initial_admin.name');
-        $adminRole = UserRole::query()->where('name', 'administrador')->first();
+        $adminRole = UserRole::query()->where('name', 'Administrador')->first();
 
         User::query()->updateOrCreate(
             ['email' => $email],

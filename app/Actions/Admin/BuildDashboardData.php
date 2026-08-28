@@ -92,7 +92,7 @@ class BuildDashboardData
     {
         $periodEnd = $this->periodEnd;
         $weekStart = $this->weekStart;
-        $completedTrackStatusId = TrackStatus::query()->where('name', 'finalizado')->value('id');
+        $completedTrackStatusId = TrackStatus::query()->where('name', 'Finalizado')->value('id');
         $dailyActivity = $this->dailyActivity($this->now);
 
         return [
@@ -159,7 +159,7 @@ class BuildDashboardData
      */
     public function attention(): array
     {
-        $pendingRatingStatusId = ModerationStatus::query()->where('name', 'pendiente')->value('id');
+        $pendingRatingStatusId = ModerationStatus::query()->where('name', 'Pendiente')->value('id');
 
         return [
             [

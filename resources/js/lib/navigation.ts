@@ -26,7 +26,7 @@ const cyclistNavItems: NavItem[] = [
 ];
 
 export function isAdmin(auth: Auth): boolean {
-    return auth.user?.role?.name === 'administrador';
+    return auth.user?.role?.name === 'Administrador';
 }
 
 export function homePath(auth: Auth): string {

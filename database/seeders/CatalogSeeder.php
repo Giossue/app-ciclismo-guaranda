@@ -36,8 +36,8 @@ class CatalogSeeder extends Seeder
     public function run(): void
     {
         $this->seedCatalog(UserRole::class, [
-            ['name' => 'ciclista', 'description' => 'Usuario que consulta rutas, registra recorridos, reporta incidencias y valora experiencias.'],
-            ['name' => 'administrador', 'description' => 'Usuario con permisos para gestionar rutas, POIs, incidencias, usuarios y reportes.'],
+            ['name' => 'Ciclista', 'description' => 'Usuario que consulta rutas, registra recorridos, reporta incidencias y valora experiencias.'],
+            ['name' => 'Administrador', 'description' => 'Usuario con permisos para gestionar rutas, POIs, incidencias, usuarios y reportes.'],
         ]);
 
         $this->seedCatalog(Gender::class, [
@@ -46,23 +46,23 @@ class CatalogSeeder extends Seeder
         ]);
 
         $this->seedCatalog(RouteStatus::class, [
-            ['name' => 'borrador', 'description' => 'Ruta en preparación, no visible para ciclistas.'],
-            ['name' => 'activa', 'description' => 'Ruta publicada y disponible para uso.'],
-            ['name' => 'inactiva', 'description' => 'Ruta deshabilitada temporalmente.'],
+            ['name' => 'Borrador', 'description' => 'Ruta en preparación, no visible para ciclistas.'],
+            ['name' => 'Activa', 'description' => 'Ruta publicada y disponible para uso.'],
+            ['name' => 'Inactiva', 'description' => 'Ruta deshabilitada temporalmente.'],
         ]);
 
         $this->seedCatalog(RouteDifficulty::class, [
-            ['name' => 'fácil', 'description' => 'Ruta recomendada para usuarios principiantes o recorridos familiares.'],
-            ['name' => 'media', 'description' => 'Ruta con exigencia moderada de distancia, pendiente o superficie.'],
-            ['name' => 'difícil', 'description' => 'Ruta exigente para ciclistas con experiencia.'],
+            ['name' => 'Fácil', 'description' => 'Ruta recomendada para usuarios principiantes o recorridos familiares.'],
+            ['name' => 'Media', 'description' => 'Ruta con exigencia moderada de distancia, pendiente o superficie.'],
+            ['name' => 'Difícil', 'description' => 'Ruta exigente para ciclistas con experiencia.'],
         ]);
 
         $this->seedCatalog(RouteCategory::class, [
-            ['name' => 'familiar', 'description' => 'Ruta apta para recorridos recreativos o familiares.'],
+            ['name' => 'Familiar', 'description' => 'Ruta apta para recorridos recreativos o familiares.'],
             ['name' => 'MTB', 'description' => 'Ruta orientada a ciclismo de montaña.'],
-            ['name' => 'urbana', 'description' => 'Ruta dentro o cerca de zonas urbanas.'],
-            ['name' => 'montaña', 'description' => 'Ruta con terreno andino, pendientes o caminos rurales.'],
-            ['name' => 'turística', 'description' => 'Ruta enfocada en atractivos culturales, naturales o gastronómicos.'],
+            ['name' => 'Urbana', 'description' => 'Ruta dentro o cerca de zonas urbanas.'],
+            ['name' => 'Montaña', 'description' => 'Ruta con terreno andino, pendientes o caminos rurales.'],
+            ['name' => 'Turística', 'description' => 'Ruta enfocada en atractivos culturales, naturales o gastronómicos.'],
         ]);
 
         $this->seedCatalog(RoutingEngine::class, [
@@ -72,102 +72,102 @@ class CatalogSeeder extends Seeder
         ]);
 
         $this->seedCatalog(TransportMode::class, [
-            ['name' => 'bicicleta'],
-            ['name' => 'caminata'],
+            ['name' => 'Bicicleta'],
+            ['name' => 'Caminata'],
         ]);
 
         $this->seedCatalog(PoiCategory::class, [
-            ['name' => 'comida', 'description' => 'Restaurantes, cafeterías y paradas gastronómicas.'],
-            ['name' => 'tienda', 'description' => 'Tiendas útiles para abastecimiento durante la ruta.'],
-            ['name' => 'taller', 'description' => 'Talleres o puntos de asistencia mecánica.'],
-            ['name' => 'salud', 'description' => 'Centros de salud, hospitales, clínicas o puntos de asistencia.'],
-            ['name' => 'hospedaje', 'description' => 'Lugares para alojamiento de ciclistas o turistas.'],
-            ['name' => 'mirador', 'description' => 'Puntos panorámicos o atractivos de observación.'],
+            ['name' => 'Comida', 'description' => 'Restaurantes, cafeterías y paradas gastronómicas.'],
+            ['name' => 'Tienda', 'description' => 'Tiendas útiles para abastecimiento durante la ruta.'],
+            ['name' => 'Taller', 'description' => 'Talleres o puntos de asistencia mecánica.'],
+            ['name' => 'Salud', 'description' => 'Centros de salud, hospitales, clínicas o puntos de asistencia.'],
+            ['name' => 'Hospedaje', 'description' => 'Lugares para alojamiento de ciclistas o turistas.'],
+            ['name' => 'Mirador', 'description' => 'Puntos panorámicos o atractivos de observación.'],
         ]);
 
         $this->seedCatalog(PriceRange::class, [
-            ['name' => 'económico', 'description' => 'Opciones de bajo costo.'],
-            ['name' => 'moderado', 'description' => 'Opciones de costo medio.'],
-            ['name' => 'alto', 'description' => 'Opciones de costo alto.'],
+            ['name' => 'Económico', 'description' => 'Opciones de bajo costo.'],
+            ['name' => 'Moderado', 'description' => 'Opciones de costo medio.'],
+            ['name' => 'Alto', 'description' => 'Opciones de costo alto.'],
         ]);
 
         $this->seedCatalog(CuisineType::class, [
-            ['name' => 'ecuatoriana'],
-            ['name' => 'comida rápida'],
-            ['name' => 'cafetería'],
-            ['name' => 'vegetariana'],
-            ['name' => 'internacional'],
+            ['name' => 'Ecuatoriana'],
+            ['name' => 'Comida rápida'],
+            ['name' => 'Cafetería'],
+            ['name' => 'Vegetariana'],
+            ['name' => 'Internacional'],
         ]);
 
         $this->seedCatalog(LodgingType::class, [
-            ['name' => 'hotel'],
-            ['name' => 'hostal'],
-            ['name' => 'hostería'],
-            ['name' => 'casa de huéspedes'],
-            ['name' => 'camping'],
+            ['name' => 'Hotel'],
+            ['name' => 'Hostal'],
+            ['name' => 'Hostería'],
+            ['name' => 'Casa de huéspedes'],
+            ['name' => 'Camping'],
         ]);
 
         $this->seedCatalog(StoreType::class, [
-            ['name' => 'tienda de abarrotes'],
-            ['name' => 'minimarket'],
-            ['name' => 'supermercado'],
-            ['name' => 'tienda deportiva'],
-            ['name' => 'farmacia'],
+            ['name' => 'Tienda de abarrotes'],
+            ['name' => 'Minimarket'],
+            ['name' => 'Supermercado'],
+            ['name' => 'Tienda deportiva'],
+            ['name' => 'Farmacia'],
         ]);
 
         $this->seedCatalog(WorkshopSpecialty::class, [
-            ['name' => 'bicicletas'],
-            ['name' => 'frenos'],
-            ['name' => 'transmisión'],
-            ['name' => 'suspensión'],
-            ['name' => 'llantas'],
+            ['name' => 'Bicicletas'],
+            ['name' => 'Frenos'],
+            ['name' => 'Transmisión'],
+            ['name' => 'Suspensión'],
+            ['name' => 'Llantas'],
         ]);
 
         $this->seedCatalog(WorkshopService::class, [
-            ['name' => 'reparación básica'],
-            ['name' => 'inflado de llantas'],
-            ['name' => 'cambio de tubo'],
-            ['name' => 'ajuste de frenos'],
-            ['name' => 'lubricación de cadena'],
-            ['name' => 'venta de repuestos'],
+            ['name' => 'Reparación básica'],
+            ['name' => 'Inflado de llantas'],
+            ['name' => 'Cambio de tubo'],
+            ['name' => 'Ajuste de frenos'],
+            ['name' => 'Lubricación de cadena'],
+            ['name' => 'Venta de repuestos'],
         ]);
 
         $this->seedCatalog(HealthCenterType::class, [
-            ['name' => 'hospital'],
-            ['name' => 'centro de salud'],
-            ['name' => 'clínica'],
-            ['name' => 'farmacia'],
-            ['name' => 'puesto de auxilio'],
+            ['name' => 'Hospital'],
+            ['name' => 'Centro de salud'],
+            ['name' => 'Clínica'],
+            ['name' => 'Farmacia'],
+            ['name' => 'Puesto de auxilio'],
         ]);
 
         $this->seedCatalog(TrackStatus::class, [
-            ['name' => 'en curso'],
-            ['name' => 'pausado'],
-            ['name' => 'finalizado'],
-            ['name' => 'cancelado'],
+            ['name' => 'En curso'],
+            ['name' => 'Pausado'],
+            ['name' => 'Finalizado'],
+            ['name' => 'Cancelado'],
         ]);
 
         $this->seedCatalog(IncidentType::class, [
-            ['name' => 'derrumbe'],
-            ['name' => 'obstáculo'],
-            ['name' => 'vía cerrada'],
-            ['name' => 'inseguridad'],
-            ['name' => 'accidente'],
-            ['name' => 'daño en señalética'],
+            ['name' => 'Derrumbe'],
+            ['name' => 'Obstáculo'],
+            ['name' => 'Vía cerrada'],
+            ['name' => 'Inseguridad'],
+            ['name' => 'Accidente'],
+            ['name' => 'Daño en señalética'],
         ]);
 
         $this->seedCatalog(IncidentStatus::class, [
-            ['name' => 'reportada'],
-            ['name' => 'en revisión'],
-            ['name' => 'resuelta'],
-            ['name' => 'descartada'],
+            ['name' => 'Reportada'],
+            ['name' => 'En revisión'],
+            ['name' => 'Resuelta'],
+            ['name' => 'Descartada'],
         ]);
 
         $this->seedCatalog(ModerationStatus::class, [
-            ['name' => 'pendiente'],
-            ['name' => 'aprobado'],
-            ['name' => 'oculto'],
-            ['name' => 'rechazado'],
+            ['name' => 'Pendiente'],
+            ['name' => 'Aprobado'],
+            ['name' => 'Oculto'],
+            ['name' => 'Rechazado'],
         ]);
 
         $this->seedCatalog(ExportFormat::class, [

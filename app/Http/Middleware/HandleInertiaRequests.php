@@ -71,19 +71,19 @@ class HandleInertiaRequests extends Middleware
     {
         $user = $request->user();
 
-        if (! $user instanceof User || $user->role?->name !== 'administrador') {
+        if (! $user instanceof User || $user->role?->name !== 'Administrador') {
             return null;
         }
 
-        $pendingModerationId = ModerationStatus::query()->where('name', 'pendiente')->value('id');
+        $pendingModerationId = ModerationStatus::query()->where('name', 'Pendiente')->value('id');
 
         return [
             'incidents' => Incident::query()->whereNull('resolved_at')->count(),
             'ratings' => $pendingModerationId === null
                 ? 0
                 : RouteRating::query()->where('moderation_status_id', $pendingModerationId)->count(),
-            'poiSuggestions' => PoiSuggestion::query()->where('status', 'pendiente')->count(),
-            'poiReports' => PoiReport::query()->where('status', 'pendiente')->count(),
+            'poiSuggestions' => PoiSuggestion::query()->where('status', 'Pendiente')->count(),
+            'poiReports' => PoiReport::query()->where('status', 'Pendiente')->count(),
         ];
     }
 

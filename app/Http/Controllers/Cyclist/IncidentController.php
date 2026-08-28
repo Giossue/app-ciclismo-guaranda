@@ -18,7 +18,7 @@ class IncidentController extends Controller
     public function store(StoreIncidentRequest $request): RedirectResponse
     {
         $payload = $request->validated();
-        $reportedStatus = IncidentStatus::query()->where('name', 'reportada')->firstOrFail();
+        $reportedStatus = IncidentStatus::query()->where('name', 'Reportada')->firstOrFail();
 
         DB::transaction(function () use ($request, $payload, $reportedStatus): void {
             $incident = Incident::query()->create([
@@ -70,7 +70,7 @@ class IncidentController extends Controller
     private function notifyAdministrators(Incident $incident): void
     {
         User::query()
-            ->whereHas('role', fn ($query) => $query->where('name', 'administrador'))
+            ->whereHas('role', fn ($query) => $query->where('name', 'Administrador'))
             ->where('active', true)
             ->get(['id'])
             ->each(fn (User $admin): AppNotification => AppNotification::query()->create([

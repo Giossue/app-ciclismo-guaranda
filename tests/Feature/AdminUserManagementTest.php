@@ -67,7 +67,7 @@ test('cyclist can not view the user management page', function () {
 test('administrator can update another user profile and role', function () {
     $admin = User::factory()->administrator()->create();
     $user = User::factory()->cyclist()->create();
-    $adminRole = UserRole::query()->where('name', 'administrador')->firstOrFail();
+    $adminRole = UserRole::query()->where('name', 'Administrador')->firstOrFail();
     $gender = Gender::query()->where('name', Gender::FEMININE)->firstOrFail();
 
     $this->actingAs($admin)

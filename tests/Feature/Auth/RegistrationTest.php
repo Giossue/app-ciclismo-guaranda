@@ -34,7 +34,7 @@ test('new users can register with cyclist role and required profile fields', fun
     $response->assertRedirect(route('dashboard', absolute: false));
 
     $user = User::query()->where('email', 'test@example.com')->firstOrFail();
-    $cyclistRole = UserRole::query()->where('name', 'ciclista')->firstOrFail();
+    $cyclistRole = UserRole::query()->where('name', 'Ciclista')->firstOrFail();
 
     expect($user->role_id)->toBe($cyclistRole->id)
         ->and($user->gender_id)->toBe($gender->id)
@@ -73,7 +73,7 @@ test('registration rejects passwords shorter than eight characters', function ()
 });
 
 test('registration rejects unsupported gender catalog values', function () {
-    $unsupportedGender = Gender::query()->create(['name' => 'otro']);
+    $unsupportedGender = Gender::query()->create(['name' => 'Otro']);
 
     $response = $this->post(route('register.store'), [
         'name' => 'Test',

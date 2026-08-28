@@ -414,7 +414,7 @@ function ModerationForm({
 }
 
 function statusVariant(status: string): 'default' | 'outline' {
-    return status === 'pendiente' ? 'default' : 'outline';
+    return status === 'Pendiente' ? 'default' : 'outline';
 }
 
 function formatDate(value: string | null): string {

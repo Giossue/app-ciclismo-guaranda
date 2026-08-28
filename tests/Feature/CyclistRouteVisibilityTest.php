@@ -17,9 +17,9 @@ function createCyclingRouteForVisibility(string $statusName, string $name): Cycl
 {
     $admin = User::factory()->administrator()->create();
     $status = RouteStatus::query()->where('name', $statusName)->firstOrFail();
-    $category = RouteCategory::query()->where('name', 'turística')->firstOrFail();
-    $difficulty = RouteDifficulty::query()->where('name', 'fácil')->firstOrFail();
-    $transportMode = TransportMode::query()->where('name', 'bicicleta')->firstOrFail();
+    $category = RouteCategory::query()->where('name', 'Turística')->firstOrFail();
+    $difficulty = RouteDifficulty::query()->where('name', 'Fácil')->firstOrFail();
+    $transportMode = TransportMode::query()->where('name', 'Bicicleta')->firstOrFail();
 
     $route = CyclingRoute::query()->create([
         'admin_user_id' => $admin->id,
@@ -65,7 +65,7 @@ test('active route appears to cyclist', function () {
     $this->withoutVite();
 
     $cyclist = User::factory()->cyclist()->create();
-    createCyclingRouteForVisibility('activa', 'Ruta visible para ciclista');
+    createCyclingRouteForVisibility('Activa', 'Ruta visible para ciclista');
 
     $this->actingAs($cyclist)
         ->get(route('routes.index'))
@@ -80,8 +80,8 @@ test('inactive and draft routes do not appear to cyclist', function () {
     $this->withoutVite();
 
     $cyclist = User::factory()->cyclist()->create();
-    createCyclingRouteForVisibility('inactiva', 'Ruta oculta inactiva');
-    createCyclingRouteForVisibility('borrador', 'Ruta oculta borrador');
+    createCyclingRouteForVisibility('Inactiva', 'Ruta oculta inactiva');
+    createCyclingRouteForVisibility('Borrador', 'Ruta oculta borrador');
 
     $this->actingAs($cyclist)
         ->get(route('routes.index'))

@@ -5,16 +5,15 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Str;
 
 /**
  * @phpstan-type GenderOption array{id: int, name: string}
  */
 class Gender extends Model
 {
-    public const MASCULINE = 'masculino';
+    public const MASCULINE = 'Masculino';
 
-    public const FEMININE = 'femenino';
+    public const FEMININE = 'Femenino';
 
     /**
      * @var list<string>
@@ -41,14 +40,14 @@ class Gender extends Model
 
     public static function isAllowedName(string $name): bool
     {
-        return in_array(Str::lower($name), self::ALLOWED_NAMES, true);
+        return in_array($name, self::ALLOWED_NAMES, true);
     }
 
     public function displayName(): string
     {
-        return match (Str::lower((string) $this->getAttribute('name'))) {
-            self::MASCULINE => 'Masculino',
-            self::FEMININE => 'Femenino',
+        return match ((string) $this->getAttribute('name')) {
+            self::MASCULINE => self::MASCULINE,
+            self::FEMININE => self::FEMININE,
             default => (string) $this->getAttribute('name'),
         };
     }

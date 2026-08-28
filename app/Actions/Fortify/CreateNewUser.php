@@ -26,7 +26,7 @@ class CreateNewUser implements CreatesNewUsers
         ])->validate();
 
         $cyclistRole = UserRole::query()->firstOrCreate(
-            ['name' => 'ciclista'],
+            ['name' => 'Ciclista'],
             ['description' => 'Usuario que consulta rutas, registra recorridos, reporta incidencias y valora experiencias.'],
         );
 

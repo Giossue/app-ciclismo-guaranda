@@ -196,7 +196,7 @@ class PoiController extends Controller
     {
         return [
             'categories' => PoiCategory::query()->orderBy('id')->get(['id', 'name']),
-            'routes' => CyclingRoute::query()->whereHas('status', fn ($query) => $query->whereIn('name', ['borrador', 'activa']))->orderBy('name')->get(['id', 'name']),
+            'routes' => CyclingRoute::query()->whereHas('status', fn ($query) => $query->whereIn('name', ['Borrador', 'Activa']))->orderBy('name')->get(['id', 'name']),
             'cuisineTypes' => CuisineType::query()->orderBy('name')->get(['id', 'name']),
             'priceRanges' => PriceRange::query()->orderBy('id')->get(['id', 'name']),
             'lodgingTypes' => LodgingType::query()->orderBy('name')->get(['id', 'name']),
@@ -368,7 +368,7 @@ class PoiController extends Controller
 
         $categoryName = $poi->category?->name;
 
-        if ($categoryName === 'comida') {
+        if ($categoryName === 'Comida') {
             $poi->foodDetail()->create([
                 'cuisine_type_id' => $payload['cuisine_type_id'] ?? null,
                 'price_range_id' => $payload['price_range_id'] ?? null,
@@ -381,7 +381,7 @@ class PoiController extends Controller
             ]);
         }
 
-        if ($categoryName === 'hospedaje') {
+        if ($categoryName === 'Hospedaje') {
             $poi->lodgingDetail()->create([
                 'lodging_type_id' => $payload['lodging_type_id'] ?? null,
                 'allows_bikes_in_room' => (bool) ($payload['allows_bikes_in_room'] ?? false),
@@ -390,7 +390,7 @@ class PoiController extends Controller
             ]);
         }
 
-        if ($categoryName === 'tienda') {
+        if ($categoryName === 'Tienda') {
             $poi->storeDetail()->create([
                 'store_type_id' => $payload['store_type_id'] ?? null,
                 'sells_hydration' => (bool) ($payload['sells_hydration'] ?? false),
@@ -399,7 +399,7 @@ class PoiController extends Controller
             ]);
         }
 
-        if ($categoryName === 'taller') {
+        if ($categoryName === 'Taller') {
             /** @var WorkshopDetail $workshopDetail */
             $workshopDetail = $poi->workshopDetail()->create([
                 'workshop_specialty_id' => $payload['workshop_specialty_id'] ?? null,
@@ -410,7 +410,7 @@ class PoiController extends Controller
             $workshopDetail->services()->sync(array_map('intval', $this->splitLines($payload['workshop_service_ids_text'] ?? null)));
         }
 
-        if ($categoryName === 'salud') {
+        if ($categoryName === 'Salud') {
             $poi->healthDetail()->create([
                 'health_center_type_id' => $payload['health_center_type_id'] ?? null,
                 'has_defibrillator' => (bool) ($payload['has_defibrillator'] ?? false),

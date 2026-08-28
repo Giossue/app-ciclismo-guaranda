@@ -163,7 +163,7 @@ export default function AdminUsersIndex({
                     user={user}
                     roles={roles}
                     genders={genders}
-                    isAdmin={user.role?.name === 'administrador'}
+                    isAdmin={user.role?.name === 'Administrador'}
                 />
             ),
         },

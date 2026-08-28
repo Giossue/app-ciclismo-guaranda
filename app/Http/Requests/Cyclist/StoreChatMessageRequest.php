@@ -65,7 +65,7 @@ class StoreChatMessageRequest extends FormRequest
 
             $active = CyclingRoute::query()
                 ->whereKey((int) $routeId)
-                ->whereHas('status', fn ($query) => $query->where('name', 'activa'))
+                ->whereHas('status', fn ($query) => $query->where('name', 'Activa'))
                 ->exists();
 
             if (! $active) {

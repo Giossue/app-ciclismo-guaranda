@@ -16,7 +16,7 @@ class RouteRatingController extends Controller
 {
     public function store(StoreRouteRatingRequest $request, CyclingRoute $route): RedirectResponse
     {
-        abort_unless($route->status?->name === 'activa', 404);
+        abort_unless($route->status?->name === 'Activa', 404);
 
         $this->authorize('create', RouteRating::class);
 
@@ -25,7 +25,7 @@ class RouteRatingController extends Controller
 
         $payload = $request->validated();
         $track = $this->latestValidTrack($route, $userId);
-        $pending = ModerationStatus::query()->where('name', 'pendiente')->firstOrFail();
+        $pending = ModerationStatus::query()->where('name', 'Pendiente')->firstOrFail();
 
         /** @var RouteRating|null $rating */
         $rating = RouteRating::query()
@@ -70,7 +70,7 @@ class RouteRatingController extends Controller
 
         $payload = $request->validated();
         $track = $this->latestValidTrack($route, $userId);
-        $pending = ModerationStatus::query()->where('name', 'pendiente')->firstOrFail();
+        $pending = ModerationStatus::query()->where('name', 'Pendiente')->firstOrFail();
 
         $rating->forceFill([
             'track_id' => $track?->id,
@@ -105,7 +105,7 @@ class RouteRatingController extends Controller
             ->where('user_id', $userId)
             ->where('route_id', $route->id)
             ->where('is_valid', true)
-            ->whereHas('status', fn ($query) => $query->where('name', 'finalizado'))
+            ->whereHas('status', fn ($query) => $query->where('name', 'Finalizado'))
             ->latest('ended_at')
             ->latest('id')
             ->first();
@@ -113,7 +113,7 @@ class RouteRatingController extends Controller
 
     private function storeMedia(StoreRouteRatingRequest $request, RouteRating $rating): void
     {
-        $media = $request->file('media');
+        $media = $request->file('Media');
 
         if ($media instanceof UploadedFile) {
             $media = [$media];

@@ -56,7 +56,7 @@ class UserFactory extends Factory
     public function administrator(): static
     {
         return $this->state(fn (array $attributes) => [
-            'role_id' => UserRole::query()->firstOrCreate(['name' => 'administrador'])->id,
+            'role_id' => UserRole::query()->firstOrCreate(['name' => 'Administrador'])->id,
         ]);
     }
 
@@ -66,7 +66,7 @@ class UserFactory extends Factory
     public function cyclist(): static
     {
         return $this->state(fn (array $attributes) => [
-            'role_id' => UserRole::query()->firstOrCreate(['name' => 'ciclista'])->id,
+            'role_id' => UserRole::query()->firstOrCreate(['name' => 'Ciclista'])->id,
         ]);
     }
 

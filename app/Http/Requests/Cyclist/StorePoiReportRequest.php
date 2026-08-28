@@ -26,7 +26,7 @@ class StorePoiReportRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'report_type' => ['required', 'string', Rule::in(['cerrado', 'datos incorrectos', 'otro'])],
+            'report_type' => ['required', 'string', Rule::in(['Cerrado', 'Datos incorrectos', 'Otro'])],
             'description' => ['nullable', 'string', 'max:10000'],
         ];
     }

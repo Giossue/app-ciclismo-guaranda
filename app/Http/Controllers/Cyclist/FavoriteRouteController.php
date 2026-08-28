@@ -29,7 +29,7 @@ class FavoriteRouteController extends Controller
 
     public function store(CyclingRoute $route): RedirectResponse
     {
-        abort_unless($route->status?->name === 'activa', 404);
+        abort_unless($route->status?->name === 'Activa', 404);
 
         $userId = request()->user()?->id;
         abort_if($userId === null, 403);

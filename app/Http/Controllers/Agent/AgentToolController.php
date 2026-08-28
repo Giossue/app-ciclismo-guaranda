@@ -155,7 +155,7 @@ class AgentToolController extends Controller
                 'recommendations',
                 'observations',
                 'ratings' => fn ($query) => $query
-                    ->whereHas('moderationStatus', fn ($statusQuery) => $statusQuery->where('name', 'aprobado'))
+                    ->whereHas('moderationStatus', fn ($statusQuery) => $statusQuery->where('name', 'Aprobado'))
                     ->latest('rated_at'),
                 'pointsOfInterest' => fn ($query) => $query->where('active', true)->with([
                     'category:id,name',
@@ -167,11 +167,11 @@ class AgentToolController extends Controller
                     'healthDetail',
                 ]),
                 'incidents' => fn ($query) => $query
-                    ->whereHas('status', fn ($statusQuery) => $statusQuery->where('name', 'en revisión'))
+                    ->whereHas('status', fn ($statusQuery) => $statusQuery->where('name', 'En revisión'))
                     ->with(['type:id,name', 'status:id,name'])
                     ->latest('reported_at'),
             ])
-            ->whereHas('status', fn ($query) => $query->where('name', 'activa'));
+            ->whereHas('status', fn ($query) => $query->where('name', 'Activa'));
     }
 
     private function findActiveRoute(string $route): ?CyclingRoute

@@ -74,7 +74,7 @@ class ChatController extends Controller
                 : $activeConversation->messages->map(fn (AiMessage $message): array => $this->serializeMessage($message))->values()->all(),
             'routes' => CyclingRoute::query()
                 ->with(['difficulty:id,name', 'category:id,name'])
-                ->whereHas('status', fn ($query) => $query->where('name', 'activa'))
+                ->whereHas('status', fn ($query) => $query->where('name', 'Activa'))
                 ->orderBy('name')
                 ->get(['id', 'name', 'slug', 'route_difficulty_id', 'route_category_id'])
                 ->map(fn (CyclingRoute $route): array => [
@@ -112,7 +112,7 @@ class ChatController extends Controller
                 'observations',
                 'pointsOfInterest' => fn ($query) => $query->where('active', true)->with(['category:id,name', 'hours']),
                 'incidents' => fn ($query) => $query
-                    ->whereHas('status', fn ($statusQuery) => $statusQuery->where('name', 'en revisión'))
+                    ->whereHas('status', fn ($statusQuery) => $statusQuery->where('name', 'En revisión'))
                     ->with(['type:id,name', 'status:id,name'])
                     ->latest('reported_at'),
             ])->find((int) $payload['route_id'])

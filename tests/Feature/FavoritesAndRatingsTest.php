@@ -26,10 +26,10 @@ function createRouteForFavoritesAndRatings(float $distanceKm = 10.0): CyclingRou
 
     $sequence++;
     $admin = User::factory()->administrator()->create();
-    $status = RouteStatus::query()->where('name', 'activa')->firstOrFail();
-    $category = RouteCategory::query()->where('name', 'turística')->firstOrFail();
-    $difficulty = RouteDifficulty::query()->where('name', 'media')->firstOrFail();
-    $transportMode = TransportMode::query()->where('name', 'bicicleta')->firstOrFail();
+    $status = RouteStatus::query()->where('name', 'Activa')->firstOrFail();
+    $category = RouteCategory::query()->where('name', 'Turística')->firstOrFail();
+    $difficulty = RouteDifficulty::query()->where('name', 'Media')->firstOrFail();
+    $transportMode = TransportMode::query()->where('name', 'Bicicleta')->firstOrFail();
     $routingEngine = RoutingEngine::query()->where('name', 'OSRM')->firstOrFail();
 
     /** @var CyclingRoute $route */
@@ -75,7 +75,7 @@ function createRouteForFavoritesAndRatings(float $distanceKm = 10.0): CyclingRou
 
 function createValidTrackForRating(User $user, CyclingRoute $route): Track
 {
-    $status = TrackStatus::query()->where('name', 'finalizado')->firstOrFail();
+    $status = TrackStatus::query()->where('name', 'Finalizado')->firstOrFail();
 
     /** @var Track $track */
     $track = Track::query()->create([
@@ -159,7 +159,7 @@ test('cyclist can create and update one rating per route', function () {
     $rating = RouteRating::query()->where('user_id', $cyclist->id)->where('route_id', $route->id)->firstOrFail();
 
     expect($rating->rating)->toBe(4)
-        ->and($rating->moderationStatus?->name)->toBe('pendiente');
+        ->and($rating->moderationStatus?->name)->toBe('Pendiente');
 
     $this->actingAs($cyclist)
         ->post(route('routes.ratings.store', $route->slug), [
@@ -186,7 +186,7 @@ test('cyclist can attach media files to a route rating', function () {
         ->post(route('routes.ratings.store', $route->slug), [
             'rating' => 5,
             'comment' => 'Linda experiencia con fotos.',
-            'media' => [
+            'Media' => [
                 UploadedFile::fake()->image('experiencia.jpg'),
             ],
         ])
@@ -225,8 +225,8 @@ test('admin moderation controls visibility and approved average', function () {
         ])
         ->assertRedirect();
 
-    $approved = ModerationStatus::query()->where('name', 'aprobado')->firstOrFail();
-    $rejected = ModerationStatus::query()->where('name', 'rechazado')->firstOrFail();
+    $approved = ModerationStatus::query()->where('name', 'Aprobado')->firstOrFail();
+    $rejected = ModerationStatus::query()->where('name', 'Rechazado')->firstOrFail();
     $rating = RouteRating::query()->where('user_id', $cyclist->id)->firstOrFail();
     $rejectedRating = RouteRating::query()->where('user_id', $otherCyclist->id)->firstOrFail();
 
@@ -271,8 +271,8 @@ test('administrator can search, filter and paginate route ratings', function () 
     $otherCyclist = User::factory()->cyclist()->create();
     $route = createRouteForFavoritesAndRatings();
     $otherRoute = createRouteForFavoritesAndRatings();
-    $pending = ModerationStatus::query()->where('name', 'pendiente')->firstOrFail();
-    $approved = ModerationStatus::query()->where('name', 'aprobado')->firstOrFail();
+    $pending = ModerationStatus::query()->where('name', 'Pendiente')->firstOrFail();
+    $approved = ModerationStatus::query()->where('name', 'Aprobado')->firstOrFail();
 
     $rating = RouteRating::query()->create([
         'user_id' => $cyclist->id,

@@ -18,7 +18,7 @@ beforeEach(function () {
     config(['guaranda.agent.tool_token' => 'agent-secret']);
 });
 
-function createRouteForAgentTools(string $statusName = 'activa', bool $poiActive = true): array
+function createRouteForAgentTools(string $statusName = 'Activa', bool $poiActive = true): array
 {
     static $sequence = 0;
 
@@ -26,11 +26,11 @@ function createRouteForAgentTools(string $statusName = 'activa', bool $poiActive
     $admin = User::factory()->administrator()->create();
     $cyclist = User::factory()->cyclist()->create();
     $status = RouteStatus::query()->where('name', $statusName)->firstOrFail();
-    $category = RouteCategory::query()->where('name', 'turística')->firstOrFail();
-    $difficulty = RouteDifficulty::query()->where('name', 'media')->firstOrFail();
-    $transportMode = TransportMode::query()->where('name', 'bicicleta')->firstOrFail();
-    $approvedStatus = ModerationStatus::query()->where('name', 'aprobado')->firstOrFail();
-    $pendingStatus = ModerationStatus::query()->where('name', 'pendiente')->firstOrFail();
+    $category = RouteCategory::query()->where('name', 'Turística')->firstOrFail();
+    $difficulty = RouteDifficulty::query()->where('name', 'Media')->firstOrFail();
+    $transportMode = TransportMode::query()->where('name', 'Bicicleta')->firstOrFail();
+    $approvedStatus = ModerationStatus::query()->where('name', 'Aprobado')->firstOrFail();
+    $pendingStatus = ModerationStatus::query()->where('name', 'Pendiente')->firstOrFail();
 
     $route = CyclingRoute::query()->create([
         'admin_user_id' => $admin->id,
@@ -72,7 +72,7 @@ function createRouteForAgentTools(string $statusName = 'activa', bool $poiActive
     $route->recommendations()->create(['text' => 'Llevar hidratación.']);
     $route->observations()->create(['text' => 'Tramo con viento lateral.']);
 
-    $poiCategory = PoiCategory::query()->where('name', 'tienda')->firstOrFail();
+    $poiCategory = PoiCategory::query()->where('name', 'Tienda')->firstOrFail();
     $poi = PointOfInterest::query()->create([
         'poi_category_id' => $poiCategory->id,
         'name' => "Tienda agente {$sequence}",
@@ -105,9 +105,9 @@ function createRouteForAgentTools(string $statusName = 'activa', bool $poiActive
         'route_observation' => 'Parada recomendada.',
     ]);
 
-    $incidentType = IncidentType::query()->where('name', 'obstáculo')->firstOrFail();
-    $visibleStatus = IncidentStatus::query()->where('name', 'en revisión')->firstOrFail();
-    $hiddenStatus = IncidentStatus::query()->where('name', 'reportada')->firstOrFail();
+    $incidentType = IncidentType::query()->where('name', 'Obstáculo')->firstOrFail();
+    $visibleStatus = IncidentStatus::query()->where('name', 'En revisión')->firstOrFail();
+    $hiddenStatus = IncidentStatus::query()->where('name', 'Reportada')->firstOrFail();
 
     $route->incidents()->create([
         'user_id' => $cyclist->id,
@@ -167,7 +167,7 @@ test('agent tools require valid token', function () {
 
 test('agent routes tool returns full details for recommendations without duplicated fields', function () {
     [$route, $poi] = createRouteForAgentTools();
-    createRouteForAgentTools('inactiva');
+    createRouteForAgentTools('Inactiva');
 
     $response = $this->postJson(route('agent.routes'), [
         'intent' => 'recommend',
@@ -207,7 +207,7 @@ test('agent routes tool returns full details for recommendations without duplica
 
 test('agent routes tool falls back to available routes when generic query has no matches', function () {
     [$route] = createRouteForAgentTools();
-    createRouteForAgentTools('inactiva');
+    createRouteForAgentTools('Inactiva');
 
     $this->postJson(route('agent.routes'), [
         'query' => '¿Qué ruta me recomiendas para este fin de semana?',
@@ -243,7 +243,7 @@ test('agent routes tool returns selected route detail with pois, alerts and rati
 
 test('agent routes tool searches pois independently and hides inactive pois', function () {
     [$route, $poi] = createRouteForAgentTools();
-    createRouteForAgentTools('activa', false);
+    createRouteForAgentTools('Activa', false);
 
     $this->postJson(route('agent.routes'), [
         'intent' => 'pois',
@@ -252,7 +252,7 @@ test('agent routes tool searches pois independently and hides inactive pois', fu
             'longitude' => -79.0211,
         ],
         'route_id' => $route->id,
-        'poi_category' => 'tienda',
+        'poi_category' => 'Tienda',
         'max_results' => 5,
     ], agentHeaders())
         ->assertOk()

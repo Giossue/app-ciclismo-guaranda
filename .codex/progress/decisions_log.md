@@ -288,3 +288,14 @@
 - Las extensiones PHP se compilan con dos procesos por defecto para no depender del número de CPU ni agotar la memoria disponible en Dokploy.
 - APT y NodeSource usan reintentos ante fallos transitorios, y la extensión PhpRedis queda fijada a `6.3.0`, versión validada con PHP 8.4.
 - La instalación del sistema, Node.js y extensiones PHP se mantiene en etapas separadas para que los fallos de construcción sean identificables y reutilicen caché.
+
+## 2026-08-28 — Retiro de Boneyard y transición estándar de sheets
+
+- Se retira `boneyard-js` y sus archivos generados. Los skeletons de shadcn permanecen solo como estados de carga locales, sin reemplazar toda la pantalla durante la navegación.
+- `SheetContent` queda deliberadamente restringido al lateral derecho para impedir variantes inconsistentes desde la izquierda, arriba o abajo.
+
+## 2026-08-28 — Valores visibles de catálogos y estados
+
+- Los catálogos y estados mostrados a usuarios se almacenan con inicial mayúscula. Se usa una migración de mapeo explícito y reversible, no una conversión masiva de texto, para preservar siglas como `MTB`, `OSRM`, `GPX`, `GeoJSON` y `OpenRouteService`.
+- Los valores de protocolo (`event_type` offline, roles de IA, tipos de notificación/archivo, GeoJSON y filtros URL) siguen siendo identificadores técnicos y no se capitalizan.
+- La cola offline admite temporalmente sus valores previos en minúscula para que datos ya guardados en IndexedDB se sincronicen después de actualizar la app.

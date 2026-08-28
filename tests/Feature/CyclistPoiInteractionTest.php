@@ -18,10 +18,10 @@ beforeEach(function () {
 function createRouteWithPoiForCyclist(bool $poiActive = true): array
 {
     $admin = User::factory()->administrator()->create();
-    $status = RouteStatus::query()->where('name', 'activa')->firstOrFail();
-    $category = RouteCategory::query()->where('name', 'turística')->firstOrFail();
-    $difficulty = RouteDifficulty::query()->where('name', 'media')->firstOrFail();
-    $transportMode = TransportMode::query()->where('name', 'bicicleta')->firstOrFail();
+    $status = RouteStatus::query()->where('name', 'Activa')->firstOrFail();
+    $category = RouteCategory::query()->where('name', 'Turística')->firstOrFail();
+    $difficulty = RouteDifficulty::query()->where('name', 'Media')->firstOrFail();
+    $transportMode = TransportMode::query()->where('name', 'Bicicleta')->firstOrFail();
 
     $route = CyclingRoute::query()->create([
         'admin_user_id' => $admin->id,
@@ -59,7 +59,7 @@ function createRouteWithPoiForCyclist(bool $poiActive = true): array
         'calculated_at' => now(),
     ]);
 
-    $poiCategory = PoiCategory::query()->where('name', 'mirador')->firstOrFail();
+    $poiCategory = PoiCategory::query()->where('name', 'Mirador')->firstOrFail();
     $poi = PointOfInterest::query()->create([
         'poi_category_id' => $poiCategory->id,
         'name' => 'Mirador ciclista',
@@ -107,7 +107,7 @@ test('cyclist can view active route pois and suggestion categories', function ()
 
 test('cyclist can suggest a poi', function () {
     $cyclist = User::factory()->cyclist()->create();
-    $category = PoiCategory::query()->where('name', 'tienda')->firstOrFail();
+    $category = PoiCategory::query()->where('name', 'Tienda')->firstOrFail();
 
     $this->actingAs($cyclist)
         ->post(route('pois.suggestions.store'), [
@@ -124,7 +124,7 @@ test('cyclist can suggest a poi', function () {
         'user_id' => $cyclist->id,
         'poi_category_id' => $category->id,
         'name' => 'Tienda sugerida',
-        'status' => 'pendiente',
+        'status' => 'Pendiente',
     ]);
 });
 
@@ -134,7 +134,7 @@ test('cyclist can report an active poi', function () {
 
     $this->actingAs($cyclist)
         ->post(route('pois.reports.store', $poi), [
-            'report_type' => 'datos incorrectos',
+            'report_type' => 'Datos incorrectos',
             'description' => 'El teléfono ya no responde.',
         ])
         ->assertSessionHasNoErrors()
@@ -143,8 +143,8 @@ test('cyclist can report an active poi', function () {
     $this->assertDatabaseHas('reportes_punto_interes', [
         'user_id' => $cyclist->id,
         'point_of_interest_id' => $poi->id,
-        'report_type' => 'datos incorrectos',
-        'status' => 'pendiente',
+        'report_type' => 'Datos incorrectos',
+        'status' => 'Pendiente',
     ]);
 });
 
@@ -163,7 +163,7 @@ test('inactive poi is hidden from route detail and can not be reported', functio
 
     $this->actingAs($cyclist)
         ->post(route('pois.reports.store', $poi), [
-            'report_type' => 'cerrado',
+            'report_type' => 'Cerrado',
             'description' => 'Está cerrado.',
         ])
         ->assertForbidden();

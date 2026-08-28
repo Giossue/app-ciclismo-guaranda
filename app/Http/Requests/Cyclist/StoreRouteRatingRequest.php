@@ -24,7 +24,7 @@ class StoreRouteRatingRequest extends FormRequest
         return [
             'rating' => ['required', 'integer', 'min:1', 'max:5'],
             'comment' => ['nullable', 'string', 'max:5000'],
-            'media' => ['nullable', 'array', 'max:4'],
+            'Media' => ['nullable', 'array', 'max:4'],
             'media.*' => ['file', 'mimes:jpg,jpeg,png,webp,mp4,mov,webm', 'max:20480'],
         ];
     }
@@ -70,7 +70,7 @@ class StoreRouteRatingRequest extends FormRequest
             ->where('user_id', $userId)
             ->where('route_id', $route->id)
             ->where('is_valid', true)
-            ->whereHas('status', fn ($query) => $query->where('name', 'finalizado'))
+            ->whereHas('status', fn ($query) => $query->where('name', 'Finalizado'))
             ->exists();
     }
 }

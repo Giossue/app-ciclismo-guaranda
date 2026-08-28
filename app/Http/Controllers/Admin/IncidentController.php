@@ -91,7 +91,7 @@ class IncidentController extends Controller
         $incident->forceFill([
             'incident_status_id' => $status->id,
             'admin_response' => $payload['admin_response'] ?? null,
-            'resolved_at' => $status->name === 'resuelta' ? now() : null,
+            'resolved_at' => $status->name === 'Resuelta' ? now() : null,
         ])->save();
 
         AppNotification::query()->create([

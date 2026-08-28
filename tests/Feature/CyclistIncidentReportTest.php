@@ -18,16 +18,16 @@ beforeEach(function () {
     $this->seed(CatalogSeeder::class);
 });
 
-function createRouteForIncidentReports(string $statusName = 'activa'): CyclingRoute
+function createRouteForIncidentReports(string $statusName = 'Activa'): CyclingRoute
 {
     static $sequence = 0;
 
     $sequence++;
     $admin = User::factory()->administrator()->create();
     $status = RouteStatus::query()->where('name', $statusName)->firstOrFail();
-    $category = RouteCategory::query()->where('name', 'turística')->firstOrFail();
-    $difficulty = RouteDifficulty::query()->where('name', 'media')->firstOrFail();
-    $transportMode = TransportMode::query()->where('name', 'bicicleta')->firstOrFail();
+    $category = RouteCategory::query()->where('name', 'Turística')->firstOrFail();
+    $difficulty = RouteDifficulty::query()->where('name', 'Media')->firstOrFail();
+    $transportMode = TransportMode::query()->where('name', 'Bicicleta')->firstOrFail();
 
     $route = CyclingRoute::query()->create([
         'admin_user_id' => $admin->id,
@@ -74,7 +74,7 @@ test('cyclist can report an incident with optional photo and admin notification'
     $cyclist = User::factory()->cyclist()->create();
     $admin = User::factory()->administrator()->create();
     $route = createRouteForIncidentReports();
-    $type = IncidentType::query()->where('name', 'derrumbe')->firstOrFail();
+    $type = IncidentType::query()->where('name', 'Derrumbe')->firstOrFail();
 
     $this->actingAs($cyclist)
         ->post(route('incidents.store'), [
@@ -91,7 +91,7 @@ test('cyclist can report an incident with optional photo and admin notification'
 
     $incident = Incident::query()->where('title', 'Derrumbe pequeño')->firstOrFail();
 
-    expect($incident->status?->name)->toBe('reportada')
+    expect($incident->status?->name)->toBe('Reportada')
         ->and($incident->files()->count())->toBe(1);
 
     Storage::disk('public')->assertExists($incident->files()->firstOrFail()->file_path);
@@ -108,7 +108,7 @@ test('incident photo can not exceed five megabytes', function () {
 
     $cyclist = User::factory()->cyclist()->create();
     $route = createRouteForIncidentReports();
-    $type = IncidentType::query()->where('name', 'obstáculo')->firstOrFail();
+    $type = IncidentType::query()->where('name', 'Obstáculo')->firstOrFail();
 
     $this->actingAs($cyclist)
         ->post(route('incidents.store'), [
@@ -125,8 +125,8 @@ test('incident photo can not exceed five megabytes', function () {
 
 test('incident must belong to an active route', function () {
     $cyclist = User::factory()->cyclist()->create();
-    $route = createRouteForIncidentReports('inactiva');
-    $type = IncidentType::query()->where('name', 'obstáculo')->firstOrFail();
+    $route = createRouteForIncidentReports('Inactiva');
+    $type = IncidentType::query()->where('name', 'Obstáculo')->firstOrFail();
 
     $this->actingAs($cyclist)
         ->post(route('incidents.store'), [
@@ -145,9 +145,9 @@ test('cyclist sees only incidents in review on route detail', function () {
 
     $cyclist = User::factory()->cyclist()->create();
     $route = createRouteForIncidentReports();
-    $type = IncidentType::query()->where('name', 'obstáculo')->firstOrFail();
-    $reported = IncidentStatus::query()->where('name', 'reportada')->firstOrFail();
-    $inReview = IncidentStatus::query()->where('name', 'en revisión')->firstOrFail();
+    $type = IncidentType::query()->where('name', 'Obstáculo')->firstOrFail();
+    $reported = IncidentStatus::query()->where('name', 'Reportada')->firstOrFail();
+    $inReview = IncidentStatus::query()->where('name', 'En revisión')->firstOrFail();
 
     $route->incidents()->createMany([
         [

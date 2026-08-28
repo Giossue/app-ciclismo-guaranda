@@ -15,7 +15,7 @@ class PoiReportController extends Controller
         $poi->reports()->create([
             ...$request->validated(),
             'user_id' => $request->user()?->id,
-            'status' => 'pendiente',
+            'status' => 'Pendiente',
             'reported_at' => now(),
         ]);
 

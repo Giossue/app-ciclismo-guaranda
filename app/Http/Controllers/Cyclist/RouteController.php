@@ -45,7 +45,7 @@ class RouteController extends Controller
 
     public function show(CyclingRoute $route): Response
     {
-        abort_unless($route->status?->name === 'activa', 404);
+        abort_unless($route->status?->name === 'Activa', 404);
 
         RouteView::query()->create([
             'route_id' => $route->id,
@@ -65,7 +65,7 @@ class RouteController extends Controller
             'pointsOfInterest' => fn (BelongsToMany $query) => $this->publicPointsOfInterest($query),
             'incidents' => fn (HasMany $query) => $this->publicIncidents($query),
             'ratings' => fn ($query) => $query
-                ->whereHas('moderationStatus', fn ($statusQuery) => $statusQuery->where('name', 'aprobado'))
+                ->whereHas('moderationStatus', fn ($statusQuery) => $statusQuery->where('name', 'Aprobado'))
                 ->with(['user:id,name,last_name', 'moderationStatus:id,name', 'files'])
                 ->latest('rated_at'),
         ]);
@@ -88,7 +88,7 @@ class RouteController extends Controller
             ])
             ->where('user_id', request()->user()?->id)
             ->where('route_id', $route->id)
-            ->whereHas('status', fn ($query) => $query->whereIn('name', ['en curso', 'pausado']))
+            ->whereHas('status', fn ($query) => $query->whereIn('name', ['En curso', 'Pausado']))
             ->latest('id')
             ->first();
 
@@ -117,7 +117,7 @@ class RouteController extends Controller
                 'pointsOfInterest' => fn (BelongsToMany $query) => $this->publicPointsOfInterest($query),
                 'incidents' => fn (HasMany $query) => $this->publicIncidents($query),
             ])
-            ->whereHas('status', fn ($query) => $query->where('name', 'activa'));
+            ->whereHas('status', fn ($query) => $query->where('name', 'Activa'));
     }
 
     private function publicPointsOfInterest(BelongsToMany $query): BelongsToMany
@@ -158,7 +158,7 @@ class RouteController extends Controller
                 'longitude',
                 'reported_at',
             ])
-            ->whereHas('status', fn ($statusQuery) => $statusQuery->where('name', 'en revisión'))
+            ->whereHas('status', fn ($statusQuery) => $statusQuery->where('name', 'En revisión'))
             ->with([
                 'type:id,name',
                 'status:id,name',
@@ -233,7 +233,7 @@ class RouteController extends Controller
     {
         $approvedRatings = RouteRating::query()
             ->where('route_id', $route->id)
-            ->whereHas('moderationStatus', fn ($query) => $query->where('name', 'aprobado'));
+            ->whereHas('moderationStatus', fn ($query) => $query->where('name', 'Aprobado'));
 
         $count = (clone $approvedRatings)->count();
         $average = $count > 0 ? round((float) (clone $approvedRatings)->avg('rating'), 2) : null;
@@ -252,7 +252,7 @@ class RouteController extends Controller
         return RouteRating::query()
             ->with(['user:id,name,last_name', 'moderationStatus:id,name', 'files'])
             ->where('route_id', $route->id)
-            ->whereHas('moderationStatus', fn ($query) => $query->where('name', 'aprobado'))
+            ->whereHas('moderationStatus', fn ($query) => $query->where('name', 'Aprobado'))
             ->latest('rated_at')
             ->limit(20)
             ->get()
@@ -281,7 +281,7 @@ class RouteController extends Controller
             ->where('user_id', $userId)
             ->where('route_id', $route->id)
             ->where('is_valid', true)
-            ->whereHas('status', fn ($query) => $query->where('name', 'finalizado'))
+            ->whereHas('status', fn ($query) => $query->where('name', 'Finalizado'))
             ->count();
 
         $rating = RouteRating::query()

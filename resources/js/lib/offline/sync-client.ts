@@ -9,7 +9,7 @@ import type { OfflineQueueItem } from './local-database';
 type SyncResult = {
     client_id: string;
     event_type: string;
-    status: 'enviado' | 'error';
+    status: 'Enviado' | 'Error';
     server_id?: number;
     error?: string;
 };
@@ -66,14 +66,14 @@ export async function syncPendingOfflineEvents(): Promise<SyncResult[]> {
             continue;
         }
 
-        if (result.status === 'enviado') {
+        if (result.status === 'Enviado') {
             await deleteQueueItem(result.client_id);
             continue;
         }
 
         await saveQueueItem({
             ...item,
-            status: 'error',
+            status: 'Error',
             attempts: item.attempts + 1,
             last_error: result.error ?? 'Error de sincronización.',
             updated_at: new Date().toISOString(),
@@ -91,7 +91,7 @@ async function markItemsAsFailed(
         items.map((item) =>
             saveQueueItem({
                 ...item,
-                status: 'error',
+                status: 'Error',
                 attempts: item.attempts + 1,
                 last_error: error,
                 updated_at: new Date().toISOString(),

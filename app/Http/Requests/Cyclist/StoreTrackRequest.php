@@ -38,14 +38,14 @@ class StoreTrackRequest extends FormRequest
                 return;
             }
 
-            if ($route->status?->name !== 'activa') {
+            if ($route->status?->name !== 'Activa') {
                 $validator->errors()->add('route', 'Solo se puede iniciar un recorrido sobre una ruta activa.');
             }
 
             $hasActiveTrack = Track::query()
                 ->where('user_id', $this->user()?->id)
                 ->where('route_id', $route->id)
-                ->whereHas('status', fn ($query) => $query->whereIn('name', ['en curso', 'pausado']))
+                ->whereHas('status', fn ($query) => $query->whereIn('name', ['En curso', 'Pausado']))
                 ->exists();
 
             if ($hasActiveTrack) {

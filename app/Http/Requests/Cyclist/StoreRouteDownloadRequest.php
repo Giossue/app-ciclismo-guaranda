@@ -20,7 +20,7 @@ class StoreRouteDownloadRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'download_status' => ['nullable', 'string', 'in:iniciada,completada,error,eliminada'],
+            'download_status' => ['nullable', 'string', 'in:Iniciada,Completada,Error,Eliminada'],
             'size_mb' => ['nullable', 'numeric', 'min:0', 'max:50000'],
         ];
     }

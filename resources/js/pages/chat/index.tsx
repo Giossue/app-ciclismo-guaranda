@@ -472,10 +472,7 @@ function HistorySheet({
                     <History className="size-4" />
                 </Button>
             </SheetTrigger>
-            <SheetContent
-                side="right"
-                className="w-[86vw] gap-0 p-0 sm:max-w-sm"
-            >
+            <SheetContent className="w-[86vw] gap-0 p-0 sm:max-w-sm">
                 <SheetHeader className="border-b p-4 pr-10">
                     <SheetTitle>Historial</SheetTitle>
                     <SheetDescription>

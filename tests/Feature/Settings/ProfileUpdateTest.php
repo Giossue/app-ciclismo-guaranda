@@ -20,7 +20,7 @@ test('profile page is displayed', function () {
 
 test('profile information can be updated', function () {
     $user = User::factory()->create();
-    $gender = Gender::query()->where('name', 'femenino')->firstOrFail();
+    $gender = Gender::query()->where('name', 'Femenino')->firstOrFail();
 
     $response = $this
         ->actingAs($user)
@@ -65,7 +65,7 @@ test('profile update requires minimum age', function () {
 
 test('email verification status is unchanged when the email address is unchanged', function () {
     $user = User::factory()->create();
-    $gender = Gender::query()->where('name', 'masculino')->firstOrFail();
+    $gender = Gender::query()->where('name', 'Masculino')->firstOrFail();
 
     $response = $this
         ->actingAs($user)

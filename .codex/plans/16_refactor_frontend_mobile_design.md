@@ -391,3 +391,8 @@ Notas:
 - El login amplía su superficie desktop a `max-w-6xl`, distribuye ambos paneles por igual y mantiene el formulario en una sola columna legible.
 - El título y la descripción de bienvenida quedan centrados también en laptop; la Card usa el token `radius-map` sin alterar el radio global de otras superficies.
 - La revelación circular del tema dura 1,4 segundos con entrada progresiva. CSS fija el círculo inicial antes de cambiar el tema, se eliminan animaciones implícitas del grupo View Transition y `color-scheme` cambia al finalizar para evitar cualquier frame oscuro completo o destello de controles nativos y scrollbar.
+
+## Retiro de Boneyard y transición única de sheets 2026-08-28
+
+- Se retiró Boneyard, sus capturas y su configuración: la app mantiene los `Skeleton` locales de shadcn cuando una superficie concreta los requiere.
+- Los sheets se normalizan como paneles laterales derechos; los editores de rutas y POIs dejan de sobrescribir esa transición con una entrada desde abajo.
