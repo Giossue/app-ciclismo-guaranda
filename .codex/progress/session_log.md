@@ -766,3 +766,9 @@
   muestran solo para la última respuesta recibida en la sesión y al tocarlos
   envían esa pregunta directamente. El prompt exige que OpenAI los adapte a
   historial y contexto vivo, o devuelva una lista vacía.
+
+## 2026-08-28 — Estado de red inicial del chat
+
+- El chat ya no interpreta el valor transitorio de `navigator.onLine` como
+  desconexión al abrirse en Capacitor. Mantiene un estado breve de comprobación
+  y muestra el aviso offline solo tras recibir un resultado confirmado.

@@ -140,6 +140,8 @@ type ChatLocationState =
       }
     | { status: 'error'; message: string };
 
+type NetworkState = 'checking' | 'online' | 'offline';
+
 type Props = {
     assistantConfigured: boolean;
     conversations: ConversationSummary[];
@@ -168,9 +170,7 @@ export default function ChatIndex({
     latestMessages,
     routes,
 }: Props) {
-    const [isOnline, setIsOnline] = useState(
-        () => browserNetworkStatus().connected,
-    );
+    const [networkState, setNetworkState] = useState<NetworkState>('checking');
     const [location, setLocation] = useState<ChatLocationState>(() => {
         const rememberedLocation = getRememberedAppLocation();
 
@@ -218,9 +218,23 @@ export default function ChatIndex({
     );
 
     useEffect(() => {
-        void getNetworkStatus().then((status) => setIsOnline(status.connected));
+        let active = true;
+        const updateNetworkState = (status: { connected: boolean }) => {
+            if (active) {
+                setNetworkState(status.connected ? 'online' : 'offline');
+            }
+        };
 
-        return watchNetworkStatus((status) => setIsOnline(status.connected));
+        void getNetworkStatus()
+            .then(updateNetworkState)
+            .catch(() => updateNetworkState(browserNetworkStatus()));
+
+        const stopWatching = watchNetworkStatus(updateNetworkState);
+
+        return () => {
+            active = false;
+            stopWatching();
+        };
     }, []);
 
     useEffect(() => {
@@ -272,7 +286,7 @@ export default function ChatIndex({
         [speakingId],
     );
 
-    const canSend = assistantConfigured && isOnline;
+    const canSend = assistantConfigured && networkState === 'online';
 
     const requestLocation = async () => {
         setLocation({ status: 'loading' });
@@ -393,7 +407,7 @@ export default function ChatIndex({
                     />
                 </header>
 
-                {!isOnline && (
+                {networkState === 'offline' && (
                     <Alert variant="destructive" className="m-3">
                         <WifiOff />
                         <AlertTitle>Sin conexión</AlertTitle>
@@ -497,7 +511,9 @@ export default function ChatIndex({
                             <p className="text-xs text-muted-foreground">
                                 {location.status === 'ready'
                                     ? 'Ubicación activa para recomendaciones cercanas.'
-                                    : 'Recomendaciones basadas en información pública.'}
+                                    : networkState === 'checking'
+                                      ? 'Comprobando conexión…'
+                                      : 'Recomendaciones basadas en información pública.'}
                             </p>
                         </div>
                         {location.status === 'error' && (
@@ -519,7 +535,11 @@ export default function ChatIndex({
                                 ref={messageRef}
                                 aria-invalid={Boolean(submissionErrors.message)}
                                 disabled={!canSend || agentIsLoading}
-                                placeholder="Pregunta sobre tu salida..."
+                                placeholder={
+                                    networkState === 'checking'
+                                        ? 'Comprobando conexión…'
+                                        : 'Pregunta sobre tu salida...'
+                                }
                             />
                             <PromptInputFooter>
                                 <PromptInputTools>

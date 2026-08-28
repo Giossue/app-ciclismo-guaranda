@@ -332,6 +332,10 @@
         overscroll-behavior-y: none;
     }
 
+    body[data-map-poi-sheet-open='true'] nav[aria-label='Navegación del mapa'] {
+        display: none;
+    }
+
     button,
     input,
     textarea,

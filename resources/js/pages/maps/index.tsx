@@ -8,7 +8,7 @@ import {
     Phone,
     X,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import FavoriteRouteController from '@/actions/App/Http/Controllers/Cyclist/FavoriteRouteController';
 import ImageGallery from '@/components/image-gallery';
 import RouteMap from '@/components/routes/client-only-route-map';
@@ -59,6 +59,18 @@ export default function MapsIndex({ routes, selectedRouteSlug }: Props) {
             },
         );
     };
+
+    useEffect(() => {
+        if (!selectedPoi) {
+            return;
+        }
+
+        document.body.dataset.mapPoiSheetOpen = 'true';
+
+        return () => {
+            delete document.body.dataset.mapPoiSheetOpen;
+        };
+    }, [selectedPoi]);
 
     return (
         <>

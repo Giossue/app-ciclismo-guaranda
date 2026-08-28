@@ -141,3 +141,6 @@ pregunta desaparecen; la siguiente respuesta puede proponer de cero a tres
 acciones nuevas, ajustadas por OpenAI al historial y al contexto vivo. En una
 conversación nueva, las preguntas iniciales usan la primera ruta activa que
 Laravel ya entregó a la pantalla.
+Al abrir la pantalla, el estado de red empieza en comprobación: no se muestra
+una alerta ni se permite enviar hasta que Capacitor o el navegador confirme la
+conexión. Solo un resultado confirmado sin red muestra el aviso offline.

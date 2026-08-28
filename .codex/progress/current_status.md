@@ -207,6 +207,8 @@ Después de esa prueba manual, marcar Fase 12 y Fase 14 como `Completado` si tod
 - El chat ya ofrece “Volver” a rutas, compositor fijo y sugerencias efímeras:
   no quedan pegadas a mensajes antiguos y un toque inicia de inmediato el
   siguiente turno contextual.
+- El estado de red del chat espera la respuesta de Capacitor antes de mostrar
+  offline, evitando el falso aviso durante la carga inicial.
 - OpenAI puede proponer hasta tres referencias internas de ruta/POI; Laravel
   las rehidrata desde la BD viva, descarta recursos inactivos o inexistentes y
   solo entonces persiste y muestra las tarjetas. Las rutas usan navegación
