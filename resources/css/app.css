@@ -388,38 +388,6 @@
 }
 
 @layer components {
-    .leaflet-interactive.map-user-location-sonar {
-        animation: map-user-location-sonar 2.2s ease-out infinite;
-        transform-box: fill-box;
-        transform-origin: center;
-    }
-
-    .leaflet-interactive.map-route-signal {
-        animation: map-route-signal 2.4s ease-in-out infinite;
-    }
-
-    .leaflet-interactive.map-marker-signal {
-        animation: map-marker-signal 1.8s ease-in-out infinite;
-        transform-box: fill-box;
-        transform-origin: center;
-    }
-
-    .leaflet-interactive.map-marker-signal-start {
-        animation-delay: -0.2s;
-    }
-
-    .leaflet-interactive.map-marker-signal-end {
-        animation-delay: -0.6s;
-    }
-
-    .leaflet-interactive.map-marker-signal-poi {
-        animation-delay: -1s;
-    }
-
-    .leaflet-interactive.map-marker-signal-incident {
-        animation-delay: -1.4s;
-    }
-
     .map-poi-marker {
         background: transparent;
         border: 0;
@@ -436,7 +404,6 @@
         background: var(--info);
         color: var(--info-foreground);
         box-shadow: var(--elevation-raised);
-        animation: map-poi-marker-signal 1.9s ease-in-out infinite;
     }
 
     .map-poi-marker-icon svg {
@@ -445,94 +412,38 @@
         stroke: currentColor;
     }
 
-    .map-poi-marker-icon::after {
-        position: absolute;
-        inset: -6px;
-        border: 2px solid var(--info);
-        border-radius: inherit;
-        content: '';
-        opacity: 0;
-        animation: map-poi-marker-sonar 1.9s ease-out infinite;
+    .map-point-marker {
+        background: transparent;
+        border: 0;
     }
 
-    @keyframes map-route-signal {
-        0%,
-        100% {
-            opacity: 0.62;
-        }
-
-        50% {
-            opacity: 1;
-        }
+    .map-point-marker-icon {
+        display: grid;
+        width: 40px;
+        height: 40px;
+        place-items: center;
+        border: 2px solid currentColor;
+        border-radius: var(--radius-circle);
+        background: var(--card);
+        box-shadow: var(--elevation-raised);
     }
 
-    @keyframes map-marker-signal {
-        0%,
-        100% {
-            opacity: 0.65;
-            transform: scale(0.86);
-        }
-
-        50% {
-            opacity: 1;
-            transform: scale(1.22);
-        }
+    .map-point-marker-icon svg {
+        width: 22px;
+        height: 22px;
+        stroke: currentColor;
     }
 
-    @keyframes map-poi-marker-signal {
-        0%,
-        100% {
-            transform: scale(0.92);
-        }
-
-        50% {
-            transform: scale(1.06);
-        }
+    .map-point-marker-icon--start {
+        color: var(--primary);
     }
 
-    @keyframes map-poi-marker-sonar {
-        0% {
-            opacity: 0.65;
-            transform: scale(0.55);
-        }
-
-        75%,
-        100% {
-            opacity: 0;
-            transform: scale(1.35);
-        }
+    .map-point-marker-icon--finish {
+        color: var(--warning);
     }
 
-    @keyframes map-user-location-sonar {
-        0% {
-            opacity: 0.55;
-            transform: scale(0.35);
-        }
-
-        75%,
-        100% {
-            opacity: 0;
-            transform: scale(1);
-        }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-        .leaflet-interactive.map-user-location-sonar {
-            animation: none;
-            opacity: 0.25;
-            transform: none;
-        }
-
-        .leaflet-interactive.map-route-signal,
-        .leaflet-interactive.map-marker-signal {
-            animation: none;
-            transform: none;
-        }
-
-        .map-poi-marker-icon,
-        .map-poi-marker-icon::after {
-            animation: none;
-        }
+    .map-point-marker-icon--incident {
+        color: var(--destructive);
     }
 
     .safe-bottom-pad {

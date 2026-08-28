@@ -82,7 +82,6 @@ const routePathOptions = {
     fillColor: 'var(--warning)',
     opacity: 0.98,
     weight: 5,
-    className: 'map-route-signal',
 };
 const routeHaloPathOptions = {
     color: 'var(--foreground)',
@@ -90,41 +89,12 @@ const routeHaloPathOptions = {
     opacity: 0.85,
     weight: 9,
 };
-const startPathOptions = {
-    color: 'var(--primary)',
-    fillColor: 'var(--primary)',
-    fillOpacity: 0.9,
-    opacity: 1,
-    className: 'map-marker-signal map-marker-signal-start',
-};
-const endPathOptions = {
-    color: 'var(--warning)',
-    fillColor: 'var(--warning)',
-    fillOpacity: 0.9,
-    opacity: 1,
-    className: 'map-marker-signal map-marker-signal-end',
-};
-const incidentPathOptions = {
-    color: 'var(--destructive)',
-    fillColor: 'var(--destructive)',
-    fillOpacity: 0.9,
-    opacity: 1,
-    className: 'map-marker-signal map-marker-signal-incident',
-};
 const userPathOptions = {
     color: 'var(--card)',
     fillColor: '#2f80ed',
     fillOpacity: 0.9,
     opacity: 1,
     weight: 3,
-};
-const userPulsePathOptions = {
-    color: '#2f80ed',
-    fillColor: '#2f80ed',
-    fillOpacity: 0.18,
-    opacity: 0.5,
-    weight: 1,
-    className: 'map-user-location-sonar',
 };
 const userTrackPathOptions = {
     color: 'var(--secondary)',
@@ -142,6 +112,12 @@ const poiIconPaths: Record<string, string> = {
         '<path d="M10 10h4"/><path d="M19 7V4a1 1 0 0 0-1-1h-2a1 1 0 0 0-1 1v3"/><path d="M20 21a2 2 0 0 0 2-2v-3.851c0-1.39-2-2.962-2-4.829V8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v11a2 2 0 0 0 2 2z"/><path d="M22 16H2"/><path d="M4 21a2 2 0 0 1-2-2v-3.851c0-1.39 2-2.962 2-4.829V8a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v11a2 2 0 0 1-2 2z"/><path d="M9 7V4a1 1 0 0 0-1-1H6a1 1 0 0 0-1 1v3"/>',
     default:
         '<path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/>',
+};
+const mapMarkerIconPaths = {
+    start: '<path d="M5 22V4"/><path d="M5 5c3-2 6 2 10 0v8c-4 2-7-2-10 0"/>',
+    finish: '<path d="M5 22V4"/><path d="M5 5h11v8H5"/><path d="M5 5h3v3H5zm6 0h3v3h-3zM8 8h3v3H8zm6 0h2v3h-2z" fill="currentColor" stroke="none"/>',
+    incident:
+        '<path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
 };
 
 export default function RouteMap({
@@ -356,36 +332,24 @@ export default function RouteMap({
                     ))}
 
                     {userLocation && (
-                        <>
-                            <CircleMarker
-                                center={[
-                                    userLocation.latitude,
-                                    userLocation.longitude,
-                                ]}
-                                pathOptions={userPulsePathOptions}
-                                radius={28}
-                                interactive={false}
-                            />
-                            <CircleMarker
-                                center={[
-                                    userLocation.latitude,
-                                    userLocation.longitude,
-                                ]}
-                                pathOptions={userPathOptions}
-                                radius={9}
-                            >
-                                <Popup>
-                                    <div className="flex flex-col gap-1 text-sm">
-                                        <strong>Tu ubicación</strong>
-                                        <span>
-                                            Precisión aproximada:{' '}
-                                            {Math.round(userLocation.accuracy)}{' '}
-                                            m
-                                        </span>
-                                    </div>
-                                </Popup>
-                            </CircleMarker>
-                        </>
+                        <CircleMarker
+                            center={[
+                                userLocation.latitude,
+                                userLocation.longitude,
+                            ]}
+                            pathOptions={userPathOptions}
+                            radius={9}
+                        >
+                            <Popup>
+                                <div className="flex flex-col gap-1 text-sm">
+                                    <strong>Tu ubicación</strong>
+                                    <span>
+                                        Precisión aproximada:{' '}
+                                        {Math.round(userLocation.accuracy)} m
+                                    </span>
+                                </div>
+                            </Popup>
+                        </CircleMarker>
                     )}
                 </MapContainer>
             </div>
@@ -481,10 +445,9 @@ function RouteLayers({
 
             {filters.endpoints && (
                 <>
-                    <CircleMarker
-                        center={[route.start_latitude, route.start_longitude]}
-                        pathOptions={startPathOptions}
-                        radius={selected ? 8 : 7}
+                    <Marker
+                        position={[route.start_latitude, route.start_longitude]}
+                        icon={mapMarkerIcon('start')}
                         eventHandlers={{
                             click: () => onRouteSelect?.(route),
                         }}
@@ -495,12 +458,11 @@ function RouteLayers({
                                 <span>{route.name}</span>
                             </div>
                         </Popup>
-                    </CircleMarker>
+                    </Marker>
 
-                    <CircleMarker
-                        center={[route.end_latitude, route.end_longitude]}
-                        pathOptions={endPathOptions}
-                        radius={selected ? 8 : 7}
+                    <Marker
+                        position={[route.end_latitude, route.end_longitude]}
+                        icon={mapMarkerIcon('finish')}
                         eventHandlers={{
                             click: () => onRouteSelect?.(route),
                         }}
@@ -511,7 +473,7 @@ function RouteLayers({
                                 <span>{route.name}</span>
                             </div>
                         </Popup>
-                    </CircleMarker>
+                    </Marker>
                 </>
             )}
 
@@ -533,11 +495,10 @@ function RouteLayers({
 
             {filters.incidents &&
                 route.incidents.map((incident) => (
-                    <CircleMarker
+                    <Marker
                         key={`incident-${route.id}-${incident.id}`}
-                        center={[incident.latitude, incident.longitude]}
-                        pathOptions={incidentPathOptions}
-                        radius={7}
+                        position={[incident.latitude, incident.longitude]}
+                        icon={mapMarkerIcon('incident')}
                     >
                         <Popup>
                             <div className="flex flex-col gap-1 text-sm">
@@ -550,7 +511,7 @@ function RouteLayers({
                                     )}
                             </div>
                         </Popup>
-                    </CircleMarker>
+                    </Marker>
                 ))}
         </>
     );
@@ -624,6 +585,16 @@ function poiMarkerIcon(categoryName?: string): L.DivIcon {
         iconSize: [36, 36],
         iconAnchor: [18, 18],
         popupAnchor: [0, -18],
+    });
+}
+
+function mapMarkerIcon(kind: 'start' | 'finish' | 'incident'): L.DivIcon {
+    return L.divIcon({
+        className: 'map-point-marker',
+        html: `<span class="map-point-marker-icon map-point-marker-icon--${kind}" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${mapMarkerIconPaths[kind]}</svg></span>`,
+        iconSize: [40, 40],
+        iconAnchor: [20, 20],
+        popupAnchor: [0, -20],
     });
 }
 

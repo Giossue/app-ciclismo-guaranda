@@ -1,11 +1,11 @@
-import { Form, Head, Link, usePage } from '@inertiajs/react';
+import { Form, Head, Link, router, usePage } from '@inertiajs/react';
 import {
     Bot,
+    Compass,
     History,
     LoaderCircle,
     MapPin,
     Plus,
-    Send,
     Square,
     Trash2,
     Volume2,
@@ -14,7 +14,27 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import ChatController from '@/actions/App/Http/Controllers/Cyclist/ChatController';
-import { MessageResponse } from '@/components/ai-elements/message';
+import {
+    Conversation,
+    ConversationContent,
+    ConversationEmptyState,
+    ConversationScrollButton,
+} from '@/components/ai-elements/conversation';
+import {
+    Message,
+    MessageAction,
+    MessageActions,
+    MessageContent,
+    MessageResponse,
+} from '@/components/ai-elements/message';
+import {
+    PromptInput,
+    PromptInputFooter,
+    PromptInputSubmit,
+    PromptInputTextarea,
+    PromptInputTools,
+} from '@/components/ai-elements/prompt-input';
+import { Shimmer } from '@/components/ai-elements/shimmer';
 import {
     Sources,
     SourcesContent,
@@ -24,8 +44,17 @@ import { Suggestion, Suggestions } from '@/components/ai-elements/suggestion';
 import ImageWithFallback from '@/components/image-with-fallback';
 import InputError from '@/components/input-error';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import {
+    Avatar,
+    AvatarFallback,
+} from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@/components/ui/popover';
 import {
     Select,
     SelectContent,
@@ -42,7 +71,6 @@ import {
     SheetTitle,
     SheetTrigger,
 } from '@/components/ui/sheet';
-import { Textarea } from '@/components/ui/textarea';
 import { mediaUrl } from '@/lib/media';
 import {
     browserNetworkStatus,
@@ -121,6 +149,25 @@ type Props = {
     routes: RouteContextOption[];
 };
 
+type ChatSubmission = {
+    message: string;
+    conversation_id: number | null;
+    route_id: number | null;
+    travel_context: string | null;
+    location: {
+        latitude: string;
+        longitude: string;
+        accuracy_m: string;
+        recorded_at: string;
+    } | null;
+};
+
+const initialSuggestions = [
+    '¿Qué ruta me recomiendas para hoy?',
+    '¿Dónde puedo comer durante la ruta?',
+    '¿Hay alertas antes de salir?',
+];
+
 export default function ChatIndex({
     assistantConfigured,
     conversations,
@@ -140,10 +187,14 @@ export default function ChatIndex({
 
         return chatLocationFromSnapshot(rememberedLocation);
     });
-    const messagesRef = useRef<HTMLDivElement>(null);
     const messageRef = useRef<HTMLTextAreaElement>(null);
     const [agentIsLoading, setAgentIsLoading] = useState(false);
     const [speakingId, setSpeakingId] = useState<number | null>(null);
+    const [routeId, setRouteId] = useState('none');
+    const [travelContext, setTravelContext] = useState('none');
+    const [submissionErrors, setSubmissionErrors] = useState<
+        Record<string, string>
+    >({});
     const speechSupported = useMemo(() => isSpeechSupported(), []);
     const { auth } = usePage<{ auth: Auth }>().props;
     const userInitial = firstUserInitial(auth.user?.name);
@@ -195,14 +246,6 @@ export default function ChatIndex({
         [speakingId],
     );
 
-    useEffect(() => {
-        const element = messagesRef.current;
-
-        if (element) {
-            element.scrollTop = element.scrollHeight;
-        }
-    }, [latestMessages]);
-
     const canSend = assistantConfigured && isOnline;
 
     const requestLocation = async () => {
@@ -221,16 +264,57 @@ export default function ChatIndex({
         }
     };
 
+    const submitMessage = (
+        value: string,
+    ): Promise<void> =>
+        new Promise((resolve, reject) => {
+            const submission: ChatSubmission = {
+                message: value,
+                conversation_id: activeConversation?.id ?? null,
+                route_id: routeId === 'none' ? null : Number(routeId),
+                travel_context:
+                    travelContext === 'none' ? null : travelContext,
+                location:
+                    location.status === 'ready'
+                        ? {
+                              latitude: location.latitude,
+                              longitude: location.longitude,
+                              accuracy_m: location.accuracyM,
+                              recorded_at: location.recordedAt,
+                          }
+                        : null,
+            };
+
+            setSubmissionErrors({});
+
+            router.post(ChatController.store.url(), submission, {
+                preserveScroll: true,
+                preserveState: true,
+                onStart: () => setAgentIsLoading(true),
+                onError: (errors) => {
+                    setSubmissionErrors(errors as Record<string, string>);
+                    reject(new Error('No se pudo enviar el mensaje.'));
+                },
+                onSuccess: () => resolve(),
+                onFinish: () => setAgentIsLoading(false),
+            });
+        });
+
     return (
         <>
             <Head title="Asistente" />
 
-            <section className="ueb-page ueb-chat-shell md:w-full">
-                <header className="ueb-chat-header">
-                    <p className="min-w-0 flex-1 truncate text-sm font-semibold text-muted-foreground">
-                        {activeConversation?.title ??
-                            'Pregunta sobre rutas y puntos útiles'}
-                    </p>
+            <section className="ueb-page flex min-h-0 flex-1 flex-col md:h-[calc(100dvh-64px-(var(--page-pad-y)*2))]">
+                <header className="flex shrink-0 items-center gap-2 border-b pb-3">
+                    <div className="min-w-0 flex-1">
+                        <p className="text-xs text-muted-foreground">
+                            Guía local de Guaranda
+                        </p>
+                        <p className="truncate text-sm font-bold text-foreground">
+                            {activeConversation?.title ??
+                                'Planifica tu próxima salida'}
+                        </p>
+                    </div>
                     <Button
                         variant="outline"
                         size="sm"
@@ -278,228 +362,122 @@ export default function ChatIndex({
                     </Alert>
                 )}
 
-                <div ref={messagesRef} className="ueb-chat-messages">
-                    {latestMessages.map((message) => (
-                        <MessageBubble
-                            key={`${message.role}-${message.id}`}
-                            message={message}
-                            userInitial={userInitial}
-                            speechSupported={speechSupported}
-                            isSpeaking={speakingId === message.id}
-                            onToggleSpeak={toggleSpeak}
-                            onUseSuggestion={useSuggestion}
-                        />
-                    ))}
+                <div className="relative min-h-0 flex-1">
+                    <Conversation className="min-h-0">
+                        <ConversationContent className="mx-auto w-full max-w-3xl gap-6 px-0 py-5 sm:px-4">
+                            {latestMessages.map((message) => (
+                                <MessageBubble
+                                    key={`${message.role}-${message.id}`}
+                                    message={message}
+                                    userInitial={userInitial}
+                                    speechSupported={speechSupported}
+                                    isSpeaking={speakingId === message.id}
+                                    onToggleSpeak={toggleSpeak}
+                                    onUseSuggestion={useSuggestion}
+                                />
+                            ))}
 
-                    {agentIsLoading && <AgentLoadingBubble />}
+                            {agentIsLoading && <AgentLoadingBubble />}
 
-                    {latestMessages.length === 0 && !agentIsLoading && (
-                        <div className="m-auto flex max-w-64 flex-col items-center gap-3 text-center text-muted-foreground">
-                            <Bot className="size-4 text-muted-foreground" />
-                            <div className="flex flex-col gap-1">
-                                <p className="text-sm font-black text-foreground">
-                                    Empieza una consulta
-                                </p>
-                                <p className="text-sm">
-                                    Pregunta por rutas, dificultad, lugares
-                                    útiles o qué llevar.
-                                </p>
-                            </div>
-                        </div>
-                    )}
+                            {latestMessages.length === 0 &&
+                                !agentIsLoading && (
+                                    <ConversationEmptyState
+                                        className="min-h-72"
+                                        icon={
+                                            <span className="flex size-10 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                                                <Compass className="size-4" />
+                                            </span>
+                                        }
+                                        title="¿Qué quieres descubrir?"
+                                        description="Te ayudo con rutas, comida, actividades, alojamiento y avisos vigentes."
+                                    >
+                                        <span className="flex size-10 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                                            <Compass className="size-4" />
+                                        </span>
+                                        <div className="flex max-w-sm flex-col gap-1">
+                                            <h2 className="text-base font-bold text-foreground">
+                                                ¿Qué quieres descubrir?
+                                            </h2>
+                                            <p className="text-sm text-muted-foreground">
+                                                Te ayudo con rutas, comida,
+                                                actividades, alojamiento y avisos
+                                                vigentes.
+                                            </p>
+                                        </div>
+                                        <Suggestions className="max-w-full px-1 pt-2">
+                                            {initialSuggestions.map(
+                                                (suggestion) => (
+                                                    <Suggestion
+                                                        key={suggestion}
+                                                        suggestion={suggestion}
+                                                        onClick={useSuggestion}
+                                                    />
+                                                ),
+                                            )}
+                                        </Suggestions>
+                                    </ConversationEmptyState>
+                                )}
+                        </ConversationContent>
+                        <ConversationScrollButton />
+                    </Conversation>
                 </div>
 
-                <Form
-                    {...ChatController.store.form()}
-                    options={{ preserveScroll: true }}
-                    resetOnSuccess={['message']}
-                    onStart={() => {
-                        setAgentIsLoading(true);
-
-                        if (messageRef.current) {
-                            messageRef.current.value = '';
-                        }
-                    }}
-                    onFinish={() => setAgentIsLoading(false)}
-                    className="ueb-chat-footer"
-                >
-                    {({ processing, errors }) => (
-                        <div className="flex flex-col gap-2">
-                            {activeConversation && (
-                                <input
-                                    type="hidden"
-                                    name="conversation_id"
-                                    value={activeConversation.id}
-                                />
-                            )}
-
-                            {location.status === 'ready' && (
-                                <>
-                                    <input
-                                        type="hidden"
-                                        name="location[latitude]"
-                                        value={location.latitude}
-                                    />
-                                    <input
-                                        type="hidden"
-                                        name="location[longitude]"
-                                        value={location.longitude}
-                                    />
-                                    <input
-                                        type="hidden"
-                                        name="location[accuracy_m]"
-                                        value={location.accuracyM}
-                                    />
-                                    <input
-                                        type="hidden"
-                                        name="location[recorded_at]"
-                                        value={location.recordedAt}
-                                    />
-                                </>
-                            )}
-
-                            <div className="grid gap-2 sm:grid-cols-2">
-                                <div className="grid gap-1">
-                                    <Label
-                                        htmlFor="route_id"
-                                        className="sr-only"
-                                    >
-                                        Ruta opcional
-                                    </Label>
-                                    <Select name="route_id" defaultValue="none">
-                                        <SelectTrigger
-                                            id="route_id"
-                                            className="h-9 w-full rounded-xl border bg-input text-xs"
-                                            aria-invalid={Boolean(
-                                                errors.route_id,
-                                            )}
-                                        >
-                                            <SelectValue placeholder="Sin ruta específica" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectGroup>
-                                                <SelectItem value="none">
-                                                    Sin ruta específica
-                                                </SelectItem>
-                                                {routes.map((route) => (
-                                                    <SelectItem
-                                                        key={route.id}
-                                                        value={String(route.id)}
-                                                    >
-                                                        {route.name}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectGroup>
-                                        </SelectContent>
-                                    </Select>
-                                    <InputError message={errors.route_id} />
-                                </div>
-
-                                <div className="grid gap-1">
-                                    <Label
-                                        htmlFor="travel_context"
-                                        className="sr-only"
-                                    >
-                                        Plan de viaje opcional
-                                    </Label>
-                                    <Select
-                                        name="travel_context"
-                                        defaultValue="none"
-                                    >
-                                        <SelectTrigger
-                                            id="travel_context"
-                                            className="h-9 w-full rounded-xl border bg-input text-xs"
-                                            aria-invalid={Boolean(
-                                                errors.travel_context,
-                                            )}
-                                        >
-                                            <SelectValue placeholder="Plan de viaje" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectGroup>
-                                                <SelectItem value="none">
-                                                    Plan de viaje opcional
-                                                </SelectItem>
-                                                <SelectItem value="local_cyclist">
-                                                    Salida local
-                                                </SelectItem>
-                                                <SelectItem value="day_visitor">
-                                                    Visita por el día
-                                                </SelectItem>
-                                                <SelectItem value="overnight_tourist">
-                                                    Me quedaré a dormir
-                                                </SelectItem>
-                                            </SelectGroup>
-                                        </SelectContent>
-                                    </Select>
-                                    <InputError
-                                        message={errors.travel_context}
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="flex flex-col gap-1 rounded-xl border bg-card px-3 py-2 text-xs text-muted-foreground">
-                                <div className="flex items-center justify-between gap-2">
-                                    <span>
-                                        {location.status === 'ready'
-                                            ? 'Ubicación activa para recomendaciones cercanas.'
-                                            : 'Modo limitado: sin rutas cercanas precisas.'}
-                                    </span>
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="sm"
-                                        className="h-8 shrink-0 rounded-xl px-2 text-xs"
-                                        onClick={requestLocation}
-                                        disabled={
-                                            processing ||
-                                            location.status === 'loading'
-                                        }
-                                    >
-                                        {location.status === 'loading' ? (
-                                            <LoaderCircle className="size-4 animate-spin" />
-                                        ) : (
-                                            <MapPin className="size-4" />
-                                        )}
-                                        {location.status === 'ready'
-                                            ? 'Actualizar'
-                                            : 'Activar'}
-                                    </Button>
-                                </div>
-                                {location.status === 'error' && (
-                                    <span className="font-semibold text-warning">
-                                        {location.message}
-                                    </span>
-                                )}
-                            </div>
-
-                            <div className="ueb-chat-input-area">
-                                <div className="ueb-chat-input-box">
-                                    <Textarea
-                                        ref={messageRef}
-                                        id="message"
-                                        name="message"
-                                        required
-                                        rows={1}
-                                        className="ueb-chat-input"
-                                        placeholder="Escribe tu mensaje..."
-                                        aria-invalid={Boolean(errors.message)}
-                                        disabled={!canSend || processing}
-                                    />
-                                </div>
-                                <Button
-                                    size="icon"
-                                    disabled={!canSend || processing}
-                                    className="ueb-chat-send"
-                                    aria-label="Enviar mensaje"
-                                >
-                                    <Send className="size-4" />
-                                </Button>
-                            </div>
-                            <InputError message={errors.message} />
+                <div className="shrink-0 border-t bg-background pt-3">
+                    <div className="mx-auto flex w-full max-w-3xl flex-col gap-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:px-4">
+                        <div className="flex items-center justify-between gap-2">
+                            <p className="text-xs text-muted-foreground">
+                                {location.status === 'ready'
+                                    ? 'Ubicación activa para recomendaciones cercanas.'
+                                    : 'Recomendaciones basadas en información pública.'}
+                            </p>
+                            <ContextControls
+                                location={location}
+                                onRequestLocation={requestLocation}
+                                routeId={routeId}
+                                routes={routes}
+                                setRouteId={setRouteId}
+                                setTravelContext={setTravelContext}
+                                travelContext={travelContext}
+                            />
                         </div>
-                    )}
-                </Form>
+                        {location.status === 'error' && (
+                            <p className="text-xs text-warning">
+                                {location.message}
+                            </p>
+                        )}
+                        <PromptInput
+                            className="w-full"
+                            onSubmit={({ text }) => {
+                                if (!canSend || text.trim() === '') {
+                                    return Promise.resolve();
+                                }
+
+                                return submitMessage(text.trim());
+                            }}
+                        >
+                            <PromptInputTextarea
+                                ref={messageRef}
+                                aria-invalid={Boolean(submissionErrors.message)}
+                                disabled={!canSend || agentIsLoading}
+                                placeholder="Pregunta sobre tu salida..."
+                            />
+                            <PromptInputFooter>
+                                <PromptInputTools>
+                                    <span className="text-xs text-muted-foreground">
+                                        Enter para enviar
+                                    </span>
+                                </PromptInputTools>
+                                <PromptInputSubmit
+                                    disabled={!canSend || agentIsLoading}
+                                    status={
+                                        agentIsLoading ? 'submitted' : 'ready'
+                                    }
+                                />
+                            </PromptInputFooter>
+                        </PromptInput>
+                        <InputError message={submissionErrors.message} />
+                    </div>
+                </div>
             </section>
         </>
     );
