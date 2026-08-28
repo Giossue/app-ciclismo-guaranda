@@ -14,7 +14,11 @@ export default function AppSidebarLayout({
             <AppSidebar />
             <AppContent
                 variant="sidebar"
-                className="min-w-0 overflow-x-hidden overflow-y-auto"
+                // Sin `overflow` propio: un contenedor de scroll aquí rompe el
+                // `position: sticky` del encabezado, que quedaría anclado a un
+                // elemento que nunca se desplaza. El recorte horizontal ya lo
+                // hace `body`.
+                className="min-w-0"
             >
                 <AppSidebarHeader breadcrumbs={breadcrumbs} />
                 <main className="safe-bottom-pad ueb-admin-page flex flex-1 flex-col gap-[var(--page-gap)] px-[var(--page-pad-x)] pt-[var(--page-pad-y)] md:pb-[var(--page-pad-y)]">
