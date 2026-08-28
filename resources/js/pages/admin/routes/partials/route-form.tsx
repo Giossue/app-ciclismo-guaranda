@@ -588,12 +588,15 @@ export default function RouteForm({
                                         id="start_name"
                                         name="start_name"
                                         value={startPoint.name}
-                                        onChange={(event) =>
+                                        onChange={(event) => {
+                                            const name =
+                                                event.currentTarget.value;
+
                                             setStartPoint((current) => ({
                                                 ...current,
-                                                name: event.currentTarget.value,
-                                            }))
-                                        }
+                                                name,
+                                            }));
+                                        }}
                                         placeholder="Ej. Parque central de Salinas"
                                         required
                                         aria-invalid={Boolean(
@@ -611,12 +614,15 @@ export default function RouteForm({
                                         id="end_name"
                                         name="end_name"
                                         value={endPoint.name}
-                                        onChange={(event) =>
+                                        onChange={(event) => {
+                                            const name =
+                                                event.currentTarget.value;
+
                                             setEndPoint((current) => ({
                                                 ...current,
-                                                name: event.currentTarget.value,
-                                            }))
-                                        }
+                                                name,
+                                            }));
+                                        }}
                                         placeholder="Ej. Mirador comunitario"
                                         required
                                         aria-invalid={Boolean(errors.end_name)}
