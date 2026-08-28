@@ -340,6 +340,27 @@
     }
 
     /*
+     * En pantallas táctiles, mantener pulsado no selecciona texto ni abre el
+     * menú de copiar: la app debe sentirse nativa. Los campos editables y lo
+     * marcado con data-selectable conservan la selección.
+     */
+    @media (pointer: coarse) {
+        body {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        input,
+        textarea,
+        [contenteditable='true'],
+        [data-selectable] {
+            -webkit-user-select: text;
+            user-select: text;
+        }
+    }
+
+    /*
      * Contrato de iconografía: cualquier icono Lucide hereda --icon-size.
      * Vive en @layer base, así que una utilidad size-* explícita sigue ganando.
      */
