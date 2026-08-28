@@ -24,13 +24,13 @@ const accountItems: AccountItem[] = [
     {
         title: 'Perfil',
         description: 'Datos de tu cuenta',
-        href: '/settings/profile',
+        href: '/account/profile',
         icon: UserRound,
     },
     {
         title: 'Seguridad',
         description: 'Contraseña y acceso',
-        href: '/settings/security',
+        href: '/account/security',
         icon: ShieldCheck,
     },
 ];

@@ -90,4 +90,4 @@ Route::middleware(['auth', 'verified', 'admin'])
         Route::post('users/{user}/password-reset', [UserController::class, 'sendPasswordResetLink'])->name('users.password-reset');
     });
 
-require __DIR__.'/settings.php';
+require __DIR__.'/account.php';
