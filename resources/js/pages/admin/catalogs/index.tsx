@@ -13,6 +13,14 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Field, FieldGroup, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import {
     Sheet,
     SheetContent,
     SheetDescription,
@@ -23,7 +31,17 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 
 type CatalogSummary = {
+    has_active: boolean;
+    has_description: boolean;
     locked: boolean;
+    slug: string;
+    title: string;
+};
+
+/** Lo mínimo que el formulario necesita saber del catálogo destino. */
+type CatalogFormTarget = {
+    has_active: boolean;
+    has_description: boolean;
     slug: string;
     title: string;
 };
@@ -258,21 +276,163 @@ export default function AdminCatalogsIndex({
                 />
             </div>
 
-            <Sheet open={createOpen} onOpenChange={setCreateOpen}>
-                <SheetContent className="w-full overflow-y-auto sm:max-w-lg">
-                    <SheetHeader>
-                        <SheetTitle>Nuevo registro</SheetTitle>
-                        <SheetDescription>
-                            Agrega un valor al catálogo {catalog.title}.
-                        </SheetDescription>
-                    </SheetHeader>
-                    <CatalogRecordForm
-                        catalog={catalog}
-                        onSuccess={() => setCreateOpen(false)}
-                    />
-                </SheetContent>
-            </Sheet>
+            <CreateRecordSheet
+                catalog={catalog}
+                domain={domain}
+                domains={domains}
+                open={createOpen}
+                onOpenChange={setCreateOpen}
+                onCreated={(created) => {
+                    if (created.slug !== catalog.slug) {
+                        changeQuery({
+                            domain: created.domain,
+                            catalog: created.slug,
+                            per_page: filters.per_page,
+                        });
+                    }
+                }}
+            />
         </>
+    );
+}
+
+function CreateRecordSheet({
+    catalog,
+    domain,
+    domains,
+    onCreated,
+    onOpenChange,
+    open,
+}: {
+    catalog: CatalogMeta;
+    domain: SelectedDomain;
+    domains: CatalogDomain[];
+    onCreated: (created: { domain: string; slug: string }) => void;
+    onOpenChange: (open: boolean) => void;
+    open: boolean;
+}) {
+    return (
+        <Sheet open={open} onOpenChange={onOpenChange}>
+            <SheetContent className="w-full overflow-y-auto sm:max-w-lg">
+                <SheetHeader>
+                    <SheetTitle>Nuevo registro</SheetTitle>
+                    <SheetDescription>
+                        Elige dónde crearlo; los campos se ajustan al catálogo.
+                    </SheetDescription>
+                </SheetHeader>
+
+                {/*
+                 * Radix desmonta el contenido al cerrar, así que este bloque se
+                 * reinicia solo y siempre parte del contexto de la tabla.
+                 */}
+                <CreateRecordFields
+                    catalog={catalog}
+                    domain={domain}
+                    domains={domains}
+                    onCreated={onCreated}
+                    onOpenChange={onOpenChange}
+                />
+            </SheetContent>
+        </Sheet>
+    );
+}
+
+function CreateRecordFields({
+    catalog,
+    domain,
+    domains,
+    onCreated,
+    onOpenChange,
+}: {
+    catalog: CatalogMeta;
+    domain: SelectedDomain;
+    domains: CatalogDomain[];
+    onCreated: (created: { domain: string; slug: string }) => void;
+    onOpenChange: (open: boolean) => void;
+}) {
+    const [domainSlug, setDomainSlug] = useState(domain.slug);
+    const [catalogSlug, setCatalogSlug] = useState(catalog.slug);
+
+    const catalogsOfDomain =
+        domains.find((option) => option.slug === domainSlug)?.catalogs ?? [];
+    const target =
+        catalogsOfDomain.find((option) => option.slug === catalogSlug) ??
+        catalogsOfDomain[0];
+
+    const selectDomain = (value: string) => {
+        setDomainSlug(value);
+        setCatalogSlug(
+            domains.find((option) => option.slug === value)?.catalogs[0]
+                ?.slug ?? '',
+        );
+    };
+
+    if (!target) {
+        return null;
+    }
+
+    return (
+        <CatalogRecordForm
+            key={target.slug}
+            catalog={target}
+            onSuccess={() => {
+                onOpenChange(false);
+                onCreated({
+                    domain: domainSlug,
+                    slug: target.slug,
+                });
+            }}
+            target={
+                <>
+                    <Field>
+                        <FieldLabel htmlFor="create-domain">Sección</FieldLabel>
+                        <Select value={domainSlug} onValueChange={selectDomain}>
+                            <SelectTrigger id="create-domain">
+                                <SelectValue placeholder="Selecciona una sección" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectGroup>
+                                    {domains.map((option) => (
+                                        <SelectItem
+                                            key={option.slug}
+                                            value={option.slug}
+                                        >
+                                            {option.title}
+                                        </SelectItem>
+                                    ))}
+                                </SelectGroup>
+                            </SelectContent>
+                        </Select>
+                    </Field>
+
+                    <Field>
+                        <FieldLabel htmlFor="create-catalog">
+                            Catálogo
+                        </FieldLabel>
+                        <Select
+                            value={target.slug}
+                            onValueChange={setCatalogSlug}
+                        >
+                            <SelectTrigger id="create-catalog">
+                                <SelectValue placeholder="Selecciona un catálogo" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectGroup>
+                                    {catalogsOfDomain.map((option) => (
+                                        <SelectItem
+                                            key={option.slug}
+                                            value={option.slug}
+                                        >
+                                            {option.title}
+                                        </SelectItem>
+                                    ))}
+                                </SelectGroup>
+                            </SelectContent>
+                        </Select>
+                    </Field>
+                </>
+            }
+        />
     );
 }
 
@@ -321,10 +481,12 @@ function CatalogRecordForm({
     catalog,
     onSuccess,
     record,
+    target,
 }: {
-    catalog: CatalogMeta;
+    catalog: CatalogFormTarget;
     onSuccess: () => void;
     record?: CatalogRecord;
+    target?: React.ReactNode;
 }) {
     const fieldId = record
         ? `${catalog.slug}-${record.id}`
@@ -342,6 +504,8 @@ function CatalogRecordForm({
             {({ errors, processing }) => (
                 <>
                     <FieldGroup className="grid gap-4">
+                        {target}
+
                         <Field data-invalid={Boolean(errors.name)}>
                             <FieldLabel htmlFor={`name-${fieldId}`}>
                                 Nombre
