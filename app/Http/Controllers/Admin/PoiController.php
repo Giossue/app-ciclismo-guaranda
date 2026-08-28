@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\ListPointsOfInterestRequest;
 use App\Http\Requests\Admin\StorePoiRequest;
 use App\Http\Requests\Admin\UpdatePoiRequest;
 use App\Models\CuisineType;
@@ -12,15 +13,15 @@ use App\Models\LodgingType;
 use App\Models\PoiCategory;
 use App\Models\PoiHour;
 use App\Models\PointOfInterest;
-use App\Models\PoiReport;
-use App\Models\PoiSuggestion;
 use App\Models\PriceRange;
 use App\Models\StoreType;
 use App\Models\WorkshopDetail;
 use App\Models\WorkshopService;
 use App\Models\WorkshopSpecialty;
 use DateTimeInterface;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\Pivot;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -31,34 +32,54 @@ use Inertia\Response;
 
 class PoiController extends Controller
 {
-    public function index(): Response
+    public function index(ListPointsOfInterestRequest $request): Response
     {
         $this->authorize('viewAny', PointOfInterest::class);
 
+        $filters = $request->validated();
+        $search = $filters['search'] ?? null;
+        $categoryId = isset($filters['category']) ? (int) $filters['category'] : null;
+        $status = $filters['status'] ?? null;
+        $perPage = (int) ($filters['per_page'] ?? 15);
+
         $pois = PointOfInterest::query()
             ->withTrashed()
+            ->select(['id', 'poi_category_id', 'name', 'description', 'latitude', 'longitude', 'active', 'deleted_at'])
             ->with(['category:id,name', 'routes:id,name,slug'])
             ->withCount(['routes', 'reports'])
+            ->when($search, function (Builder $query, string $search): void {
+                $pattern = "%{$search}%";
+
+                $query->where(function (Builder $query) use ($pattern): void {
+                    $query
+                        ->whereLike('name', $pattern)
+                        ->orWhereLike('description', $pattern)
+                        ->orWhereHas('category', fn (Builder $categoryQuery) => $categoryQuery->whereLike('name', $pattern));
+                });
+            })
+            ->when($categoryId, fn (Builder $query, int $categoryId) => $query->where('poi_category_id', $categoryId))
+            ->when($status === 'active', fn (Builder $query) => $query
+                ->where('active', true)
+                ->whereNull('deleted_at'))
+            ->when($status === 'inactive', fn (Builder $query) => $query->where(function (Builder $query): void {
+                $query
+                    ->where('active', false)
+                    ->orWhereNotNull('deleted_at');
+            }))
             ->latest('id')
-            ->paginate(12)
+            ->paginate($perPage)
+            ->withQueryString()
             ->through(fn (PointOfInterest $poi): array => $this->serializeSummary($poi));
 
         return Inertia::render('admin/pois/index', [
             'pois' => $pois,
-            'pendingSuggestions' => PoiSuggestion::query()
-                ->with(['category:id,name', 'user:id,name,last_name'])
-                ->where('status', 'pendiente')
-                ->latest('id')
-                ->limit(8)
-                ->get()
-                ->map(fn (PoiSuggestion $suggestion): array => $this->serializeSuggestion($suggestion)),
-            'pendingReports' => PoiReport::query()
-                ->with(['pointOfInterest:id,name', 'user:id,name,last_name'])
-                ->where('status', 'pendiente')
-                ->latest('id')
-                ->limit(8)
-                ->get()
-                ->map(fn (PoiReport $report): array => $this->serializeReport($report)),
+            'categories' => PoiCategory::query()->orderBy('name')->get(['id', 'name']),
+            'filters' => [
+                'search' => $search ?? '',
+                'category' => $categoryId === null ? '' : (string) $categoryId,
+                'status' => $status ?? '',
+                'per_page' => $perPage,
+            ],
         ]);
     }
 
@@ -74,10 +95,11 @@ class PoiController extends Controller
     public function store(StorePoiRequest $request): RedirectResponse
     {
         $payload = $request->validated();
+        $postgisAvailable = $this->postgisIsAvailable();
 
-        DB::transaction(function () use ($payload): void {
+        DB::transaction(function () use ($payload, $postgisAvailable): void {
             $poi = PointOfInterest::query()->create($this->poiAttributes($payload));
-            $this->syncPoiPayload($poi, $payload);
+            $this->syncPoiPayload($poi, $payload, $postgisAvailable);
         });
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('POI creado.')]);
@@ -111,8 +133,9 @@ class PoiController extends Controller
     {
         $payload = $request->validated();
         $reactivating = $poi->trashed() && (bool) ($payload['active'] ?? false);
+        $postgisAvailable = $this->postgisIsAvailable();
 
-        DB::transaction(function () use ($payload, $poi): void {
+        DB::transaction(function () use ($payload, $poi, $postgisAvailable): void {
             $poi->fill($this->poiAttributes($payload));
 
             if ($poi->trashed() && (bool) ($payload['active'] ?? false)) {
@@ -122,7 +145,7 @@ class PoiController extends Controller
                 $poi->save();
             }
 
-            $this->syncPoiPayload($poi, $payload);
+            $this->syncPoiPayload($poi, $payload, $postgisAvailable);
         });
 
         Inertia::flash('toast', $reactivating
@@ -199,20 +222,20 @@ class PoiController extends Controller
     /**
      * @param  array<string, mixed>  $payload
      */
-    private function syncPoiPayload(PointOfInterest $poi, array $payload): void
+    private function syncPoiPayload(PointOfInterest $poi, array $payload, bool $postgisAvailable): void
     {
-        $poi->refresh()->load('category');
+        $poi->load('category');
 
-        $this->syncPostgisPoint($poi);
+        $this->syncPostgisPoint($poi, $postgisAvailable);
         $this->syncHours($poi, $payload['hours_text'] ?? null);
         $this->syncImages($poi, $payload['images_text'] ?? null, $payload['images'] ?? []);
         $this->syncRoutes($poi, $payload['route_links_text'] ?? null);
         $this->syncCategoryDetails($poi, $payload);
     }
 
-    private function syncPostgisPoint(PointOfInterest $poi): void
+    private function syncPostgisPoint(PointOfInterest $poi, bool $postgisAvailable): void
     {
-        if (DB::getDriverName() !== 'pgsql' || ! Schema::hasColumn('puntos_interes', 'geom')) {
+        if (! $postgisAvailable) {
             return;
         }
 
@@ -220,6 +243,19 @@ class PoiController extends Controller
             'UPDATE puntos_interes SET geom = ST_SetSRID(ST_MakePoint(?, ?), 4326) WHERE id = ?',
             [(float) $poi->longitude, (float) $poi->latitude, $poi->id]
         );
+    }
+
+    private function postgisIsAvailable(): bool
+    {
+        if (DB::getDriverName() !== 'pgsql' || ! Schema::hasColumn('puntos_interes', 'geom')) {
+            return false;
+        }
+
+        try {
+            return DB::selectOne('SELECT PostGIS_Lib_Version() AS version') !== null;
+        } catch (QueryException) {
+            return false;
+        }
     }
 
     private function syncHours(PointOfInterest $poi, mixed $hoursText): void
@@ -470,35 +506,5 @@ class PoiController extends Controller
         }
 
         return null;
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function serializeSuggestion(PoiSuggestion $suggestion): array
-    {
-        return [
-            'id' => $suggestion->id,
-            'name' => $suggestion->name,
-            'description' => Str::limit((string) $suggestion->description, 120),
-            'status' => $suggestion->status,
-            'category' => $suggestion->category === null ? null : ['id' => $suggestion->category->id, 'name' => $suggestion->category->name],
-            'user' => $suggestion->user === null ? null : trim("{$suggestion->user->name} {$suggestion->user->last_name}"),
-        ];
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function serializeReport(PoiReport $report): array
-    {
-        return [
-            'id' => $report->id,
-            'report_type' => $report->report_type,
-            'description' => Str::limit((string) $report->description, 120),
-            'status' => $report->status,
-            'poi' => $report->pointOfInterest === null ? null : ['id' => $report->pointOfInterest->id, 'name' => $report->pointOfInterest->name],
-            'user' => $report->user === null ? null : trim("{$report->user->name} {$report->user->last_name}"),
-        ];
     }
 }

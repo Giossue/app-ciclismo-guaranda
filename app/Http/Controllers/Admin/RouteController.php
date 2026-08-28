@@ -14,54 +14,136 @@ use App\Models\RouteGeometry;
 use App\Models\RouteStatus;
 use App\Models\RoutingEngine;
 use App\Models\TransportMode;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class RouteController extends Controller
 {
-    public function index(): Response
+    public function index(Request $request): Response
     {
         $this->authorize('viewAny', CyclingRoute::class);
 
+        $filters = $request->validate([
+            'form' => ['nullable', Rule::in(['create', 'edit'])],
+            'route' => ['nullable', 'integer'],
+            'search' => ['nullable', 'string', 'max:120'],
+            'status' => ['nullable', 'integer', Rule::exists(RouteStatus::class, 'id')],
+            'category' => ['nullable', 'integer', Rule::exists(RouteCategory::class, 'id')],
+            'difficulty' => ['nullable', 'integer', Rule::exists(RouteDifficulty::class, 'id')],
+        ]);
+
+        $search = $filters['search'] ?? null;
+        $statusId = isset($filters['status']) ? (int) $filters['status'] : null;
+        $categoryId = isset($filters['category']) ? (int) $filters['category'] : null;
+        $difficultyId = isset($filters['difficulty']) ? (int) $filters['difficulty'] : null;
+
         $routes = CyclingRoute::query()
             ->with(['status:id,name', 'category:id,name', 'difficulty:id,name', 'admin:id,name,last_name', 'metrics.transportMode:id,name'])
+            ->when($search, function (Builder $query, string $search): void {
+                $pattern = "%{$search}%";
+
+                $query->where(function (Builder $query) use ($pattern): void {
+                    $query
+                        ->whereLike('name', $pattern)
+                        ->orWhereLike('description', $pattern)
+                        ->orWhereLike('start_name', $pattern)
+                        ->orWhereLike('end_name', $pattern);
+                });
+            })
+            ->when($statusId, fn (Builder $query, int $statusId) => $query->where('route_status_id', $statusId))
+            ->when($categoryId, fn (Builder $query, int $categoryId) => $query->where('route_category_id', $categoryId))
+            ->when($difficultyId, fn (Builder $query, int $difficultyId) => $query->where('route_difficulty_id', $difficultyId))
             ->latest('id')
             ->paginate(9)
+            ->withQueryString()
             ->through(fn (CyclingRoute $route): array => $this->serializeRouteSummary($route));
 
         return Inertia::render('admin/routes/index', [
             'routes' => $routes,
+            'statuses' => RouteStatus::query()->orderBy('id')->get(['id', 'name']),
+            'categories' => RouteCategory::query()->orderBy('name')->get(['id', 'name']),
+            'difficulties' => RouteDifficulty::query()->orderBy('id')->get(['id', 'name']),
+            'filters' => [
+                'search' => $search ?? '',
+                'status' => $statusId === null ? '' : (string) $statusId,
+                'category' => $categoryId === null ? '' : (string) $categoryId,
+                'difficulty' => $difficultyId === null ? '' : (string) $difficultyId,
+            ],
+            ...$this->routeFormProps($filters['form'] ?? null, $filters['route'] ?? null),
         ]);
     }
 
-    public function create(): Response
+    /**
+     * Alta y edición viven en una hoja lateral del listado: sus datos solo se
+     * calculan cuando la URL pide el formulario.
+     *
+     * @return array{form: string|null, formOptions: array<string, mixed>|null, routeForm: array<string, mixed>|null}
+     */
+    private function routeFormProps(?string $mode, ?int $routeId): array
     {
-        $this->authorize('create', CyclingRoute::class);
+        $empty = ['form' => null, 'formOptions' => null, 'routeForm' => null];
 
-        $catalogs = $this->catalogProps();
+        if ($mode === 'create') {
+            $this->authorize('create', CyclingRoute::class);
 
-        return Inertia::render('admin/routes/create', [
-            ...$catalogs,
-            'defaults' => [
-                'route_status_id' => $catalogs['statuses']->firstWhere('name', 'borrador')?->id,
-                'transport_mode_id' => $catalogs['transportModes']->firstWhere('name', 'bicicleta')?->id,
-                'routing_engine_id' => $catalogs['routingEngines']->first()?->id,
-            ],
-            'defaultGeojson' => null,
+            $catalogs = $this->catalogProps();
+
+            return [
+                'form' => 'create',
+                'formOptions' => [
+                    ...$catalogs,
+                    'defaults' => [
+                        'route_status_id' => $catalogs['statuses']->firstWhere('name', 'borrador')?->id,
+                        'transport_mode_id' => $catalogs['transportModes']->firstWhere('name', 'bicicleta')?->id,
+                        'routing_engine_id' => $catalogs['routingEngines']->first()?->id,
+                    ],
+                    'defaultGeojson' => null,
+                ],
+                'routeForm' => null,
+            ];
+        }
+
+        if ($mode !== 'edit' || $routeId === null) {
+            return $empty;
+        }
+
+        $route = CyclingRoute::query()->findOrFail($routeId);
+
+        $this->authorize('update', $route);
+
+        $route->load([
+            'geometry:id,route_id,geojson',
+            'metrics.routingEngine',
+            'metrics.transportMode',
+            'images',
+            'recommendations',
+            'observations',
+            'pointsOfInterest:id',
         ]);
+
+        return [
+            'form' => 'edit',
+            'formOptions' => $this->catalogProps(),
+            'routeForm' => $this->serializeRouteForm($route),
+        ];
     }
 
     public function store(StoreRouteRequest $request): RedirectResponse
     {
         $payload = $this->storeUploadedRouteFiles($request, $request->validated());
+        $postgisAvailable = $this->postgisIsAvailable();
 
-        DB::transaction(function () use ($request, $payload): void {
+        DB::transaction(function () use ($request, $payload, $postgisAvailable): void {
             $route = CyclingRoute::query()->create([
                 ...$this->routeAttributes($payload),
                 'admin_user_id' => $request->user()?->id,
@@ -69,7 +151,7 @@ class RouteController extends Controller
                 'route_version' => 1,
             ]);
 
-            $this->syncRoutePayload($route, $payload);
+            $this->syncRoutePayload($route, $payload, $postgisAvailable);
         });
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Ruta creada.')]);
@@ -77,24 +159,13 @@ class RouteController extends Controller
         return to_route('admin.routes.index');
     }
 
-    public function edit(CyclingRoute $route): Response
-    {
-        $this->authorize('update', $route);
-
-        $route->load(['geometry', 'metrics.routingEngine', 'metrics.transportMode', 'images', 'recommendations', 'observations', 'pointsOfInterest']);
-
-        return Inertia::render('admin/routes/edit', [
-            ...$this->catalogProps(),
-            'route' => $this->serializeRouteForm($route),
-        ]);
-    }
-
     public function update(UpdateRouteRequest $request, CyclingRoute $route): RedirectResponse
     {
         $payload = $this->storeUploadedRouteFiles($request, $request->validated());
+        $postgisAvailable = $this->postgisIsAvailable();
 
-        DB::transaction(function () use ($payload, $route): void {
-            $route->load(['geometry', 'metrics', 'images', 'recommendations', 'observations', 'pointsOfInterest']);
+        DB::transaction(function () use ($payload, $route, $postgisAvailable): void {
+            $route->load(['geometry:id,route_id,geojson', 'metrics', 'images', 'recommendations', 'observations', 'pointsOfInterest:id']);
             $route->fill([
                 ...$this->routeAttributes($payload),
                 'slug' => $this->uniqueSlug((string) $payload['name'], $route->id),
@@ -106,7 +177,7 @@ class RouteController extends Controller
 
             $route->save();
 
-            $this->syncRoutePayload($route, $payload);
+            $this->syncRoutePayload($route, $payload, $postgisAvailable);
         });
 
         Inertia::flash('toast', ['type' => 'info', 'message' => __('Ruta actualizada.')]);
@@ -185,7 +256,7 @@ class RouteController extends Controller
     /**
      * @param  array<string, mixed>  $payload
      */
-    private function syncRoutePayload(CyclingRoute $route, array $payload): void
+    private function syncRoutePayload(CyclingRoute $route, array $payload, bool $postgisAvailable): void
     {
         /** @var RouteGeometry $geometry */
         $geometry = $route->geometry()->updateOrCreate(
@@ -193,7 +264,7 @@ class RouteController extends Controller
             ['geojson' => $payload['geojson']]
         );
 
-        $this->syncPostgisGeometry($geometry);
+        $this->syncPostgisGeometry($geometry, $postgisAvailable);
 
         $route->metrics()->where('route_version', $route->route_version)->delete();
         $route->metrics()->create([
@@ -230,9 +301,9 @@ class RouteController extends Controller
         $route->pointsOfInterest()->sync($this->poiSyncRowsFromIds($poiIds));
     }
 
-    private function syncPostgisGeometry(RouteGeometry $geometry): void
+    private function syncPostgisGeometry(RouteGeometry $geometry, bool $postgisAvailable): void
     {
-        if (DB::getDriverName() !== 'pgsql' || ! Schema::hasColumn('geometrias_ruta', 'geom')) {
+        if (! $postgisAvailable) {
             return;
         }
 
@@ -240,6 +311,19 @@ class RouteController extends Controller
             'UPDATE geometrias_ruta SET geom = ST_SetSRID(ST_GeomFromGeoJSON(?), 4326) WHERE id = ?',
             [$this->encode($geometry->geojson), $geometry->id]
         );
+    }
+
+    private function postgisIsAvailable(): bool
+    {
+        if (DB::getDriverName() !== 'pgsql' || ! Schema::hasColumn('geometrias_ruta', 'geom')) {
+            return false;
+        }
+
+        try {
+            return DB::selectOne('SELECT PostGIS_Lib_Version() AS version') !== null;
+        } catch (QueryException) {
+            return false;
+        }
     }
 
     /**

@@ -1,4 +1,4 @@
-import { Form, Head, Link } from '@inertiajs/react';
+import { Form, Head, Link, router } from '@inertiajs/react';
 import {
     Bike,
     Clock,
@@ -10,6 +10,8 @@ import {
 } from 'lucide-react';
 import type { ReactNode } from 'react';
 import RouteController from '@/actions/App/Http/Controllers/Admin/RouteController';
+import { DataTableToolbar } from '@/components/data-table';
+import type { DataTableQuery } from '@/components/data-table';
 import Heading from '@/components/heading';
 import ImageWithFallback from '@/components/image-with-fallback';
 import { PrimaryActionButton } from '@/components/primary-action-button';
@@ -31,8 +33,18 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetHeader,
+    SheetTitle,
+} from '@/components/ui/sheet';
+import { usePartialReload } from '@/hooks/use-partial-reload';
 import { mediaUrl } from '@/lib/media';
+import { cn } from '@/lib/utils';
 import type { CatalogOption } from '@/types';
+import RouteForm from './partials/route-form';
 
 type RouteSummary = {
     id: number;
@@ -71,11 +83,81 @@ type PaginatedRoutes = {
     total: number;
 };
 
+type RouteFormOptions = {
+    statuses: CatalogOption[];
+    categories: CatalogOption[];
+    difficulties: CatalogOption[];
+    transportModes: CatalogOption[];
+    routingEngines: CatalogOption[];
+    poiCategories: CatalogOption[];
+    pois: Parameters<typeof RouteForm>[0]['pois'];
+    defaults?: Parameters<typeof RouteForm>[0]['defaults'];
+    defaultGeojson?: string | null;
+};
+
+type RouteFormData = NonNullable<Parameters<typeof RouteForm>[0]['route']>;
+
+type RouteFilters = {
+    category: string;
+    difficulty: string;
+    search: string;
+    status: string;
+};
+
 type Props = {
+    categories: CatalogOption[];
+    difficulties: CatalogOption[];
+    filters: RouteFilters;
+    statuses: CatalogOption[];
+    form: 'create' | 'edit' | null;
+    formOptions: RouteFormOptions | null;
+    routeForm: RouteFormData | null;
     routes: PaginatedRoutes;
 };
 
-export default function AdminRoutesIndex({ routes }: Props) {
+/** Abre la hoja apuntando la URL al formulario, sin recargar el listado. */
+function openRouteForm(query: { form: 'create' | 'edit'; route?: number }) {
+    router.get(RouteController.index.url(), query, {
+        only: ['form', 'formOptions', 'routeForm'],
+        preserveScroll: true,
+        preserveState: true,
+    });
+}
+
+export default function AdminRoutesIndex({
+    categories,
+    difficulties,
+    filters,
+    form,
+    formOptions,
+    routeForm,
+    routes,
+    statuses,
+}: Props) {
+    const loading = usePartialReload(['routes']);
+
+    const changeQuery = (query: DataTableQuery) => {
+        router.get(RouteController.index.url(), query, {
+            only: ['routes', 'filters'],
+            preserveScroll: true,
+            preserveState: true,
+            replace: true,
+        });
+    };
+
+    const closeRouteForm = () => {
+        router.get(
+            RouteController.index.url(),
+            {},
+            {
+                only: ['form', 'formOptions', 'routeForm'],
+                preserveScroll: true,
+                preserveState: true,
+                replace: true,
+            },
+        );
+    };
+
     return (
         <>
             <Head title="Rutas" />
@@ -87,12 +169,57 @@ export default function AdminRoutesIndex({ routes }: Props) {
                         description="Gestiona las rutas disponibles para ciclistas."
                     />
                     <PrimaryActionButton
-                        href={RouteController.create.url()}
                         label="Nueva ruta"
+                        onClick={() => openRouteForm({ form: 'create' })}
                     />
                 </div>
 
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {/* Misma superficie que la barra dentro de DataTable. */}
+                <Card className="data-table">
+                    <CardContent>
+                        <DataTableToolbar
+                            query={filters}
+                            onQueryChange={changeQuery}
+                            searchPlaceholder="Buscar por nombre, descripción u origen"
+                            filters={[
+                                {
+                                    id: 'status',
+                                    label: 'Filtrar por estado',
+                                    placeholder: 'Todos los estados',
+                                    options: statuses.map((status) => ({
+                                        label: status.name,
+                                        value: String(status.id),
+                                    })),
+                                },
+                                {
+                                    id: 'category',
+                                    label: 'Filtrar por categoría',
+                                    placeholder: 'Todas las categorías',
+                                    options: categories.map((category) => ({
+                                        label: category.name,
+                                        value: String(category.id),
+                                    })),
+                                },
+                                {
+                                    id: 'difficulty',
+                                    label: 'Filtrar por dificultad',
+                                    placeholder: 'Todas las dificultades',
+                                    options: difficulties.map((difficulty) => ({
+                                        label: difficulty.name,
+                                        value: String(difficulty.id),
+                                    })),
+                                },
+                            ]}
+                        />
+                    </CardContent>
+                </Card>
+
+                <div
+                    className={cn(
+                        'ueb-stagger grid gap-4 transition-opacity duration-200 md:grid-cols-2 lg:grid-cols-3',
+                        loading && 'pointer-events-none opacity-60',
+                    )}
+                >
                     {routes.data.map((route) => (
                         <Card key={route.id} className="overflow-hidden">
                             <ImageWithFallback
@@ -189,21 +316,22 @@ export default function AdminRoutesIndex({ routes }: Props) {
                 {routes.data.length === 0 && (
                     <Card>
                         <CardHeader>
-                            <CardTitle>No hay rutas creadas</CardTitle>
+                            <CardTitle>No hay rutas que mostrar</CardTitle>
                             <CardDescription>
-                                Crea la primera ruta oficial para activar la
-                                gestión cicloturística de Guaranda Go.
+                                Ajusta la búsqueda y los filtros, o crea la
+                                primera ruta oficial para activar la gestión
+                                cicloturística de Guaranda Go.
                             </CardDescription>
                         </CardHeader>
                         <CardFooter>
-                            <Button asChild>
-                                <Link
-                                    href={RouteController.create.url()}
-                                    prefetch
-                                >
-                                    <Plus data-icon="inline-start" />
-                                    Crear ruta
-                                </Link>
+                            <Button
+                                type="button"
+                                onClick={() =>
+                                    openRouteForm({ form: 'create' })
+                                }
+                            >
+                                <Plus data-icon="inline-start" />
+                                Crear ruta
                             </Button>
                         </CardFooter>
                     </Card>
@@ -219,6 +347,62 @@ export default function AdminRoutesIndex({ routes }: Props) {
                     )}
                 </div>
             </div>
+
+            <Sheet
+                open={form !== null}
+                onOpenChange={(open) => {
+                    if (!open) {
+                        closeRouteForm();
+                    }
+                }}
+            >
+                {/* El editor de trazado y las galerías necesitan todo el ancho. */}
+                <SheetContent
+                    side="right"
+                    className="w-full max-w-none overflow-y-auto border-0 sm:max-w-none"
+                >
+                    <SheetHeader>
+                        <SheetTitle>
+                            {form === 'edit' && routeForm
+                                ? `Editar ${routeForm.name}`
+                                : 'Nueva ruta oficial'}
+                        </SheetTitle>
+                        <SheetDescription>
+                            {form === 'edit'
+                                ? 'Ajusta trazado, portada, métricas y POIs; los cambios relevantes incrementan la versión.'
+                                : 'Completa primero lo esencial. Los detalles complementarios se muestran solo cuando los necesites.'}
+                        </SheetDescription>
+                    </SheetHeader>
+
+                    {formOptions && (
+                        <div className="px-5 pb-5">
+                            <RouteForm
+                                key={
+                                    form === 'edit' && routeForm
+                                        ? `edit-${routeForm.id}`
+                                        : 'create'
+                                }
+                                mode={form === 'edit' ? 'edit' : 'create'}
+                                onCancel={closeRouteForm}
+                                route={
+                                    form === 'edit'
+                                        ? (routeForm ?? undefined)
+                                        : undefined
+                                }
+                                statuses={formOptions.statuses}
+                                categories={formOptions.categories}
+                                difficulties={formOptions.difficulties}
+                                transportModes={formOptions.transportModes}
+                                routingEngines={formOptions.routingEngines}
+                                poiCategories={formOptions.poiCategories}
+                                pois={formOptions.pois}
+                                defaults={formOptions.defaults}
+                                defaultGeojson={formOptions.defaultGeojson}
+                            />
+                        </div>
+                    )}
+                </SheetContent>
+            </Sheet>
         </>
     );
 }
@@ -311,14 +495,13 @@ function RouteCardActions({ route }: { route: RouteSummary }) {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
                 <DropdownMenuGroup>
-                    <DropdownMenuItem asChild>
-                        <Link
-                            href={RouteController.edit.url(route.id)}
-                            prefetch
-                        >
-                            <Pencil />
-                            Editar ruta
-                        </Link>
+                    <DropdownMenuItem
+                        onSelect={() =>
+                            openRouteForm({ form: 'edit', route: route.id })
+                        }
+                    >
+                        <Pencil />
+                        Editar ruta
                     </DropdownMenuItem>
                 </DropdownMenuGroup>
                 {route.status?.name !== 'inactiva' && (

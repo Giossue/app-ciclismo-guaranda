@@ -85,6 +85,7 @@ class AppNotificationController extends Controller
             'type' => $notification->type,
             'title' => $notification->title,
             'message' => $notification->message,
+            'link' => $notification->link,
             'read' => $notification->read,
             'read_at' => $readAt instanceof DateTimeInterface ? $readAt->format(DATE_ATOM) : null,
             'created_at' => $createdAt instanceof DateTimeInterface ? $createdAt->format(DATE_ATOM) : null,

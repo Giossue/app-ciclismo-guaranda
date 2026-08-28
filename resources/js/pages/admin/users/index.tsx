@@ -1,5 +1,11 @@
 import { Form, Head, router } from '@inertiajs/react';
-import { Ellipsis, KeyRound, Pencil, Power, RotateCcw } from 'lucide-react';
+import {
+    EllipsisVertical,
+    KeyRound,
+    Pencil,
+    Power,
+    RotateCcw,
+} from 'lucide-react';
 import { useState } from 'react';
 import UserController from '@/actions/App/Http/Controllers/Admin/UserController';
 import { DataTable } from '@/components/data-table';
@@ -111,6 +117,7 @@ export default function AdminUsersIndex({
         {
             id: 'role',
             label: 'Rol',
+            mobileCell: (user) => user.role?.name ?? 'Sin rol',
             cell: (user) =>
                 user.role ? (
                     <Badge variant="outline">{user.role.name}</Badge>
@@ -241,7 +248,7 @@ function UserRowActions({
                         size="icon"
                         aria-label={`Acciones para ${user.name} ${user.last_name}`}
                     >
-                        <Ellipsis />
+                        <EllipsisVertical />
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
@@ -319,6 +326,7 @@ function UserRowActions({
                         user={user}
                         roles={roles}
                         genders={genders}
+                        onCancel={() => setEditOpen(false)}
                         onSuccess={() => setEditOpen(false)}
                     />
                 </SheetContent>
@@ -329,11 +337,13 @@ function UserRowActions({
 
 function UserEditForm({
     genders,
+    onCancel,
     onSuccess,
     roles,
     user,
 }: {
     genders: CatalogOption[];
+    onCancel: () => void;
     onSuccess: () => void;
     roles: CatalogOption[];
     user: ManagedUser;
@@ -477,6 +487,13 @@ function UserEditForm({
                     </FieldGroup>
 
                     <SheetFooter>
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            onClick={onCancel}
+                        >
+                            Cancelar
+                        </Button>
                         <Button type="submit" disabled={processing}>
                             Guardar cambios
                         </Button>

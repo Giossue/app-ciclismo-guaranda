@@ -1,5 +1,10 @@
 import { Form, Head, Link, router } from '@inertiajs/react';
-import { Ellipsis, MessageSquareText, RouteIcon, Star } from 'lucide-react';
+import {
+    EllipsisVertical,
+    MessageSquareText,
+    RouteIcon,
+    Star,
+} from 'lucide-react';
 import { useState } from 'react';
 import RatingController from '@/actions/App/Http/Controllers/Admin/RatingController';
 import { DataTable } from '@/components/data-table';
@@ -28,10 +33,12 @@ import {
     Sheet,
     SheetContent,
     SheetDescription,
+    SheetFooter,
     SheetHeader,
     SheetTitle,
 } from '@/components/ui/sheet';
 import { Textarea } from '@/components/ui/textarea';
+import { capitalize } from '@/lib/utils';
 import { show as routeShow } from '@/routes/routes';
 import type { CatalogOption } from '@/types';
 
@@ -145,6 +152,7 @@ export default function AdminRatingsIndex({
         {
             id: 'score',
             label: 'Puntuación',
+            mobileCell: (rating) => `${rating.rating}/5`,
             cell: (rating) => (
                 <Badge variant="outline">
                     <Star data-icon="inline-start" />
@@ -158,7 +166,7 @@ export default function AdminRatingsIndex({
             cell: (rating) =>
                 rating.status ? (
                     <Badge variant={statusVariant(rating.status.name)}>
-                        {rating.status.name}
+                        {capitalize(rating.status.name)}
                     </Badge>
                 ) : (
                     <span className="text-muted-foreground">Sin estado</span>
@@ -260,7 +268,7 @@ function RatingRowActions({
                         size="icon"
                         aria-label={`Acciones para la valoración de ${rating.user?.name ?? 'usuario'}`}
                     >
-                        <Ellipsis />
+                        <EllipsisVertical />
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
@@ -298,6 +306,7 @@ function RatingRowActions({
                     <ModerationForm
                         rating={rating}
                         statuses={statuses}
+                        onCancel={() => setOpen(false)}
                         onSuccess={() => setOpen(false)}
                     />
                 </SheetContent>
@@ -307,10 +316,12 @@ function RatingRowActions({
 }
 
 function ModerationForm({
+    onCancel,
     onSuccess,
     rating,
     statuses,
 }: {
+    onCancel: () => void;
     onSuccess: () => void;
     rating: ManagedRating;
     statuses: CatalogOption[];
@@ -357,7 +368,7 @@ function ModerationForm({
                                                 key={status.id}
                                                 value={String(status.id)}
                                             >
-                                                {status.name}
+                                                {capitalize(status.name)}
                                             </SelectItem>
                                         ))}
                                     </SelectGroup>
@@ -383,10 +394,19 @@ function ModerationForm({
                         </Field>
                     </FieldGroup>
 
-                    <Button disabled={processing}>
-                        <MessageSquareText data-icon="inline-start" />
-                        Guardar moderación
-                    </Button>
+                    <SheetFooter>
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            onClick={onCancel}
+                        >
+                            Cancelar
+                        </Button>
+                        <Button type="submit" disabled={processing}>
+                            <MessageSquareText data-icon="inline-start" />
+                            Guardar moderación
+                        </Button>
+                    </SheetFooter>
                 </>
             )}
         </Form>

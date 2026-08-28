@@ -32,7 +32,7 @@ import { getCurrentAppLocation } from '@/lib/native/capacitor';
 import { cn } from '@/lib/utils';
 import type { ActiveTrack, CyclingRouteMapItem, RoutePoi } from '@/types';
 
-type Props = {
+export type RouteMapProps = {
     routes: CyclingRouteMapItem[];
     selectedSlug?: string;
     className?: string;
@@ -122,7 +122,7 @@ export default function RouteMap({
     className,
     mode = 'detail',
     activeTrack = null,
-}: Props) {
+}: RouteMapProps) {
     const [isOnline, setIsOnline] = useState(() =>
         typeof navigator === 'undefined' ? true : navigator.onLine,
     );

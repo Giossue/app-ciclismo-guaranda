@@ -1,3 +1,4 @@
+import { router } from '@inertiajs/react';
 import {
     ChevronDown,
     ChevronLeft,
@@ -44,8 +45,12 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { capitalize, cn } from '@/lib/utils';
 
 export type DataTableQuery = Record<string, number | string | undefined>;
+
+/** Radix no admite un item con valor vacío, así que «todos» viaja con centinela. */
+const ALL_FILTER_VALUE = '__all';
 
 export type DataTableColumn<T> = {
     id: string;
@@ -54,6 +59,15 @@ export type DataTableColumn<T> = {
     hideable?: boolean;
     headerClassName?: string;
     cellClassName?: string;
+    /**
+     * Contenido alternativo para la tarjeta móvil. Sirve para bajar el ruido:
+     * una taxonomía que en la tabla es badge aquí se lee mejor en texto plano.
+     */
+    mobileCell?: (row: T) => React.ReactNode;
+    /** En móvil encabeza la tarjeta. Por defecto, la primera columna. */
+    primary?: boolean;
+    /** En móvil va al extremo de la cabecera. Por defecto, la columna `actions`. */
+    actions?: boolean;
 };
 
 export type DataTableFilter = {
@@ -91,6 +105,119 @@ type Props<T> = {
     title?: string;
 };
 
+/**
+ * Barra de búsqueda y filtros. Vive aparte de la tabla para que un listado con
+ * otra presentación —la grilla de rutas, por ejemplo— use el mismo contrato.
+ */
+export function DataTableToolbar({
+    children,
+    filters = [],
+    onQueryChange,
+    query,
+    searchPlaceholder = 'Buscar…',
+}: {
+    children?: React.ReactNode;
+    filters?: DataTableFilter[];
+    onQueryChange: (query: DataTableQuery) => void;
+    query: DataTableQuery;
+    searchPlaceholder?: string;
+}) {
+    const hasActiveFilters = filters.some(
+        (filter) => !filter.persistent && String(query[filter.id] ?? '') !== '',
+    );
+
+    const updateFilter = (id: string, value: string) => {
+        onQueryChange({
+            ...query,
+            [id]: value === ALL_FILTER_VALUE ? undefined : value || undefined,
+            page: 1,
+        });
+    };
+
+    const clearQuery = () => {
+        const preserved = Object.fromEntries(
+            filters
+                .filter((filter) => filter.persistent)
+                .map((filter) => [filter.id, query[filter.id]]),
+        );
+
+        onQueryChange({ ...preserved, per_page: query.per_page });
+    };
+
+    return (
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+            <div className="flex flex-1 flex-col gap-3 sm:flex-row sm:items-center">
+                <DataTableSearch
+                    initialValue={String(query.search ?? '')}
+                    placeholder={searchPlaceholder}
+                    onSearchChange={(search) =>
+                        onQueryChange({
+                            ...query,
+                            page: 1,
+                            search: search || undefined,
+                        })
+                    }
+                />
+
+                <div className="flex flex-row flex-wrap items-center gap-3">
+                    {filters.map((filter) => (
+                        <Select
+                            key={filter.id}
+                            value={String(query[filter.id] ?? '') || undefined}
+                            onValueChange={(value) =>
+                                updateFilter(filter.id, value)
+                            }
+                        >
+                            <SelectTrigger
+                                size="sm"
+                                aria-label={filter.label}
+                                className="w-auto min-w-36"
+                            >
+                                <SelectValue placeholder={filter.placeholder} />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectGroup>
+                                    {!filter.persistent && (
+                                        <SelectItem value={ALL_FILTER_VALUE}>
+                                            {filter.placeholder}
+                                        </SelectItem>
+                                    )}
+                                    {filter.options.map((option) => (
+                                        <SelectItem
+                                            key={option.value}
+                                            value={option.value}
+                                        >
+                                            {capitalize(option.label)}
+                                        </SelectItem>
+                                    ))}
+                                </SelectGroup>
+                            </SelectContent>
+                        </Select>
+                    ))}
+                    {(String(query.search ?? '') !== '' ||
+                        hasActiveFilters) && (
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={clearQuery}
+                        >
+                            <X data-icon="inline-start" />
+                            Limpiar
+                        </Button>
+                    )}
+                </div>
+            </div>
+
+            {children && (
+                <div className="hidden shrink-0 items-center gap-2 md:flex">
+                    {children}
+                </div>
+            )}
+        </div>
+    );
+}
+
 export function DataTable<T>({
     columns,
     data,
@@ -105,31 +232,30 @@ export function DataTable<T>({
     title,
 }: Props<T>) {
     const [hiddenColumns, setHiddenColumns] = useState<Set<string>>(new Set());
+    // La espera es la de *esta* tabla: si se marcara cualquier recarga parcial,
+    // abrir el panel de notificaciones dejaría el listado en blanco.
+    const [pending, setPending] = useState(false);
+
+    useEffect(() => router.on('finish', () => setPending(false)), []);
+
+    const runQuery = (next: DataTableQuery) => {
+        setPending(true);
+        onQueryChange(next);
+    };
     const visibleColumns = useMemo(
         () => columns.filter((column) => !hiddenColumns.has(column.id)),
         [columns, hiddenColumns],
     );
-    const hasActiveFilters = filters.some(
-        (filter) => !filter.persistent && String(query[filter.id] ?? '') !== '',
+    // En móvil la fila se transforma en tarjeta: sin scroll horizontal ni
+    // columnas ocultas, que en una pantalla estrecha esconden datos.
+    const primaryColumn =
+        columns.find((column) => column.primary) ?? columns[0];
+    const actionsColumn = columns.find(
+        (column) => column.actions ?? column.id === 'actions',
     );
-
-    const clearQuery = () => {
-        const preserved = Object.fromEntries(
-            filters
-                .filter((filter) => filter.persistent)
-                .map((filter) => [filter.id, query[filter.id]]),
-        );
-
-        onQueryChange({ ...preserved, per_page: pagination.perPage });
-    };
-
-    const updateFilter = (id: string, value: string) => {
-        onQueryChange({
-            ...query,
-            [id]: value || undefined,
-            page: 1,
-        });
-    };
+    const detailColumns = columns.filter(
+        (column) => column !== primaryColumn && column !== actionsColumn,
+    );
 
     const toggleColumn = (columnId: string, visible: boolean) => {
         setHiddenColumns((current) => {
@@ -159,119 +285,103 @@ export function DataTable<T>({
             )}
 
             <CardContent className="flex flex-col gap-4">
-                <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-                    <div className="flex flex-1 flex-col gap-3 sm:flex-row sm:items-center">
-                        <DataTableSearch
-                            initialValue={String(query.search ?? '')}
-                            placeholder={searchPlaceholder}
-                            onSearchChange={(search) =>
-                                onQueryChange({
-                                    ...query,
-                                    page: 1,
-                                    search: search || undefined,
-                                })
-                            }
-                        />
+                <DataTableToolbar
+                    filters={filters}
+                    query={query}
+                    onQueryChange={runQuery}
+                    searchPlaceholder={searchPlaceholder}
+                >
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button type="button" variant="outline" size="sm">
+                                <Settings2 data-icon="inline-start" />
+                                Ver
+                                <ChevronDown data-icon="inline-end" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48">
+                            <DropdownMenuLabel>
+                                Columnas visibles
+                            </DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuGroup>
+                                {columns
+                                    .filter(
+                                        (column) => column.hideable !== false,
+                                    )
+                                    .map((column) => (
+                                        <DropdownMenuCheckboxItem
+                                            key={column.id}
+                                            checked={
+                                                !hiddenColumns.has(column.id)
+                                            }
+                                            onCheckedChange={(checked) =>
+                                                toggleColumn(column.id, checked)
+                                            }
+                                        >
+                                            {column.label}
+                                        </DropdownMenuCheckboxItem>
+                                    ))}
+                            </DropdownMenuGroup>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </DataTableToolbar>
 
-                        <div className="flex flex-row flex-wrap items-center gap-3">
-                            {filters.map((filter) => (
-                                <Select
-                                    key={filter.id}
-                                    value={
-                                        String(query[filter.id] ?? '') ||
-                                        undefined
-                                    }
-                                    onValueChange={(value) =>
-                                        updateFilter(filter.id, value)
-                                    }
-                                >
-                                    <SelectTrigger
-                                        size="sm"
-                                        aria-label={filter.label}
-                                        className="w-auto min-w-36"
-                                    >
-                                        <SelectValue
-                                            placeholder={filter.placeholder}
-                                        />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectGroup>
-                                            {filter.options.map((option) => (
-                                                <SelectItem
-                                                    key={option.value}
-                                                    value={option.value}
-                                                >
-                                                    {option.label}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectGroup>
-                                    </SelectContent>
-                                </Select>
-                            ))}
-                            {(String(query.search ?? '') !== '' ||
-                                hasActiveFilters) && (
-                                <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={clearQuery}
-                                >
-                                    <X data-icon="inline-start" />
-                                    Limpiar
-                                </Button>
-                            )}
-                        </div>
-                    </div>
+                <ul
+                    className={cn(
+                        'flex flex-col gap-3 transition-opacity duration-200 md:hidden',
+                        pending && 'pointer-events-none opacity-60',
+                    )}
+                >
+                    {data.length > 0 ? (
+                        data.map((row) => (
+                            <li
+                                key={getRowId(row)}
+                                className="flex flex-col gap-3 rounded-[var(--radius-control)] border bg-card p-3"
+                            >
+                                <div className="flex items-start justify-between gap-3">
+                                    {primaryColumn && (
+                                        <div className="min-w-0 flex-1">
+                                            {primaryColumn.cell(row)}
+                                        </div>
+                                    )}
+                                    {actionsColumn && (
+                                        <div className="shrink-0">
+                                            {actionsColumn.cell(row)}
+                                        </div>
+                                    )}
+                                </div>
 
-                    <div className="flex shrink-0 items-center gap-2">
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="sm"
-                                >
-                                    <Settings2 data-icon="inline-start" />
-                                    Ver
-                                    <ChevronDown data-icon="inline-end" />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-48">
-                                <DropdownMenuLabel>
-                                    Columnas visibles
-                                </DropdownMenuLabel>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuGroup>
-                                    {columns
-                                        .filter(
-                                            (column) =>
-                                                column.hideable !== false,
-                                        )
-                                        .map((column) => (
-                                            <DropdownMenuCheckboxItem
+                                {detailColumns.length > 0 && (
+                                    <dl className="flex flex-col gap-1.5 border-t pt-3">
+                                        {detailColumns.map((column) => (
+                                            <div
                                                 key={column.id}
-                                                checked={
-                                                    !hiddenColumns.has(
-                                                        column.id,
-                                                    )
-                                                }
-                                                onCheckedChange={(checked) =>
-                                                    toggleColumn(
-                                                        column.id,
-                                                        checked,
-                                                    )
-                                                }
+                                                className="flex items-baseline justify-between gap-4"
                                             >
-                                                {column.label}
-                                            </DropdownMenuCheckboxItem>
+                                                <dt className="shrink-0 text-xs text-muted-foreground">
+                                                    {column.label}
+                                                </dt>
+                                                <dd className="min-w-0 text-right text-sm text-foreground">
+                                                    {(
+                                                        column.mobileCell ??
+                                                        column.cell
+                                                    )(row)}
+                                                </dd>
+                                            </div>
                                         ))}
-                                </DropdownMenuGroup>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </div>
-                </div>
+                                    </dl>
+                                )}
+                            </li>
+                        ))
+                    ) : (
+                        <li className="rounded-[var(--radius-control)] border border-dashed p-6 text-center text-sm text-muted-foreground">
+                            {emptyMessage}
+                        </li>
+                    )}
+                </ul>
 
-                <div className="overflow-hidden rounded-[var(--radius-control)] border">
+                <div className="hidden overflow-hidden rounded-[var(--radius-control)] border md:block">
                     <Table className="min-w-[44rem]">
                         <TableHeader className="bg-muted/50">
                             <TableRow>
@@ -285,7 +395,12 @@ export function DataTable<T>({
                                 ))}
                             </TableRow>
                         </TableHeader>
-                        <TableBody className="[&_tr:nth-child(even)]:bg-muted/25">
+                        <TableBody
+                            className={cn(
+                                'transition-opacity duration-200 [&_tr:nth-child(even)]:bg-muted/25',
+                                pending && 'pointer-events-none opacity-60',
+                            )}
+                        >
                             {data.length > 0 ? (
                                 data.map((row) => (
                                     <TableRow key={getRowId(row)}>
@@ -328,7 +443,7 @@ export function DataTable<T>({
                         <Select
                             value={String(pagination.perPage)}
                             onValueChange={(value) =>
-                                onQueryChange({
+                                runQuery({
                                     ...query,
                                     page: 1,
                                     per_page: Number(value),
@@ -368,7 +483,7 @@ export function DataTable<T>({
                             size="icon"
                             className="hidden sm:inline-flex"
                             disabled={pagination.currentPage === 1}
-                            onClick={() => onQueryChange({ ...query, page: 1 })}
+                            onClick={() => runQuery({ ...query, page: 1 })}
                         >
                             <ChevronsLeft />
                             <span className="sr-only">Primera página</span>
@@ -379,7 +494,7 @@ export function DataTable<T>({
                             size="icon"
                             disabled={pagination.currentPage === 1}
                             onClick={() =>
-                                onQueryChange({
+                                runQuery({
                                     ...query,
                                     page: pagination.currentPage - 1,
                                 })
@@ -396,7 +511,7 @@ export function DataTable<T>({
                                 pagination.currentPage === pagination.lastPage
                             }
                             onClick={() =>
-                                onQueryChange({
+                                runQuery({
                                     ...query,
                                     page: pagination.currentPage + 1,
                                 })
@@ -414,7 +529,7 @@ export function DataTable<T>({
                                 pagination.currentPage === pagination.lastPage
                             }
                             onClick={() =>
-                                onQueryChange({
+                                runQuery({
                                     ...query,
                                     page: pagination.lastPage,
                                 })

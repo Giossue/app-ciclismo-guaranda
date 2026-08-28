@@ -78,6 +78,7 @@ class IncidentController extends Controller
                 'type' => 'incident_reported',
                 'title' => 'Nueva incidencia reportada',
                 'message' => "Se reportó la incidencia {$incident->title} y requiere revisión administrativa.",
+                'link' => '/admin/incidents',
             ]));
     }
 }

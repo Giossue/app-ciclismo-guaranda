@@ -2,6 +2,7 @@
 
 use App\Models\User;
 use Database\Seeders\CatalogSeeder;
+use Inertia\Inertia;
 use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function () {
@@ -19,11 +20,25 @@ test('administrator can access admin dashboard', function () {
         ->assertInertia(fn (Assert $page) => $page
             ->component('admin/dashboard')
             ->has('overview', 5)
-            ->has('activity.days', 7)
-            ->has('routeStatuses')
-            ->has('popularRoutes')
-            ->has('attention', 2)
-            ->has('recentIncidents'));
+            // Los bloques pesados se difieren: no viajan en la primera respuesta.
+            ->missing('activity')
+            ->missing('routeStatuses')
+            ->missing('recentIncidents'));
+
+    $this->actingAs($admin)
+        ->withHeaders([
+            'X-Inertia' => 'true',
+            'X-Inertia-Version' => Inertia::getVersion(),
+            'X-Inertia-Partial-Component' => 'admin/dashboard',
+            'X-Inertia-Partial-Data' => 'activity,routeStatuses,popularRoutes,attention,recentIncidents',
+        ])
+        ->get(route('admin.dashboard'))
+        ->assertOk()
+        ->assertJsonCount(7, 'props.activity.days')
+        ->assertJsonCount(2, 'props.attention')
+        ->assertJsonStructure([
+            'props' => ['routeStatuses', 'popularRoutes', 'recentIncidents'],
+        ]);
 });
 
 test('admin index redirects to admin dashboard', function () {

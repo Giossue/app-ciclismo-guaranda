@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 import RouteController from '@/actions/App/Http/Controllers/Admin/RouteController';
-import RouteGeometryEditor from '@/components/admin/routes/route-geometry-editor';
+import RouteGeometryEditor from '@/components/admin/routes/client-only-route-geometry-editor';
 import ImageFileInput from '@/components/image-file-input';
 import ImageWithFallback from '@/components/image-with-fallback';
 import InputError from '@/components/input-error';
@@ -110,6 +110,8 @@ type Props = {
     pois: RoutePoiOption[];
     defaults?: RouteDefaults;
     defaultGeojson?: string | null;
+    /** Cierra la hoja que contiene el formulario en vez de navegar al listado. */
+    onCancel?: () => void;
     route?: RouteFormData;
 };
 
@@ -157,6 +159,7 @@ export default function RouteForm({
     pois,
     defaults,
     defaultGeojson,
+    onCancel,
     route,
 }: Props) {
     const isEdit = mode === 'edit' && route !== undefined;
@@ -1203,7 +1206,7 @@ export default function RouteForm({
                             </div>
                         </CardContent>
                         <Separator />
-                        <CardFooter className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <CardFooter className="flex flex-col items-stretch gap-3 border-t sm:flex-row sm:items-center sm:justify-between">
                             {isEdit ? (
                                 <Alert className="sm:max-w-md">
                                     <AlertTitle>
@@ -1220,28 +1223,43 @@ export default function RouteForm({
                                     La ruta iniciará en versión 1.
                                 </div>
                             )}
-
-                            <div className="flex flex-wrap gap-2">
-                                <Button variant="outline" asChild>
-                                    <Link
-                                        href={RouteController.index.url()}
-                                        prefetch
-                                    >
-                                        Cancelar
-                                    </Link>
-                                </Button>
-                                <Button
-                                    disabled={
-                                        processing ||
-                                        isCompressing ||
-                                        !requiredExperience
-                                    }
-                                >
-                                    {isEdit ? 'Guardar cambios' : 'Crear ruta'}
-                                </Button>
-                            </div>
                         </CardFooter>
                     </Card>
+
+                    {/*
+                     * Hija directa del formulario, no de la última tarjeta: así
+                     * el `sticky` abarca todo el alto y las acciones quedan
+                     * visibles desde el primer campo.
+                     */}
+                    <div className="sticky bottom-0 z-10 -mx-5 flex flex-wrap justify-end gap-2 border-t bg-popover/95 px-5 py-3 backdrop-blur">
+                        {onCancel ? (
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={onCancel}
+                            >
+                                Cancelar
+                            </Button>
+                        ) : (
+                            <Button variant="outline" asChild>
+                                <Link
+                                    href={RouteController.index.url()}
+                                    prefetch
+                                >
+                                    Cancelar
+                                </Link>
+                            </Button>
+                        )}
+                        <Button
+                            disabled={
+                                processing ||
+                                isCompressing ||
+                                !requiredExperience
+                            }
+                        >
+                            {isEdit ? 'Guardar cambios' : 'Crear ruta'}
+                        </Button>
+                    </div>
                 </div>
             )}
         </Form>

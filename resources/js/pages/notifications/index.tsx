@@ -1,26 +1,9 @@
 import { Head, Link } from '@inertiajs/react';
-import { Bell, CheckCheck, Circle, MailOpen } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { Bell, CheckCheck } from 'lucide-react';
+import type { AppNotification } from '@/components/notification-item';
+import { NotificationItem } from '@/components/notification-item';
 import { Button } from '@/components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardFooter,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-
-type AppNotification = {
-    id: number;
-    type: string;
-    title: string;
-    message: string;
-    read: boolean;
-    read_at: string | null;
-    created_at: string | null;
-};
 
 type PaginatedNotifications = {
     data: AppNotification[];
@@ -39,76 +22,84 @@ type Props = {
     unreadCount: number;
 };
 
+type NotificationGroup = {
+    key: string;
+    label: string;
+    items: AppNotification[];
+};
+
 export default function NotificationsIndex({
     notifications,
     onlyUnread,
     unreadCount,
 }: Props) {
+    const groups = groupByDay(notifications.data);
+
     return (
         <>
             <Head title="Notificaciones" />
 
             <div className="flex flex-col gap-4">
-                <section className="p-1">
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <p className="text-sm text-muted-foreground">
-                            Avisos de incidencias, valoraciones y actividad de
-                            tu cuenta.
-                        </p>
+                <section className="flex flex-col items-center gap-3">
+                    <p className="text-sm text-muted-foreground">
+                        Avisos de incidencias, valoraciones y actividad de tu
+                        cuenta.
+                    </p>
+
+                    <div className="flex w-max gap-2">
+                        <FilterTab href="/notifications" active={!onlyUnread}>
+                            Todas
+                        </FilterTab>
+                        <FilterTab
+                            href="/notifications?unread=1"
+                            active={onlyUnread}
+                        >
+                            No leídas
+                        </FilterTab>
                     </div>
 
-                    <div className="mt-4 flex flex-col items-center gap-3">
-                        <div className="flex w-max gap-2">
+                    {unreadCount > 0 && (
+                        <Button variant="outline" size="sm" asChild>
                             <Link
-                                href="/notifications"
-                                prefetch
-                                className={cn(
-                                    'flex min-h-10 touch-manipulation items-center justify-center rounded-xl px-3.5 text-sm font-bold whitespace-nowrap transition-[background,color,transform] active:scale-[0.98]',
-                                    !onlyUnread
-                                        ? 'bg-primary text-primary-foreground'
-                                        : 'text-muted-foreground hover:text-foreground',
-                                )}
+                                href="/notifications/read-all"
+                                method="patch"
+                                as="button"
+                                preserveScroll
                             >
-                                Todas
+                                <CheckCheck data-icon="inline-start" />
+                                Marcar todas como leídas
                             </Link>
-                            <Link
-                                href="/notifications?unread=1"
-                                prefetch
-                                className={cn(
-                                    'flex min-h-10 touch-manipulation items-center justify-center rounded-xl px-3.5 text-sm font-bold whitespace-nowrap transition-[background,color,transform] active:scale-[0.98]',
-                                    onlyUnread
-                                        ? 'bg-primary text-primary-foreground'
-                                        : 'text-muted-foreground hover:text-foreground',
-                                )}
-                            >
-                                No leídas
-                            </Link>
+                        </Button>
+                    )}
+                </section>
+
+                {groups.map((group) => (
+                    <section key={group.key} className="flex flex-col">
+                        <div className="flex items-center gap-3 pb-1">
+                            <span className="text-sm font-medium text-muted-foreground">
+                                {group.label}
+                            </span>
+                            <span
+                                aria-hidden="true"
+                                className="h-px flex-1 bg-border"
+                            />
                         </div>
 
-                        {unreadCount > 0 && (
-                            <Button variant="outline" size="sm" asChild>
-                                <Link
-                                    href="/notifications/read-all"
-                                    method="patch"
-                                    as="button"
-                                    preserveScroll
+                        <ul className="flex flex-col">
+                            {group.items.map((notification) => (
+                                <li
+                                    key={notification.id}
+                                    className="border-b border-border/60 last:border-b-0"
                                 >
-                                    <CheckCheck data-icon="inline-start" />
-                                    Marcar todas como leídas
-                                </Link>
-                            </Button>
-                        )}
-                    </div>
-                </section>
-
-                <section className="grid gap-3">
-                    {notifications.data.map((notification) => (
-                        <NotificationCard
-                            key={notification.id}
-                            notification={notification}
-                        />
-                    ))}
-                </section>
+                                    <NotificationItem
+                                        notification={notification}
+                                        timeLabel="time"
+                                    />
+                                </li>
+                            ))}
+                        </ul>
+                    </section>
+                ))}
 
                 {notifications.data.length === 0 && (
                     <div className="flex flex-col items-center gap-2 py-6 text-center">
@@ -159,93 +150,84 @@ export default function NotificationsIndex({
     );
 }
 
-function NotificationCard({ notification }: { notification: AppNotification }) {
+function FilterTab({
+    active,
+    children,
+    href,
+}: {
+    active: boolean;
+    children: string;
+    href: string;
+}) {
     return (
-        <Card
+        <Link
+            href={href}
+            prefetch
+            aria-current={active ? 'page' : undefined}
             className={cn(
-                'transition-colors',
-                !notification.read && 'border-primary/50 bg-primary/5',
+                'flex min-h-10 touch-manipulation items-center justify-center rounded-xl px-3.5 text-sm font-bold whitespace-nowrap transition-[background,color,transform] active:scale-[0.98]',
+                active
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:text-foreground',
             )}
         >
-            <CardHeader className="gap-3">
-                <div className="flex items-start gap-3">
-                    <div
-                        className={cn(
-                            'grid size-10 shrink-0 place-items-center rounded-2xl border',
-                            notification.read
-                                ? 'bg-muted/30 text-muted-foreground'
-                                : 'border-primary bg-primary text-primary-foreground',
-                        )}
-                    >
-                        {notification.read ? (
-                            <MailOpen className="size-4" />
-                        ) : (
-                            <Bell className="size-4" />
-                        )}
-                    </div>
-
-                    <div className="min-w-0 flex-1">
-                        <div className="mb-2 flex flex-wrap items-center gap-2">
-                            {!notification.read && (
-                                <Badge>
-                                    <Circle data-icon="inline-start" />
-                                    nueva
-                                </Badge>
-                            )}
-                            <Badge variant="outline">
-                                {notificationTypeLabel(notification.type)}
-                            </Badge>
-                        </div>
-                        <CardTitle>{notification.title}</CardTitle>
-                        <CardDescription className="mt-1">
-                            {formatDate(notification.created_at)}
-                        </CardDescription>
-                    </div>
-                </div>
-            </CardHeader>
-            <CardContent>
-                <p className="text-sm leading-relaxed text-muted-foreground">
-                    {notification.message}
-                </p>
-            </CardContent>
-            {!notification.read && (
-                <CardFooter>
-                    <Button variant="outline" size="sm" asChild>
-                        <Link
-                            href={`/notifications/${notification.id}/read`}
-                            method="patch"
-                            as="button"
-                            preserveScroll
-                        >
-                            <MailOpen data-icon="inline-start" />
-                            Marcar como leída
-                        </Link>
-                    </Button>
-                </CardFooter>
-            )}
-        </Card>
+            {children}
+        </Link>
     );
 }
 
-function notificationTypeLabel(type: string): string {
-    const labels: Record<string, string> = {
-        incident_reported: 'Incidencia',
-        incident_reviewed: 'Incidencia revisada',
-        rating_reviewed: 'Valoración',
-    };
+function groupByDay(items: AppNotification[]): NotificationGroup[] {
+    const groups: NotificationGroup[] = [];
 
-    return labels[type] ?? 'Aviso';
-}
+    for (const item of items) {
+        const key = item.created_at?.slice(0, 10) ?? 'sin-fecha';
+        const current = groups.at(-1);
 
-function formatDate(value: string | null): string {
-    if (!value) {
-        return 'Fecha no disponible';
+        if (current?.key === key) {
+            current.items.push(item);
+
+            continue;
+        }
+
+        groups.push({
+            key,
+            label: formatDayLabel(item.created_at),
+            items: [item],
+        });
     }
 
-    return new Date(value).toLocaleString('es-EC', {
-        dateStyle: 'medium',
-        timeStyle: 'short',
-    });
+    return groups;
+}
+
+function isSameDay(a: Date, b: Date): boolean {
+    return a.toDateString() === b.toDateString();
+}
+
+function formatDayLabel(value: string | null): string {
+    if (!value) {
+        return 'Sin fecha';
+    }
+
+    const date = new Date(value);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
+
+    if (isSameDay(date, today)) {
+        return 'Hoy';
+    }
+
+    if (isSameDay(date, yesterday)) {
+        return 'Ayer';
+    }
+
+    const label = new Intl.DateTimeFormat('es-EC', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+    }).format(date);
+
+    return label.charAt(0).toUpperCase() + label.slice(1);
 }
 
 NotificationsIndex.layout = {

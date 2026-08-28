@@ -1,15 +1,27 @@
-import { Head, router } from '@inertiajs/react';
+import { Deferred, Head, router } from '@inertiajs/react';
 import {
     BarChart3,
+    Bike,
     Download,
     Eye,
-    Flag,
-    Route,
     Star,
     TriangleAlert,
+    X,
 } from 'lucide-react';
 import { useState } from 'react';
-import type { FormEvent } from 'react';
+import {
+    Area,
+    AreaChart,
+    Bar,
+    BarChart,
+    CartesianGrid,
+    Cell,
+    LabelList,
+    Pie,
+    PieChart,
+    XAxis,
+    YAxis,
+} from 'recharts';
 import StatisticsController from '@/actions/App/Http/Controllers/Admin/StatisticsController';
 import { DatePicker } from '@/components/date-picker';
 import Heading from '@/components/heading';
@@ -19,9 +31,18 @@ import {
     Card,
     CardContent,
     CardDescription,
+    CardFooter,
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import type { ChartConfig } from '@/components/ui/chart';
+import {
+    ChartContainer,
+    ChartLegend,
+    ChartLegendContent,
+    ChartTooltip,
+    ChartTooltipContent,
+} from '@/components/ui/chart';
 import {
     Empty,
     EmptyDescription,
@@ -29,7 +50,8 @@ import {
     EmptyMedia,
     EmptyTitle,
 } from '@/components/ui/empty';
-import { Field, FieldGroup, FieldLabel } from '@/components/ui/field';
+import { Field, FieldLabel } from '@/components/ui/field';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
     Table,
     TableBody,
@@ -62,34 +84,77 @@ type IncidentStatusCount = {
     count: number;
 };
 
-type Props = {
-    filters: {
-        from: string | null;
-        to: string | null;
-    };
-    metrics: Metric[];
-    topViewedRoutes: RankedRoute[];
-    topDownloadedRoutes: RankedRoute[];
-    topRatedRoutes: RankedRoute[];
-    incidentsByStatus: IncidentStatusCount[];
+type ActivityPoint = {
+    date: string;
+    label: string;
+    views: number;
+    downloads: number;
+    tracks: number;
 };
+
+type RatingBucket = {
+    rating: number;
+    label: string;
+    count: number;
+};
+
+type Props = {
+    filters: { from: string | null; to: string | null };
+    metrics: Metric[];
+    /** Diferidos: llegan en una segunda respuesta, con esqueleto mientras tanto. */
+    activitySeries?: ActivityPoint[];
+    ratingsDistribution?: RatingBucket[];
+    topViewedRoutes?: RankedRoute[];
+    topDownloadedRoutes?: RankedRoute[];
+    topRatedRoutes?: RankedRoute[];
+    incidentsByStatus?: IncidentStatusCount[];
+};
+
+const periodMetricKeys = [
+    'route_views',
+    'downloads',
+    'completed_tracks',
+    'incidents',
+];
 
 const periodMetricIcons = {
     route_views: Eye,
     downloads: Download,
-    completed_tracks: Route,
+    completed_tracks: Bike,
     incidents: TriangleAlert,
 };
 
-const periodMetricKeys = Object.keys(periodMetricIcons);
+const activityConfig = {
+    views: { label: 'Consultas', color: 'var(--chart-1)' },
+    downloads: { label: 'Descargas', color: 'var(--chart-2)' },
+    tracks: { label: 'Recorridos', color: 'var(--chart-4)' },
+} satisfies ChartConfig;
+
+const rankingConfig = {
+    value: { label: 'Total', color: 'var(--chart-1)' },
+} satisfies ChartConfig;
+
+const ratingsConfig = {
+    count: { label: 'Valoraciones', color: 'var(--chart-2)' },
+} satisfies ChartConfig;
+
+const incidentPalette = [
+    'var(--chart-1)',
+    'var(--chart-2)',
+    'var(--chart-3)',
+    'var(--chart-4)',
+    'var(--chart-5)',
+];
 
 export default function AdminStatisticsIndex({
     filters,
     metrics,
-    topViewedRoutes,
-    topDownloadedRoutes,
-    topRatedRoutes,
-    incidentsByStatus,
+    activitySeries = [],
+    ratingsDistribution = [],
+    topViewedRoutes = [],
+    topDownloadedRoutes = [],
+    topRatedRoutes = [],
+    incidentsByStatus = [],
 }: Props) {
     const [from, setFrom] = useState(filters.from ?? '');
     const [to, setTo] = useState(filters.to ?? '');
@@ -100,14 +165,32 @@ export default function AdminStatisticsIndex({
     const periodMetrics = metrics.filter((metric) =>
         periodMetricKeys.includes(metric.key),
     );
+    const hasActivity = activitySeries.some(
+        (point) => point.views + point.downloads + point.tracks > 0,
+    );
+    const hasRatings = ratingsDistribution.some((bucket) => bucket.count > 0);
+    const incidentsTotal = incidentsByStatus.reduce(
+        (total, status) => total + status.count,
+        0,
+    );
 
-    const submit = (event: FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
+    /** Cada cambio de fecha recarga el análisis, sin botón de por medio. */
+    const applyRange = (nextFrom: string, nextTo: string) => {
+        setFrom(nextFrom);
+        setTo(nextTo);
 
-        router.get(StatisticsController.index.url(), query, {
-            preserveScroll: true,
-            preserveState: true,
-        });
+        router.get(
+            StatisticsController.index.url(),
+            {
+                from: nextFrom || undefined,
+                to: nextTo || undefined,
+            },
+            {
+                preserveScroll: true,
+                preserveState: true,
+                replace: true,
+            },
+        );
     };
 
     return (
@@ -115,53 +198,64 @@ export default function AdminStatisticsIndex({
             <Head title="Estadísticas" />
 
             <div className="flex flex-col gap-6">
-                <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
-                    <Heading
-                        title="Análisis operativo"
-                        description="Uso, actividad offline y calidad de las rutas en el período seleccionado."
-                    />
+                <Heading
+                    title="Análisis operativo"
+                    description="Uso, actividad offline y calidad de las rutas en el período seleccionado."
+                />
 
-                    <form onSubmit={submit} className="w-full xl:w-auto">
-                        <FieldGroup className="grid gap-3 sm:grid-cols-3 sm:items-end">
-                            <Field>
-                                <FieldLabel htmlFor="from">Desde</FieldLabel>
-                                <DatePicker
-                                    id="from"
-                                    value={from}
-                                    onChange={setFrom}
-                                />
-                            </Field>
-                            <Field>
-                                <FieldLabel htmlFor="to">Hasta</FieldLabel>
-                                <DatePicker
-                                    id="to"
-                                    value={to}
-                                    onChange={setTo}
-                                />
-                            </Field>
-                            <div className="flex gap-2 sm:pb-px">
-                                <Button type="submit" className="flex-1">
-                                    <BarChart3 data-icon="inline-start" />
-                                    Actualizar
-                                </Button>
-                                <Button variant="outline" size="icon" asChild>
-                                    <a
-                                        href={StatisticsController.export.url({
-                                            query,
-                                        })}
-                                        aria-label="Exportar estadísticas en CSV"
-                                    >
-                                        <Download />
-                                    </a>
-                                </Button>
-                            </div>
-                        </FieldGroup>
-                    </form>
-                </div>
+                {/* Mismo patrón que los filtros de las tablas: se aplican al elegir. */}
+                <Card>
+                    <CardContent className="flex flex-col gap-3 lg:flex-row lg:items-end">
+                        <Field className="lg:max-w-48">
+                            <FieldLabel htmlFor="from">Desde</FieldLabel>
+                            <DatePicker
+                                id="from"
+                                value={from}
+                                onChange={(value) => applyRange(value, to)}
+                            />
+                        </Field>
+                        <Field className="lg:max-w-48">
+                            <FieldLabel htmlFor="to">Hasta</FieldLabel>
+                            <DatePicker
+                                id="to"
+                                value={to}
+                                onChange={(value) => applyRange(from, value)}
+                            />
+                        </Field>
+
+                        {(from || to) && (
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => applyRange('', '')}
+                            >
+                                <X data-icon="inline-start" />
+                                Limpiar
+                            </Button>
+                        )}
+
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            asChild
+                            className="lg:ml-auto"
+                        >
+                            <a
+                                href={StatisticsController.export.url({
+                                    query,
+                                })}
+                            >
+                                <Download data-icon="inline-start" />
+                                Exportar CSV
+                            </a>
+                        </Button>
+                    </CardContent>
+                </Card>
 
                 <section
                     aria-label="Resumen del período"
-                    className="grid overflow-hidden rounded-[var(--radius-surface)] border bg-card sm:grid-cols-2 xl:grid-cols-4"
+                    className="ueb-stagger grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4"
                 >
                     {periodMetrics.map((metric) => {
                         const Icon =
@@ -170,75 +264,327 @@ export default function AdminStatisticsIndex({
                             ] ?? BarChart3;
 
                         return (
-                            <article
-                                key={metric.key}
-                                className="flex min-h-40 flex-col gap-4 border-b p-5 last:border-b-0 sm:nth-[2n]:border-l sm:nth-[2n]:border-l-border xl:border-b-0 xl:border-l xl:first:border-l-0"
-                            >
-                                <div className="flex items-center gap-2 text-muted-foreground">
-                                    <Icon />
-                                    <span className="text-sm">
-                                        {metric.label}
-                                    </span>
-                                </div>
-                                <p className="text-3xl leading-none tracking-[-0.04em] text-foreground">
-                                    {formatNumber(metric.value)}
-                                </p>
-                                <p className="text-sm leading-relaxed text-muted-foreground">
-                                    {metric.description}
-                                </p>
-                            </article>
+                            <Card key={metric.key} className="min-h-36">
+                                <CardHeader className="gap-2">
+                                    <div className="flex items-center gap-2 text-muted-foreground">
+                                        <Icon aria-hidden="true" />
+                                        <span className="text-sm">
+                                            {metric.label}
+                                        </span>
+                                    </div>
+                                    <p className="text-3xl leading-none tracking-[-0.04em] text-foreground tabular-nums">
+                                        {formatNumber(metric.value)}
+                                    </p>
+                                </CardHeader>
+                                <CardContent className="mt-auto">
+                                    <p className="text-xs leading-relaxed text-muted-foreground">
+                                        {metric.description}
+                                    </p>
+                                </CardContent>
+                            </Card>
                         );
                     })}
                 </section>
 
-                <section className="grid gap-4 xl:grid-cols-[minmax(0,1.5fr)_minmax(20rem,1fr)]">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Evolución de la actividad</CardTitle>
+                        <CardDescription>
+                            Consultas, descargas offline y recorridos por día
+                            {filters.from || filters.to
+                                ? ' en el rango elegido.'
+                                : ' en los últimos 30 días.'}
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <Deferred
+                            data="activitySeries"
+                            fallback={<Skeleton className="h-64 w-full" />}
+                        >
+                            {hasActivity ? (
+                                <ChartContainer
+                                    config={activityConfig}
+                                    className="aspect-auto h-64 w-full"
+                                >
+                                    <AreaChart
+                                        data={activitySeries}
+                                        margin={{ left: 4, right: 8, top: 8 }}
+                                    >
+                                        <defs>
+                                            {Object.keys(activityConfig).map(
+                                                (key) => (
+                                                    <linearGradient
+                                                        key={key}
+                                                        id={`fill-${key}`}
+                                                        x1="0"
+                                                        y1="0"
+                                                        x2="0"
+                                                        y2="1"
+                                                    >
+                                                        <stop
+                                                            offset="5%"
+                                                            stopColor={`var(--color-${key})`}
+                                                            stopOpacity={0.7}
+                                                        />
+                                                        <stop
+                                                            offset="95%"
+                                                            stopColor={`var(--color-${key})`}
+                                                            stopOpacity={0.05}
+                                                        />
+                                                    </linearGradient>
+                                                ),
+                                            )}
+                                        </defs>
+                                        <CartesianGrid vertical={false} />
+                                        <XAxis
+                                            dataKey="label"
+                                            tickLine={false}
+                                            axisLine={false}
+                                            tickMargin={8}
+                                            minTickGap={24}
+                                        />
+                                        <YAxis
+                                            tickLine={false}
+                                            axisLine={false}
+                                            width={32}
+                                            allowDecimals={false}
+                                        />
+                                        <ChartTooltip
+                                            content={<ChartTooltipContent />}
+                                        />
+                                        <ChartLegend
+                                            content={<ChartLegendContent />}
+                                        />
+                                        {Object.keys(activityConfig).map(
+                                            (key) => (
+                                                <Area
+                                                    key={key}
+                                                    dataKey={key}
+                                                    type="monotone"
+                                                    stroke={`var(--color-${key})`}
+                                                    fill={`url(#fill-${key})`}
+                                                    strokeWidth={2}
+                                                />
+                                            ),
+                                        )}
+                                    </AreaChart>
+                                </ChartContainer>
+                            ) : (
+                                <EmptyState message="Todavía no hay actividad registrada en este período." />
+                            )}
+                        </Deferred>
+                    </CardContent>
+                </Card>
+
+                <section className="ueb-stagger grid gap-4 xl:grid-cols-2">
+                    <RankingChart
+                        deferKey="topViewedRoutes"
+                        title="Rutas más consultadas"
+                        description="Aperturas de detalle por ciclistas."
+                        empty="Aún no hay consultas registradas."
+                        rows={topViewedRoutes}
+                        valueKey="views_count"
+                    />
+                    <RankingChart
+                        deferKey="topDownloadedRoutes"
+                        title="Rutas más descargadas"
+                        description="Paquetes offline guardados para usar sin conexión."
+                        empty="Aún no hay descargas offline."
+                        rows={topDownloadedRoutes}
+                        valueKey="downloads_count"
+                    />
+                </section>
+
+                <section className="ueb-stagger grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)]">
                     <Card>
                         <CardHeader>
-                            <CardTitle>Uso de rutas</CardTitle>
+                            <CardTitle>Distribución de valoraciones</CardTitle>
                             <CardDescription>
-                                Las rutas con más actividad dentro del período
-                                elegido.
+                                Cuántas estrellas dan los ciclistas.
                             </CardDescription>
                         </CardHeader>
-                        <CardContent className="grid gap-6 lg:grid-cols-2">
-                            <RankingTable
-                                title="Más consultadas"
-                                description="Aperturas de detalle por ciclistas."
-                                empty="Aún no hay consultas registradas."
-                                rows={topViewedRoutes}
-                                valueKey="views_count"
-                                valueLabel="Consultas"
-                            />
-                            <RankingTable
-                                title="Más descargadas"
-                                description="Paquetes offline guardados."
-                                empty="Aún no hay descargas offline."
-                                rows={topDownloadedRoutes}
-                                valueKey="downloads_count"
-                                valueLabel="Descargas"
-                            />
+                        <CardContent>
+                            <Deferred
+                                data="ratingsDistribution"
+                                fallback={<Skeleton className="h-56 w-full" />}
+                            >
+                                {hasRatings ? (
+                                    <ChartContainer
+                                        config={ratingsConfig}
+                                        className="aspect-auto h-56 w-full"
+                                    >
+                                        <BarChart
+                                            data={ratingsDistribution}
+                                            margin={{
+                                                left: 4,
+                                                right: 8,
+                                                top: 8,
+                                            }}
+                                        >
+                                            <CartesianGrid vertical={false} />
+                                            <XAxis
+                                                dataKey="rating"
+                                                tickLine={false}
+                                                axisLine={false}
+                                                tickMargin={8}
+                                                tickFormatter={(value) =>
+                                                    `${value}★`
+                                                }
+                                            />
+                                            <YAxis
+                                                tickLine={false}
+                                                axisLine={false}
+                                                width={28}
+                                                allowDecimals={false}
+                                            />
+                                            <ChartTooltip
+                                                content={
+                                                    <ChartTooltipContent labelKey="label" />
+                                                }
+                                            />
+                                            <Bar
+                                                dataKey="count"
+                                                fill="var(--color-count)"
+                                                radius={[6, 6, 0, 0]}
+                                            />
+                                        </BarChart>
+                                    </ChartContainer>
+                                ) : (
+                                    <EmptyState message="Aún no hay valoraciones en el rango." />
+                                )}
+                            </Deferred>
                         </CardContent>
                     </Card>
 
                     <Card>
                         <CardHeader>
-                            <CardTitle>Calidad y seguridad</CardTitle>
+                            <CardTitle>Incidencias por estado</CardTitle>
                             <CardDescription>
-                                Valoraciones aprobadas e incidencias a revisar.
+                                Reparto de los reportes recibidos.
                             </CardDescription>
                         </CardHeader>
-                        <CardContent className="flex flex-col gap-6">
-                            <RankingTable
-                                title="Mejor valoradas"
-                                description="Promedio de valoraciones aprobadas."
-                                empty="Aún no hay valoraciones aprobadas."
-                                rows={topRatedRoutes}
-                                valueKey="average_rating"
-                                valueLabel="Promedio"
-                                compact
-                            />
+                        <CardContent>
+                            <Deferred
+                                data="incidentsByStatus"
+                                fallback={
+                                    <Skeleton className="mx-auto aspect-square h-56 rounded-full" />
+                                }
+                            >
+                                {incidentsTotal > 0 ? (
+                                    <ChartContainer
+                                        config={incidentsConfig(
+                                            incidentsByStatus,
+                                        )}
+                                        className="mx-auto aspect-square h-56"
+                                    >
+                                        <PieChart>
+                                            <ChartTooltip
+                                                content={
+                                                    <ChartTooltipContent
+                                                        nameKey="name"
+                                                        hideLabel
+                                                    />
+                                                }
+                                            />
+                                            <Pie
+                                                data={incidentsByStatus}
+                                                dataKey="count"
+                                                nameKey="name"
+                                                innerRadius="55%"
+                                                strokeWidth={2}
+                                            >
+                                                {incidentsByStatus.map(
+                                                    (status, index) => (
+                                                        <Cell
+                                                            key={status.id}
+                                                            fill={
+                                                                incidentPalette[
+                                                                    index %
+                                                                        incidentPalette.length
+                                                                ]
+                                                            }
+                                                        />
+                                                    ),
+                                                )}
+                                            </Pie>
+                                            <ChartLegend
+                                                content={
+                                                    <ChartLegendContent nameKey="name" />
+                                                }
+                                            />
+                                        </PieChart>
+                                    </ChartContainer>
+                                ) : (
+                                    <EmptyState message="Aún no hay incidencias en el rango." />
+                                )}
+                            </Deferred>
+                        </CardContent>
+                        {incidentsTotal > 0 && (
+                            <CardFooter className="text-sm text-muted-foreground">
+                                {incidentsTotal} reporte
+                                {incidentsTotal === 1 ? '' : 's'} en total.
+                            </CardFooter>
+                        )}
+                    </Card>
 
-                            <IncidentBreakdown rows={incidentsByStatus} />
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Mejor valoradas</CardTitle>
+                            <CardDescription>
+                                Promedio de valoraciones aprobadas.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <Deferred
+                                data="topRatedRoutes"
+                                fallback={<Skeleton className="h-40 w-full" />}
+                            >
+                                {topRatedRoutes.length > 0 ? (
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead>Ruta</TableHead>
+                                                <TableHead className="text-right">
+                                                    Promedio
+                                                </TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {topRatedRoutes.map((route) => (
+                                                <TableRow key={route.id}>
+                                                    <TableCell className="max-w-0">
+                                                        <p className="truncate text-sm text-foreground">
+                                                            {route.name}
+                                                        </p>
+                                                        {route.ratings_count ? (
+                                                            <p className="text-xs text-muted-foreground">
+                                                                {
+                                                                    route.ratings_count
+                                                                }{' '}
+                                                                valoración
+                                                                {route.ratings_count ===
+                                                                1
+                                                                    ? ''
+                                                                    : 'es'}
+                                                            </p>
+                                                        ) : null}
+                                                    </TableCell>
+                                                    <TableCell className="text-right">
+                                                        <Badge variant="outline">
+                                                            <Star data-icon="inline-start" />
+                                                            {formatAverage(
+                                                                route.average_rating,
+                                                            )}
+                                                        </Badge>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                ) : (
+                                    <EmptyState message="Aún no hay valoraciones aprobadas." />
+                                )}
+                            </Deferred>
                         </CardContent>
                     </Card>
                 </section>
@@ -247,116 +593,103 @@ export default function AdminStatisticsIndex({
     );
 }
 
-function RankingTable({
-    title,
+function RankingChart({
+    deferKey,
     description,
     empty,
     rows,
+    title,
     valueKey,
-    valueLabel,
-    compact = false,
 }: {
-    title: string;
+    deferKey: string;
     description: string;
     empty: string;
     rows: RankedRoute[];
-    valueKey: keyof RankedRoute;
-    valueLabel: string;
-    compact?: boolean;
+    title: string;
+    valueKey: 'views_count' | 'downloads_count';
 }) {
-    return (
-        <section className="flex min-w-0 flex-col gap-3">
-            <div className="flex flex-col gap-1">
-                <h3 className="text-sm text-foreground">{title}</h3>
-                <p className="text-sm text-muted-foreground">{description}</p>
-            </div>
+    const data = rows
+        .map((route) => ({
+            name: route.name,
+            value: Number(route[valueKey] ?? 0),
+        }))
+        .filter((row) => row.value > 0);
 
-            {rows.length > 0 ? (
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Ruta</TableHead>
-                            <TableHead className="text-right">
-                                {valueLabel}
-                            </TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {rows.map((route, index) => (
-                            <TableRow key={route.id}>
-                                <TableCell className="max-w-0">
-                                    <div className="flex min-w-0 items-center gap-2">
-                                        <span className="text-sm text-muted-foreground">
-                                            {index + 1}
-                                        </span>
-                                        <div className="min-w-0">
-                                            <p className="truncate text-sm text-foreground">
-                                                {route.name}
-                                            </p>
-                                            {route.status ? (
-                                                <p className="truncate text-xs text-muted-foreground">
-                                                    {route.status}
-                                                </p>
-                                            ) : null}
-                                        </div>
-                                    </div>
-                                </TableCell>
-                                <TableCell className="text-right text-sm text-foreground">
-                                    {formatRouteValue(route, valueKey, compact)}
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            ) : (
-                <EmptyState message={empty} />
-            )}
-        </section>
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>{title}</CardTitle>
+                <CardDescription>{description}</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <Deferred
+                    data={deferKey}
+                    fallback={<Skeleton className="h-64 w-full" />}
+                >
+                    {data.length > 0 ? (
+                        <ChartContainer
+                            config={rankingConfig}
+                            className="aspect-auto h-64 w-full"
+                        >
+                            <BarChart
+                                accessibilityLayer
+                                data={data}
+                                layout="vertical"
+                                margin={{ left: 4, right: 32 }}
+                            >
+                                <CartesianGrid horizontal={false} />
+                                <XAxis
+                                    type="number"
+                                    hide
+                                    allowDecimals={false}
+                                />
+                                <YAxis
+                                    dataKey="name"
+                                    type="category"
+                                    tickLine={false}
+                                    axisLine={false}
+                                    width={140}
+                                    tickFormatter={(value: string) =>
+                                        value.length > 22
+                                            ? `${value.slice(0, 21)}…`
+                                            : value
+                                    }
+                                />
+                                <ChartTooltip
+                                    content={<ChartTooltipContent hideLabel />}
+                                />
+                                <Bar
+                                    dataKey="value"
+                                    fill="var(--color-value)"
+                                    radius={[0, 6, 6, 0]}
+                                >
+                                    <LabelList
+                                        dataKey="value"
+                                        position="right"
+                                        className="fill-muted-foreground"
+                                        fontSize={12}
+                                    />
+                                </Bar>
+                            </BarChart>
+                        </ChartContainer>
+                    ) : (
+                        <EmptyState message={empty} />
+                    )}
+                </Deferred>
+            </CardContent>
+        </Card>
     );
 }
 
-function IncidentBreakdown({ rows }: { rows: IncidentStatusCount[] }) {
-    return (
-        <section className="flex flex-col gap-3">
-            <div className="flex flex-col gap-1">
-                <h3 className="text-sm text-foreground">Incidencias</h3>
-                <p className="text-sm text-muted-foreground">
-                    Distribución de reportes por estado.
-                </p>
-            </div>
-
-            {rows.length > 0 ? (
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Estado</TableHead>
-                            <TableHead className="text-right">
-                                Reportes
-                            </TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {rows.map((status) => (
-                            <TableRow key={status.id}>
-                                <TableCell>
-                                    <span className="flex items-center gap-2 text-sm text-foreground">
-                                        <Flag />
-                                        {status.name}
-                                    </span>
-                                </TableCell>
-                                <TableCell className="text-right">
-                                    <Badge variant="outline">
-                                        {status.count}
-                                    </Badge>
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            ) : (
-                <EmptyState message="Aún no hay incidencias en el rango." />
-            )}
-        </section>
+function incidentsConfig(rows: IncidentStatusCount[]): ChartConfig {
+    return Object.fromEntries(
+        rows.map((status, index) => [
+            status.name,
+            {
+                label: status.name,
+                color: incidentPalette[index % incidentPalette.length],
+            },
+        ]),
     );
 }
 
@@ -368,36 +701,15 @@ function formatNumber(value: number | string) {
         : String(value);
 }
 
-function formatRouteValue(
-    route: RankedRoute,
-    valueKey: keyof RankedRoute,
-    compact: boolean,
-) {
-    if (valueKey === 'average_rating') {
-        const average = Number(route.average_rating ?? 0).toLocaleString(
-            'es-EC',
-            {
-                maximumFractionDigits: 2,
-            },
-        );
-
-        return (
-            <span className="inline-flex items-center gap-1">
-                <Star />
-                {average}
-                {!compact && route.ratings_count
-                    ? ` (${route.ratings_count})`
-                    : null}
-            </span>
-        );
-    }
-
-    return formatNumber(route[valueKey] as number | string);
+function formatAverage(value: string | undefined) {
+    return Number(value ?? 0).toLocaleString('es-EC', {
+        maximumFractionDigits: 2,
+    });
 }
 
 function EmptyState({ message }: { message: string }) {
     return (
-        <Empty className="min-h-36 border">
+        <Empty className="min-h-52 border">
             <EmptyHeader>
                 <EmptyMedia variant="icon">
                     <BarChart3 />

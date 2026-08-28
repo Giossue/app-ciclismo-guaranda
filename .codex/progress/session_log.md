@@ -491,6 +491,30 @@
 - Se confirmó que `guaranda_go_db` existe en el clúster remoto y que `guaranda_go_app` es su rol de aplicación sin privilegios de superusuario.
 - Se rotó su contraseña y se verificó una conexión nueva con dicho rol. La credencial se guarda únicamente en `.pgpass` local; no se registró en el repositorio ni en documentación.
 
+## 2026-08-27 — Alta puntual de administrador remoto
+
+- Se creó directamente en PostgreSQL remoto una cuenta administradora solicitada, con rol válido, cuenta activa y contraseña bcrypt compatible con Laravel.
+- Se comprobó tras la transacción que la cuenta está activa, no eliminada y autorizada como administradora. No se usaron seeders ni se expusieron credenciales.
+
+## 2026-08-27 — Submenú administrativo de POIs
+
+- Se separaron POIs oficiales, sugerencias y reportes en rutas y vistas administrativas independientes, usando rutas Wayfinder tipadas.
+- La vista principal de POIs ahora usa la tabla operativa reutilizable con búsqueda, filtros por categoría/estado, paginación y acciones de edición o activación.
+- Se añadieron policies, validación de query y pruebas de autorización/aislamiento de las tres vistas; no hubo cambios de esquema ni de datos remotos.
+
+## 2026-08-27 — Menú de acciones para POIs
+
+- La columna de acciones de la tabla de POIs se redujo a un menú contextual de tres puntos; desde allí se puede editar y activar o desactivar cada POI con el estado pendiente correspondiente.
+
+## 2026-08-27 — Filtros y conteo de reportes de POIs
+
+- El conteo de reportes de la tabla se muestra como número simple, sin badge, y se eliminó la descripción redundante sobre la tabla.
+- Los filtros de POIs descartan valores vacíos, la primera página y el tamaño por defecto de la URL; `Limpiar` devuelve al listado base sin parámetros.
+- La navegación de POIs se trasladó de pestañas locales a un submenú desplegable en el sidebar, con POIs oficiales, sugerencias y reportes.
+- Los sheets de acción usan un pie fijo y reutilizable con `Cancelar` y la acción principal; el contenido se mantiene desplazable.
+- En el layout de sidebar, el cierre de sesión se retiró del menú móvil y se ubicó en el menú del avatar del encabezado.
+- Se preparó la imagen de producción para PhpRedis y se documentó la activación privada de caché Redis mediante variables de Dokploy, sin almacenar la URI ni contraseñas.
+
 ## 2026-08-27 — Landing adaptable
 
 - Se consultó el MCP de 21st.dev y se adaptó la referencia `Feature Bento` a la landing existente.
@@ -513,7 +537,7 @@
 
 - Se eliminó la opción `system` del hook, el botón cíclico y el selector de ajustes; valores heredados se convierten al tema efectivo del dispositivo sin perder la preferencia del usuario existente.
 - El nuevo tema se expande desde el control pulsado mediante una revelación circular de 700 ms. Navegadores sin View Transitions y usuarios con movimiento reducido reciben un cambio inmediato y funcional.
-- Se mantuvo el preprocesado de tema en Blade para evitar destellos al cargar y se unificó el selector de ajustes con `ToggleGroup` de shadcn.
+- Se mantuvo el preprocesado de tema en Blade para evitar destellos al cargar; el único control global alterna entre claro y oscuro.
 - Se verificó visualmente la onda claro/oscuro en viewport móvil y de escritorio, además de la migración de `system` y el comportamiento con movimiento reducido.
 
 ## 2026-08-27 — Preparación de AI Elements
@@ -539,3 +563,21 @@
 - Tras detectar un frame oscuro completo antes de la onda, se adelantó el `clip-path` inicial a CSS usando coordenadas escritas antes de `startViewTransition`. La primera muestra a 7 ms ya permanece recortada a 1 px y el tema nuevo comienza a expandirse desde 68 ms.
 - Se verificó visualmente en Chrome a 1440×900 y 390×844. Las capturas intermedias a 180 y 500 ms mostraron una onda continua desde el botón, sin crossfade global.
 - Validaciones aprobadas: TypeScript, ESLint, Prettier y build Vite. Laravel y Vite locales continúan respondiendo HTTP 200.
+
+## 2026-08-27 — Información técnica administrativa
+
+- La antigua configuración administrativa pasó a `/settings`: muestra todos los estados técnicos en una sola vista, sin tabs ni navegación secundaria.
+- `/admin/settings` se conserva únicamente como redirección protegida para enlaces previos; la pantalla no expone secretos, credenciales ni URLs privadas.
+
+## 2026-08-27 — Notificaciones tipo panel
+
+- Se añadió `link` a las notificaciones y se rellena al revisar incidencias y valoraciones (ruta relacionada) y al reportar una incidencia (bandeja administrativa).
+- La fila de notificación se extrajo a un componente compartido entre el panel de la campana y la pantalla completa; el panel usa tiempo relativo y la pantalla mantiene la hora dentro de cada grupo por día.
+- Los módulos del sidebar muestran insignias de pendientes (incidencias, valoraciones, sugerencias y reportes de POIs) calculadas solo para administradores.
+
+## 2026-08-27 — Estabilidad SSR de mapas y readiness
+
+- Se corrigió el error SSR `window is not defined` de `leaflet-draw`: los mapas públicos, editor administrativo y selectores de ubicación se cargan dinámicamente después de hidratar React.
+- Se creó una prueba de `GET /up` y un endpoint JSON mínimo sin SSR para el health check de Dokploy.
+- Se añadió y ejecutó `scripts/audit_ssr_browser_usage.py`; la cadena estática de todas las páginas Inertia queda libre de dependencias exclusivas del navegador.
+- Validaciones aprobadas: Pint, Pest focalizado (15 pruebas), tipos, ESLint, Prettier, build SSR, chequeo de salud SSR y render SSR real de `/admin/routes` tanto listado como formulario de creación.

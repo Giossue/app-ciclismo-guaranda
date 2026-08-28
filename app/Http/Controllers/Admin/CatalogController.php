@@ -40,6 +40,14 @@ use Inertia\Response;
  */
 class CatalogController extends Controller
 {
+    /**
+     * Columnas por tabla, cacheadas durante la petición: el formulario de alta
+     * necesita saber qué campos tiene cada catálogo, no solo el seleccionado.
+     *
+     * @var array<string, array<mixed>>
+     */
+    private array $tableColumns = [];
+
     public function index(Request $request): Response
     {
         $this->authorize('viewAny', User::class);
@@ -180,10 +188,14 @@ class CatalogController extends Controller
                     continue;
                 }
 
+                $meta = $this->catalogMeta($catalogSlug, $catalog);
+
                 $domainCatalogs[] = [
                     'slug' => $catalogSlug,
-                    'title' => $catalog['title'],
-                    'locked' => (bool) ($catalog['locked'] ?? false),
+                    'title' => $meta['title'],
+                    'locked' => $meta['locked'],
+                    'has_description' => $meta['has_description'],
+                    'has_active' => $meta['has_active'],
                 ];
             }
 
@@ -206,15 +218,24 @@ class CatalogController extends Controller
     {
         $modelClass = $catalog['model'];
         $table = (new $modelClass)->getTable();
+        $columns = $this->tableColumns($table);
 
         return [
             'slug' => $slug,
             'title' => $catalog['title'],
             'domain' => $catalog['domain'],
             'locked' => (bool) ($catalog['locked'] ?? false),
-            'has_description' => Schema::hasColumn($table, 'description'),
-            'has_active' => Schema::hasColumn($table, 'active'),
+            'has_description' => in_array('description', $columns, true),
+            'has_active' => in_array('active', $columns, true),
         ];
+    }
+
+    /**
+     * @return array<mixed>
+     */
+    private function tableColumns(string $table): array
+    {
+        return $this->tableColumns[$table] ??= Schema::getColumnListing($table);
     }
 
     /**

@@ -73,16 +73,98 @@ test('administrator can view route management pages', function () {
 
     $this->actingAs($admin)
         ->get(route('admin.routes.index'))
-        ->assertOk();
-
-    $this->actingAs($admin)
-        ->get(route('admin.routes.create'))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
-            ->component('admin/routes/create')
-            ->where('defaults.route_status_id', $draftStatus->id)
-            ->where('defaults.transport_mode_id', $bicycle->id)
-            ->where('defaults.routing_engine_id', $routingEngine->id));
+            ->component('admin/routes/index')
+            ->where('form', null)
+            ->where('formOptions', null));
+
+    $this->actingAs($admin)
+        ->get(route('admin.routes.index', ['form' => 'create']))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('admin/routes/index')
+            ->where('form', 'create')
+            ->where('formOptions.defaults.route_status_id', $draftStatus->id)
+            ->where('formOptions.defaults.transport_mode_id', $bicycle->id)
+            ->where('formOptions.defaults.routing_engine_id', $routingEngine->id));
+});
+
+test('administrator opens the edit sheet from the route list', function () {
+    $this->withoutVite();
+
+    $admin = User::factory()->administrator()->create();
+    $status = RouteStatus::query()->where('name', 'activa')->firstOrFail();
+    $category = RouteCategory::query()->where('name', 'MTB')->firstOrFail();
+    $difficulty = RouteDifficulty::query()->where('name', 'media')->firstOrFail();
+    $route = CyclingRoute::query()->create([
+        'admin_user_id' => $admin->id,
+        'route_status_id' => $status->id,
+        'route_category_id' => $category->id,
+        'route_difficulty_id' => $difficulty->id,
+        'name' => 'Ruta para editar',
+        'slug' => 'ruta-para-editar',
+        'description' => 'Ruta creada para comprobar la hoja de edición del listado.',
+        'start_name' => 'Inicio',
+        'start_latitude' => -1.5000000,
+        'start_longitude' => -79.0000000,
+        'end_name' => 'Final',
+        'end_latitude' => -1.5100000,
+        'end_longitude' => -79.0100000,
+    ]);
+
+    $this->actingAs($admin)
+        ->get(route('admin.routes.index', ['form' => 'edit', 'route' => $route->id]))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('admin/routes/index')
+            ->where('form', 'edit')
+            ->where('routeForm.id', $route->id)
+            ->has('formOptions.statuses'));
+});
+
+test('administrator can search and filter routes', function () {
+    $this->withoutVite();
+
+    $admin = User::factory()->administrator()->create();
+    $status = RouteStatus::query()->where('name', 'activa')->firstOrFail();
+    $category = RouteCategory::query()->where('name', 'MTB')->firstOrFail();
+    $difficulty = RouteDifficulty::query()->where('name', 'media')->firstOrFail();
+
+    $base = [
+        'admin_user_id' => $admin->id,
+        'route_status_id' => $status->id,
+        'route_category_id' => $category->id,
+        'route_difficulty_id' => $difficulty->id,
+        'description' => 'Ruta creada para comprobar la búsqueda del listado.',
+        'start_name' => 'Inicio',
+        'start_latitude' => -1.5000000,
+        'start_longitude' => -79.0000000,
+        'end_name' => 'Final',
+        'end_latitude' => -1.5100000,
+        'end_longitude' => -79.0100000,
+    ];
+
+    CyclingRoute::query()->create([...$base, 'name' => 'Ruta del mirador', 'slug' => 'ruta-del-mirador']);
+    CyclingRoute::query()->create([...$base, 'name' => 'Ruta de la laguna', 'slug' => 'ruta-de-la-laguna']);
+
+    $this->actingAs($admin)
+        ->get(route('admin.routes.index', [
+            'search' => 'mirador',
+            'status' => $status->id,
+            'category' => $category->id,
+        ]))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('admin/routes/index')
+            ->where('filters.search', 'mirador')
+            ->where('filters.status', (string) $status->id)
+            ->where('filters.category', (string) $category->id)
+            ->has('routes.data', 1)
+            ->where('routes.data.0.name', 'Ruta del mirador')
+            ->has('statuses')
+            ->has('categories')
+            ->has('difficulties'));
 });
 
 test('administrator can paginate routes in groups of nine', function () {

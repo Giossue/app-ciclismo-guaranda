@@ -18,6 +18,34 @@ class PointOfInterest extends Model
     protected $guarded = ['id'];
 
     /**
+     * @return list<string>
+     */
+    private function routeBindingColumns(): array
+    {
+        return [
+            'id',
+            'poi_category_id',
+            'name',
+            'description',
+            'observations',
+            'latitude',
+            'longitude',
+            'address',
+            'phone',
+            'active',
+            'created_at',
+            'updated_at',
+            'deleted_at',
+        ];
+    }
+
+    public function resolveRouteBindingQuery($query, $value, $field = null)
+    {
+        return parent::resolveRouteBindingQuery($query, $value, $field)
+            ->select($this->routeBindingColumns());
+    }
+
+    /**
      * @return BelongsTo<PoiCategory, $this>
      */
     public function category(): BelongsTo

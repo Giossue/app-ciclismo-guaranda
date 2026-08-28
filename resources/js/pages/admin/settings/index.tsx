@@ -1,19 +1,16 @@
 import { Head } from '@inertiajs/react';
-import {
-    AppWindow,
-    CheckCircle2,
-    CircleAlert,
-    Database,
-    Plug,
-    Rocket,
-    ShieldCheck,
-} from 'lucide-react';
+import { AppWindow, Database, Plug, Rocket, ShieldCheck } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { useState } from 'react';
 import SystemSettingsController from '@/actions/App/Http/Controllers/Admin/SystemSettingsController';
 import Heading from '@/components/heading';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 
 type SettingValue = string | number | boolean | null;
 
@@ -94,102 +91,79 @@ export default function AdminSettingsIndex({ settings }: Props) {
     const availableSections = sections.filter(
         (section) => settings[section.id],
     );
-    const [activeSection, setActiveSection] = useState<SettingSection>(
-        availableSections[0]?.id ?? 'application',
-    );
-    const selectedSection =
-        availableSections.find((section) => section.id === activeSection) ??
-        availableSections[0];
-    const selectedValues = selectedSection
-        ? (settings[selectedSection.id] ?? {})
-        : {};
 
     return (
         <>
-            <Head title="Configuración" />
+            <Head title="Información técnica" />
 
             <div className="flex flex-col gap-6">
                 <Heading
-                    title="Configuración operativa"
-                    description="Consulta el estado del entorno y de los servicios conectados. Los valores sensibles no se exponen."
+                    title="Información técnica"
+                    description="Estado actual de la aplicación y sus servicios. Los valores sensibles no se exponen."
                 />
 
-                <section className="overflow-hidden rounded-[var(--radius-surface)] border bg-card lg:grid lg:min-h-128 lg:grid-cols-[18rem_minmax(0,1fr)]">
-                    <aside className="border-b bg-muted/30 lg:border-r lg:border-b-0">
-                        <nav
-                            aria-label="Secciones de configuración"
-                            className="flex overflow-x-auto p-2 lg:flex-col lg:overflow-visible"
-                        >
-                            {availableSections.map((section) => {
-                                const Icon = section.icon;
-                                const selected =
-                                    section.id === selectedSection?.id;
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Estado del sistema</CardTitle>
+                        <CardDescription>
+                            Valores leídos del entorno actual para diagnóstico
+                            administrativo.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="flex flex-col gap-6">
+                        {availableSections.map((section, index) => {
+                            const Icon = section.icon;
+                            const values = settings[section.id] ?? {};
 
-                                return (
-                                    <Button
-                                        key={section.id}
-                                        type="button"
-                                        variant={
-                                            selected ? 'secondary' : 'ghost'
-                                        }
-                                        className="h-auto min-w-48 shrink-0 justify-start px-3 py-3 text-left lg:w-full"
-                                        aria-current={
-                                            selected ? 'page' : undefined
-                                        }
-                                        onClick={() =>
-                                            setActiveSection(section.id)
-                                        }
-                                    >
-                                        <Icon data-icon="inline-start" />
-                                        <span className="flex min-w-0 flex-col gap-1">
-                                            <span>{section.label}</span>
-                                            <span className="truncate text-xs text-muted-foreground">
-                                                {section.description}
-                                            </span>
-                                        </span>
-                                    </Button>
-                                );
-                            })}
-                        </nav>
-                    </aside>
-
-                    {selectedSection ? (
-                        <section
-                            aria-labelledby="settings-section-title"
-                            className="min-w-0"
-                        >
-                            <header className="flex flex-col gap-1 border-b px-4 py-5 sm:px-6">
-                                <h3
-                                    id="settings-section-title"
-                                    className="font-display leading-[var(--lh-title)] font-extrabold tracking-[-0.03em] text-[var(--fs-lg)] text-foreground"
+                            return (
+                                <section
+                                    key={section.id}
+                                    aria-labelledby={`settings-${section.id}-title`}
+                                    className="flex flex-col gap-4"
                                 >
-                                    {selectedSection.label}
-                                </h3>
-                                <p className="text-sm text-muted-foreground">
-                                    {selectedSection.description} Valores leídos
-                                    del entorno actual.
-                                </p>
-                            </header>
-                            <dl className="divide-y divide-border px-4 sm:px-6">
-                                {Object.entries(selectedValues).map(
-                                    ([key, value]) => (
-                                        <div
-                                            key={key}
-                                            className="flex flex-col gap-2 py-4 sm:flex-row sm:items-center sm:justify-between"
-                                        >
-                                            <dt className="text-sm text-foreground">
-                                                {valueLabels[key] ?? key}
-                                            </dt>
-                                            <dd className="text-sm text-muted-foreground sm:text-right">
-                                                <SettingValue value={value} />
-                                            </dd>
+                                    {index > 0 ? <Separator /> : null}
+                                    <header className="flex items-start gap-3 pt-1">
+                                        <Icon
+                                            aria-hidden="true"
+                                            className="mt-0.5 text-muted-foreground"
+                                        />
+                                        <div className="flex min-w-0 flex-col gap-1">
+                                            <h2
+                                                id={`settings-${section.id}-title`}
+                                                className="text-base text-foreground"
+                                            >
+                                                {section.label}
+                                            </h2>
+                                            <p className="text-sm text-muted-foreground">
+                                                {section.description}
+                                            </p>
                                         </div>
-                                    ),
-                                )}
-                            </dl>
-                        </section>
-                    ) : null}
-                </section>
+                                    </header>
+                                    <dl className="grid gap-x-8 sm:grid-cols-2">
+                                        {Object.entries(values).map(
+                                            ([key, value]) => (
+                                                <div
+                                                    key={key}
+                                                    className="flex min-w-0 items-center justify-between gap-4 border-b py-3"
+                                                >
+                                                    <dt className="text-sm text-foreground">
+                                                        {valueLabels[key] ??
+                                                            key}
+                                                    </dt>
+                                                    <dd className="min-w-0 text-right text-sm text-muted-foreground">
+                                                        <SettingValue
+                                                            value={value}
+                                                        />
+                                                    </dd>
+                                                </div>
+                                            ),
+                                        )}
+                                    </dl>
+                                </section>
+                            );
+                        })}
+                    </CardContent>
+                </Card>
             </div>
         </>
     );
@@ -197,16 +171,7 @@ export default function AdminSettingsIndex({ settings }: Props) {
 
 function SettingValue({ value }: { value: SettingValue }) {
     if (typeof value === 'boolean') {
-        return (
-            <Badge variant={value ? 'default' : 'outline'}>
-                {value ? (
-                    <CheckCircle2 data-icon="inline-start" />
-                ) : (
-                    <CircleAlert data-icon="inline-start" />
-                )}
-                {value ? 'Disponible' : 'No disponible'}
-            </Badge>
-        );
+        return <span>{value ? 'Disponible' : 'No disponible'}</span>;
     }
 
     return <span>{String(value ?? 'Sin datos')}</span>;
@@ -215,7 +180,7 @@ function SettingValue({ value }: { value: SettingValue }) {
 AdminSettingsIndex.layout = {
     breadcrumbs: [
         {
-            title: 'Configuración',
+            title: 'Información técnica',
             href: SystemSettingsController.url(),
         },
     ],

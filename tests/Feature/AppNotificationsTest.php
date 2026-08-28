@@ -2,10 +2,43 @@
 
 use App\Models\AppNotification;
 use App\Models\User;
+use Inertia\Inertia;
 use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function () {
     $this->withoutVite();
+});
+
+test('bell panel loads the latest notifications on demand', function () {
+    $user = User::factory()->cyclist()->create();
+
+    AppNotification::query()->create([
+        'user_id' => $user->id,
+        'type' => 'incident_reviewed',
+        'title' => 'Tu incidencia fue revisada',
+        'message' => 'La incidencia cambió de estado.',
+        'link' => '/routes/ruta-de-prueba',
+    ]);
+
+    // Sin pedirla, la lista no viaja: es un prop opcional.
+    $this->actingAs($user)
+        ->get(route('notifications.index'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('notificationCenter.unread_count', 1)
+            ->missing('notificationCenter.latest'));
+
+    $this->actingAs($user)
+        ->withHeaders([
+            'X-Inertia' => 'true',
+            'X-Inertia-Version' => Inertia::getVersion(),
+            'X-Inertia-Partial-Component' => 'notifications/index',
+            'X-Inertia-Partial-Data' => 'notificationCenter',
+        ])
+        ->get(route('notifications.index'))
+        ->assertOk()
+        ->assertJsonCount(1, 'props.notificationCenter.latest')
+        ->assertJsonPath('props.notificationCenter.latest.0.link', '/routes/ruta-de-prueba');
 });
 
 test('authenticated user can list only own app notifications', function () {

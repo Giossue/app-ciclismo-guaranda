@@ -8,17 +8,17 @@ import type { Auth } from '@/types';
 
 type PageProps = {
     auth: Auth;
-    notifications?: {
+    notificationCenter?: {
         unread_count?: number;
     };
 };
 
 export function AppMobileNav() {
-    const { auth, notifications } = usePage<PageProps>().props;
+    const { auth, notificationCenter } = usePage<PageProps>().props;
     const { isCurrentUrl } = useCurrentUrl();
     const { openMobile, setOpenMobile } = useSidebar();
     const primaryItems = mobilePrimaryNavItems(auth);
-    const unreadCount = notifications?.unread_count ?? 0;
+    const unreadCount = notificationCenter?.unread_count ?? 0;
 
     if (!auth.user) {
         return null;
@@ -38,7 +38,7 @@ export function AppMobileNav() {
                             prefetch
                             aria-current={active ? 'page' : undefined}
                             className={cn(
-                                'flex min-w-0 flex-1 touch-manipulation flex-col items-center justify-center gap-0.5 rounded-xl px-1 py-1 leading-none font-bold text-[var(--fs-caption)] transition-[color,transform] active:scale-[0.96]',
+                                'flex min-w-0 flex-1 touch-manipulation flex-col items-center justify-center gap-1 rounded-xl px-1 py-1 text-[calc(var(--fs-caption)*1.2)] leading-none font-bold transition-[color,transform] active:scale-[0.96]',
                                 active
                                     ? 'text-link'
                                     : 'text-muted-foreground hover:text-foreground',
@@ -46,7 +46,12 @@ export function AppMobileNav() {
                         >
                             <span className="relative">
                                 {Icon && (
-                                    <Icon className="size-4 transition-transform" />
+                                    <Icon
+                                        className={cn(
+                                            'size-[1.2rem] transition-transform duration-200 ease-out',
+                                            active && 'scale-110',
+                                        )}
+                                    />
                                 )}
                                 {item.href === '/notifications' &&
                                     unreadCount > 0 && (
@@ -70,13 +75,13 @@ export function AppMobileNav() {
                     aria-expanded={openMobile}
                     aria-label="Abrir menú de navegación"
                     className={cn(
-                        'flex min-w-0 flex-1 touch-manipulation flex-col items-center justify-center gap-0.5 rounded-xl px-1 py-1 leading-none font-bold text-[var(--fs-caption)] transition-[color,transform] active:scale-[0.96]',
+                        'flex min-w-0 flex-1 touch-manipulation flex-col items-center justify-center gap-1 rounded-xl px-1 py-1 text-[calc(var(--fs-caption)*1.2)] leading-none font-bold transition-[color,transform] active:scale-[0.96]',
                         openMobile
                             ? 'text-link'
                             : 'text-muted-foreground hover:text-foreground',
                     )}
                 >
-                    <Menu className="size-4" />
+                    <Menu className="size-[1.2rem]" />
                     Más
                 </button>
             </div>

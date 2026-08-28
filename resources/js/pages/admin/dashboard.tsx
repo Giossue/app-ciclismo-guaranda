@@ -1,4 +1,4 @@
-import { Head, Link } from '@inertiajs/react';
+import { Deferred, Head, Link } from '@inertiajs/react';
 import {
     AlertTriangle,
     ArrowRight,
@@ -29,6 +29,7 @@ import {
     EmptyMedia,
     EmptyTitle,
 } from '@/components/ui/empty';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
     Table,
     TableBody,
@@ -37,6 +38,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { capitalize } from '@/lib/utils';
 import { index as incidentsIndex } from '@/routes/admin/incidents';
 import { index as poisIndex } from '@/routes/admin/pois';
 import { index as ratingsIndex } from '@/routes/admin/ratings';
@@ -91,18 +93,28 @@ type RecentIncident = {
     reporter: { id: number; name: string } | null;
 };
 
+type Activity = {
+    period: string;
+    newUsers: number;
+    completedTracks: number;
+    days: DayActivity[];
+};
+
 type Props = {
     overview: OverviewMetric[];
-    activity: {
-        period: string;
-        newUsers: number;
-        completedTracks: number;
-        days: DayActivity[];
-    };
-    routeStatuses: RouteStatus[];
-    popularRoutes: PopularRoute[];
-    attention: AttentionItem[];
-    recentIncidents: RecentIncident[];
+    /** Diferidos: llegan en una segunda respuesta, con esqueleto mientras tanto. */
+    activity?: Activity;
+    routeStatuses?: RouteStatus[];
+    popularRoutes?: PopularRoute[];
+    attention?: AttentionItem[];
+    recentIncidents?: RecentIncident[];
+};
+
+const emptyActivity: Activity = {
+    period: 'Últimos 7 días',
+    newUsers: 0,
+    completedTracks: 0,
+    days: [],
 };
 
 const overviewIcons = {
@@ -128,11 +140,11 @@ const attentionDestinations = {
 
 export default function AdminDashboard({
     overview,
-    activity,
-    routeStatuses,
-    popularRoutes,
-    attention,
-    recentIncidents,
+    activity = emptyActivity,
+    routeStatuses = [],
+    popularRoutes = [],
+    attention = [],
+    recentIncidents = [],
 }: Props) {
     const totalRoutes = routeStatuses.reduce(
         (total, status) => total + status.count,
@@ -151,27 +163,42 @@ export default function AdminDashboard({
 
                 <section
                     aria-label="Indicadores principales"
-                    className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-5"
+                    className="ueb-stagger grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-5 [&>*:last-child:nth-child(odd)]:col-span-2 xl:[&>*:last-child:nth-child(odd)]:col-span-1"
                 >
                     {overview.map((metric) => (
                         <OverviewCard key={metric.key} metric={metric} />
                     ))}
                 </section>
 
-                <section className="grid gap-4 xl:grid-cols-5">
-                    <ActivityCard activity={activity} />
-                    <PopularRoutesCard routes={popularRoutes} />
-                </section>
+                <Deferred
+                    data={['activity', 'popularRoutes']}
+                    fallback={<PanelSkeleton />}
+                >
+                    <section className="ueb-stagger grid gap-4 xl:grid-cols-5">
+                        <ActivityCard activity={activity} />
+                        <PopularRoutesCard routes={popularRoutes} />
+                    </section>
+                </Deferred>
 
-                <section className="grid gap-4 xl:grid-cols-5">
-                    <RouteStatusCard
-                        statuses={routeStatuses}
-                        totalRoutes={totalRoutes}
-                    />
-                    <AttentionCard attention={attention} />
-                </section>
+                <Deferred
+                    data={['routeStatuses', 'attention']}
+                    fallback={<PanelSkeleton />}
+                >
+                    <section className="ueb-stagger grid gap-4 xl:grid-cols-5">
+                        <RouteStatusCard
+                            statuses={routeStatuses}
+                            totalRoutes={totalRoutes}
+                        />
+                        <AttentionCard attention={attention} />
+                    </section>
+                </Deferred>
 
-                <RecentIncidentsCard incidents={recentIncidents} />
+                <Deferred
+                    data="recentIncidents"
+                    fallback={<Skeleton className="h-64 w-full" />}
+                >
+                    <RecentIncidentsCard incidents={recentIncidents} />
+                </Deferred>
             </div>
         </>
     );
@@ -208,7 +235,16 @@ function OverviewCard({ metric }: { metric: OverviewMetric }) {
     );
 }
 
-function ActivityCard({ activity }: { activity: Props['activity'] }) {
+function PanelSkeleton() {
+    return (
+        <div className="grid gap-4 xl:grid-cols-5">
+            <Skeleton className="h-72 w-full xl:col-span-3" />
+            <Skeleton className="h-72 w-full xl:col-span-2" />
+        </div>
+    );
+}
+
+function ActivityCard({ activity }: { activity: Activity }) {
     return (
         <Card className="xl:col-span-3">
             <CardHeader>
@@ -421,7 +457,7 @@ function RouteStatusCard({
                             <li key={status.id} className="flex flex-col gap-2">
                                 <div className="flex items-center justify-between gap-3 text-sm">
                                     <span className="font-medium">
-                                        {status.name}
+                                        {capitalize(status.name)}
                                     </span>
                                     <span className="text-muted-foreground tabular-nums">
                                         {status.count.toLocaleString()}
@@ -430,7 +466,7 @@ function RouteStatusCard({
                                 <ProgressBar
                                     value={status.count}
                                     maximum={totalRoutes}
-                                    label={`${status.name}: ${status.count} rutas`}
+                                    label={`${capitalize(status.name)}: ${status.count} rutas`}
                                 />
                             </li>
                         ))}

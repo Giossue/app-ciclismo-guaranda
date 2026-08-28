@@ -1,5 +1,10 @@
 # Registro de decisiones
 
+## 2026-08-27 — Información técnica administrativa
+
+- El estado técnico de Guaranda Go se publica únicamente en `/settings`, protegido por `auth`, `verified`, rol administrador y la Policy de usuarios; `/admin/settings` queda como redirección compatible bajo la misma protección.
+- La pantalla presenta todos los grupos de estado consecutivamente en una sola vista, sin tabs ni navegación secundaria. Expone estados y nombres de drivers, nunca secretos, credenciales ni URLs privadas de integraciones.
+
 ## 2026-08-27 — Fechas consistentes entre web y Android
 
 - Las fechas de formularios usan un DatePicker propio basado en `Calendar` y `Popover` de shadcn, no `input[type="date"]` ni el selector nativo.
@@ -177,7 +182,12 @@
 
 - La preferencia global de apariencia queda reducida a `light` y `dark`; el valor heredado `system` se migra una sola vez al tema efectivo del dispositivo y se persiste como elección explícita.
 - El cambio iniciado desde un control de tema revela la nueva apariencia mediante una onda circular originada en el botón. La implementación usa View Transitions como mejora progresiva y aplica el cambio inmediato cuando la API no está disponible o el usuario solicita movimiento reducido.
-- Tanto el botón compacto como el selector de ajustes consumen el mismo contrato de apariencia, evitando estados distintos entre vistas web y el contenedor Capacitor.
+- El botón global de tema consume el mismo contrato de apariencia en todas las vistas web y en el contenedor Capacitor.
+
+## 2026-08-27 — Navegación del módulo administrativo de POIs
+
+- POIs oficiales, sugerencias y reportes se presentan como secciones locales del módulo de POIs, en vez de concentrar la retroalimentación pendiente sobre el listado principal.
+- La navegación global no añade un tercer nivel; cada sección conserva URL propia, autorización administrativa y paginación.
 
 ## 2026-08-27 — Autodespliegue directo en Dokploy
 
@@ -236,3 +246,8 @@
 ## 2026-07-02 — Modelo IA generando texto corrupto (glitch tokens)
 
 - Se detectó que el nodo `ia` de n8n (modelo configurado como `"gpt-5.4"`, no es un modelo oficial de OpenAI) genera texto de salida con basura mezclada: sintaxis de tool-call filtrada como texto plano (`to=functions.rutas ... json\n{...}`) y tokens en chino/tailandés/malabar tipo spam de casino, intercalados dentro de la llamada a la tool.\n- La respuesta final visible para el usuario seguía siendo correcta porque el texto limpio queda al final del string, después del último bloque `to=functions...{...}`.\n- Causa raíz: el modelo/endpoint configurado no es un modelo oficial confiable; probablemente un proxy o alias de un modelo cuantizado/contaminado. No es un bug de Laravel ni de los endpoints `/api/agent/*`.\n- Mitigación aplicada (band-aid, no soluciona la causa raíz): se reforzó el nodo `Normalizar respuesta` en `.codex/project/n8n_workflow.md` para detectar el patrón `to=functions.NOMBRE` y quedarse solo con el texto posterior al último bloque de ese tipo, antes de aplicar el parseo de JSON existente.\n- Recomendación pendiente para el usuario: cambiar el modelo configurado en el nodo `ia` por un modelo real y confiable (ej. un modelo oficial de OpenAI o un endpoint de DeepSeek verificado), ya que el parche solo esconde el síntoma.\n
+
+## 2026-08-27 — SSR seguro para dependencias de mapa
+
+- Leaflet, Leaflet Draw, geocodificación y componentes React Leaflet no se importan desde páginas Inertia ni desde sus dependencias estáticas. Se cargan después de la hidratación con `useEffect`, conservando SSR activo para el resto de cada pantalla.
+- `/up` queda como endpoint mínimo de preparación del contenedor y no depende de la ejecución de SSR; Dokploy debe consultar esa ruta antes de conmutar tráfico.

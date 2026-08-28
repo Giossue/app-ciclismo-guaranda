@@ -17,6 +17,8 @@
 - Los ciclistas pueden reportar POIs cerrados o con datos incorrectos.
 - Los POIs tienen fotografías y horarios.
 - No se manejan feriados ni horarios especiales en primera versión.
+- La administración separa los POIs oficiales, las sugerencias de ciclistas y los reportes de cierres o datos incorrectos en secciones del mismo módulo.
+- El listado de POIs oficiales se presenta en una tabla operativa con búsqueda, filtros por categoría/estado, paginación y acciones de edición o activación.
 
 ## Visibilidad
 

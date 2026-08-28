@@ -120,6 +120,8 @@
     --control-height: 3.25rem;
     /* Tamaño único de icono del sistema: todo SVG de interfaz mide lo mismo. */
     --icon-size: 1rem;
+    /* Escala del badge sobre la métrica base: relleno, tipografía e icono. */
+    --badge-scale: 0.77;
     --action-height: 2.75rem;
     --action-height-sm: 2.5rem;
     --action-height-lg: 3rem;
@@ -128,7 +130,8 @@
     --elevation-raised: 0 4px 12px var(--shadow);
     --elevation-floating: 0 12px 40px var(--overlay-shadow);
     --safe-bottom: env(safe-area-inset-bottom, 0px);
-    --bottom-nav-height: 58px;
+    /* Barra inferior al 120% de su medida original (58px) para dar toque cómodo. */
+    --bottom-nav-height: 70px;
 
     /* Scrollbars y widgets nativos siguen el tema. */
     color-scheme: light;
@@ -257,6 +260,25 @@
         @apply border-border;
     }
 
+    html {
+        /*
+         * El hueco de la barra de scroll se reserva siempre, así la página no
+         * cambia de ancho cuando un overlay bloquea el scroll.
+         */
+        scrollbar-gutter: stable;
+    }
+
+    /*
+     * react-remove-scroll (Radix) añade `margin-right` al body para compensar
+     * la barra que retira al abrir un Select, Dialog o Sheet. Con el hueco ya
+     * reservado esa compensación no corresponde y desplaza la página hacia la
+     * izquierda, así que la anulamos. La regla vive en @layer base a propósito:
+     * un `!important` en capa gana al `!important` sin capa que inyecta Radix.
+     */
+    body[data-scroll-locked] {
+        margin-right: 0 !important;
+    }
+
     html,
     body {
         margin: 0;
@@ -278,6 +300,8 @@
          * barra y compensa con margen igual, desplazando la página.
          */
         overflow-x: hidden;
+        /* El refresco al deslizar es propio: se evita el del navegador. */
+        overscroll-behavior-y: contain;
         background:
             radial-gradient(
                 circle at 12% -8%,
@@ -314,6 +338,27 @@
 
     svg {
         display: block;
+    }
+
+    /*
+     * En pantallas táctiles, mantener pulsado no selecciona texto ni abre el
+     * menú de copiar: la app debe sentirse nativa. Los campos editables y lo
+     * marcado con data-selectable conservan la selección.
+     */
+    @media (pointer: coarse) {
+        body {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        input,
+        textarea,
+        [contenteditable='true'],
+        [data-selectable] {
+            -webkit-user-select: text;
+            user-select: text;
+        }
     }
 
     /*
@@ -417,14 +462,6 @@
     [data-slot='button'] {
         border-radius: var(--radius-surface);
         font-weight: 900;
-    }
-
-    [data-slot='badge'] {
-        border-radius: var(--radius-control);
-        font-size: var(--fs-xs);
-        font-weight: 900;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
     }
 
     [data-slot='dialog-overlay'],
@@ -546,6 +583,57 @@ html.theme-transitioning::view-transition-new(root) {
 .theme-transitioning *::before,
 .theme-transitioning *::after {
     transition: none !important;
+}
+
+@layer components {
+    /*
+     * Entrada escalonada: cada hijo directo aparece un poco después que el
+     * anterior. El retardo se corta al octavo para que una lista larga no
+     * termine esperando. La guarda de prefers-reduced-motion la anula.
+     */
+    .ueb-stagger > * {
+        animation: ueb-rise 260ms ease-out both;
+    }
+
+    .ueb-stagger > *:nth-child(2) {
+        animation-delay: 40ms;
+    }
+
+    .ueb-stagger > *:nth-child(3) {
+        animation-delay: 80ms;
+    }
+
+    .ueb-stagger > *:nth-child(4) {
+        animation-delay: 120ms;
+    }
+
+    .ueb-stagger > *:nth-child(5) {
+        animation-delay: 160ms;
+    }
+
+    .ueb-stagger > *:nth-child(6) {
+        animation-delay: 200ms;
+    }
+
+    .ueb-stagger > *:nth-child(7) {
+        animation-delay: 240ms;
+    }
+
+    .ueb-stagger > *:nth-child(n + 8) {
+        animation-delay: 280ms;
+    }
+}
+
+@keyframes ueb-rise {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
 }
 
 /* ciclismo-ueb visual adaptation */

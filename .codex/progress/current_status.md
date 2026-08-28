@@ -41,7 +41,7 @@ Fecha: 2026-06-30
 - El entrypoint Docker ya no ejecuta seeders por defecto; solo los ejecuta si `RUN_SEEDERS=true`.
 - Se eliminaron restos visibles del starter: dashboard vacío, links Repository/Documentation, welcome genérico, header global de “Centro de control” y componente visual `placeholder-pattern` sin uso.
 - Navegación actual: desktop/tablet usa sidebar; móvil usa bottom navbar fija con menú “Más”. Cada módulo tiene su propio título.
-- Fase 13 completada: `/admin/catalogs`, `/admin/statistics` y `/admin/settings` son módulos reales; se eliminó el placeholder administrativo genérico.
+- Fase 13 completada: `/admin/catalogs`, `/admin/statistics` y `/settings` son módulos reales; `/admin/settings` redirige de forma compatible a `/settings`.
 - Catálogos permite crear/actualizar registros de catálogos del sistema; estadísticas registra consultas de rutas, muestra métricas/rankings con filtros por fecha y exporta CSV; configuración muestra estado operativo sin exponer secretos.
 - Fase 14 queda en revisión: validación local completa aprobada, pero falta evidencia de prueba física del APK en Android 13+ para cerrar la entrega final sin mentir.
 
@@ -55,7 +55,6 @@ Fecha: 2026-06-30
 - n8n no se trató como bug porque el flujo aún no está creado/configurado.
 - Nueva dependencia frontend: `leaflet-draw`, `leaflet-control-geocoder`, `@types/leaflet-draw`.
 - Nueva migración pendiente de deploy/producción: `2026_06_30_000015_create_route_rating_files_table.php`.
-
 
 ## Traducción español 2026-06-30
 
@@ -99,7 +98,6 @@ Después de esa prueba manual, marcar Fase 12 y Fase 14 como `Completado` si tod
 - Desnivel automático integrado con OpenTopoData mediante proxy backend Laravel; configurable por entorno y con muestreo máximo de 100 puntos por solicitud.
 - Chat n8n corregido: Laravel no persiste nuevas conversaciones/mensajes al enviar; la memoria queda a cargo del workflow/nodo Agente de n8n. Tablas locales de IA se conservan intactas para compatibilidad/legado.
 
-
 ## UX móvil flat 2026-06-30
 
 - Se reemplazó la estética muy redondeada/con degradados por flat design: bordes moderados, superficies limpias, navegación inferior plana y componentes base sin sombras decorativas.
@@ -110,7 +108,6 @@ Después de esa prueba manual, marcar Fase 12 y Fase 14 como `Completado` si tod
 - Validación frontend aprobada: tipos, lint, formato y build.
 
 - Navegación Android: agregado `@capacitor/app` y listener global de botón atrás para evitar salidas accidentales desde pantallas internas; sincronizado con Capacitor Android.
-
 
 ## Fase 15 agente n8n tools 2026-07-01
 
@@ -135,3 +132,28 @@ Después de esa prueba manual, marcar Fase 12 y Fase 14 como `Completado` si tod
 
 - Se creó PostgreSQL local en el contenedor Podman `guaranda-go-postgres`, con volumen persistente y acceso limitado a `127.0.0.1`.
 - `.env` local usa esa instancia; se aplicaron las 16 migraciones existentes y `CatalogSeeder` para los catálogos de desarrollo, sin tocar producción ni crear administrador.
+
+## Operación de datos remota 2026-08-27
+
+- Se creó y verificó una cuenta administradora solicitada directamente en PostgreSQL remoto, con rol `administrador`, estado activo y contraseña almacenada únicamente como hash bcrypt compatible con Laravel. No se usaron seeders ni se registraron credenciales.
+
+## Administración de POIs 2026-08-27
+
+- El módulo de POIs separa POIs oficiales, sugerencias y reportes mediante un submenú desplegable en el sidebar; las tres vistas están protegidas para administradores y no duplican navegación con pestañas.
+- El listado de POIs oficiales se migró de tarjetas a tabla con búsqueda, filtros, paginación y un menú de tres puntos para editar o activar/desactivar; su URL conserva únicamente filtros activos y `Limpiar` restablece el listado base.
+
+## Centro de notificaciones 2026-08-27
+
+- `notificaciones_app` incorpora la columna `link` para que cada aviso apunte a su destino; la migración se aplicó en la base local y en la remota `guaranda_go_db`, verificada con `migrate:status` contra el remoto.
+- La campana del encabezado abre un panel lateral con los últimos ocho avisos, tiempo relativo y accesos a marcar todas como leídas y ver el listado completo; la lista viaja como prop opcional y solo se consulta al abrir el panel.
+- El prop compartido pasó a llamarse `notificationCenter`: el anterior `notifications` quedaba sombreado por el listado paginado de la propia pantalla y dejaba el contador en cero allí.
+
+## Preparación Redis 2026-08-27
+
+- La imagen de producción incluye la extensión PhpRedis y Laravel ya dispone de conexiones `default` y `cache`; Redis se habilita exclusivamente mediante secretos del entorno Dokploy con `CACHE_STORE=redis`. Sesiones y colas continúan en PostgreSQL en esta primera activación.
+
+## Estabilidad SSR y deploy 2026-08-27
+
+- Se aisló Leaflet, Leaflet Draw, geocodificación y selectores de ubicación en wrappers cargados solo tras montar el navegador; el SSR de `/admin/routes` ya no evalúa `window`.
+- `GET /up` es una respuesta JSON mínima e independiente del SSR, preparada para configurarse como health check de Dokploy.
+- Se añadió `scripts/audit_ssr_browser_usage.py`, que recorre imports estáticos desde cada página Inertia y falla si una dependencia de navegador vuelve a ser alcanzable.

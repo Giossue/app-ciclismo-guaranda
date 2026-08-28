@@ -55,3 +55,8 @@ npm --prefix ciclismo-guaranda run build
 - Los POIs activos pueden seleccionarse desde el formulario de ruta como puntos intermedios.
 - Los popups y tarjetas de POIs muestran miniatura cuando existe imagen.
 
+## Ajuste administrativo 2026-08-27
+
+- El módulo administrativo usa el submenú desplegable de POIs en el sidebar para separar POIs oficiales, sugerencias y reportes; las páginas no duplican esa navegación con pestañas.
+- Los POIs oficiales se muestran como tabla operativa con búsqueda, filtros por categoría/estado, paginación y un menú de acciones de tres puntos para editar o activar/desactivar. La URL conserva solo filtros activos y `Limpiar` devuelve el listado base.
+- Sugerencias y reportes se consultan en páginas administrativas separadas, paginadas y protegidas por policy.

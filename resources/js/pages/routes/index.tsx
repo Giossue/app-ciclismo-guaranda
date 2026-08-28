@@ -4,7 +4,7 @@ import CyclistRouteController from '@/actions/App/Http/Controllers/Cyclist/Route
 import { CatalogPagination } from '@/components/catalog-pagination';
 import ImageWithFallback from '@/components/image-with-fallback';
 import { MobileTabs } from '@/components/mobile-tabs';
-import RouteMap from '@/components/routes/route-map';
+import RouteMap from '@/components/routes/client-only-route-map';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {

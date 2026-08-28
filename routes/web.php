@@ -4,6 +4,8 @@ use App\Http\Controllers\Admin\CatalogController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\IncidentController as AdminIncidentController;
 use App\Http\Controllers\Admin\PoiController as AdminPoiController;
+use App\Http\Controllers\Admin\PoiReportController as AdminPoiReportController;
+use App\Http\Controllers\Admin\PoiSuggestionController as AdminPoiSuggestionController;
 use App\Http\Controllers\Admin\RatingController as AdminRatingController;
 use App\Http\Controllers\Admin\RouteController as AdminRouteController;
 use App\Http\Controllers\Admin\RouteElevationController;
@@ -59,6 +61,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 Route::middleware(['auth', 'verified', 'admin'])
+    ->get('settings', SystemSettingsController::class)
+    ->name('admin.settings.index');
+
+Route::middleware(['auth', 'verified', 'admin'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
@@ -66,7 +72,10 @@ Route::middleware(['auth', 'verified', 'admin'])
         Route::get('dashboard', DashboardController::class)->name('dashboard');
 
         Route::post('routes/elevation-preview', RouteElevationController::class)->middleware('throttle:20,1')->name('routes.elevation-preview');
-        Route::resource('routes', AdminRouteController::class)->except(['show']);
+        // Alta y edición se resuelven en una hoja del listado, no en páginas propias.
+        Route::resource('routes', AdminRouteController::class)->except(['show', 'create', 'edit']);
+        Route::get('pois/suggestions', AdminPoiSuggestionController::class)->name('pois.suggestions.index');
+        Route::get('pois/reports', AdminPoiReportController::class)->name('pois.reports.index');
         Route::resource('pois', AdminPoiController::class)->except(['show'])->withTrashed(['edit', 'update']);
         Route::patch('pois/{poi}/restore', [AdminPoiController::class, 'restore'])->withTrashed()->name('pois.restore');
         Route::resource('incidents', AdminIncidentController::class)->only(['index', 'update']);
@@ -76,7 +85,7 @@ Route::middleware(['auth', 'verified', 'admin'])
         Route::patch('catalogs/{catalog}/{record}', [CatalogController::class, 'update'])->name('catalogs.update');
         Route::get('statistics', [StatisticsController::class, 'index'])->name('statistics.index');
         Route::get('statistics/export', [StatisticsController::class, 'export'])->name('statistics.export');
-        Route::get('settings', SystemSettingsController::class)->name('settings.index');
+        Route::redirect('settings', '/settings')->name('settings.legacy');
 
         Route::get('users', [UserController::class, 'index'])->name('users.index');
         Route::patch('users/{user}', [UserController::class, 'update'])->name('users.update');
@@ -85,4 +94,4 @@ Route::middleware(['auth', 'verified', 'admin'])
         Route::post('users/{user}/password-reset', [UserController::class, 'sendPasswordResetLink'])->name('users.password-reset');
     });
 
-require __DIR__.'/settings.php';
+require __DIR__.'/account.php';

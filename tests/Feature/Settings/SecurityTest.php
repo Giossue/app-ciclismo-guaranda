@@ -22,7 +22,7 @@ test('security page is displayed', function () {
         ->withSession(['auth.password_confirmed_at' => time()])
         ->get(route('security.edit'))
         ->assertInertia(fn (Assert $page) => $page
-            ->component('settings/security')
+            ->component('account/security')
             ->where('canManagePasskeys', true)
             ->where('passkeys', [])
             ->where('canManageTwoFactor', true)
@@ -30,7 +30,7 @@ test('security page is displayed', function () {
         );
 });
 
-test('security page requires password confirmation when enabled', function () {
+test('security page opens without confirming the password', function () {
     $this->skipUnlessFortifyHas(Features::twoFactorAuthentication());
 
     $user = User::factory()->create();
@@ -40,10 +40,10 @@ test('security page requires password confirmation when enabled', function () {
         'confirmPassword' => true,
     ]);
 
-    $response = $this->actingAs($user)
-        ->get(route('security.edit'));
-
-    $response->assertRedirect(route('password.confirm'));
+    $this->actingAs($user)
+        ->get(route('security.edit'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->component('account/security'));
 });
 
 test('security page renders without two factor when feature is disabled', function () {
@@ -58,7 +58,7 @@ test('security page renders without two factor when feature is disabled', functi
         ->get(route('security.edit'))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
-            ->component('settings/security')
+            ->component('account/security')
             ->where('canManagePasskeys', false)
             ->where('passkeys', [])
             ->where('canManageTwoFactor', false)
