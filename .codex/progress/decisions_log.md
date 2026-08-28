@@ -175,8 +175,14 @@
 
 ## 2026-08-27 — Tema y contraste en landing
 
-- La landing dispone de un único control de tema por icono en su encabezado: alterna claro, oscuro y sistema sin depender de un texto visible. Se apoya en `useAppearance`, que persiste y aplica la preferencia existente.
+- La landing dispone de un único control de tema por icono en su encabezado: alterna claro y oscuro sin depender de un texto visible. Se apoya en `useAppearance`, que persiste y aplica la preferencia explícita.
 - Las superficies oscuras no reutilizan `background` como color de texto: se usan tokens inversos globales para que el contraste no dependa del modo activo.
+
+## 2026-08-27 — Tema binario con transición expansiva
+
+- La preferencia global de apariencia queda reducida a `light` y `dark`; el valor heredado `system` se migra una sola vez al tema efectivo del dispositivo y se persiste como elección explícita.
+- El cambio iniciado desde un control de tema revela la nueva apariencia mediante una onda circular originada en el botón. La implementación usa View Transitions como mejora progresiva y aplica el cambio inmediato cuando la API no está disponible o el usuario solicita movimiento reducido.
+- El botón global de tema consume el mismo contrato de apariencia en todas las vistas web y en el contenedor Capacitor.
 
 ## 2026-08-27 — Navegación del módulo administrativo de POIs
 
@@ -187,6 +193,13 @@
 
 - Dokploy realiza el despliegue por su detección nativa de `push`; el flujo habitual no depende de GitHub Actions como condición previa.
 - `android-apk`, `tests` y `linter` se conservan para ejecución manual mediante `workflow_dispatch`, sin checks automáticos en pushes ni pull requests mientras esta decisión esté activa.
+
+## 2026-08-27 — AI Elements desacoplado del proveedor
+
+- AI Elements se incorpora exclusivamente como biblioteca fuente de interfaz; no reemplaza n8n, no modifica endpoints y no introduce todavía `useChat` en la pantalla existente.
+- Se instala un conjunto acotado para conversación, mensajes, prompt, adjuntos, sugerencias, fuentes, razonamiento, tools y confirmaciones. No se instala el catálogo completo.
+- La futura integración depende del contrato que entregue el nuevo backend del agente. Hasta entonces los componentes permanecen compilables, localizados y sin consumidores de producción.
+- Las primitives locales de shadcn tienen prioridad sobre el registry externo y no se sobrescriben durante instalación o actualización.
 
 ## 2026-07-01 — Historial local posterior a n8n
 
@@ -215,6 +228,20 @@
 - Las funciones de cercanía, recomendación personalizada, progreso y distancia restante requieren ubicación explícita del usuario.
 - La ubicación compartida con el asistente es transitoria (`latitude`, `longitude`, `accuracy_m`, `recorded_at`) y se envía al webhook n8n sin guardarse en `conversaciones_ia` ni `mensajes_ia`.
 - `buscar_rutas` debe tolerar consultas genéricas: si `query` no devuelve resultados, Laravel responde rutas activas generales para que el agente aún pueda recomendar sin inventar.
+
+## 2026-08-27 — Retícula de rutas del ciclista
+
+- El catálogo de rutas no usa una tarjeta destacada que cambie la escala del primer resultado; todas las rutas mantienen la misma jerarquía para facilitar comparación y aprovechar el escritorio.
+- La retícula responsive queda en 1/2/3 columnas para móvil/tablet/laptop y ocupa el ancho disponible del shell sin el límite histórico de 760 px.
+- La paginación de catálogos replica el patrón operativo del administrador y se implementa como componente compartido para rutas y favoritas.
+- La portada forma parte del contrato de favoritas; se expone solo el path ya autorizado que consume `mediaUrl`, sin modificar permisos ni almacenamiento.
+
+## 2026-08-27 — Refinamiento de login y onda de tema
+
+- El ancho y radio mayores se aplican solo al login de escritorio; no se modifica la escala global de superficies ni el ancho del registro.
+- La introducción del formulario permanece centrada en todos los breakpoints, mientras labels y campos conservan alineación de lectura a la izquierda.
+- La onda de tema usa una curva de entrada progresiva de 1,4 segundos. El `color-scheme` nativo se difiere hasta el cierre de la transición para que scrollbar y controles no cambien antes que la superficie visible.
+- El estado inicial del pseudo-elemento nuevo se define en CSS con coordenadas preparadas antes de `startViewTransition`; JavaScript anima desde ese mismo círculo. Esto elimina la carrera de un frame donde el tema nuevo podía aparecer completo antes del recorte.
 
 ## 2026-07-02 — Modelo IA generando texto corrupto (glitch tokens)
 

@@ -18,3 +18,12 @@ Antes de añadir o actualizar un componente shadcn, consulta el skill `shadcn`, 
 - Feedback: Sonner para resultados transitorios, no para explicar una pantalla ni sustituir errores de campo.
 
 Un cambio a un contrato reutilizado requiere revisar las pantallas consumidoras, tipos y checklist frontend.
+
+## Componentes para agentes
+
+Los componentes fuente de AI Elements viven en `resources/js/components/ai-elements/`. Están disponibles `attachments`, `conversation`, `message`, `prompt-input`, `suggestion`, `sources`, `reasoning`, `tool` y `confirmation`, junto con `code-block` y `shimmer` como dependencias internas.
+
+- Son una capa de presentación React y no definen el proveedor, transporte ni persistencia del agente.
+- No están conectados al chat vigente. Integrarlos exige primero definir el nuevo contrato de mensajes, adjuntos, fuentes, tools, aprobaciones y streaming.
+- El registry `@ai-elements` queda declarado en `components.json`. Antes de actualizar un componente se debe ejecutar `--dry-run` y revisar el diff; los targets upstream orientados a Next.js deben reubicarse bajo `resources/js/components/ai-elements/` y nunca sobrescribir primitives locales.
+- Los defaults visibles se mantienen en español, los estados usan tokens semánticos y las acciones de adjuntos permanecen visibles en móvil.

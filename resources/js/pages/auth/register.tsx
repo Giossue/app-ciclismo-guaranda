@@ -79,6 +79,7 @@ export default function Register({ genders, passwordRules }: Props) {
                                             required
                                             autoFocus
                                             autoComplete="given-name"
+                                            placeholder="Ej. María"
                                             aria-invalid={Boolean(errors.name)}
                                         />
                                         <InputError message={errors.name} />
@@ -96,6 +97,7 @@ export default function Register({ genders, passwordRules }: Props) {
                                             name="last_name"
                                             required
                                             autoComplete="family-name"
+                                            placeholder="Ej. González"
                                             aria-invalid={Boolean(
                                                 errors.last_name,
                                             )}
@@ -118,7 +120,7 @@ export default function Register({ genders, passwordRules }: Props) {
                                                     errors.gender_id,
                                                 )}
                                             >
-                                                <SelectValue placeholder="Selecciona una opción" />
+                                                <SelectValue placeholder="Selecciona tu género" />
                                             </SelectTrigger>
                                             <SelectContent>
                                                 <SelectGroup>
@@ -153,6 +155,7 @@ export default function Register({ genders, passwordRules }: Props) {
                                             name="birth_date"
                                             required
                                             autoComplete="bday"
+                                            placeholder="Selecciona tu fecha de nacimiento"
                                             aria-invalid={Boolean(
                                                 errors.birth_date,
                                             )}
@@ -175,7 +178,7 @@ export default function Register({ genders, passwordRules }: Props) {
                                             name="email"
                                             required
                                             autoComplete="email"
-                                            placeholder="correo@ejemplo.com"
+                                            placeholder="nombre@correo.com"
                                             aria-invalid={Boolean(errors.email)}
                                         />
                                         <InputError message={errors.email} />
@@ -193,6 +196,7 @@ export default function Register({ genders, passwordRules }: Props) {
                                             required
                                             autoComplete="new-password"
                                             passwordrules={passwordRules}
+                                            placeholder="Crea una contraseña segura"
                                             value={password}
                                             onChange={(event) =>
                                                 setPassword(
@@ -220,6 +224,7 @@ export default function Register({ genders, passwordRules }: Props) {
                                             required
                                             autoComplete="new-password"
                                             passwordrules={passwordRules}
+                                            placeholder="Repite tu contraseña"
                                             value={passwordConfirmation}
                                             onChange={(event) =>
                                                 setPasswordConfirmation(

@@ -551,6 +551,40 @@
     }
 }
 
+::view-transition-old(root),
+::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
+}
+
+::view-transition-group(root) {
+    animation: none;
+}
+
+::view-transition-image-pair(root) {
+    isolation: auto;
+}
+
+::view-transition-old(root) {
+    z-index: 0;
+}
+
+::view-transition-new(root) {
+    z-index: 1;
+}
+
+html.theme-transitioning::view-transition-new(root) {
+    clip-path: circle(
+        1px at var(--theme-transition-x) var(--theme-transition-y)
+    );
+}
+
+.theme-transitioning *,
+.theme-transitioning *::before,
+.theme-transitioning *::after {
+    transition: none !important;
+}
+
 @layer components {
     /*
      * Entrada escalonada: cada hijo directo aparece un poco después que el

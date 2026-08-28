@@ -99,6 +99,7 @@ test('cyclist can add list and remove favorite routes', function () {
 
     $cyclist = User::factory()->cyclist()->create();
     $route = createRouteForFavoritesAndRatings();
+    $route->update(['main_image_path' => 'routes/favorite-cover.webp']);
 
     $this->actingAs($cyclist)
         ->post(route('routes.favorite.store', $route->slug))
@@ -114,7 +115,10 @@ test('cyclist can add list and remove favorite routes', function () {
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('favorites/index')
-            ->where('favorites.data.0.route.id', $route->id));
+            ->where('favorites.data.0.route.id', $route->id)
+            ->where('favorites.data.0.route.main_image_path', 'routes/favorite-cover.webp')
+            ->where('favorites.current_page', 1)
+            ->where('favorites.last_page', 1));
 
     $this->actingAs($cyclist)
         ->delete(route('routes.favorite.destroy', $route->slug))

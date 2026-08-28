@@ -149,8 +149,11 @@ export type ActiveTrack = {
 };
 
 export type PaginatedRoutes = {
+    current_page: number;
     data: CyclingRouteMapItem[];
     from: number | null;
+    last_page: number;
+    per_page: number;
     to: number | null;
     total: number;
 };

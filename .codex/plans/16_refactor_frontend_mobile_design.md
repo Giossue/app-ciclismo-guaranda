@@ -368,6 +368,26 @@ Notas:
 
 ## Correcciones de landing 2026-08-27
 
-- El encabezado incorpora un botón de icono permanente que alterna, en orden, tema claro, oscuro y del sistema; conserva la preferencia mediante el hook de apariencia existente.
-- El hero usa tokens semánticos de contenido inverso para conservar contraste sobre su superficie oscura en los tres modos.
+- El encabezado incorpora un botón de icono permanente que alterna únicamente entre tema claro y oscuro; conserva la preferencia explícita mediante el hook de apariencia y revela el nuevo tema con una onda circular que nace en el control.
+- El hero usa tokens semánticos de contenido inverso para conservar contraste sobre su superficie oscura en ambos modos.
 - Las tarjetas siguen una estructura homogénea de icono, etiqueta, título y descripción; se retiraron el icono de escudo redundante, las notas de pie y etiquetas decorativas del hero.
+
+## Base visual para el futuro agente 2026-08-27
+
+- AI Elements queda instalado como código fuente bajo `resources/js/components/ai-elements/`, sin sustituir todavía el chat Inertia ni modificar la frontera Laravel → n8n.
+- La base disponible cubre conversación, mensajes, prompt, adjuntos, sugerencias, fuentes, razonamiento, tools y confirmaciones. La integración se realizará cuando exista el nuevo contrato del agente.
+- Las primitives shadcn personalizadas no se sobrescriben; cualquier actualización futura parte de un dry-run y un diff del registry `@ai-elements`.
+
+## Catálogo responsive del ciclista 2026-08-27
+
+- Rutas y favoritas usan todo el ancho disponible del shell hasta el límite administrativo de escritorio; se elimina el tope de tableta que producía huecos laterales.
+- La lista de rutas abandona la portada destacada de ancho completo y adopta una retícula uniforme: una columna en móvil, dos en pantallas intermedias y tres desde laptop.
+- Los filtros de categoría y el selector Rutas/Mapa se mantienen centrados cuando caben; en móvil conservan desplazamiento horizontal seguro.
+- Rutas y favoritas comparten el patrón de paginación del administrador: resumen a la izquierda y página/controles en la esquina inferior derecha.
+- Favoritos recibe `main_image_path` desde Laravel para mantener el mismo tratamiento fotográfico que el catálogo principal.
+
+## Ajuste fino de login y transición de tema 2026-08-27
+
+- El login amplía su superficie desktop a `max-w-6xl`, distribuye ambos paneles por igual y mantiene el formulario en una sola columna legible.
+- El título y la descripción de bienvenida quedan centrados también en laptop; la Card usa el token `radius-map` sin alterar el radio global de otras superficies.
+- La revelación circular del tema dura 1,4 segundos con entrada progresiva. CSS fija el círculo inicial antes de cambiar el tema, se eliminan animaciones implícitas del grupo View Transition y `color-scheme` cambia al finalizar para evitar cualquier frame oscuro completo o destello de controles nativos y scrollbar.
