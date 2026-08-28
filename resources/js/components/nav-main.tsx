@@ -127,7 +127,13 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
                                             </Link>
                                         </SidebarMenuButton>
                                         {itemPending > 0 && (
-                                            <SidebarMenuBadge className="right-8">
+                                            /*
+                                             * `top-5` ancla el punto a la fila del botón: con el
+                                             * submenú abierto el ítem crece y el `top-1/2` por
+                                             * defecto lo dejaba flotando sobre los hijos. Abierto
+                                             * se oculta porque cada hijo ya muestra el suyo.
+                                             */
+                                            <SidebarMenuBadge className="top-5 right-8 group-data-[state=open]/collapsible:hidden">
                                                 <PendingDot
                                                     count={itemPending}
                                                 />
@@ -184,7 +190,8 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
                                                                     </span>
                                                                     {childPending >
                                                                         0 && (
-                                                                        <span className="ml-auto">
+                                                                        /* `mr-1.5` compensa la sangría del submenú para caer en la misma columna que los puntos de nivel superior. */
+                                                                        <span className="mr-1.5 ml-auto">
                                                                             <PendingDot
                                                                                 count={
                                                                                     childPending
@@ -233,7 +240,8 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
                                     </Link>
                                 </SidebarMenuButton>
                                 {itemPending > 0 && (
-                                    <SidebarMenuBadge>
+                                    /* `right-8` alinea el punto con la columna de los grupos con chevron. */
+                                    <SidebarMenuBadge className="right-8">
                                         <PendingDot count={itemPending} />
                                     </SidebarMenuBadge>
                                 )}
