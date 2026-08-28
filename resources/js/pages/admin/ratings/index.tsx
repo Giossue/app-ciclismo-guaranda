@@ -38,6 +38,7 @@ import {
     SheetTitle,
 } from '@/components/ui/sheet';
 import { Textarea } from '@/components/ui/textarea';
+import { capitalize } from '@/lib/utils';
 import { show as routeShow } from '@/routes/routes';
 import type { CatalogOption } from '@/types';
 
@@ -165,7 +166,7 @@ export default function AdminRatingsIndex({
             cell: (rating) =>
                 rating.status ? (
                     <Badge variant={statusVariant(rating.status.name)}>
-                        {rating.status.name}
+                        {capitalize(rating.status.name)}
                     </Badge>
                 ) : (
                     <span className="text-muted-foreground">Sin estado</span>
@@ -367,7 +368,7 @@ function ModerationForm({
                                                 key={status.id}
                                                 value={String(status.id)}
                                             >
-                                                {status.name}
+                                                {capitalize(status.name)}
                                             </SelectItem>
                                         ))}
                                     </SelectGroup>
