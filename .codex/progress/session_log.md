@@ -588,3 +588,11 @@
 - Se implementó `admin.routes.routing-preview`, boundary `RoutePlanner`/`OsrmRouteService`, configuración por entorno, autorización administrativa, validación de 2–10 puntos, timeouts y mensajes sanitizados de degradación.
 - El formulario de rutas ahora prioriza elegir inicio/final y generar el recorrido; conserva edición manual y usa Wayfinder para las dos vistas previas de elevación/enrutamiento.
 - Validaciones ejecutadas: Pest (17 pruebas focalizadas, 146 aserciones), Pint, TypeScript, ESLint, Prettier, auditoría SSR, build SSR, build Vite y listado de ruta generado.
+
+## 2026-08-28 — Diagnóstico y endurecimiento de respuestas 502
+
+- Se comprobó producción en rutas públicas y protegidas: el dominio respondió 200/302 de forma estable y `/up` respondió 200 en diez intentos; el 502 capturado fue intermitente y no específico de `/admin/routes`.
+- Se identificó una ventana de arranque en la que Nginx podía aceptar tráfico antes de PHP-FPM. Se añadió espera explícita de PHP-FPM, `startsecs` y un `HEALTHCHECK` de imagen contra `/up`.
+- La prueba aislada detectó cabeceras de proxy vacías que causaban 500 en el healthcheck interno; Nginx ahora omite esas cabeceras cuando no existen.
+- Validaciones aprobadas: sintaxis shell, `php-fpm -t`, `nginx -t`, `git diff --check`, compilación limpia de la imagen y arranque real de PHP-FPM + Nginx + Inertia SSR bajo Supervisor. `/up` respondió 200 y Docker reportó `healthy`; al retrasar PHP-FPM dos segundos, el puerto permaneció cerrado y luego pasó directamente a 200, sin exponer ningún 502.
+- Después de actualizar `main` a `1edd9d8`, se verificó la compatibilidad con la integración OSRM: pruebas focalizadas, PHPStan de clases nuevas, TypeScript, ESLint, Prettier, auditoría SSR, build SSR, caché de rutas e imagen Docker combinada aprobados. El contenedor final inició PHP-FPM, Nginx y SSR y quedó `healthy`.

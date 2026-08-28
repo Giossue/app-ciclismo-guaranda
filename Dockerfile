@@ -91,7 +91,13 @@ RUN composer dump-autoload --optimize \
 COPY docker/nginx.conf /etc/nginx/sites-available/default
 COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY docker/entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+COPY docker/start-nginx.sh /usr/local/bin/start-nginx.sh
+
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh /usr/local/bin/start-nginx.sh
 
 EXPOSE 80
+
+HEALTHCHECK --interval=10s --timeout=3s --start-period=30s --retries=5 \
+    CMD curl --fail --silent --show-error http://127.0.0.1/up > /dev/null || exit 1
 
 ENTRYPOINT ["docker-entrypoint.sh"]

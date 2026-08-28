@@ -257,3 +257,9 @@
 - Se adopta OSRM autoalojado para Ecuador y perfil de bicicleta como generador inicial de la geometría administrativa; no se convierte en endpoint público ni se entrega su URL al cliente.
 - El contrato Laravel devuelve solo GeoJSON, distancia y minutos normalizados. El navegador nunca compone una URL de OSRM y las coordenadas pasan por Form Request, policy de creación y rate limit antes de llegar al motor.
 - El editor no depende del motor para guardar: ante `NoRoute`, timeout o caída, el administrador puede ajustar los puntos o dibujar la ruta manualmente.
+
+## 2026-08-28 — Readiness del contenedor ante reinicios
+
+- Nginx no publica la aplicación hasta que PHP-FPM acepta conexiones en `127.0.0.1:9000`; esto evita respuestas 502 durante la carrera de arranque del contenedor.
+- La imagen declara `HEALTHCHECK` contra `/up` y Dokploy debe esperar el estado `healthy` antes de enviar tráfico al contenedor nuevo.
+- Las cabeceras `X-Forwarded-Host` y `X-Forwarded-Proto` se entregan a PHP solo cuando el proxy realmente las envía; un chequeo interno sin dichas cabeceras no debe producir un 500.
