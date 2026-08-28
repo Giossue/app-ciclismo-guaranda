@@ -18,9 +18,11 @@ import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Field, FieldGroup, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
+import { Separator } from '@/components/ui/separator';
 import {
     Sheet,
     SheetContent,
@@ -212,87 +214,96 @@ export default function AdminCatalogsIndex({
                     description="Administra los valores operativos que usa cada módulo de Guaranda Go."
                 />
 
-                <section className="overflow-hidden rounded-[var(--radius-surface)] border bg-card lg:grid lg:grid-cols-[17rem_minmax(0,1fr)]">
-                    <aside className="border-b bg-muted/20 lg:border-r lg:border-b-0">
-                        <nav
-                            aria-label="Módulos de catálogos"
-                            className="flex gap-1 overflow-x-auto p-2 lg:flex-col lg:overflow-visible"
-                        >
-                            {domains.map((option) => {
-                                const Icon =
-                                    domainIcons[option.slug] ?? ListTree;
-                                const selected = option.slug === domain.slug;
-
-                                return (
-                                    <Button
-                                        key={option.slug}
-                                        type="button"
-                                        variant={
-                                            selected ? 'secondary' : 'ghost'
-                                        }
-                                        className="h-auto min-w-max justify-start px-3 py-2 lg:w-full"
-                                        aria-current={
-                                            selected ? 'page' : undefined
-                                        }
-                                        onClick={() =>
-                                            selectDomain(option.slug)
-                                        }
-                                    >
-                                        <Icon data-icon="inline-start" />
-                                        {option.title}
-                                    </Button>
-                                );
-                            })}
-                        </nav>
-
-                        <nav
-                            aria-label={`Catálogos de ${domain.title}`}
-                            className="flex gap-1 overflow-x-auto border-t p-2 lg:flex-col lg:overflow-visible"
-                        >
-                            {domains
-                                .find((option) => option.slug === domain.slug)
-                                ?.catalogs.map((option) => {
+                <div className="grid items-start gap-6 lg:grid-cols-[15rem_minmax(0,1fr)]">
+                    <Card className="lg:sticky lg:top-20">
+                        <CardContent className="flex flex-col gap-4">
+                            <nav
+                                aria-label="Módulos de catálogos"
+                                className="flex flex-col gap-1"
+                            >
+                                {domains.map((option) => {
+                                    const Icon =
+                                        domainIcons[option.slug] ?? ListTree;
                                     const selected =
-                                        option.slug === catalog.slug;
+                                        option.slug === domain.slug;
 
                                     return (
                                         <Button
                                             key={option.slug}
                                             type="button"
                                             variant={
-                                                selected ? 'outline' : 'ghost'
+                                                selected ? 'secondary' : 'ghost'
                                             }
                                             size="sm"
-                                            className="h-auto min-w-max justify-start px-3 py-2 lg:w-full"
+                                            className="w-full justify-start"
                                             aria-current={
                                                 selected ? 'page' : undefined
                                             }
                                             onClick={() =>
-                                                selectCatalog(option.slug)
+                                                selectDomain(option.slug)
                                             }
                                         >
+                                            <Icon data-icon="inline-start" />
                                             {option.title}
                                         </Button>
                                     );
                                 })}
-                        </nav>
-                    </aside>
+                            </nav>
 
-                    <div className="min-w-0">
-                        <div className="flex flex-col gap-4 border-b px-5 py-5 sm:flex-row sm:items-start sm:justify-between">
-                            <div className="flex flex-col gap-1">
-                                <div className="flex flex-wrap items-center gap-2">
-                                    <h2 className="text-xl">{catalog.title}</h2>
-                                    {catalog.locked && (
-                                        <Badge variant="outline">
-                                            Base del sistema
-                                        </Badge>
-                                    )}
-                                </div>
-                                <p className="text-sm text-muted-foreground">
-                                    {domain.description}
+                            <Separator />
+
+                            <div className="flex flex-col gap-2">
+                                <p className="px-3 text-xs text-muted-foreground">
+                                    {domain.title}
                                 </p>
+                                <nav
+                                    aria-label={`Catálogos de ${domain.title}`}
+                                    className="flex flex-col gap-1"
+                                >
+                                    {domains
+                                        .find(
+                                            (option) =>
+                                                option.slug === domain.slug,
+                                        )
+                                        ?.catalogs.map((option) => {
+                                            const selected =
+                                                option.slug === catalog.slug;
+
+                                            return (
+                                                <Button
+                                                    key={option.slug}
+                                                    type="button"
+                                                    variant={
+                                                        selected
+                                                            ? 'outline'
+                                                            : 'ghost'
+                                                    }
+                                                    size="sm"
+                                                    className="w-full justify-start"
+                                                    aria-current={
+                                                        selected
+                                                            ? 'page'
+                                                            : undefined
+                                                    }
+                                                    onClick={() =>
+                                                        selectCatalog(
+                                                            option.slug,
+                                                        )
+                                                    }
+                                                >
+                                                    {option.title}
+                                                </Button>
+                                            );
+                                        })}
+                                </nav>
                             </div>
+                        </CardContent>
+                    </Card>
+
+                    <DataTable
+                        title={catalog.title}
+                        description={domain.description}
+                        headerAction={
                             <Button
                                 type="button"
                                 onClick={() => setCreateOpen(true)}
@@ -300,55 +311,49 @@ export default function AdminCatalogsIndex({
                                 <Plus data-icon="inline-start" />
                                 Nuevo registro
                             </Button>
-                        </div>
-
-                        <div className="p-5">
-                            <DataTable
-                                data={records.data}
-                                columns={columns}
-                                getRowId={(record) => record.id}
-                                emptyMessage="No hay registros que coincidan con los filtros seleccionados."
-                                searchPlaceholder={
-                                    catalog.has_description
-                                        ? 'Buscar por nombre o descripción'
-                                        : 'Buscar por nombre'
-                                }
-                                query={filters}
-                                onQueryChange={changeQuery}
-                                filters={
-                                    catalog.has_active
-                                        ? [
+                        }
+                        data={records.data}
+                        columns={columns}
+                        getRowId={(record) => record.id}
+                        emptyMessage="No hay registros que coincidan con los filtros seleccionados."
+                        searchPlaceholder={
+                            catalog.has_description
+                                ? 'Buscar por nombre o descripción'
+                                : 'Buscar por nombre'
+                        }
+                        query={filters}
+                        onQueryChange={changeQuery}
+                        filters={
+                            catalog.has_active
+                                ? [
+                                      {
+                                          id: 'status',
+                                          label: 'Filtrar por estado',
+                                          placeholder: 'Todos los estados',
+                                          options: [
                                               {
-                                                  id: 'status',
-                                                  label: 'Filtrar por estado',
-                                                  placeholder:
-                                                      'Todos los estados',
-                                                  options: [
-                                                      {
-                                                          label: 'Activos',
-                                                          value: 'active',
-                                                      },
-                                                      {
-                                                          label: 'Inactivos',
-                                                          value: 'inactive',
-                                                      },
-                                                  ],
+                                                  label: 'Activos',
+                                                  value: 'active',
                                               },
-                                          ]
-                                        : []
-                                }
-                                pagination={{
-                                    currentPage: records.current_page,
-                                    from: records.from,
-                                    lastPage: records.last_page,
-                                    perPage: records.per_page,
-                                    to: records.to,
-                                    total: records.total,
-                                }}
-                            />
-                        </div>
-                    </div>
-                </section>
+                                              {
+                                                  label: 'Inactivos',
+                                                  value: 'inactive',
+                                              },
+                                          ],
+                                      },
+                                  ]
+                                : []
+                        }
+                        pagination={{
+                            currentPage: records.current_page,
+                            from: records.from,
+                            lastPage: records.last_page,
+                            perPage: records.per_page,
+                            to: records.to,
+                            total: records.total,
+                        }}
+                    />
+                </div>
             </div>
 
             <Sheet open={createOpen} onOpenChange={setCreateOpen}>

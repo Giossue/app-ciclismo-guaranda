@@ -83,6 +83,7 @@ type Props<T> = {
     pagination: DataTablePagination;
     query: DataTableQuery;
     searchPlaceholder?: string;
+    headerAction?: React.ReactNode;
     title?: string;
 };
 
@@ -97,6 +98,7 @@ export function DataTable<T>({
     pagination,
     query,
     searchPlaceholder = 'Buscar…',
+    headerAction,
     title,
 }: Props<T>) {
     const [hiddenColumns, setHiddenColumns] = useState<Set<string>>(new Set());
@@ -132,13 +134,16 @@ export function DataTable<T>({
 
     return (
         <Card>
-            {title && (
+            {(title || description || headerAction) && (
                 <CardHeader>
-                    <div className="flex flex-col gap-1.5">
-                        <CardTitle>{title}</CardTitle>
-                        {description && (
-                            <CardDescription>{description}</CardDescription>
-                        )}
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                        <div className="flex flex-col gap-1.5">
+                            {title && <CardTitle>{title}</CardTitle>}
+                            {description && (
+                                <CardDescription>{description}</CardDescription>
+                            )}
+                        </div>
+                        {headerAction}
                     </div>
                 </CardHeader>
             )}
