@@ -4,10 +4,16 @@ import { Link } from '@inertiajs/react';
 import L from 'leaflet';
 import {
     AlertTriangle,
+    ArrowUp,
+    CornerUpLeft,
+    CornerUpRight,
     Filter,
+    Flag,
     Layers,
     LocateFixed,
     Navigation,
+    Undo2,
+    X,
 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -31,7 +37,21 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { mediaUrl } from '@/lib/media';
-import { getCurrentAppLocation } from '@/lib/native/capacitor';
+import {
+    getCurrentAppLocation,
+    watchAppLocation,
+} from '@/lib/native/capacitor';
+import type {
+    ApproachStep,
+    ManeuverDirection,
+    NavigationProgress,
+    NavigationStep,
+} from '@/lib/turn-by-turn';
+import {
+    buildNavigationSteps,
+    computeProgress,
+    formatMeters,
+} from '@/lib/turn-by-turn';
 import { cn } from '@/lib/utils';
 import { show as approachShow } from '@/routes/routes/approach';
 import type {
@@ -69,11 +89,21 @@ type ApproachState = {
     positions: [number, number][];
     distanceKm: number;
     minutes: number;
+    steps: ApproachStep[];
 };
 type ApproachPayload = {
     geojson?: { coordinates?: [number, number][] };
     distance_km?: number;
     estimated_time_minutes?: number;
+    steps?: ApproachStep[];
+};
+type NavigationState = {
+    slug: string;
+    line: [number, number][];
+    steps: NavigationStep[];
+    progress: NavigationProgress;
+    arrived: boolean;
+    rerouting: boolean;
 };
 type OverlayFilters = {
     tracks: boolean;
@@ -130,6 +160,14 @@ const approachPathOptions = {
     opacity: 0.9,
     weight: 4,
 };
+const directionIcons: Record<ManeuverDirection, typeof ArrowUp> = {
+    left: CornerUpLeft,
+    right: CornerUpRight,
+    straight: ArrowUp,
+    uturn: Undo2,
+    depart: Navigation,
+    arrive: Flag,
+};
 const poiIconPaths: Record<string, string> = {
     Comida: '<path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/>',
     Tienda: '<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/>',
@@ -167,6 +205,49 @@ const savedOverviewState: {
 
 function rememberOverviewLocation(location: UserLocation): void {
     savedOverviewState.location = location;
+}
+
+async function fetchApproach(
+    slug: string,
+    location: { latitude: number; longitude: number },
+    signal?: AbortSignal,
+): Promise<Omit<ApproachState, 'slug'> | null> {
+    try {
+        const response = await fetch(
+            approachShow.url(slug, {
+                query: {
+                    latitude: location.latitude,
+                    longitude: location.longitude,
+                },
+            }),
+            { headers: { Accept: 'application/json' }, signal },
+        );
+
+        if (!response.ok) {
+            return null;
+        }
+
+        const payload = (await response.json()) as ApproachPayload | null;
+        const coordinates = payload?.geojson?.coordinates;
+
+        if (!Array.isArray(coordinates) || coordinates.length < 2) {
+            return null;
+        }
+
+        return {
+            positions: coordinates.map(
+                ([longitude, latitude]): [number, number] => [
+                    latitude,
+                    longitude,
+                ],
+            ),
+            distanceKm: payload?.distance_km ?? 0,
+            minutes: payload?.estimated_time_minutes ?? 0,
+            steps: Array.isArray(payload?.steps) ? payload.steps : [],
+        };
+    } catch {
+        return null;
+    }
 }
 
 function rememberOverviewView(map: L.Map): void {
@@ -234,42 +315,163 @@ export default function RouteMap({
 
         const abortController = new AbortController();
 
-        fetch(
-            approachShow.url(selectedSlug, {
-                query: {
-                    latitude: userLocation.latitude,
-                    longitude: userLocation.longitude,
-                },
-            }),
-            {
-                headers: { Accept: 'application/json' },
-                signal: abortController.signal,
-            },
-        )
-            .then((response) => (response.ok ? response.json() : null))
-            .then((payload: ApproachPayload | null) => {
-                const coordinates = payload?.geojson?.coordinates;
+        void fetchApproach(
+            selectedSlug,
+            userLocation,
+            abortController.signal,
+        ).then((data) => {
+            setApproach(data ? { slug: selectedSlug, ...data } : null);
+        });
 
-                if (!Array.isArray(coordinates) || coordinates.length < 2) {
-                    setApproach(null);
+        return () => abortController.abort();
+    }, [mode, selectedSlug, userLocation]);
+
+    /*
+     * Navegación guiada: watchPosition alimenta el progreso; el estado vive
+     * también en un ref porque los ticks del GPS llegan fuera del ciclo de
+     * render.
+     */
+    const [navigation, setNavigation] = useState<NavigationState | null>(null);
+    const navigationRef = useRef<NavigationState | null>(null);
+    const stopWatchRef = useRef<(() => void) | null>(null);
+    const lastRerouteAtRef = useRef(0);
+
+    const updateNavigation = (value: NavigationState | null): void => {
+        navigationRef.current = value;
+        setNavigation(value);
+    };
+
+    const stopNavigation = (): void => {
+        stopWatchRef.current?.();
+        stopWatchRef.current = null;
+        updateNavigation(null);
+    };
+
+    useEffect(() => () => stopWatchRef.current?.(), []);
+
+    const handleNavigationTick = (snapshot: {
+        latitude: number;
+        longitude: number;
+        accuracyM: number | null;
+    }): void => {
+        const nextLocation = {
+            latitude: snapshot.latitude,
+            longitude: snapshot.longitude,
+            accuracy: snapshot.accuracyM ?? 0,
+        };
+
+        setUserLocation(nextLocation);
+        rememberOverviewLocation(nextLocation);
+
+        const current = navigationRef.current;
+
+        if (!current || current.arrived) {
+            return;
+        }
+
+        const position: [number, number] = [
+            nextLocation.latitude,
+            nextLocation.longitude,
+        ];
+        const progress = computeProgress(current.steps, position);
+
+        if (progress.remainingM <= 25) {
+            updateNavigation({ ...current, progress, arrived: true });
+            stopWatchRef.current?.();
+            stopWatchRef.current = null;
+
+            return;
+        }
+
+        /* Desviado de la línea: se recalcula desde la posición actual. */
+        if (
+            progress.offRouteM > 50 &&
+            !current.rerouting &&
+            Date.now() - lastRerouteAtRef.current > 8000
+        ) {
+            lastRerouteAtRef.current = Date.now();
+            updateNavigation({ ...current, progress, rerouting: true });
+
+            void fetchApproach(current.slug, nextLocation).then((data) => {
+                const latest = navigationRef.current;
+
+                if (!latest || latest.slug !== current.slug) {
+                    return;
+                }
+
+                if (!data || data.steps.length === 0) {
+                    updateNavigation({ ...latest, rerouting: false });
 
                     return;
                 }
 
-                setApproach({
-                    slug: selectedSlug,
-                    positions: coordinates.map(([longitude, latitude]) => [
-                        latitude,
-                        longitude,
-                    ]),
-                    distanceKm: payload?.distance_km ?? 0,
-                    minutes: payload?.estimated_time_minutes ?? 0,
-                });
-            })
-            .catch(() => undefined);
+                const steps = buildNavigationSteps(data.steps);
 
-        return () => abortController.abort();
-    }, [mode, selectedSlug, userLocation]);
+                updateNavigation({
+                    ...latest,
+                    line: data.positions,
+                    steps,
+                    progress: computeProgress(steps, position),
+                    rerouting: false,
+                });
+            });
+
+            return;
+        }
+
+        updateNavigation({ ...current, progress });
+    };
+
+    const startNavigation = (): void => {
+        if (
+            !activeApproach ||
+            !userLocation ||
+            activeApproach.steps.length === 0
+        ) {
+            return;
+        }
+
+        const steps = buildNavigationSteps(activeApproach.steps);
+        const position: [number, number] = [
+            userLocation.latitude,
+            userLocation.longitude,
+        ];
+
+        updateNavigation({
+            slug: activeApproach.slug,
+            line: activeApproach.positions,
+            steps,
+            progress: computeProgress(steps, position),
+            arrived: false,
+            rerouting: false,
+        });
+
+        stopWatchRef.current?.();
+        stopWatchRef.current = watchAppLocation(
+            handleNavigationTick,
+            () => undefined,
+        );
+    };
+
+    const followPosition = useMemo<[number, number] | null>(
+        () =>
+            userLocation
+                ? [userLocation.latitude, userLocation.longitude]
+                : null,
+        [userLocation],
+    );
+    const nextNavigationStep = navigation
+        ? navigation.steps[
+              Math.min(
+                  navigation.progress.stepIndex + 1,
+                  navigation.steps.length - 1,
+              )
+          ]
+        : null;
+    const bannerDirection: ManeuverDirection = navigation?.arrived
+        ? 'arrive'
+        : (nextNavigationStep?.direction ?? 'straight');
+    const BannerIcon = directionIcons[bannerDirection];
     const [filters, setFilters] = useState<OverlayFilters>(() => ({
         tracks: mode === 'detail' || selectedSlug !== undefined,
         endpoints: true,
@@ -321,10 +523,54 @@ export default function RouteMap({
                 immersive && 'relative h-full overflow-hidden',
             )}
         >
+            {navigation && (
+                <div
+                    className={cn(
+                        immersive && 'absolute inset-x-3 top-3 z-[600]',
+                    )}
+                >
+                    <div
+                        role="status"
+                        aria-live="polite"
+                        className="mx-auto flex max-w-md items-center gap-3 rounded-[var(--radius-emphasis)] border bg-background/95 p-3 shadow-[var(--elevation-floating)] backdrop-blur"
+                    >
+                        <BannerIcon
+                            aria-hidden="true"
+                            className="size-8 shrink-0 text-primary"
+                        />
+                        <div className="min-w-0 flex-1">
+                            <p className="truncate text-sm font-semibold">
+                                {navigation.arrived
+                                    ? 'Has llegado al punto de partida'
+                                    : (nextNavigationStep?.instruction ??
+                                      'Sigue la línea azul')}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                                {navigation.arrived
+                                    ? '¡Buen viaje!'
+                                    : `En ${formatMeters(navigation.progress.distanceToManeuverM)} · quedan ${formatMeters(navigation.progress.remainingM)}`}
+                                {navigation.rerouting && ' · recalculando…'}
+                            </p>
+                        </div>
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={stopNavigation}
+                            aria-label="Detener navegación"
+                            title="Detener navegación"
+                        >
+                            <X />
+                        </Button>
+                    </div>
+                </div>
+            )}
+
             <div
                 className={cn(
                     'flex items-center gap-2',
                     immersive && 'absolute top-3 left-3 z-[500]',
+                    navigation && 'hidden',
                 )}
             >
                 {showOverviewFilters && (
@@ -418,6 +664,20 @@ export default function RouteMap({
                 >
                     <LocateFixed className="size-6" />
                 </Button>
+                {activeApproach &&
+                    activeApproach.steps.length > 0 &&
+                    !navigation && (
+                        <Button
+                            type="button"
+                            size="icon"
+                            onClick={startNavigation}
+                            aria-label="Navegar al punto de partida"
+                            title="Navegar al punto de partida"
+                            className="size-14 min-h-14 rounded-full shadow-[var(--elevation-floating)]"
+                        >
+                            <Navigation className="size-6" />
+                        </Button>
+                    )}
                 {onReportIncident && (
                     <Button
                         type="button"
@@ -479,29 +739,48 @@ export default function RouteMap({
                         activeTrack={activeTrack}
                         selectedSlug={selectedSlug}
                         focusSelected={focusSelected}
-                        extraPoints={activeApproach?.positions}
+                        extraPoints={
+                            navigation ? undefined : activeApproach?.positions
+                        }
                         skipInitialFit={
                             Boolean(restoredView) &&
                             !(focusSelected && selectedSlug)
                         }
                     />
-                    <FlyToUserLocation location={userLocation} />
+                    <FlyToUserLocation
+                        location={userLocation}
+                        enabled={!navigation}
+                    />
+                    <FollowNavigation
+                        position={followPosition}
+                        active={Boolean(navigation && !navigation.arrived)}
+                    />
 
-                    {activeApproach && (
+                    {navigation ? (
                         <Polyline
-                            positions={activeApproach.positions}
+                            positions={navigation.line}
                             pathOptions={approachPathOptions}
-                        >
-                            <Popup>
-                                <div className="flex flex-col gap-1 text-sm">
-                                    <strong>Camino al punto de partida</strong>
-                                    <span>
-                                        {activeApproach.distanceKm.toLocaleString()}{' '}
-                                        km · {activeApproach.minutes} min aprox.
-                                    </span>
-                                </div>
-                            </Popup>
-                        </Polyline>
+                        />
+                    ) : (
+                        activeApproach && (
+                            <Polyline
+                                positions={activeApproach.positions}
+                                pathOptions={approachPathOptions}
+                            >
+                                <Popup>
+                                    <div className="flex flex-col gap-1 text-sm">
+                                        <strong>
+                                            Camino al punto de partida
+                                        </strong>
+                                        <span>
+                                            {activeApproach.distanceKm.toLocaleString()}{' '}
+                                            km · {activeApproach.minutes} min
+                                            aprox.
+                                        </span>
+                                    </div>
+                                </Popup>
+                            </Polyline>
+                        )
                     )}
                     <UserTrackLine
                         activeTrack={activeTrack}
@@ -845,16 +1124,55 @@ function FitRouteBounds({
     return null;
 }
 
-function FlyToUserLocation({ location }: { location: UserLocation | null }) {
+function FlyToUserLocation({
+    location,
+    enabled = true,
+}: {
+    location: UserLocation | null;
+    enabled?: boolean;
+}) {
     const map = useMap();
 
     useEffect(() => {
-        if (!location) {
+        if (!enabled || !location) {
             return;
         }
 
         map.flyTo([location.latitude, location.longitude], 17);
-    }, [location, map]);
+    }, [enabled, location, map]);
+
+    return null;
+}
+
+/**
+ * Durante la navegación el mapa sigue al ciclista con panTo suave; el flyTo
+ * de arriba queda deshabilitado para no relanzar la animación en cada tick.
+ */
+function FollowNavigation({
+    position,
+    active,
+}: {
+    position: [number, number] | null;
+    active: boolean;
+}) {
+    const map = useMap();
+    const wasActive = useRef(false);
+
+    useEffect(() => {
+        if (!active || !position) {
+            wasActive.current = false;
+
+            return;
+        }
+
+        if (wasActive.current) {
+            map.panTo(position);
+        } else {
+            map.setView(position, Math.max(map.getZoom(), 17));
+        }
+
+        wasActive.current = true;
+    }, [active, position, map]);
 
     return null;
 }

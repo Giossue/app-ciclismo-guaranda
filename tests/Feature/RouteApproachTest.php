@@ -49,7 +49,7 @@ function createRouteForApproach(): CyclingRoute
     return $route;
 }
 
-test('cyclist gets an OSRM approach path to the route start', function () {
+test('cyclist gets an OSRM approach path with turn-by-turn steps', function () {
     Http::fake([
         'http://osrm.test:5000/route/v1/driving/*' => Http::response([
             'code' => 'Ok',
@@ -63,6 +63,39 @@ test('cyclist gets an OSRM approach path to the route start', function () {
                         [-79.01, -1.61],
                     ],
                 ],
+                'legs' => [[
+                    'steps' => [
+                        [
+                            'distance' => 900.25,
+                            'name' => 'García Moreno',
+                            'maneuver' => [
+                                'type' => 'depart',
+                                'location' => [-79.0, -1.6],
+                            ],
+                            'geometry' => [
+                                'coordinates' => [
+                                    [-79.0, -1.6],
+                                    [-79.005, -1.605],
+                                ],
+                            ],
+                        ],
+                        [
+                            'distance' => 600.15,
+                            'name' => 'Calle 14',
+                            'maneuver' => [
+                                'type' => 'turn',
+                                'modifier' => 'left',
+                                'location' => [-79.005, -1.605],
+                            ],
+                            'geometry' => [
+                                'coordinates' => [
+                                    [-79.005, -1.605],
+                                    [-79.01, -1.61],
+                                ],
+                            ],
+                        ],
+                    ],
+                ]],
             ]],
         ]),
     ]);
@@ -88,11 +121,34 @@ test('cyclist gets an OSRM approach path to the route start', function () {
             ],
             'distance_km' => 1.5,
             'estimated_time_minutes' => 7,
+            'steps' => [
+                [
+                    'distance_m' => 900.3,
+                    'name' => 'García Moreno',
+                    'maneuver' => [
+                        'type' => 'depart',
+                        'modifier' => null,
+                        'exit' => null,
+                        'location' => [-79.0, -1.6],
+                    ],
+                ],
+                [
+                    'distance_m' => 600.2,
+                    'name' => 'Calle 14',
+                    'maneuver' => [
+                        'type' => 'turn',
+                        'modifier' => 'left',
+                        'exit' => null,
+                        'location' => [-79.005, -1.605],
+                    ],
+                ],
+            ],
         ]);
 
     Http::assertSent(function (Request $request): bool {
         return str_starts_with($request->url(), 'http://osrm.test:5000/route/v1/driving/-79.000000,-1.600000;-79.010000,-1.610000')
-            && $request['geometries'] === 'geojson';
+            && $request['geometries'] === 'geojson'
+            && $request['steps'] === 'true';
     });
 });
 

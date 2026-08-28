@@ -183,6 +183,73 @@ export async function getCurrentAppLocation(): Promise<AppLocationSnapshot> {
     return rememberAppPosition(await getCurrentAppPosition());
 }
 
+/**
+ * Seguimiento continuo de posición para navegación. Devuelve una función de
+ * limpieza que detiene el watch; llamarla siempre al terminar para no drenar
+ * la batería.
+ */
+export function watchAppLocation(
+    onLocation: (location: AppLocationSnapshot) => void,
+    onError?: (error: unknown) => void,
+): () => void {
+    if (hasNativePlugin('Geolocation')) {
+        let watchId: string | null = null;
+        let cancelled = false;
+
+        void Geolocation.watchPosition(
+            { enableHighAccuracy: true, timeout: 15000 },
+            (position, error) => {
+                if (error || !position) {
+                    onError?.(error ?? new Error('Sin posición'));
+
+                    return;
+                }
+
+                onLocation(rememberAppPosition(position));
+            },
+        ).then((id) => {
+            watchId = id;
+
+            if (cancelled) {
+                void Geolocation.clearWatch({ id });
+            }
+        });
+
+        return () => {
+            cancelled = true;
+
+            if (watchId !== null) {
+                void Geolocation.clearWatch({ id: watchId });
+            }
+        };
+    }
+
+    if (typeof navigator === 'undefined' || !navigator.geolocation) {
+        onError?.(new Error('Geolocation unavailable'));
+
+        return () => undefined;
+    }
+
+    const watchId = navigator.geolocation.watchPosition(
+        (position) => {
+            onLocation(
+                rememberAppPosition({
+                    coords: {
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude,
+                        accuracy: position.coords.accuracy,
+                    },
+                    timestamp: position.timestamp,
+                }),
+            );
+        },
+        (error) => onError?.(error),
+        { enableHighAccuracy: true, maximumAge: 3000, timeout: 15000 },
+    );
+
+    return () => navigator.geolocation.clearWatch(watchId);
+}
+
 export function rememberAppPosition(
     position: AppPosition,
 ): AppLocationSnapshot {

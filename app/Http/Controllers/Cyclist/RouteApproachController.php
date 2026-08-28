@@ -22,7 +22,7 @@ class RouteApproachController extends Controller
         $validated = $request->validated();
 
         try {
-            return response()->json($planner->preview([
+            return response()->json($planner->navigate([
                 [
                     'latitude' => $validated['latitude'],
                     'longitude' => $validated['longitude'],
