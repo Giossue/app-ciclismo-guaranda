@@ -551,6 +551,57 @@
     }
 }
 
+@layer components {
+    /*
+     * Entrada escalonada: cada hijo directo aparece un poco después que el
+     * anterior. El retardo se corta al octavo para que una lista larga no
+     * termine esperando. La guarda de prefers-reduced-motion la anula.
+     */
+    .ueb-stagger > * {
+        animation: ueb-rise 260ms ease-out both;
+    }
+
+    .ueb-stagger > *:nth-child(2) {
+        animation-delay: 40ms;
+    }
+
+    .ueb-stagger > *:nth-child(3) {
+        animation-delay: 80ms;
+    }
+
+    .ueb-stagger > *:nth-child(4) {
+        animation-delay: 120ms;
+    }
+
+    .ueb-stagger > *:nth-child(5) {
+        animation-delay: 160ms;
+    }
+
+    .ueb-stagger > *:nth-child(6) {
+        animation-delay: 200ms;
+    }
+
+    .ueb-stagger > *:nth-child(7) {
+        animation-delay: 240ms;
+    }
+
+    .ueb-stagger > *:nth-child(n + 8) {
+        animation-delay: 280ms;
+    }
+}
+
+@keyframes ueb-rise {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
 /* ciclismo-ueb visual adaptation */
 @layer components {
     .app-phone-frame {

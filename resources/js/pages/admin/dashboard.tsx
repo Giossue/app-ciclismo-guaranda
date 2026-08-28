@@ -151,19 +151,19 @@ export default function AdminDashboard({
 
                 <section
                     aria-label="Indicadores principales"
-                    className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-5 [&>*:last-child:nth-child(odd)]:col-span-2 xl:[&>*:last-child:nth-child(odd)]:col-span-1"
+                    className="ueb-stagger grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-5 [&>*:last-child:nth-child(odd)]:col-span-2 xl:[&>*:last-child:nth-child(odd)]:col-span-1"
                 >
                     {overview.map((metric) => (
                         <OverviewCard key={metric.key} metric={metric} />
                     ))}
                 </section>
 
-                <section className="grid gap-4 xl:grid-cols-5">
+                <section className="ueb-stagger grid gap-4 xl:grid-cols-5">
                     <ActivityCard activity={activity} />
                     <PopularRoutesCard routes={popularRoutes} />
                 </section>
 
-                <section className="grid gap-4 xl:grid-cols-5">
+                <section className="ueb-stagger grid gap-4 xl:grid-cols-5">
                     <RouteStatusCard
                         statuses={routeStatuses}
                         totalRoutes={totalRoutes}

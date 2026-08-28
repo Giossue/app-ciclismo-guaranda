@@ -326,7 +326,7 @@ export function DataTable<T>({
                     </DropdownMenu>
                 </DataTableToolbar>
 
-                <ul className="flex flex-col gap-3 md:hidden">
+                <ul className="ueb-stagger flex flex-col gap-3 md:hidden">
                     {loading ? (
                         skeletonRows(data.length).map((key) => (
                             <li
@@ -400,7 +400,7 @@ export function DataTable<T>({
                                 ))}
                             </TableRow>
                         </TableHeader>
-                        <TableBody className="[&_tr:nth-child(even)]:bg-muted/25">
+                        <TableBody className="ueb-stagger [&_tr:nth-child(even)]:bg-muted/25">
                             {loading ? (
                                 skeletonRows(data.length).map((key) => (
                                     <TableRow key={key}>

@@ -46,7 +46,12 @@ export function AppMobileNav() {
                         >
                             <span className="relative">
                                 {Icon && (
-                                    <Icon className="size-[1.2rem] transition-transform" />
+                                    <Icon
+                                        className={cn(
+                                            'size-[1.2rem] transition-transform duration-200 ease-out',
+                                            active && 'scale-110',
+                                        )}
+                                    />
                                 )}
                                 {item.href === '/notifications' &&
                                     unreadCount > 0 && (

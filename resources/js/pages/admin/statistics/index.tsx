@@ -245,7 +245,7 @@ export default function AdminStatisticsIndex({
 
                 <section
                     aria-label="Resumen del período"
-                    className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4"
+                    className="ueb-stagger grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4"
                 >
                     {loading
                         ? Array.from({ length: 4 }, (_, index) => (
@@ -372,7 +372,7 @@ export default function AdminStatisticsIndex({
                     </CardContent>
                 </Card>
 
-                <section className="grid gap-4 xl:grid-cols-2">
+                <section className="ueb-stagger grid gap-4 xl:grid-cols-2">
                     <RankingChart
                         loading={loading}
                         title="Rutas más consultadas"
@@ -391,7 +391,7 @@ export default function AdminStatisticsIndex({
                     />
                 </section>
 
-                <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)]">
+                <section className="ueb-stagger grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)]">
                     <Card>
                         <CardHeader>
                             <CardTitle>Distribución de valoraciones</CardTitle>
