@@ -135,3 +135,7 @@ Después de esa prueba manual, marcar Fase 12 y Fase 14 como `Completado` si tod
 
 - Se creó PostgreSQL local en el contenedor Podman `guaranda-go-postgres`, con volumen persistente y acceso limitado a `127.0.0.1`.
 - `.env` local usa esa instancia; se aplicaron las 16 migraciones existentes y `CatalogSeeder` para los catálogos de desarrollo, sin tocar producción ni crear administrador.
+
+## Operación de datos remota 2026-08-27
+
+- Se creó y verificó una cuenta administradora solicitada directamente en PostgreSQL remoto, con rol `administrador`, estado activo y contraseña almacenada únicamente como hash bcrypt compatible con Laravel. No se usaron seeders ni se registraron credenciales.

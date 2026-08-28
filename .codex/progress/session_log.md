@@ -491,6 +491,11 @@
 - Se confirmó que `guaranda_go_db` existe en el clúster remoto y que `guaranda_go_app` es su rol de aplicación sin privilegios de superusuario.
 - Se rotó su contraseña y se verificó una conexión nueva con dicho rol. La credencial se guarda únicamente en `.pgpass` local; no se registró en el repositorio ni en documentación.
 
+## 2026-08-27 — Alta puntual de administrador remoto
+
+- Se creó directamente en PostgreSQL remoto una cuenta administradora solicitada, con rol válido, cuenta activa y contraseña bcrypt compatible con Laravel.
+- Se comprobó tras la transacción que la cuenta está activa, no eliminada y autorizada como administradora. No se usaron seeders ni se expusieron credenciales.
+
 ## 2026-08-27 — Landing adaptable
 
 - Se consultó el MCP de 21st.dev y se adaptó la referencia `Feature Bento` a la landing existente.
