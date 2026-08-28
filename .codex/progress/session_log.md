@@ -653,6 +653,7 @@
 - Se sustituyeron los chips de categorías por la barra compartida de búsqueda, categoría y dificultad; el backend conserva solo rutas activas y preserva filtros en la paginación.
 - Las tarjetas del catálogo ciclista siguen ahora la estructura visual de rutas administrativas. Notificaciones se retiró de las navegaciones lateral y móvil; Favoritas queda como acceso principal y la campana mantiene el acceso a avisos.
 - Validaciones aprobadas: `CyclistRouteVisibilityTest` (3 pruebas, 40 aserciones), `RouteMapVisualizationTest` (3 pruebas, 44 aserciones), Pint, tipos, lint, formato, build Vite y caché de rutas.
+
 ## 2026-08-28 — Plan de agente nativo
 
 - Se verificó AI Elements: el repositorio ya contiene componentes de conversación, mensajes, prompt, adjuntos, sugerencias, fuentes, razonamiento, tools y confirmación; React 19, Tailwind 4, shadcn y AI SDK también están presentes.
@@ -784,3 +785,9 @@
 - El encabezado del chat concentra Nueva consulta, Historial y Borrar en un
   menú de tres puntos. Borrar aplica únicamente a la conversación activa y
   conserva la confirmación previa.
+
+## Chat inmersivo y anclaje real — 2026-08-28
+
+- La guía IA ya no se monta bajo el sidebar, header ni navegación inferior.
+  Usa un viewport propio: el encabezado “Volver” y el compositor permanecen
+  fijos y solo el historial se desplaza.

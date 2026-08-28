@@ -11,12 +11,13 @@ type PageProps = {
 };
 
 export function AppMobileNav() {
-    const { auth } = usePage<PageProps>().props;
+    const page = usePage<PageProps>();
+    const { auth } = page.props;
     const { isCurrentUrl } = useCurrentUrl();
     const { openMobile, setOpenMobile } = useSidebar();
     const primaryItems = mobilePrimaryNavItems(auth);
 
-    if (!auth.user) {
+    if (!auth.user || page.component === 'routes/show') {
         return null;
     }
 

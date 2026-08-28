@@ -23,6 +23,20 @@ export default function AppSidebarLayout({ children }: AppLayoutProps) {
 
     useDisableNativePullToRefresh(!administrator);
 
+    // El asistente es una superficie inmersiva: su propio encabezado ofrece
+    // la salida a rutas y su conversación controla el único scroll. Montarlo
+    // dentro del sidebar/header global deja dos áreas compitiendo por el alto
+    // del viewport y hace que el compositor se desplace con la página.
+    if (isChat) {
+        return (
+            <AppShell variant="header">
+                <main className="h-[100dvh] min-h-0 w-full overflow-hidden">
+                    {children}
+                </main>
+            </AppShell>
+        );
+    }
+
     return (
         <AppShell variant="sidebar">
             <AppSidebar />
@@ -40,14 +54,12 @@ export default function AppSidebarLayout({ children }: AppLayoutProps) {
                     key={pathname}
                     className={cn(
                         'ueb-admin-page flex flex-1 animate-in flex-col gap-[var(--page-gap)] px-[var(--page-pad-x)] pt-[var(--page-pad-y)] duration-150 ease-out fade-in',
-                        isChat
-                            ? 'h-[calc(100dvh-3rem)] min-h-0 overflow-hidden pb-[var(--page-pad-y)]'
-                            : 'safe-bottom-pad md:pb-[var(--page-pad-y)]',
+                        'safe-bottom-pad md:pb-[var(--page-pad-y)]',
                     )}
                 >
                     {children}
                 </main>
-                {!isChat && <AppMobileNav />}
+                <AppMobileNav />
             </AppContent>
         </AppShell>
     );

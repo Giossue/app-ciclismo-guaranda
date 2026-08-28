@@ -364,32 +364,34 @@ export default function ChatIndex({
         <>
             <Head title="Asistente" />
 
-            <section className="ueb-page flex min-h-0 flex-1 flex-col md:h-[calc(100dvh-64px-(var(--page-pad-y)*2))]">
-                <header className="flex shrink-0 items-center gap-2 border-b pb-3">
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        asChild
-                        className="shrink-0"
-                    >
-                        <Link href={routesIndex.url()} prefetch>
-                            <ArrowLeft data-icon="inline-start" />
-                            Volver
-                        </Link>
-                    </Button>
-                    <div className="min-w-0 flex-1">
-                        <p className="text-xs text-muted-foreground">
-                            Guía local de Guaranda
-                        </p>
-                        <p className="truncate text-sm font-bold text-foreground">
-                            {activeConversation?.title ??
-                                'Planifica tu próxima salida'}
-                        </p>
+            <section className="flex h-full min-h-0 w-full flex-col bg-background">
+                <header className="sticky top-0 z-20 shrink-0 border-b bg-background/95 px-4 py-2 backdrop-blur supports-[backdrop-filter]:bg-background/80 sm:px-6">
+                    <div className="mx-auto flex w-full max-w-3xl items-center gap-2">
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            asChild
+                            className="shrink-0"
+                        >
+                            <Link href={routesIndex.url()} prefetch>
+                                <ArrowLeft data-icon="inline-start" />
+                                Volver
+                            </Link>
+                        </Button>
+                        <div className="min-w-0 flex-1">
+                            <p className="text-xs text-muted-foreground">
+                                Guía local de Guaranda
+                            </p>
+                            <p className="truncate text-sm font-bold text-foreground">
+                                {activeConversation?.title ??
+                                    'Planifica tu próxima salida'}
+                            </p>
+                        </div>
+                        <ChatOverflowMenu
+                            conversations={conversations}
+                            activeConversation={activeConversation}
+                        />
                     </div>
-                    <ChatOverflowMenu
-                        conversations={conversations}
-                        activeConversation={activeConversation}
-                    />
                 </header>
 
                 {networkState === 'offline' && (
@@ -412,8 +414,8 @@ export default function ChatIndex({
                     </Alert>
                 )}
 
-                <div className="relative min-h-0 flex-1">
-                    <Conversation className="min-h-0">
+                <div className="relative min-h-0 flex-1 overflow-hidden">
+                    <Conversation className="h-full min-h-0">
                         <ConversationContent className="mx-auto w-full max-w-3xl gap-6 px-0 py-5 sm:px-4">
                             {latestMessages.map((message) => (
                                 <MessageBubble
@@ -490,8 +492,8 @@ export default function ChatIndex({
                     </Conversation>
                 </div>
 
-                <div className="sticky bottom-0 z-10 shrink-0 border-t bg-background/95 pt-3 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-                    <div className="mx-auto flex w-full max-w-3xl flex-col gap-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:px-4">
+                <div className="sticky bottom-0 z-20 shrink-0 border-t bg-background/95 px-4 pt-3 backdrop-blur supports-[backdrop-filter]:bg-background/80 sm:px-6">
+                    <div className="mx-auto flex w-full max-w-3xl flex-col gap-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
                         <div className="flex items-center justify-between gap-2">
                             <p className="text-xs text-muted-foreground">
                                 {location.status === 'ready'

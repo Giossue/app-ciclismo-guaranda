@@ -209,8 +209,9 @@ Después de esa prueba manual, marcar Fase 12 y Fase 14 como `Completado` si tod
   siguiente turno contextual.
 - El estado de red del chat espera la respuesta de Capacitor antes de mostrar
   offline, evitando el falso aviso durante la carga inicial.
-- En móvil, `/chat` oculta la navegación inferior y reserva un viewport propio
-  para que el input permanezca fijo mientras la conversación desplaza.
+- `/chat` se renderiza fuera de toda navegación global (sidebar, header y barra
+  inferior), reserva un viewport propio y deja únicamente el historial como
+  área desplazable; su encabezado “Volver” y el input permanecen fijos.
 - Las acciones secundarias del chat se concentran en un menú de tres puntos;
   borrar se limita a la conversación activa y pide confirmación.
 - OpenAI puede proponer hasta tres referencias internas de ruta/POI; Laravel

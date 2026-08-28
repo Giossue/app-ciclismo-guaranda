@@ -196,16 +196,49 @@ function MapRouteSheet({ route }: { route: MapRouteItem }) {
         : FavoriteRouteController.store.form(route.slug);
 
     return (
-        <section className="fixed inset-x-3 bottom-[calc(var(--bottom-nav-height)+var(--safe-bottom)+1.75rem)] z-[600] flex flex-col gap-4 rounded-[var(--radius-emphasis)] border bg-background/95 p-4 shadow-[0_16px_48px_color-mix(in_oklch,var(--foreground)_28%,transparent)] backdrop-blur md:inset-x-auto md:right-6 md:bottom-6 md:w-[min(28rem,calc(100vw-3rem))]">
+        <section className="fixed inset-x-3 bottom-[calc(var(--safe-bottom)+1rem)] z-[600] flex flex-col gap-4 rounded-[var(--radius-emphasis)] border bg-background/95 p-4 shadow-[0_16px_48px_color-mix(in_oklch,var(--foreground)_28%,transparent)] backdrop-blur md:inset-x-auto md:right-6 md:bottom-6 md:w-[min(28rem,calc(100vw-3rem))]">
             <div
                 aria-hidden="true"
                 className="mx-auto h-1.5 w-12 rounded-full bg-muted-foreground/35 md:hidden"
             />
             <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                    <h1 className="text-xl font-semibold tracking-tight">
-                        {route.name}
-                    </h1>
+                    <div className="flex items-start gap-1">
+                        <h1 className="min-w-0 flex-1 text-xl font-semibold tracking-tight">
+                            {route.name}
+                        </h1>
+                        <Form
+                            {...favoriteAction}
+                            options={{ preserveScroll: true }}
+                        >
+                            {({ processing }) => (
+                                <Button
+                                    type="submit"
+                                    variant="ghost"
+                                    size="icon"
+                                    disabled={processing}
+                                    aria-label={
+                                        route.is_favorite
+                                            ? 'Quitar de favoritas'
+                                            : 'Guardar en favoritas'
+                                    }
+                                    title={
+                                        route.is_favorite
+                                            ? 'Quitar de favoritas'
+                                            : 'Guardar en favoritas'
+                                    }
+                                >
+                                    <Heart
+                                        fill={
+                                            route.is_favorite
+                                                ? 'currentColor'
+                                                : 'none'
+                                        }
+                                    />
+                                </Button>
+                            )}
+                        </Form>
+                    </div>
                     <p className="mt-1 flex items-start gap-1.5 text-sm text-muted-foreground">
                         <MapPin className="mt-0.5 size-4 shrink-0" />
                         <span className="line-clamp-2">
@@ -241,27 +274,12 @@ function MapRouteSheet({ route }: { route: MapRouteItem }) {
                 </Metric>
             </div>
 
-            <div className="grid grid-cols-2 gap-2">
-                <Form {...favoriteAction} options={{ preserveScroll: true }}>
-                    {({ processing }) => (
-                        <Button
-                            type="submit"
-                            variant="outline"
-                            className="w-full"
-                            disabled={processing}
-                        >
-                            <Heart data-icon="inline-start" />
-                            {route.is_favorite ? 'Guardada' : 'Guardar'}
-                        </Button>
-                    )}
-                </Form>
-                <Button asChild className="w-full">
-                    <Link href={routeShow.url(route.slug)} prefetch>
-                        Ver ruta
-                        <ChevronRight data-icon="inline-end" />
-                    </Link>
-                </Button>
-            </div>
+            <Button asChild className="w-full">
+                <Link href={routeShow.url(route.slug)} prefetch>
+                    Ver ruta
+                    <ChevronRight data-icon="inline-end" />
+                </Link>
+            </Button>
         </section>
     );
 }

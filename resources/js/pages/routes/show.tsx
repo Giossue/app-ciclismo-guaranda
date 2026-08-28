@@ -95,6 +95,15 @@ export default function RoutesShow({
 }: Props) {
     const [selectedPoi, setSelectedPoi] = useState<RoutePoi | null>(null);
     const [isIncidentSheetOpen, setIsIncidentSheetOpen] = useState(false);
+    const closeRouteExplorer = () => {
+        if (window.history.length > 1) {
+            window.history.back();
+
+            return;
+        }
+
+        router.visit(routesIndex.url());
+    };
 
     return (
         <>
@@ -118,6 +127,7 @@ export default function RoutesShow({
                     activeTrack={activeTrack}
                     selectedPoi={selectedPoi}
                     onClearSelectedPoi={() => setSelectedPoi(null)}
+                    onClose={closeRouteExplorer}
                 />
                 <IncidentReportSheet
                     route={route}
@@ -137,9 +147,11 @@ function RouteExplorerSheet({
     activeTrack,
     selectedPoi,
     onClearSelectedPoi,
+    onClose,
 }: Props & {
     selectedPoi: RoutePoi | null;
     onClearSelectedPoi: () => void;
+    onClose: () => void;
 }) {
     const [activeTab, setActiveTab] = useState('summary');
 
@@ -149,7 +161,18 @@ function RouteExplorerSheet({
                 aria-hidden="true"
                 className="mx-auto mt-3 h-1.5 w-12 shrink-0 rounded-full bg-muted-foreground/35"
             />
-            <div className="min-h-0 overflow-y-auto px-4 pt-3 pb-[calc(var(--bottom-nav-height)+var(--safe-bottom)+1.5rem)] md:pb-5">
+            <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={onClose}
+                aria-label="Cerrar detalle de ruta"
+                title="Volver"
+                className="absolute top-2 right-3 z-10"
+            >
+                <X />
+            </Button>
+            <div className="min-h-0 overflow-y-auto px-4 pt-3 pb-[calc(var(--safe-bottom)+1.5rem)] md:pb-5">
                 <RouteSummary route={route} />
                 {selectedPoi && (
                     <SelectedPoiSummary
