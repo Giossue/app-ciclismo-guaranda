@@ -68,6 +68,27 @@ Antes de una refactorización visual amplia, ejecutar `python3 temp/audit_ui_tok
 - La pila de respaldo es `Helvetica` y `sans-serif`, para que cada plataforma mantenga una alternativa legible cuando Arial no esté disponible.
 - `font-sans` y `font-display` usan la misma pila para preservar consistencia entre plataformas.
 
+### Pesos
+
+- **Arial solo tiene dos pesos reales: 400 y 700.** Los intermedios de CSS no existen en la fuente y el navegador los resuelve en silencio (500 → 400, 600 → 700); un `900` puede además saltar a Arial Black donde esté instalada y cambiar el render entre Android y escritorio.
+- Por eso `@theme` fija **todos** los alias de `--font-weight-*` a 400 o 700. `font-medium` es 400 y `font-semibold`, `font-bold`, `font-black` son 700. Escribir cuatro clases distintas no produce cuatro pesos: produce dos.
+- El sistema tiene entonces **dos escalones**: 400 para cuerpo, metadatos y texto apagado; 700 para títulos y énfasis puntual. No añadir pesos ni declarar `font-weight` numérico en CSS por pantalla.
+- Como la escalera de pesos es corta, **la jerarquía se construye con tamaño y color**, no con negritas. Un título y su descripción pueden compartir tamaño y separarse solo con `text-muted-foreground`; ese es el recurso por defecto antes de subir a 700.
+- Nunca poner texto apagado en 700: `text-muted-foreground` con negrita se lee como error, no como jerarquía.
+
+### Ritmo de espaciado
+
+- El `gap` baja un escalón por cada nivel de anidamiento, de forma que el agrupamiento se lea sin bordes ni fondos: `gap-6` entre secciones de página → `gap-4` dentro de una card → `gap-3` entre ítems de una lista o rejilla → `gap-2` en línea (icono + texto, botones contiguos) → `gap-1`/`gap-1.5` dentro de un átomo (etiqueta + valor).
+- La densidad de una card sale del token local `--card-spacing`, del que se calculan relleno vertical, relleno horizontal y separación interna. Para comprimir o airear una card se cambia ese número o se usa `size="sm"`; no se sobrescriben `px-*`/`py-*`/`gap-*` por pantalla.
+- Las tablas van **al revés que los controles**: celdas con `px-4 py-4` y encabezados con `h-auto`. El ojo escanea una tabla en vertical y necesita separación entre filas, aunque el resto de la interfaz sea compacta.
+- Los encabezados de tabla van en `font-normal`; se distinguen por posición y borde, no por negrita.
+- Para rejillas de tarjetas usar `CardGrid`, que arranca en dos columnas en móvil y resuelve los huérfanos (último elemento solo en su fila y conjuntos con menos elementos que columnas). No rehacer esa lógica con `grid-cols-*` sueltos.
+
+### Densidad y objetivo táctil
+
+- Las alturas de control de Guaranda Go (`--control-height` 52px, `--action-height` 44px, `min-h-11` en `Button`) responden a uso táctil en exterior y **no se comparan con las de un panel de escritorio**. No bajarlas para ganar densidad: 44px es el mínimo de objetivo táctil y las propias reglas de UX piden botones grandes.
+- La compacidad se gana en tipografía, iconografía y espaciado, nunca en el tamaño del objetivo táctil.
+
 ## UX crítica para Guaranda Go
 
 - Estados offline visibles.

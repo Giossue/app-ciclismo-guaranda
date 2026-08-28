@@ -27,6 +27,23 @@
     --text-4xl: var(--fs-title);
     --text-4xl--line-height: var(--lh-title);
 
+    /* Escalera de pesos: Arial solo trae Regular (400) y Bold (700).
+       Los pesos intermedios de CSS resolverian en silencio a uno de esos dos
+       (500 -> 400, 600 -> 700) y 900 saltaria a Arial Black donde exista,
+       cambiando el render entre Android y escritorio. Se fijan todos los
+       alias a los dos pesos reales para que el sistema no prometa una
+       jerarquia que la fuente no puede dar. La jerarquia se hace con
+       tamano y color, no con peso. */
+    --font-weight-thin: 400;
+    --font-weight-extralight: 400;
+    --font-weight-light: 400;
+    --font-weight-normal: 400;
+    --font-weight-medium: 400;
+    --font-weight-semibold: 700;
+    --font-weight-bold: 700;
+    --font-weight-extrabold: 700;
+    --font-weight-black: 700;
+
     /* Radius scale — every non-circular UI shape resolves from these tokens. */
     --radius-sm: var(--radius-tight);
     --radius-md: var(--radius-compact);
@@ -460,7 +477,6 @@
 
     [data-slot='button'] {
         border-radius: var(--radius-surface);
-        font-weight: 900;
     }
 
     [data-slot='dialog-overlay'],
@@ -517,12 +533,6 @@
 
     [class*='shadow'] {
         box-shadow: var(--elevation-flat) !important;
-    }
-
-    [data-slot='button'],
-    button,
-    [role='button'] {
-        font-weight: 900;
     }
 }
 
@@ -667,7 +677,7 @@ html.theme-transitioning::view-transition-new(root) {
         color: var(--foreground);
         font-size: var(--fs-lg);
         line-height: var(--lh-title);
-        font-weight: 900;
+        font-weight: 700;
         letter-spacing: -0.035em;
     }
 
@@ -675,7 +685,7 @@ html.theme-transitioning::view-transition-new(root) {
         color: var(--muted-foreground);
         font-size: var(--fs-sm);
         line-height: 1.35;
-        font-weight: 600;
+        font-weight: 400;
     }
 
     .ueb-chip-row {
@@ -754,7 +764,7 @@ html.theme-transitioning::view-transition-new(root) {
         color: var(--foreground);
         font-size: var(--fs-md);
         line-height: 1.2;
-        font-weight: 900;
+        font-weight: 700;
     }
 
     .ueb-route-meta {
@@ -765,7 +775,7 @@ html.theme-transitioning::view-transition-new(root) {
         color: var(--muted-foreground);
         font-size: var(--fs-xs);
         line-height: 1.25;
-        font-weight: 700;
+        font-weight: 400;
     }
 
     .ueb-route-actions {
@@ -782,7 +792,7 @@ html.theme-transitioning::view-transition-new(root) {
         background: color-mix(in srgb, var(--primary) 12%, transparent);
         color: var(--link);
         font-size: var(--fs-xs);
-        font-weight: 900;
+        font-weight: 700;
         text-transform: uppercase;
     }
 
@@ -796,7 +806,7 @@ html.theme-transitioning::view-transition-new(root) {
         padding: 5px 8px;
         color: var(--muted-foreground);
         font-size: var(--fs-xs);
-        font-weight: 800;
+        font-weight: 400;
     }
 
     .ueb-auth-shell {
@@ -837,7 +847,7 @@ html.theme-transitioning::view-transition-new(root) {
 
     .ueb-auth-logo-text {
         font-size: var(--fs-lg);
-        font-weight: 900;
+        font-weight: 700;
         letter-spacing: -0.04em;
     }
 
@@ -866,7 +876,7 @@ html.theme-transitioning::view-transition-new(root) {
         color: var(--foreground);
         font-size: var(--fs-title);
         line-height: var(--lh-title);
-        font-weight: 900;
+        font-weight: 700;
         letter-spacing: -0.035em;
     }
 
@@ -874,7 +884,7 @@ html.theme-transitioning::view-transition-new(root) {
         margin: 8px 0 0;
         color: var(--foreground);
         font-size: var(--fs-sm);
-        font-weight: 700;
+        font-weight: 400;
     }
 
     .ueb-auth-card {
@@ -973,7 +983,7 @@ html.theme-transitioning::view-transition-new(root) {
         border-radius: var(--radius-circle);
         box-shadow: var(--elevation-subtle);
         font-size: var(--fs-sm);
-        font-weight: 900;
+        font-weight: 700;
     }
 
     .ueb-message-avatar.bot {
@@ -992,7 +1002,7 @@ html.theme-transitioning::view-transition-new(root) {
         padding: 12px 16px;
         font-size: var(--fs-sm);
         line-height: 1.45;
-        font-weight: 600;
+        font-weight: 400;
         overflow-wrap: anywhere;
         word-break: normal;
     }
@@ -1007,7 +1017,7 @@ html.theme-transitioning::view-transition-new(root) {
     }
 
     .ueb-message-markdown strong {
-        font-weight: 900;
+        font-weight: 700;
     }
 
     .ueb-message-markdown ul {
@@ -1076,7 +1086,7 @@ html.theme-transitioning::view-transition-new(root) {
         padding: 12px 4px;
         color: var(--foreground);
         font-size: var(--fs-sm);
-        font-weight: 600;
+        font-weight: 400;
         outline: 0;
     }
 
