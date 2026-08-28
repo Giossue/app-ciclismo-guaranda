@@ -1,12 +1,25 @@
 import { Form, Head, Link, router } from '@inertiajs/react';
-import { Bike, ChevronRight, Clock, Heart, MapPin, X } from 'lucide-react';
+import {
+    Bike,
+    ChevronRight,
+    Clock,
+    Heart,
+    MapPin,
+    Phone,
+    X,
+} from 'lucide-react';
+import { useState } from 'react';
 import FavoriteRouteController from '@/actions/App/Http/Controllers/Cyclist/FavoriteRouteController';
+import ImageGallery from '@/components/image-gallery';
 import RouteMap from '@/components/routes/client-only-route-map';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { mediaUrl } from '@/lib/media';
 import { index as mapsIndex } from '@/routes/maps';
 import { show as routeShow } from '@/routes/routes';
 import type { MapRouteItem } from '@/types';
+
+type MapPoi = MapRouteItem['points_of_interest'][number];
 
 type Props = {
     routes: MapRouteItem[];
@@ -14,11 +27,14 @@ type Props = {
 };
 
 export default function MapsIndex({ routes, selectedRouteSlug }: Props) {
+    const [selectedPoi, setSelectedPoi] = useState<MapPoi | null>(null);
     const selectedRoute = routes.find(
         (route) => route.slug === selectedRouteSlug,
     );
 
     const selectRoute = (route: { slug: string }) => {
+        setSelectedPoi(null);
+
         router.get(
             mapsIndex.url({ query: { route: route.slug } }),
             {},
@@ -41,11 +57,81 @@ export default function MapsIndex({ routes, selectedRouteSlug }: Props) {
                 selectedSlug={selectedRouteSlug ?? undefined}
                 focusSelected={Boolean(selectedRouteSlug)}
                 onRouteSelect={selectRoute}
+                onPoiSelect={(poi) => setSelectedPoi(poi)}
                 className="h-full"
             />
 
-            {selectedRoute && <MapRouteSheet route={selectedRoute} />}
+            {selectedPoi ? (
+                <MapPoiSheet
+                    poi={selectedPoi}
+                    onClose={() => setSelectedPoi(null)}
+                />
+            ) : (
+                selectedRoute && <MapRouteSheet route={selectedRoute} />
+            )}
         </>
+    );
+}
+
+function MapPoiSheet({ poi, onClose }: { poi: MapPoi; onClose: () => void }) {
+    const images = (poi.images ?? []).map((image) => ({
+        src: mediaUrl(image.image_path),
+        alt: image.description ?? poi.name,
+        description: image.description,
+    }));
+
+    return (
+        <section className="fixed inset-x-0 bottom-0 z-[600] flex max-h-[min(72dvh,44rem)] flex-col rounded-t-[var(--radius-emphasis)] border-t bg-background/98 shadow-[0_-16px_40px_color-mix(in_oklch,var(--foreground)_28%,transparent)] backdrop-blur md:inset-x-auto md:right-6 md:bottom-6 md:w-[min(30rem,calc(100vw-3rem))] md:rounded-[var(--radius-emphasis)] md:border">
+            <div
+                aria-hidden="true"
+                className="mx-auto mt-3 h-1.5 w-12 shrink-0 rounded-full bg-muted-foreground/35"
+            />
+            <div className="min-h-0 overflow-y-auto px-4 pt-3 pb-[calc(var(--bottom-nav-height)+var(--safe-bottom)+1.5rem)] md:pb-5">
+                <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                        <p className="text-xs font-medium text-muted-foreground">
+                            {poi.category?.name ?? 'Punto de interés'}
+                        </p>
+                        <h1 className="mt-0.5 text-xl font-semibold tracking-tight">
+                            {poi.name}
+                        </h1>
+                    </div>
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={onClose}
+                        aria-label="Cerrar punto de interés"
+                    >
+                        <X />
+                    </Button>
+                </div>
+
+                {images.length > 0 && (
+                    <ImageGallery
+                        images={images}
+                        className="mt-4"
+                        slideClassName="h-52"
+                    />
+                )}
+
+                <div className="mt-4 flex flex-col gap-3 text-sm">
+                    {poi.description && <p>{poi.description}</p>}
+                    {poi.address && (
+                        <p className="flex items-start gap-2 text-muted-foreground">
+                            <MapPin className="mt-0.5 size-4 shrink-0" />
+                            <span>{poi.address}</span>
+                        </p>
+                    )}
+                    {poi.phone && (
+                        <p className="flex items-center gap-2 text-muted-foreground">
+                            <Phone className="size-4 shrink-0" />
+                            <span>{poi.phone}</span>
+                        </p>
+                    )}
+                </div>
+            </div>
+        </section>
     );
 }
 

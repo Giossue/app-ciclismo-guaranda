@@ -287,6 +287,11 @@ export default function ChatIndex({
                 onStart: () => setAgentIsLoading(true),
                 onError: (errors) => {
                     setSubmissionErrors(errors as Record<string, string>);
+
+                    if (messageRef.current) {
+                        messageRef.current.value = value;
+                    }
+
                     reject(new Error('No se pudo enviar el mensaje.'));
                 },
                 onSuccess: () => resolve(),
@@ -469,6 +474,13 @@ export default function ChatIndex({
                             </PromptInputFooter>
                         </PromptInput>
                         <InputError message={submissionErrors.message} />
+                        <InputError
+                            message={
+                                submissionErrors.route_id ??
+                                submissionErrors.travel_context ??
+                                submissionErrors.conversation_id
+                            }
+                        />
                     </div>
                 </div>
             </section>

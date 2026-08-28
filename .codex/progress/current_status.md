@@ -66,6 +66,10 @@ Fecha: 2026-06-30
 
 ## Próxima tarea inmediata
 
+- Desplegar la actualización visual del chat basada en AI Elements y validarla
+  en WebView/Android; la infraestructura OpenAI/pgvector ya está activa y la
+  primera indexación remota completó 14 de 14 documentos.
+
 Instalar el APK generado por GitHub Actions en un Android 13+ y validar:
 
 - carga de `https://ciclismo.devs-ueb.tech`,

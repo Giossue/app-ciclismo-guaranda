@@ -85,6 +85,8 @@ function createRouteForMapVisualization(string $statusName = 'Activa'): CyclingR
         'poi_category_id' => $poiCategory->id,
         'name' => 'Mirador de prueba',
         'description' => 'Mirador asociado a la ruta.',
+        'address' => 'Mirador de Salinas',
+        'phone' => '0990000000',
         'latitude' => -1.405,
         'longitude' => -79.021,
         'active' => true,
@@ -95,6 +97,12 @@ function createRouteForMapVisualization(string $statusName = 'Activa'): CyclingR
         'is_required' => true,
         'distance_from_start_km' => 4.5,
         'route_observation' => 'Parada sugerida.',
+    ]);
+
+    $poi->images()->create([
+        'image_path' => 'pois/mirador-prueba.jpg',
+        'description' => 'Vista del mirador.',
+        'sort_order' => 1,
     ]);
 
     $incidentType = IncidentType::query()->where('name', 'Obstáculo')->firstOrFail();
@@ -169,6 +177,10 @@ test('cyclist map explorer only exposes active routes and its selected route', f
             ->where('routes.0.slug', $activeRoute->slug)
             ->where('routes.0.geojson.type', 'LineString')
             ->where('routes.0.points_of_interest.0.name', 'Mirador de prueba')
+            ->where('routes.0.points_of_interest.0.description', 'Mirador asociado a la ruta.')
+            ->where('routes.0.points_of_interest.0.address', 'Mirador de Salinas')
+            ->where('routes.0.points_of_interest.0.phone', '0990000000')
+            ->where('routes.0.points_of_interest.0.images.0.image_path', 'pois/mirador-prueba.jpg')
             ->where('routes.0.incidents.0.type.name', 'Obstáculo')
             ->where('routes.0.is_favorite', true)
             ->where('selectedRouteSlug', $activeRoute->slug));

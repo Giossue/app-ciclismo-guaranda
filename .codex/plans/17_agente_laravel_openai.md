@@ -1,7 +1,8 @@
 # Fase 17 — Agente nativo Laravel/OpenAI
 
-Estado: En progreso — Etapas 1, 2 y la base de Etapa 3 implementadas; falta
-desplegar y ejecutar la primera sincronización en producción.
+Estado: En progreso — Etapas 1 a 3 activas en producción; falta desplegar la
+actualización visual final de la Etapa 2 y completar la observabilidad de la
+Etapa 5.
 
 ## Decisión y objetivo
 
@@ -46,8 +47,8 @@ respaldo verificable, health check y rollback documentados.
 por una imagen PostgreSQL 18 compatible con PostGIS 3.6.4 y pgvector 0.8.6,
 conservando los volúmenes existentes. `PostGIS_Full_Version()` y
 `ai:vector-preflight` confirmaron ambos runtimes. La extensión `vector` quedó
-instalada explícitamente en `guaranda_go_db`; la migración de aplicación aún no
-se ha desplegado ni se han generado embeddings.
+instalada explícitamente en `guaranda_go_db`; la migración de aplicación se
+aplicó por el deploy y la primera sincronización generó 14 embeddings.
 
 ### Preflight sin mutaciones
 
@@ -134,11 +135,15 @@ frontend ni APK.
 **Aceptación:** interfaz móvil accesible, respuestas Markdown seguras, tarjetas
 internas navegables y sin dependencia visual de n8n.
 
-**Avance 2026-08-28:** `MessageResponse`, sugerencias, fuentes desplegables y
-tarjetas verificadas están integrados. Una ruta abre su detalle mediante
-Wayfinder; un POI se presenta como ficha hasta implementar detalle público. Las
-tarjetas pueden incluir la foto editorial pública rehidratada y su descripción
-almacenada como texto alternativo; el modelo no aporta imágenes ni URLs.
+**Avance 2026-08-28:** `Conversation`, `Message`, `MessageResponse`,
+`PromptInput`, sugerencias, fuentes desplegables y tarjetas verificadas están
+integrados. La superficie principal ya no usa el layout heredado: conserva el
+scroll al último mensaje, muestra una bienvenida con preguntas iniciales y deja
+la ruta, el tipo de visita y la ubicación en “Personalizar”. Una ruta abre su
+detalle mediante Wayfinder; un POI se presenta como ficha hasta implementar
+detalle público. Las tarjetas pueden incluir la foto editorial pública
+rehidratada y su descripción almacenada como texto alternativo; el modelo no
+aporta imágenes ni URLs.
 
 ## Etapa 3 — Base de conocimiento vectorial
 
@@ -171,6 +176,9 @@ imágenes editoriales solicitan una resincronización tras confirmar cambios.
 **Aceptación:** una reindexación completa y reindexación por cambio son
 reintentables; no hay respuestas que dependan exclusivamente de documentos
 desactualizados.
+
+**Avance remoto 2026-08-28:** `ai:knowledge:sync` se encoló correctamente y
+la comprobación posterior confirmó `documentos=14` y `con_embedding=14`.
 
 ## Etapa 4 — Descripciones de imágenes
 

@@ -124,3 +124,13 @@ OpenAI, no inserta filas y no requiere pgvector. La operación posterior es
 para una ejecución administrativa explícita. La recuperación semántica entrega
 solo IDs candidatos; Laravel reconsulta y filtra los recursos actuales antes de
 construir el contexto del chat.
+
+## Interfaz de conversación
+
+La pantalla de ciclista se compone directamente con AI Elements: `Conversation`
+mantiene visible el último intercambio, `Message` y `MessageResponse` presentan
+Markdown seguro, `PromptInput` mantiene la acción de envío, y `Suggestion` /
+`Sources` muestran acciones y recursos verificados. El historial, TTS, estado
+de red y ubicación transitoria se conservan. Ruta, tipo de visita y ubicación
+quedan dentro de “Personalizar” para que la pregunta normal no se convierta en
+un formulario; siguen siendo opcionales y se envían únicamente con la consulta.

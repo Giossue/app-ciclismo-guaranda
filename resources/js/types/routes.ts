@@ -149,6 +149,7 @@ export type MapRouteItem = {
                     RoutePoi,
                     | 'description'
                     | 'address'
+                    | 'phone'
                     | 'images'
                     | 'distance_from_start_km'
                     | 'route_observation'

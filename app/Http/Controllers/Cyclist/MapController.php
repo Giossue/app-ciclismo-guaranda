@@ -98,11 +98,17 @@ class MapController extends Controller
                 $pointOfInterest->qualifyColumn('id'),
                 $pointOfInterest->qualifyColumn('poi_category_id'),
                 $pointOfInterest->qualifyColumn('name'),
+                $pointOfInterest->qualifyColumn('description'),
+                $pointOfInterest->qualifyColumn('address'),
+                $pointOfInterest->qualifyColumn('phone'),
                 $pointOfInterest->qualifyColumn('latitude'),
                 $pointOfInterest->qualifyColumn('longitude'),
             ])
             ->where('active', true)
-            ->with('category:id,name');
+            ->with([
+                'category:id,name',
+                'images:id,point_of_interest_id,image_path,description,sort_order',
+            ]);
     }
 
     private function mapIncidents(HasMany $query): HasMany
@@ -149,9 +155,17 @@ class MapController extends Controller
                 ->map(fn ($poi): array => [
                     'id' => $poi->id,
                     'name' => $poi->name,
+                    'description' => $poi->description,
+                    'address' => $poi->address,
+                    'phone' => $poi->phone,
                     'latitude' => (float) $poi->latitude,
                     'longitude' => (float) $poi->longitude,
                     'category' => $poi->category === null ? null : ['id' => $poi->category->id, 'name' => $poi->category->name],
+                    'images' => $poi->images->map(fn ($image): array => [
+                        'id' => $image->id,
+                        'image_path' => $image->image_path,
+                        'description' => $image->description,
+                    ])->values(),
                 ])
                 ->values(),
             'incidents' => $route->incidents

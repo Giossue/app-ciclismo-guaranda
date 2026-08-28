@@ -750,3 +750,10 @@
   `git diff --check` y listado de rutas de chat. La migración no puede simularse
   en el PostgreSQL local porque carece de pgvector; producción ya aprobó el
   preflight requerido.
+
+## 2026-08-28 — Interfaz del asistente
+
+- Se reemplazó el layout legado del chat por una composición AI Elements con
+  conversación fijada al último mensaje, Markdown, shimmer de respuesta,
+  sugerencias, fuentes verificadas y entrada contextual compacta.
+- Validación local aprobada: TypeScript, ESLint, Prettier y build Vite.

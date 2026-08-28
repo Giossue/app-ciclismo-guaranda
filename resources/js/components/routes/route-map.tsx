@@ -486,11 +486,7 @@ function RouteLayers({
                         eventHandlers={{
                             click: () => onPoiSelect?.(poi as RoutePoi),
                         }}
-                    >
-                        <Popup>
-                            <PoiPopup poi={poi} />
-                        </Popup>
-                    </Marker>
+                    />
                 ))}
 
             {filters.incidents &&
@@ -544,34 +540,6 @@ function RoutePopup({ route }: { route: RouteMapItem }) {
             >
                 Ver detalle
             </Link>
-        </div>
-    );
-}
-
-function PoiPopup({
-    poi,
-}: {
-    poi: RoutePoi | MapRouteItem['points_of_interest'][number];
-}) {
-    const image = poi.images?.[0];
-
-    return (
-        <div className="flex max-w-56 flex-col gap-2 text-sm">
-            {image && (
-                <img
-                    src={mediaUrl(image.image_path)}
-                    alt={image.description ?? poi.name}
-                    className="h-24 w-full rounded-xl object-cover"
-                />
-            )}
-            <strong>{poi.name}</strong>
-            {poi.category && <span>{poi.category.name}</span>}
-            {poi.description && <span>{poi.description}</span>}
-            {poi.address && <span>{poi.address}</span>}
-            {poi.distance_from_start_km != null && (
-                <span>Km {poi.distance_from_start_km.toLocaleString()}</span>
-            )}
-            {poi.route_observation && <span>{poi.route_observation}</span>}
         </div>
     );
 }

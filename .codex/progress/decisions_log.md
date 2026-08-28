@@ -365,3 +365,11 @@
 - El vector solo selecciona candidatos. Laravel reconsulta rutas activas, POIs
   activos y alertas visibles, de modo que un embedding atrasado nunca autoriza
   una respuesta ni una tarjeta obsoleta.
+
+## 2026-08-28 — Chat operativo con AI Elements
+
+- La pantalla de asistente se compone con `Conversation`, `Message`,
+  `PromptInput`, `Suggestion` y `Sources` ya instalados en el repositorio. No
+  se incorpora un segundo transporte de chat ni se expone OpenAI al cliente.
+- Los controles opcionales de ruta, tipo de visita y ubicación se agrupan en
+  “Personalizar”; la entrada principal se mantiene como una sola pregunta.
