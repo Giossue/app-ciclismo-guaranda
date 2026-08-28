@@ -603,3 +603,7 @@
 - Se ocultó el selector técnico de enrutamiento preservando el valor por defecto, y se corrigió la actualización del tamaño de Leaflet cuando el paso de mapa se hace visible.
 - Se aclaró el conmutador OpenStreetMap/Esri World Imagery como “Ver satélite”/“Ver mapa”.
 - Validaciones ejecutadas: TypeScript, ESLint, Prettier, build Vite, build SSR, Pest focalizado de enrutamiento, auditoría SSR y `git diff --check`.
+
+## 2026-08-28 — Tipografía base Arial
+
+- Se reemplazó Inter Variable como fuente principal por Arial con respaldo Helvetica/sans-serif y se retiró su importación del CSS. La apariencia general reduce el peso percibido sin modificar la jerarquía semántica de títulos y acciones.

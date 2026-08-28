@@ -1,6 +1,5 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
-@import '@fontsource-variable/inter/wght.css';
 
 @source '../views';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
@@ -8,8 +7,8 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-    --font-sans: 'Inter Variable', Arial, sans-serif;
-    --font-display: 'Inter Variable', Arial, sans-serif;
+    --font-sans: Arial, Helvetica, sans-serif;
+    --font-display: Arial, Helvetica, sans-serif;
 
     --text-xs: var(--fs-caption);
     --text-xs--line-height: 1.35;

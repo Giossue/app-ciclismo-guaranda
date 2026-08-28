@@ -586,9 +586,7 @@ function SidebarMenuBadge({
         variant === "pending"
           ? "rounded-full bg-destructive text-destructive-foreground"
           : "text-sidebar-foreground rounded-[var(--radius-control)] peer-hover/menu-button:text-sidebar-accent-foreground peer-data-[active=true]/menu-button:text-sidebar-accent-foreground",
-        "peer-data-[size=sm]/menu-button:top-1",
-        "peer-data-[size=default]/menu-button:top-1.5",
-        "peer-data-[size=lg]/menu-button:top-2.5",
+        "top-1/2 -translate-y-1/2",
         "group-data-[collapsible=icon]:hidden",
         className
       )}

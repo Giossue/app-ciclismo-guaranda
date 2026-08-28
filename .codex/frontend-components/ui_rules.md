@@ -63,9 +63,8 @@ Antes de una refactorización visual amplia, ejecutar `python3 temp/audit_ui_tok
 
 ## Tipografía del sistema
 
-- La tipografía es **Inter Variable**, empaquetada con `@fontsource-variable/inter` e importada desde `resources/css/app.css`: se sirve desde el propio build, sin CDN ni dependencia de que esté instalada en el sistema.
-- La pila de respaldo, definida en `resources/css/app.css`, sigue con `-apple-system` (San Francisco en iOS y macOS), `Segoe UI` (Windows), `Roboto` (Android) y `Helvetica`/`Arial`/`sans-serif`.
-- El subconjunto latino se precarga desde `resources/views/app.blade.php` con `Vite::asset()`. Sin esa precarga el woff2 solo se descubre al analizar el CSS y la primera pintura sale con la fuente de respaldo.
+- La tipografía principal es **Arial**, definida en `resources/css/app.css`; no se carga una fuente externa, desde CDN ni desde el bundle.
+- La pila de respaldo es `Helvetica` y `sans-serif`, para que cada plataforma mantenga una alternativa legible cuando Arial no esté disponible.
 - `font-sans` y `font-display` usan la misma pila para preservar consistencia entre plataformas.
 
 ## Skeletons de datos

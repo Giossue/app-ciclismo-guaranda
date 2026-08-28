@@ -269,3 +269,7 @@
 - La creación/edición de rutas se presenta como un flujo de cuatro pasos dentro de un cuadro centrado, porque la captura completa de una ruta es demasiado extensa para una hoja lateral convencional.
 - El valor de `routing_engine_id` permanece interno y se envía con el valor por defecto existente; el administrador no debe elegir el motor que genera el trazado.
 - La capa satelital se mantiene mediante Esri World Imagery como conmutador visual del editor, sin claves ni llamadas desde el backend.
+
+## 2026-08-28 — Tipografía Arial como base visual
+
+- Arial pasa a ser la tipografía principal de interfaz y de títulos, con Helvetica/sans-serif como respaldo. Se retira la importación de Inter Variable para evitar una apariencia demasiado pesada y una descarga de fuente innecesaria.
