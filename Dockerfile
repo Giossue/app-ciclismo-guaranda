@@ -6,8 +6,11 @@ ENV COMPOSER_ALLOW_SUPERUSER=1 \
     APP_ENV=production \
     PHP_OPCACHE_ENABLE=1
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
+ARG PHP_BUILD_JOBS=2
+ARG REDIS_EXTENSION_VERSION=6.3.0
+
+RUN apt-get -o Acquire::Retries=3 update \
+    && apt-get -o Acquire::Retries=3 install -y --no-install-recommends \
         ca-certificates \
         curl \
         git \
@@ -22,10 +25,16 @@ RUN apt-get update \
         libpng-dev \
         libpq-dev \
         libzip-dev \
-    && curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
-    && apt-get install -y --no-install-recommends nodejs \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN curl --fail --silent --show-error --location \
+        --retry 5 --retry-delay 2 --retry-all-errors \
+        https://deb.nodesource.com/setup_22.x | bash - \
+    && apt-get -o Acquire::Retries=3 install -y --no-install-recommends nodejs \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j"${PHP_BUILD_JOBS}" \
         bcmath \
         gd \
         intl \
@@ -35,10 +44,8 @@ RUN apt-get update \
         pdo_pgsql \
         pgsql \
         zip \
-    && pecl install redis \
-    && docker-php-ext-enable redis \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    && pecl install "redis-${REDIS_EXTENSION_VERSION}" \
+    && docker-php-ext-enable redis
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 

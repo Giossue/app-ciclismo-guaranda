@@ -611,3 +611,9 @@
 ## 2026-08-28 — Ajuste de readiness del despliegue
 
 - Se mantuvo la protección contra 502 de Nginx/PHP-FPM y se redujo la primera comprobación de salud de Docker a 2 s durante el arranque; tras estar sano, el chequeo vuelve al intervalo de 10 s.
+
+## 2026-08-28 — Corrección de build fallido en Dokploy
+
+- El paso monolítico de APT, NodeSource, extensiones PHP y PECL terminó con código 1 en Dokploy sin señalar el subproceso. Se dividió en tres capas, se añadieron reintentos y se limitó `docker-php-ext-install` a dos procesos.
+- PhpRedis quedó fijado a `6.3.0`, la versión compatible observada en la compilación previa con PHP 8.4.
+- Se ejecutó una reconstrucción local desde las capas modificadas e incluyendo `main` hasta `b8af501`; la imagen terminó correctamente y el contenedor inició PHP-FPM, Nginx e Inertia SSR con `/up` en 200 y estado `healthy`.

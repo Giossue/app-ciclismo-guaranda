@@ -277,3 +277,9 @@
 ## 2026-08-28 — Readiness rápida y segura en Docker
 
 - Se conserva la espera de PHP-FPM y el health check `/up` para no reintroducir 502 durante los despliegues. En Docker Engine 29, el health check sondea cada 2 s solo durante el periodo de arranque y pasa a su intervalo normal de 10 s tras el primer éxito.
+
+## 2026-08-28 — Compilación Docker acotada y reproducible
+
+- Las extensiones PHP se compilan con dos procesos por defecto para no depender del número de CPU ni agotar la memoria disponible en Dokploy.
+- APT y NodeSource usan reintentos ante fallos transitorios, y la extensión PhpRedis queda fijada a `6.3.0`, versión validada con PHP 8.4.
+- La instalación del sistema, Node.js y extensiones PHP se mantiene en etapas separadas para que los fallos de construcción sean identificables y reutilicen caché.
