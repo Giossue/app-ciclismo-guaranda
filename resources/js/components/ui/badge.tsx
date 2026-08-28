@@ -10,14 +10,10 @@ const badgeVariants = cva(
     {
         variants: {
             variant: {
+                // Sólido: estado vigente o dato que exige atención.
                 default: 'border-primary bg-primary text-primary-foreground',
-                secondary: 'border-primary bg-primary text-primary-foreground',
-                destructive: 'border-destructive bg-destructive text-destructive-foreground',
+                // Neutro: metadato, taxonomía, contador informativo o estado apagado.
                 outline: 'border-input bg-input text-muted-foreground',
-                success: 'border-success bg-success text-success-foreground',
-                warning: 'border-warning bg-warning text-warning-foreground',
-                info: 'border-info bg-info text-info-foreground',
-                muted: 'border-input bg-input text-muted-foreground',
             },
         },
         defaultVariants: {

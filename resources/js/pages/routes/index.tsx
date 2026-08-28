@@ -56,7 +56,7 @@ export default function RoutesIndex({
                                 <Card className="overflow-hidden">
                                     <CardHeader>
                                         <Badge
-                                            variant="secondary"
+                                            variant="outline"
                                             className="w-fit"
                                         >
                                             <RouteIcon data-icon="inline-start" />
@@ -173,13 +173,13 @@ function RouteBadges({ route }: { route: CyclingRouteMapItem }) {
     return (
         <div className="flex flex-wrap justify-end gap-1.5">
             {route.user_interaction.is_favorite && (
-                <Badge variant="secondary">
+                <Badge>
                     <Star data-icon="inline-start" />
                     fav
                 </Badge>
             )}
             {route.incidents.length > 0 && (
-                <Badge variant="destructive">{route.incidents.length}</Badge>
+                <Badge>{route.incidents.length}</Badge>
             )}
         </div>
     );

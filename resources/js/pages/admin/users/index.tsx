@@ -122,7 +122,7 @@ export default function AdminUsersIndex({
             id: 'status',
             label: 'Estado',
             cell: (user) => (
-                <Badge variant={user.active ? 'secondary' : 'destructive'}>
+                <Badge variant={user.active ? 'default' : 'outline'}>
                     {user.active ? 'Activo' : 'Inactivo'}
                 </Badge>
             ),

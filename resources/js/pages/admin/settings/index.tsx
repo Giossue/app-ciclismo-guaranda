@@ -198,7 +198,7 @@ export default function AdminSettingsIndex({ settings }: Props) {
 function SettingValue({ value }: { value: SettingValue }) {
     if (typeof value === 'boolean') {
         return (
-            <Badge variant={value ? 'success' : 'destructive'}>
+            <Badge variant={value ? 'default' : 'outline'}>
                 {value ? (
                     <CheckCircle2 data-icon="inline-start" />
                 ) : (

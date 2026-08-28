@@ -174,7 +174,7 @@
     --sidebar-foreground: #1a1a1a;
     --sidebar-primary: #008000;
     --sidebar-primary-foreground: #ffffff;
-    --sidebar-accent: #ffffff;
+    --sidebar-accent: #eef1ee;
     --sidebar-accent-foreground: #1a1a1a;
     --sidebar-border: #dee2e6;
     --sidebar-ring: #008000;
@@ -183,6 +183,7 @@
     --shadow: rgb(0 0 0 / 0.05);
     --primary-glow: rgb(0 128 0 / 0.1);
     --brand-accent: #005f00;
+    --brand-accent-foreground: #ffffff;
     --inverse-foreground: #f8f9fa;
     --inverse-muted-foreground: #d1d5db;
     --overlay: rgb(0 0 0 / 0.48);
@@ -234,6 +235,7 @@
     --shadow: rgb(0 0 0 / 0.4);
     --primary-glow: rgb(36 153 32 / 0.2);
     --brand-accent: #52b34d;
+    --brand-accent-foreground: #050605;
     --inverse-foreground: #f8f9fa;
     --inverse-muted-foreground: #d1d5db;
     --overlay: rgb(0 0 0 / 0.48);
@@ -601,7 +603,7 @@
         overflow: hidden;
         border-radius: var(--radius-surface);
         background: var(--brand-accent);
-        color: var(--primary-foreground);
+        color: var(--brand-accent-foreground);
         display: grid;
         place-items: center;
     }
@@ -647,7 +649,7 @@
         border-radius: var(--radius-compact);
         padding: 4px 7px;
         background: color-mix(in srgb, var(--primary) 12%, transparent);
-        color: var(--primary);
+        color: var(--link);
         font-size: var(--fs-xs);
         font-weight: 900;
         text-transform: uppercase;

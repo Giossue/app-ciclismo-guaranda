@@ -115,8 +115,8 @@ export default function AdminPoisIndex({
                                             <Badge
                                                 variant={
                                                     poi.active
-                                                        ? 'secondary'
-                                                        : 'destructive'
+                                                        ? 'default'
+                                                        : 'outline'
                                                 }
                                             >
                                                 {poi.active
@@ -135,7 +135,7 @@ export default function AdminPoisIndex({
                                                     : 's'}
                                             </Badge>
                                             {poi.reports_count > 0 && (
-                                                <Badge variant="destructive">
+                                                <Badge>
                                                     {poi.reports_count} reporte
                                                     {poi.reports_count === 1
                                                         ? ''

@@ -1,5 +1,15 @@
 import { Form, Head, router } from '@inertiajs/react';
-import { Pencil, Plus } from 'lucide-react';
+import {
+    Bike,
+    ListTree,
+    Map,
+    MapPin,
+    Pencil,
+    Plus,
+    ShieldAlert,
+    UsersRound,
+} from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { useState } from 'react';
 import CatalogController from '@/actions/App/Http/Controllers/Admin/CatalogController';
 import { DataTable } from '@/components/data-table';
@@ -8,24 +18,9 @@ import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Field, FieldGroup, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import {
-    Select,
-    SelectContent,
-    SelectGroup,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
 import {
     Sheet,
     SheetContent,
@@ -37,17 +32,26 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 
 type CatalogSummary = {
-    records_count: number;
+    locked: boolean;
     slug: string;
     title: string;
 };
 
+type CatalogDomain = {
+    catalogs: CatalogSummary[];
+    description: string;
+    slug: string;
+    title: string;
+};
+
+type SelectedDomain = Omit<CatalogDomain, 'catalogs'>;
+
 type CatalogMeta = {
+    domain: string;
     has_active: boolean;
     has_description: boolean;
     locked: boolean;
     slug: string;
-    table: string;
     title: string;
 };
 
@@ -70,6 +74,7 @@ type PaginatedRecords = {
 
 type CatalogFilters = {
     catalog: string;
+    domain: string;
     per_page: number;
     search: string;
     status: string;
@@ -77,14 +82,25 @@ type CatalogFilters = {
 
 type Props = {
     catalog: CatalogMeta;
-    catalogs: CatalogSummary[];
+    domain: SelectedDomain;
+    domains: CatalogDomain[];
     filters: CatalogFilters;
     records: PaginatedRecords;
 };
 
+const domainIcons: Record<string, LucideIcon> = {
+    users: UsersRound,
+    routes: Map,
+    pois: MapPin,
+    tracks: Bike,
+    incidents: ShieldAlert,
+    system: ListTree,
+};
+
 export default function AdminCatalogsIndex({
     catalog,
-    catalogs,
+    domain,
+    domains,
     filters,
     records,
 }: Props) {
@@ -93,9 +109,13 @@ export default function AdminCatalogsIndex({
     const changeQuery = (query: DataTableQuery) => {
         router.get(
             CatalogController.index.url(),
-            { ...query, catalog: query.catalog ?? catalog.slug },
             {
-                only: ['catalog', 'records', 'filters'],
+                ...query,
+                domain: query.domain ?? domain.slug,
+                catalog: query.catalog ?? catalog.slug,
+            },
+            {
+                only: ['catalog', 'domain', 'domains', 'records', 'filters'],
                 preserveScroll: true,
                 preserveState: true,
                 replace: true,
@@ -104,7 +124,28 @@ export default function AdminCatalogsIndex({
     };
 
     const selectCatalog = (slug: string) => {
-        changeQuery({ catalog: slug, per_page: filters.per_page });
+        setCreateOpen(false);
+        changeQuery({
+            domain: domain.slug,
+            catalog: slug,
+            per_page: filters.per_page,
+        });
+    };
+
+    const selectDomain = (slug: string) => {
+        const selectedDomain = domains.find((option) => option.slug === slug);
+        const firstCatalog = selectedDomain?.catalogs[0];
+
+        if (!firstCatalog) {
+            return;
+        }
+
+        setCreateOpen(false);
+        changeQuery({
+            domain: slug,
+            catalog: firstCatalog.slug,
+            per_page: filters.per_page,
+        });
     };
 
     const columns: DataTableColumn<CatalogRecord>[] = [
@@ -141,7 +182,7 @@ export default function AdminCatalogsIndex({
                       label: 'Estado',
                       cell: (record: CatalogRecord) => (
                           <Badge
-                              variant={record.active ? 'secondary' : 'outline'}
+                              variant={record.active ? 'default' : 'outline'}
                           >
                               {record.active ? 'Activo' : 'Inactivo'}
                           </Badge>
@@ -167,109 +208,147 @@ export default function AdminCatalogsIndex({
 
             <div className="flex flex-col gap-6">
                 <Heading
-                    title="Catálogos del sistema"
-                    description="Administra roles, estados, categorías y tipos base usados por rutas, POIs, incidencias, recorridos y reportes."
+                    title="Catálogos"
+                    description="Administra los valores operativos que usa cada módulo de Guaranda Go."
                 />
 
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Seleccionar catálogo</CardTitle>
-                        <CardDescription>
-                            Elige una sección para administrar sus registros sin
-                            recorrer todos los catálogos.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="flex flex-col gap-3 lg:flex-row lg:items-center">
-                        <Select
-                            value={catalog.slug}
-                            onValueChange={selectCatalog}
+                <section className="overflow-hidden rounded-[var(--radius-surface)] border bg-card lg:grid lg:grid-cols-[17rem_minmax(0,1fr)]">
+                    <aside className="border-b bg-muted/20 lg:border-r lg:border-b-0">
+                        <nav
+                            aria-label="Módulos de catálogos"
+                            className="flex gap-1 overflow-x-auto p-2 lg:flex-col lg:overflow-visible"
                         >
-                            <SelectTrigger
-                                aria-label="Catálogo"
-                                className="w-full lg:max-w-sm"
-                            >
-                                <SelectValue placeholder="Selecciona un catálogo" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectGroup>
-                                    {catalogs.map((option) => (
-                                        <SelectItem
-                                            key={option.slug}
-                                            value={option.slug}
-                                        >
-                                            {option.title} (
-                                            {option.records_count})
-                                        </SelectItem>
-                                    ))}
-                                </SelectGroup>
-                            </SelectContent>
-                        </Select>
+                            {domains.map((option) => {
+                                const Icon =
+                                    domainIcons[option.slug] ?? ListTree;
+                                const selected = option.slug === domain.slug;
 
-                        <div className="flex flex-wrap items-center gap-2">
-                            {catalog.locked && (
-                                <Badge variant="outline">
-                                    Base del sistema
-                                </Badge>
-                            )}
-                            {catalog.has_active && (
-                                <Badge variant="secondary">Activable</Badge>
-                            )}
+                                return (
+                                    <Button
+                                        key={option.slug}
+                                        type="button"
+                                        variant={
+                                            selected ? 'secondary' : 'ghost'
+                                        }
+                                        className="h-auto min-w-max justify-start px-3 py-2 lg:w-full"
+                                        aria-current={
+                                            selected ? 'page' : undefined
+                                        }
+                                        onClick={() =>
+                                            selectDomain(option.slug)
+                                        }
+                                    >
+                                        <Icon data-icon="inline-start" />
+                                        {option.title}
+                                    </Button>
+                                );
+                            })}
+                        </nav>
+
+                        <nav
+                            aria-label={`Catálogos de ${domain.title}`}
+                            className="flex gap-1 overflow-x-auto border-t p-2 lg:flex-col lg:overflow-visible"
+                        >
+                            {domains
+                                .find((option) => option.slug === domain.slug)
+                                ?.catalogs.map((option) => {
+                                    const selected =
+                                        option.slug === catalog.slug;
+
+                                    return (
+                                        <Button
+                                            key={option.slug}
+                                            type="button"
+                                            variant={
+                                                selected ? 'outline' : 'ghost'
+                                            }
+                                            size="sm"
+                                            className="h-auto min-w-max justify-start px-3 py-2 lg:w-full"
+                                            aria-current={
+                                                selected ? 'page' : undefined
+                                            }
+                                            onClick={() =>
+                                                selectCatalog(option.slug)
+                                            }
+                                        >
+                                            {option.title}
+                                        </Button>
+                                    );
+                                })}
+                        </nav>
+                    </aside>
+
+                    <div className="min-w-0">
+                        <div className="flex flex-col gap-4 border-b px-5 py-5 sm:flex-row sm:items-start sm:justify-between">
+                            <div className="flex flex-col gap-1">
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <h2 className="text-xl">{catalog.title}</h2>
+                                    {catalog.locked && (
+                                        <Badge variant="outline">
+                                            Base del sistema
+                                        </Badge>
+                                    )}
+                                </div>
+                                <p className="text-sm text-muted-foreground">
+                                    {domain.description}
+                                </p>
+                            </div>
+                            <Button
+                                type="button"
+                                onClick={() => setCreateOpen(true)}
+                            >
+                                <Plus data-icon="inline-start" />
+                                Nuevo registro
+                            </Button>
                         </div>
 
-                        <Button
-                            type="button"
-                            className="lg:ml-auto"
-                            onClick={() => setCreateOpen(true)}
-                        >
-                            <Plus data-icon="inline-start" />
-                            Nuevo registro
-                        </Button>
-                    </CardContent>
-                </Card>
-
-                <DataTable
-                    title={catalog.title}
-                    data={records.data}
-                    columns={columns}
-                    getRowId={(record) => record.id}
-                    emptyMessage="No hay registros que coincidan con los filtros seleccionados."
-                    searchPlaceholder={
-                        catalog.has_description
-                            ? 'Buscar por nombre o descripción'
-                            : 'Buscar por nombre'
-                    }
-                    query={filters}
-                    onQueryChange={changeQuery}
-                    filters={
-                        catalog.has_active
-                            ? [
-                                  {
-                                      id: 'status',
-                                      label: 'Filtrar por estado',
-                                      placeholder: 'Todos los estados',
-                                      options: [
-                                          {
-                                              label: 'Activos',
-                                              value: 'active',
-                                          },
-                                          {
-                                              label: 'Inactivos',
-                                              value: 'inactive',
-                                          },
-                                      ],
-                                  },
-                              ]
-                            : []
-                    }
-                    pagination={{
-                        currentPage: records.current_page,
-                        from: records.from,
-                        lastPage: records.last_page,
-                        perPage: records.per_page,
-                        to: records.to,
-                        total: records.total,
-                    }}
-                />
+                        <div className="p-5">
+                            <DataTable
+                                data={records.data}
+                                columns={columns}
+                                getRowId={(record) => record.id}
+                                emptyMessage="No hay registros que coincidan con los filtros seleccionados."
+                                searchPlaceholder={
+                                    catalog.has_description
+                                        ? 'Buscar por nombre o descripción'
+                                        : 'Buscar por nombre'
+                                }
+                                query={filters}
+                                onQueryChange={changeQuery}
+                                filters={
+                                    catalog.has_active
+                                        ? [
+                                              {
+                                                  id: 'status',
+                                                  label: 'Filtrar por estado',
+                                                  placeholder:
+                                                      'Todos los estados',
+                                                  options: [
+                                                      {
+                                                          label: 'Activos',
+                                                          value: 'active',
+                                                      },
+                                                      {
+                                                          label: 'Inactivos',
+                                                          value: 'inactive',
+                                                      },
+                                                  ],
+                                              },
+                                          ]
+                                        : []
+                                }
+                                pagination={{
+                                    currentPage: records.current_page,
+                                    from: records.from,
+                                    lastPage: records.last_page,
+                                    perPage: records.per_page,
+                                    to: records.to,
+                                    total: records.total,
+                                }}
+                            />
+                        </div>
+                    </div>
+                </section>
             </div>
 
             <Sheet open={createOpen} onOpenChange={setCreateOpen}>

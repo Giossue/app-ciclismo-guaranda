@@ -506,7 +506,7 @@ function AttentionCard({ attention }: { attention: AttentionItem[] }) {
                                     <Badge
                                         variant={
                                             item.tone === 'warning'
-                                                ? 'warning'
+                                                ? 'default'
                                                 : 'outline'
                                         }
                                     >
@@ -638,11 +638,7 @@ function ProgressBar({
 function StatusBadge({ status }: { status: string | null }) {
     const normalizedStatus = status?.toLocaleLowerCase('es-EC');
     const variant =
-        normalizedStatus === 'resuelta'
-            ? 'success'
-            : normalizedStatus === 'en revisión'
-              ? 'warning'
-              : 'outline';
+        normalizedStatus === 'en revisión' ? 'default' : 'outline';
 
     return <Badge variant={variant}>{status ?? 'Sin estado'}</Badge>;
 }

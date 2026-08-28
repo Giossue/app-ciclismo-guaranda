@@ -179,7 +179,7 @@ export default function RouteMap({
     return (
         <div className="flex flex-col gap-3">
             <div className="flex flex-wrap items-center gap-2 rounded-[var(--radius-emphasis)] border border-primary/10 bg-card/80 p-2 shadow-sm shadow-primary/10 backdrop-blur">
-                <Badge variant={isOnline ? 'secondary' : 'destructive'}>
+                <Badge variant={isOnline ? 'default' : 'outline'}>
                     {isOnline ? (
                         <Wifi data-icon="inline-start" />
                     ) : (
@@ -188,7 +188,7 @@ export default function RouteMap({
                     {isOnline ? 'Con conexión' : 'Sin conexión'}
                 </Badge>
                 <Badge
-                    variant={gpsStatus === 'granted' ? 'secondary' : 'outline'}
+                    variant={gpsStatus === 'granted' ? 'default' : 'outline'}
                 >
                     <RadioTower data-icon="inline-start" />
                     {gpsLabel(gpsStatus)}

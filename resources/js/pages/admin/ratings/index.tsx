@@ -393,22 +393,8 @@ function ModerationForm({
     );
 }
 
-function statusVariant(
-    status: string,
-): 'default' | 'secondary' | 'destructive' | 'outline' {
-    if (status === 'aprobado') {
-        return 'secondary';
-    }
-
-    if (status === 'rechazado') {
-        return 'destructive';
-    }
-
-    if (status === 'oculto') {
-        return 'outline';
-    }
-
-    return 'default';
+function statusVariant(status: string): 'default' | 'outline' {
+    return status === 'pendiente' ? 'default' : 'outline';
 }
 
 function formatDate(value: string | null): string {

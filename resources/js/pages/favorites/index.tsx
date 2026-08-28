@@ -74,17 +74,17 @@ export default function FavoritesIndex({ favorites }: Props) {
                             >
                                 <CardHeader className="gap-2">
                                     <div className="z-10 flex flex-wrap gap-1.5">
-                                        <Badge className="flex items-center gap-1 rounded-lg border border-primary/20 bg-primary/10 px-1.5 py-0.5 font-black tracking-wider text-[var(--fs-caption)] text-primary uppercase hover:bg-primary/10">
-                                            <Star className="size-4 fill-primary text-primary" />
-                                            <span>Favorita</span>
+                                        <Badge>
+                                            <Star data-icon="inline-start" />
+                                            Favorita
                                         </Badge>
                                         {favorite.route.category && (
-                                            <Badge className="rounded-lg border border-primary/10 bg-primary/10 px-2 py-0.5 font-black tracking-wider text-[var(--fs-caption)] text-primary uppercase">
+                                            <Badge variant="outline">
                                                 {favorite.route.category.name}
                                             </Badge>
                                         )}
                                         {favorite.route.difficulty && (
-                                            <Badge className="rounded-lg border border-primary/10 bg-primary/10 px-2 py-0.5 font-black tracking-wider text-[var(--fs-caption)] text-primary uppercase">
+                                            <Badge variant="outline">
                                                 {favorite.route.difficulty.name}
                                             </Badge>
                                         )}

@@ -30,11 +30,13 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
 /**
- * @phpstan-type CatalogDefinition array{title: string, model: class-string<Model>, locked?: bool, allowed_names?: list<string>}
+ * @phpstan-type CatalogDefinition array{title: string, model: class-string<Model>, domain: string, locked?: bool, allowed_names?: list<string>}
+ * @phpstan-type DomainDefinition array{title: string, description: string}
  */
 class CatalogController extends Controller
 {
@@ -43,22 +45,40 @@ class CatalogController extends Controller
         $this->authorize('viewAny', User::class);
 
         $catalogs = $this->catalogs();
+        $domains = $this->domains();
 
         $filters = $request->validate([
+            'domain' => ['nullable', 'string', Rule::in(array_keys($domains))],
             'catalog' => ['nullable', 'string', Rule::in(array_keys($catalogs))],
             'search' => ['nullable', 'string', 'max:120'],
             'status' => ['nullable', Rule::in(['active', 'inactive'])],
             'per_page' => ['nullable', 'integer', Rule::in([10, 15, 25, 50])],
         ]);
 
-        $slug = $filters['catalog'] ?? (string) array_key_first($catalogs);
+        $requestedDomain = $filters['domain'] ?? null;
+        $requestedCatalog = $filters['catalog'] ?? null;
+
+        if ($requestedCatalog !== null) {
+            $slug = $requestedCatalog;
+            $definition = $catalogs[$slug];
+            $domain = $definition['domain'];
+
+            if ($requestedDomain !== null && $requestedDomain !== $domain) {
+                throw ValidationException::withMessages([
+                    'catalog' => ['El catálogo seleccionado no pertenece al segmento indicado.'],
+                ]);
+            }
+        } else {
+            $domain = $requestedDomain ?? (string) array_key_first($domains);
+            $slug = $this->firstCatalogForDomain($catalogs, $domain);
+            $definition = $catalogs[$slug];
+        }
+
         $search = $filters['search'] ?? null;
         $status = $filters['status'] ?? null;
         $perPage = (int) ($filters['per_page'] ?? 15);
 
-        $definition = $catalogs[$slug];
         $meta = $this->catalogMeta($slug, $definition);
-        $summaries = $this->catalogSummaries($catalogs);
 
         $records = $this->recordsQuery($definition, $meta)
             ->when($search, function (Builder $query, string $search) use ($meta): void {
@@ -80,18 +100,20 @@ class CatalogController extends Controller
             ->through(fn (Model $record): array => $this->serializeRecord($record, $meta));
 
         return Inertia::render('admin/catalogs/index', [
-            'catalogs' => $summaries,
+            'domains' => $this->domainSummaries($catalogs, $domains),
+            'domain' => [
+                'slug' => $domain,
+                'title' => $domains[$domain]['title'],
+                'description' => $domains[$domain]['description'],
+            ],
             'catalog' => $meta,
             'records' => $records,
             'filters' => [
+                'domain' => $domain,
                 'catalog' => $slug,
                 'search' => $search ?? '',
                 'status' => $meta['has_active'] ? ($status ?? '') : '',
                 'per_page' => $perPage,
-            ],
-            'totals' => [
-                'catalogs' => count($summaries),
-                'records' => array_sum(array_column($summaries, 'records_count')),
             ],
         ]);
     }
@@ -143,25 +165,33 @@ class CatalogController extends Controller
 
     /**
      * @param  array<string, CatalogDefinition>  $catalogs
-     * @return list<array{slug: string, title: string, records_count: int}>
+     * @param  array<string, DomainDefinition>  $domains
+     * @return list<array{slug: string, title: string, description: string, catalogs: list<array{slug: string, title: string, locked: bool}>}>
      */
-    private function catalogSummaries(array $catalogs): array
+    private function domainSummaries(array $catalogs, array $domains): array
     {
         $summaries = [];
 
-        foreach ($catalogs as $slug => $catalog) {
-            $modelClass = $catalog['model'];
-            $query = $modelClass::query();
-            $allowedNames = $catalog['allowed_names'] ?? null;
+        foreach ($domains as $domainSlug => $domain) {
+            $domainCatalogs = [];
 
-            if ($allowedNames !== null) {
-                $query->whereIn('name', $allowedNames);
+            foreach ($catalogs as $catalogSlug => $catalog) {
+                if ($catalog['domain'] !== $domainSlug) {
+                    continue;
+                }
+
+                $domainCatalogs[] = [
+                    'slug' => $catalogSlug,
+                    'title' => $catalog['title'],
+                    'locked' => (bool) ($catalog['locked'] ?? false),
+                ];
             }
 
             $summaries[] = [
-                'slug' => $slug,
-                'title' => $catalog['title'],
-                'records_count' => $query->count(),
+                'slug' => $domainSlug,
+                'title' => $domain['title'],
+                'description' => $domain['description'],
+                'catalogs' => $domainCatalogs,
             ];
         }
 
@@ -170,7 +200,7 @@ class CatalogController extends Controller
 
     /**
      * @param  CatalogDefinition  $catalog
-     * @return array{slug: string, title: string, table: string, locked: bool, has_description: bool, has_active: bool}
+     * @return array{slug: string, title: string, domain: string, locked: bool, has_description: bool, has_active: bool}
      */
     private function catalogMeta(string $slug, array $catalog): array
     {
@@ -180,7 +210,7 @@ class CatalogController extends Controller
         return [
             'slug' => $slug,
             'title' => $catalog['title'],
-            'table' => $table,
+            'domain' => $catalog['domain'],
             'locked' => (bool) ($catalog['locked'] ?? false),
             'has_description' => Schema::hasColumn($table, 'description'),
             'has_active' => Schema::hasColumn($table, 'active'),
@@ -189,7 +219,7 @@ class CatalogController extends Controller
 
     /**
      * @param  CatalogDefinition  $catalog
-     * @param  array{slug: string, title: string, table: string, locked: bool, has_description: bool, has_active: bool}  $meta
+     * @param  array{slug: string, title: string, domain: string, locked: bool, has_description: bool, has_active: bool}  $meta
      * @return Builder<Model>
      */
     private function recordsQuery(array $catalog, array $meta): Builder
@@ -213,7 +243,7 @@ class CatalogController extends Controller
     }
 
     /**
-     * @param  array{slug: string, title: string, table: string, locked: bool, has_description: bool, has_active: bool}  $meta
+     * @param  array{slug: string, title: string, domain: string, locked: bool, has_description: bool, has_active: bool}  $meta
      * @return array<string, mixed>
      */
     private function serializeRecord(Model $record, array $meta): array
@@ -290,26 +320,55 @@ class CatalogController extends Controller
     private function catalogs(): array
     {
         return [
-            'roles' => ['title' => 'Roles de usuario', 'model' => UserRole::class, 'locked' => true],
-            'genders' => ['title' => 'Géneros', 'model' => Gender::class, 'locked' => true, 'allowed_names' => Gender::ALLOWED_NAMES],
-            'route-statuses' => ['title' => 'Estados de ruta', 'model' => RouteStatus::class, 'locked' => true],
-            'route-difficulties' => ['title' => 'Dificultades de ruta', 'model' => RouteDifficulty::class],
-            'route-categories' => ['title' => 'Categorías de ruta', 'model' => RouteCategory::class],
-            'routing-engines' => ['title' => 'Motores de enrutamiento', 'model' => RoutingEngine::class],
-            'transport-modes' => ['title' => 'Medios de transporte', 'model' => TransportMode::class],
-            'poi-categories' => ['title' => 'Categorías POI', 'model' => PoiCategory::class, 'locked' => true],
-            'price-ranges' => ['title' => 'Rangos de precio', 'model' => PriceRange::class],
-            'cuisine-types' => ['title' => 'Tipos de cocina', 'model' => CuisineType::class],
-            'lodging-types' => ['title' => 'Tipos de hospedaje', 'model' => LodgingType::class],
-            'store-types' => ['title' => 'Tipos de tienda', 'model' => StoreType::class],
-            'workshop-specialties' => ['title' => 'Especialidades de taller', 'model' => WorkshopSpecialty::class],
-            'workshop-services' => ['title' => 'Servicios de taller', 'model' => WorkshopService::class],
-            'health-center-types' => ['title' => 'Tipos de centro de salud', 'model' => HealthCenterType::class],
-            'track-statuses' => ['title' => 'Estados de recorrido', 'model' => TrackStatus::class, 'locked' => true],
-            'incident-types' => ['title' => 'Tipos de incidencia', 'model' => IncidentType::class],
-            'incident-statuses' => ['title' => 'Estados de incidencia', 'model' => IncidentStatus::class, 'locked' => true],
-            'moderation-statuses' => ['title' => 'Estados de moderación', 'model' => ModerationStatus::class, 'locked' => true],
-            'export-formats' => ['title' => 'Formatos de exportación', 'model' => ExportFormat::class, 'locked' => true],
+            'roles' => ['title' => 'Roles de usuario', 'model' => UserRole::class, 'domain' => 'users', 'locked' => true],
+            'genders' => ['title' => 'Géneros', 'model' => Gender::class, 'domain' => 'users', 'locked' => true, 'allowed_names' => Gender::ALLOWED_NAMES],
+            'route-statuses' => ['title' => 'Estados de ruta', 'model' => RouteStatus::class, 'domain' => 'routes', 'locked' => true],
+            'route-difficulties' => ['title' => 'Dificultades de ruta', 'model' => RouteDifficulty::class, 'domain' => 'routes'],
+            'route-categories' => ['title' => 'Categorías de ruta', 'model' => RouteCategory::class, 'domain' => 'routes'],
+            'routing-engines' => ['title' => 'Motores de enrutamiento', 'model' => RoutingEngine::class, 'domain' => 'routes'],
+            'transport-modes' => ['title' => 'Medios de transporte', 'model' => TransportMode::class, 'domain' => 'routes'],
+            'poi-categories' => ['title' => 'Categorías POI', 'model' => PoiCategory::class, 'domain' => 'pois', 'locked' => true],
+            'price-ranges' => ['title' => 'Rangos de precio', 'model' => PriceRange::class, 'domain' => 'pois'],
+            'cuisine-types' => ['title' => 'Tipos de cocina', 'model' => CuisineType::class, 'domain' => 'pois'],
+            'lodging-types' => ['title' => 'Tipos de hospedaje', 'model' => LodgingType::class, 'domain' => 'pois'],
+            'store-types' => ['title' => 'Tipos de tienda', 'model' => StoreType::class, 'domain' => 'pois'],
+            'workshop-specialties' => ['title' => 'Especialidades de taller', 'model' => WorkshopSpecialty::class, 'domain' => 'pois'],
+            'workshop-services' => ['title' => 'Servicios de taller', 'model' => WorkshopService::class, 'domain' => 'pois'],
+            'health-center-types' => ['title' => 'Tipos de centro de salud', 'model' => HealthCenterType::class, 'domain' => 'pois'],
+            'track-statuses' => ['title' => 'Estados de recorrido', 'model' => TrackStatus::class, 'domain' => 'tracks', 'locked' => true],
+            'incident-types' => ['title' => 'Tipos de incidencia', 'model' => IncidentType::class, 'domain' => 'incidents'],
+            'incident-statuses' => ['title' => 'Estados de incidencia', 'model' => IncidentStatus::class, 'domain' => 'incidents', 'locked' => true],
+            'moderation-statuses' => ['title' => 'Estados de moderación', 'model' => ModerationStatus::class, 'domain' => 'system', 'locked' => true],
+            'export-formats' => ['title' => 'Formatos de exportación', 'model' => ExportFormat::class, 'domain' => 'system', 'locked' => true],
         ];
+    }
+
+    /**
+     * @return array<string, DomainDefinition>
+     */
+    private function domains(): array
+    {
+        return [
+            'users' => ['title' => 'Usuarios', 'description' => 'Roles y datos de perfil.'],
+            'routes' => ['title' => 'Rutas', 'description' => 'Estados, clasificación y planificación.'],
+            'pois' => ['title' => 'POIs', 'description' => 'Tipos y servicios disponibles en ruta.'],
+            'tracks' => ['title' => 'Recorridos', 'description' => 'Estados del registro de actividad.'],
+            'incidents' => ['title' => 'Incidencias', 'description' => 'Tipos y flujo de atención.'],
+            'system' => ['title' => 'Sistema', 'description' => 'Moderación y formatos operativos.'],
+        ];
+    }
+
+    /**
+     * @param  array<string, CatalogDefinition>  $catalogs
+     */
+    private function firstCatalogForDomain(array $catalogs, string $domain): string
+    {
+        foreach ($catalogs as $slug => $catalog) {
+            if ($catalog['domain'] === $domain) {
+                return $slug;
+            }
+        }
+
+        throw new \LogicException("No hay catálogos configurados para el segmento [{$domain}].");
     }
 }

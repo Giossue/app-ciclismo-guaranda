@@ -265,7 +265,7 @@ export default function RouteGeometryEditor({
 
             <div className="flex flex-wrap gap-2">
                 <Badge
-                    variant={geometry.pointsCount > 2 ? 'secondary' : 'outline'}
+                    variant={geometry.pointsCount > 2 ? 'default' : 'outline'}
                 >
                     <MapPinned data-icon="inline-start" />
                     {geometry.pointsCount > 2

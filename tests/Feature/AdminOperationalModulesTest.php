@@ -59,16 +59,49 @@ test('administrator can browse catalog records with search and pagination', func
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('admin/catalogs/index')
+            ->where('domain.slug', 'routes')
             ->where('catalog.slug', 'route-categories')
+            ->where('catalog.domain', 'routes')
             ->where('catalog.has_description', true)
+            ->where('filters.domain', 'routes')
             ->where('filters.catalog', 'route-categories')
             ->where('filters.search', 'visible')
             ->where('filters.per_page', 10)
             ->where('records.per_page', 10)
             ->has('records.data', 1)
             ->where('records.data.0.name', 'gravel visible')
-            ->has('catalogs')
-            ->has('totals.records'));
+            ->has('domains', 6)
+            ->where('domains.1.slug', 'routes')
+            ->has('domains.1.catalogs', 5));
+});
+
+test('catalog selection derives its segment and validates inconsistent selections', function () {
+    $this->withoutVite();
+
+    $admin = User::factory()->administrator()->create();
+
+    $this->actingAs($admin)
+        ->get(route('admin.catalogs.index', ['catalog' => 'route-categories']))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('domain.slug', 'routes')
+            ->where('filters.domain', 'routes')
+            ->where('catalog.slug', 'route-categories'));
+
+    $this->actingAs($admin)
+        ->get(route('admin.catalogs.index', ['domain' => 'pois']))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('domain.slug', 'pois')
+            ->where('catalog.slug', 'poi-categories'));
+
+    $this->actingAs($admin)
+        ->get(route('admin.catalogs.index', [
+            'domain' => 'pois',
+            'catalog' => 'route-categories',
+        ]))
+        ->assertRedirect()
+        ->assertSessionHasErrors('catalog');
 });
 
 test('administrator can create and update catalog records', function () {

@@ -304,9 +304,7 @@ function IncidentsPanel({ route }: { route: CyclingRouteMapItem }) {
                     >
                         <div className="flex flex-wrap gap-2">
                             {incident.type && (
-                                <Badge variant="destructive">
-                                    {incident.type.name}
-                                </Badge>
+                                <Badge>{incident.type.name}</Badge>
                             )}
                         </div>
                         <strong>{incident.title}</strong>
@@ -373,12 +371,10 @@ function RouteHeader({ route }: { route: CyclingRouteMapItem }) {
                         <Badge variant="outline">{route.category.name}</Badge>
                     )}
                     {route.difficulty && (
-                        <Badge variant="secondary">
-                            {route.difficulty.name}
-                        </Badge>
+                        <Badge variant="outline">{route.difficulty.name}</Badge>
                     )}
                     {route.incidents.length > 0 && (
-                        <Badge variant="destructive">
+                        <Badge>
                             {route.incidents.length} alerta
                             {route.incidents.length === 1 ? '' : 's'}
                         </Badge>
@@ -527,7 +523,7 @@ function TrackPanel({
                         </CardDescription>
                     </div>
                     {hasActiveTrack && activeTrack.status && (
-                        <Badge variant={isInProgress ? 'secondary' : 'outline'}>
+                        <Badge variant={isInProgress ? 'default' : 'outline'}>
                             {activeTrack.status.name}
                         </Badge>
                     )}
@@ -948,7 +944,7 @@ function FavoriteRatingPanel({ route }: { route: CyclingRouteMapItem }) {
                                 className="rounded-2xl border bg-card p-3"
                             >
                                 <div className="flex flex-wrap items-center gap-2">
-                                    <Badge variant="secondary">
+                                    <Badge variant="outline">
                                         ★ {rating.rating}
                                     </Badge>
                                     <span className="text-sm text-muted-foreground">
@@ -1259,7 +1255,7 @@ function OfflinePanel({
                             recuperes conexión.
                         </CardDescription>
                     </div>
-                    <Badge variant={isOnline ? 'secondary' : 'outline'}>
+                    <Badge variant={isOnline ? 'default' : 'outline'}>
                         {isOnline ? <Wifi /> : <WifiOff />}
                         {isOnline ? 'En línea' : 'Sin conexión'}
                     </Badge>
@@ -1508,7 +1504,7 @@ function PoiCard({ poi }: { poi: RoutePoi }) {
                 <div className="flex flex-wrap items-center gap-2">
                     <strong>{poi.name}</strong>
                     {poi.is_required && (
-                        <Badge variant="secondary">
+                        <Badge>
                             <Star data-icon="inline-start" />
                             clave
                         </Badge>

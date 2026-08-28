@@ -279,22 +279,8 @@ function ReviewForm({
     );
 }
 
-function statusVariant(
-    status: string,
-): 'default' | 'secondary' | 'destructive' | 'outline' {
-    if (status === 'en revisión') {
-        return 'destructive';
-    }
-
-    if (status === 'resuelta') {
-        return 'secondary';
-    }
-
-    if (status === 'descartada') {
-        return 'outline';
-    }
-
-    return 'default';
+function statusVariant(status: string): 'default' | 'outline' {
+    return status === 'en revisión' ? 'default' : 'outline';
 }
 
 AdminIncidentsIndex.layout = {

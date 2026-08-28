@@ -98,10 +98,8 @@ function MetricsCard({
         <Card>
             <CardHeader>
                 <div className="flex flex-wrap gap-2">
-                    {track.status && (
-                        <Badge variant="secondary">{track.status.name}</Badge>
-                    )}
-                    <Badge variant={track.is_valid ? 'secondary' : 'outline'}>
+                    {track.status && <Badge>{track.status.name}</Badge>}
+                    <Badge variant={track.is_valid ? 'default' : 'outline'}>
                         {track.is_valid ? 'Válido' : 'No habilita valoración'}
                     </Badge>
                 </div>

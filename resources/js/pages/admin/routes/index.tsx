@@ -93,7 +93,7 @@ export default function AdminRoutesIndex({ routes }: Props) {
                                                 </Badge>
                                             )}
                                             {route.difficulty && (
-                                                <Badge variant="secondary">
+                                                <Badge variant="outline">
                                                     {route.difficulty.name}
                                                 </Badge>
                                             )}
@@ -202,16 +202,8 @@ export default function AdminRoutesIndex({ routes }: Props) {
     );
 }
 
-function statusVariant(status: string) {
-    if (status === 'activa') {
-        return 'secondary';
-    }
-
-    if (status === 'inactiva') {
-        return 'destructive';
-    }
-
-    return 'outline';
+function statusVariant(status: string): 'default' | 'outline' {
+    return status === 'activa' ? 'default' : 'outline';
 }
 
 AdminRoutesIndex.layout = {
