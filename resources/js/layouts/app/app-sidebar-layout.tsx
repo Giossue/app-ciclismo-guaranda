@@ -20,14 +20,14 @@ export default function AppSidebarLayout({ children }: AppLayoutProps) {
     const pathname = page.url.split('?')[0];
     const administrator = isAdmin(page.props.auth);
     const isChat = pathname === '/user/chat';
+    const isRouteDetail = /^\/user\/routes\/[^/]+$/.test(pathname);
 
     useDisableNativePullToRefresh(!administrator);
 
-    // El asistente es una superficie inmersiva: su propio encabezado ofrece
-    // la salida a rutas y su conversación controla el único scroll. Montarlo
-    // dentro del sidebar/header global deja dos áreas compitiendo por el alto
-    // del viewport y hace que el compositor se desplace con la página.
-    if (isChat) {
+    // Chat y detalle de ruta son superficies inmersivas con navegación propia.
+    // Montarlas bajo el header/sidebar global duplica acciones y crea scrolls
+    // que compiten con sus paneles internos.
+    if (isChat || isRouteDetail) {
         return (
             <AppShell variant="header">
                 <main className="h-[100dvh] min-h-0 w-full overflow-hidden">

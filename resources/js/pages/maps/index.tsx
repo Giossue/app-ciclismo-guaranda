@@ -99,11 +99,12 @@ export default function MapsIndex({
                 className="h-full"
             />
 
-            {selectedPoi ? (
-                <MapPoiSheet poi={selectedPoi} onClose={clearSelection} />
-            ) : (
-                selectedRoute && <MapRouteSheet route={selectedRoute} />
-            )}
+            {!isIncidentSheetOpen &&
+                (selectedPoi ? (
+                    <MapPoiSheet poi={selectedPoi} onClose={clearSelection} />
+                ) : (
+                    selectedRoute && <MapRouteSheet route={selectedRoute} />
+                ))}
             {selectedRoute && (
                 <IncidentReportSheet
                     route={selectedRoute}

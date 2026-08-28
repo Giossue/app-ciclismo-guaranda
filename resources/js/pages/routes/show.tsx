@@ -109,7 +109,7 @@ export default function RoutesShow({
         <>
             <Head title={route.name} />
 
-            <div className="relative -mx-[var(--page-pad-x)] -mt-[var(--page-pad-y)] h-[100dvh] overflow-hidden">
+            <div className="relative h-[100dvh] overflow-hidden">
                 <RouteMap
                     routes={[route]}
                     selectedSlug={route.slug}
@@ -120,15 +120,17 @@ export default function RoutesShow({
                     immersive
                     className="h-full"
                 />
-                <RouteExplorerSheet
-                    route={route}
-                    poiCategories={poiCategories}
-                    incidentTypes={incidentTypes}
-                    activeTrack={activeTrack}
-                    selectedPoi={selectedPoi}
-                    onClearSelectedPoi={() => setSelectedPoi(null)}
-                    onClose={closeRouteExplorer}
-                />
+                {!isIncidentSheetOpen && (
+                    <RouteExplorerSheet
+                        route={route}
+                        poiCategories={poiCategories}
+                        incidentTypes={incidentTypes}
+                        activeTrack={activeTrack}
+                        selectedPoi={selectedPoi}
+                        onClearSelectedPoi={() => setSelectedPoi(null)}
+                        onClose={closeRouteExplorer}
+                    />
+                )}
                 <IncidentReportSheet
                     route={route}
                     types={incidentTypes}

@@ -38,14 +38,19 @@ function SheetOverlay({
     );
 }
 
+type SheetContentProps = React.ComponentProps<typeof SheetPrimitive.Content> & {
+    overlayClassName?: string;
+};
+
 function SheetContent({
     className,
     children,
+    overlayClassName,
     ...props
-}: React.ComponentProps<typeof SheetPrimitive.Content>) {
+}: SheetContentProps) {
     return (
         <SheetPortal>
-            <SheetOverlay />
+            <SheetOverlay className={overlayClassName} />
             <SheetPrimitive.Content
                 data-slot="sheet-content"
                 className={cn(

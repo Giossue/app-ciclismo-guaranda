@@ -6,7 +6,12 @@ import ImageFileInput from '@/components/image-file-input';
 import InputError from '@/components/input-error';
 import LocationPickerMap from '@/components/routes/client-only-location-picker-map';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
+import {
+    Field,
+    FieldDescription,
+    FieldGroup,
+    FieldLabel,
+} from '@/components/ui/field';
 import {
     Select,
     SelectContent,
@@ -63,7 +68,10 @@ export function IncidentReportSheet({
 
     return (
         <Sheet open={open} onOpenChange={onOpenChange}>
-            <SheetContent>
+            <SheetContent
+                className="z-[1001] w-full sm:max-w-lg"
+                overlayClassName="z-[1000]"
+            >
                 <Form
                     {...IncidentController.store.form()}
                     options={{ preserveScroll: true }}
@@ -96,11 +104,15 @@ export function IncidentReportSheet({
                                     name="longitude"
                                     value={incidentPoint.longitude}
                                 />
-                                <div className="flex flex-col gap-5">
-                                    <div className="grid gap-2">
-                                        <Label htmlFor="incident_type_id">
+                                <FieldGroup>
+                                    <Field
+                                        data-invalid={Boolean(
+                                            errors.incident_type_id,
+                                        )}
+                                    >
+                                        <FieldLabel htmlFor="incident_type_id">
                                             Tipo de incidencia
-                                        </Label>
+                                        </FieldLabel>
                                         <Select
                                             name="incident_type_id"
                                             required
@@ -132,11 +144,15 @@ export function IncidentReportSheet({
                                         <InputError
                                             message={errors.incident_type_id}
                                         />
-                                    </div>
-                                    <div className="grid gap-2">
-                                        <Label htmlFor="incident_description">
+                                    </Field>
+                                    <Field
+                                        data-invalid={Boolean(
+                                            errors.description,
+                                        )}
+                                    >
+                                        <FieldLabel htmlFor="incident_description">
                                             Descripción
-                                        </Label>
+                                        </FieldLabel>
                                         <Textarea
                                             id="incident_description"
                                             name="description"
@@ -149,11 +165,32 @@ export function IncidentReportSheet({
                                         <InputError
                                             message={errors.description}
                                         />
-                                    </div>
-                                    <div className="grid gap-2">
-                                        <Label>
-                                            Ubicación de la incidencia
-                                        </Label>
+                                    </Field>
+                                    <Field
+                                        data-invalid={Boolean(
+                                            errors.latitude || errors.longitude,
+                                        )}
+                                    >
+                                        <div className="flex flex-wrap items-start justify-between gap-3">
+                                            <div className="flex min-w-0 flex-1 flex-col gap-1">
+                                                <FieldLabel>
+                                                    Ubicación de la incidencia
+                                                </FieldLabel>
+                                                <FieldDescription>
+                                                    Usa tu posición o toca el
+                                                    mapa para marcar el punto.
+                                                </FieldDescription>
+                                            </div>
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={fillCurrentLocation}
+                                            >
+                                                <LocateFixed data-icon="inline-start" />
+                                                Mi ubicación
+                                            </Button>
+                                        </div>
                                         <div className="overflow-hidden rounded-2xl border border-primary/10">
                                             <LocationPickerMap
                                                 center={incidentPoint}
@@ -162,27 +199,16 @@ export function IncidentReportSheet({
                                                 className="h-64 w-full"
                                             />
                                         </div>
-                                        <div className="flex flex-wrap items-center gap-2">
-                                            <Button
-                                                type="button"
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={fillCurrentLocation}
-                                            >
-                                                <LocateFixed data-icon="inline-start" />
-                                                Usar mi ubicación
-                                            </Button>
-                                            <span className="text-sm text-muted-foreground">{`${incidentPoint.latitude.toFixed(5)}, ${incidentPoint.longitude.toFixed(5)}`}</span>
-                                        </div>
+                                        <FieldDescription>{`Punto seleccionado: ${incidentPoint.latitude.toFixed(5)}, ${incidentPoint.longitude.toFixed(5)}`}</FieldDescription>
                                         <InputError message={errors.latitude} />
                                         <InputError
                                             message={errors.longitude}
                                         />
-                                    </div>
-                                    <div className="grid gap-2">
-                                        <Label htmlFor="incident_photo">
+                                    </Field>
+                                    <Field data-invalid={Boolean(errors.photo)}>
+                                        <FieldLabel htmlFor="incident_photo">
                                             Foto opcional
-                                        </Label>
+                                        </FieldLabel>
                                         <ImageFileInput
                                             id="incident_photo"
                                             name="photo"
@@ -191,15 +217,15 @@ export function IncidentReportSheet({
                                                 setIsCompressing
                                             }
                                         />
-                                        <p className="text-xs text-muted-foreground">
+                                        <FieldDescription>
                                             Si la foto supera 5 MB se optimiza
                                             automáticamente antes de enviarla.
-                                        </p>
+                                        </FieldDescription>
                                         <InputError message={errors.photo} />
-                                    </div>
-                                </div>
+                                    </Field>
+                                </FieldGroup>
                             </div>
-                            <SheetFooter>
+                            <SheetFooter className="pb-[calc(var(--safe-bottom)+1rem)] sm:pb-4">
                                 <Button
                                     type="button"
                                     variant="outline"
