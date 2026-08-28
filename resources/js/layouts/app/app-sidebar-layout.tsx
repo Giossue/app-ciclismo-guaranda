@@ -29,7 +29,7 @@ export default function AppSidebarLayout({
                 <AppSidebarHeader breadcrumbs={breadcrumbs} />
                 <main
                     key={pathname}
-                    className="safe-bottom-pad ueb-admin-page flex flex-1 animate-in flex-col gap-[var(--page-gap)] px-[var(--page-pad-x)] pt-[var(--page-pad-y)] duration-200 ease-out fade-in slide-in-from-bottom-2 md:pb-[var(--page-pad-y)]"
+                    className="safe-bottom-pad ueb-admin-page flex flex-1 animate-in flex-col gap-[var(--page-gap)] px-[var(--page-pad-x)] pt-[var(--page-pad-y)] duration-150 ease-out fade-in md:pb-[var(--page-pad-y)]"
                 >
                     {children}
                 </main>

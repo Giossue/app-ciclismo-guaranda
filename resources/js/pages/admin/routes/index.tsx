@@ -40,9 +40,9 @@ import {
     SheetHeader,
     SheetTitle,
 } from '@/components/ui/sheet';
-import { Skeleton } from '@/components/ui/skeleton';
 import { usePartialReload } from '@/hooks/use-partial-reload';
 import { mediaUrl } from '@/lib/media';
+import { cn } from '@/lib/utils';
 import type { CatalogOption } from '@/types';
 import RouteForm from './partials/route-form';
 
@@ -214,120 +214,103 @@ export default function AdminRoutesIndex({
                     </CardContent>
                 </Card>
 
-                <div className="ueb-stagger grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    {loading
-                        ? Array.from({ length: 6 }, (_, index) => (
-                              <Card
-                                  key={`skeleton-${index}`}
-                                  className="overflow-hidden"
-                              >
-                                  <Skeleton className="h-40 w-full rounded-none" />
-                                  <CardHeader className="gap-2">
-                                      <Skeleton className="h-4 w-2/3" />
-                                      <Skeleton className="h-3 w-full" />
-                                  </CardHeader>
-                                  <CardContent>
-                                      <Skeleton className="h-3 w-1/2" />
-                                  </CardContent>
-                              </Card>
-                          ))
-                        : routes.data.map((route) => (
-                              <Card key={route.id} className="overflow-hidden">
-                                  <ImageWithFallback
-                                      src={mediaUrl(route.main_image_path)}
-                                      alt={`Vista de ${route.name}`}
-                                      className="h-36 w-full object-cover"
-                                      fallback={
-                                          <div className="flex h-36 items-center justify-center bg-muted text-muted-foreground">
-                                              <MapPinned aria-hidden="true" />
-                                              <span className="sr-only">
-                                                  Esta ruta no tiene imagen
-                                                  principal
-                                              </span>
-                                          </div>
-                                      }
-                                  />
-                                  <CardHeader>
-                                      <div className="flex items-start justify-between gap-3">
-                                          <div className="flex flex-col gap-2">
-                                              <div className="flex flex-wrap gap-2">
-                                                  {route.status && (
-                                                      <Badge
-                                                          variant={statusVariant(
-                                                              route.status.name,
-                                                          )}
-                                                      >
-                                                          {route.status.name}
-                                                      </Badge>
-                                                  )}
-                                                  {route.category && (
-                                                      <Badge variant="outline">
-                                                          {route.category.name}
-                                                      </Badge>
-                                                  )}
-                                                  {route.difficulty && (
-                                                      <Badge variant="outline">
-                                                          {
-                                                              route.difficulty
-                                                                  .name
-                                                          }
-                                                      </Badge>
-                                                  )}
-                                              </div>
-                                              <CardTitle className="font-normal tracking-normal">
-                                                  {route.name}
-                                              </CardTitle>
-                                              <CardDescription className="line-clamp-2">
-                                                  {route.description}
-                                              </CardDescription>
-                                          </div>
-                                          <RouteCardActions route={route} />
-                                      </div>
-                                  </CardHeader>
-                                  <CardContent className="flex flex-col gap-4 text-sm">
-                                      <div className="flex items-start gap-2 text-muted-foreground">
-                                          <MapPinned />
-                                          <span className="line-clamp-2">
-                                              {route.start_name} →{' '}
-                                              {route.end_name}
-                                          </span>
-                                      </div>
-                                      {route.metric && (
-                                          <div className="grid grid-cols-2 gap-3 border-t pt-4 text-muted-foreground">
-                                              <div className="flex flex-col gap-1">
-                                                  <span className="text-xs">
-                                                      Distancia
-                                                  </span>
-                                                  <span className="flex items-center gap-2 text-foreground">
-                                                      <Bike />
-                                                      {route.metric.distance_km.toLocaleString()}{' '}
-                                                      km
-                                                  </span>
-                                              </div>
-                                              <div className="flex flex-col gap-1">
-                                                  <span className="text-xs">
-                                                      Tiempo estimado
-                                                  </span>
-                                                  <span className="flex items-center gap-2 text-foreground">
-                                                      <Clock />
-                                                      {
-                                                          route.metric
-                                                              .estimated_time_minutes
-                                                      }{' '}
-                                                      min
-                                                  </span>
-                                              </div>
-                                          </div>
-                                      )}
-                                      {route.metric?.transport_mode && (
-                                          <p className="text-xs text-muted-foreground">
-                                              Medio:{' '}
-                                              {route.metric.transport_mode}
-                                          </p>
-                                      )}
-                                  </CardContent>
-                              </Card>
-                          ))}
+                <div
+                    className={cn(
+                        'ueb-stagger grid gap-4 transition-opacity duration-200 md:grid-cols-2 lg:grid-cols-3',
+                        loading && 'pointer-events-none opacity-60',
+                    )}
+                >
+                    {routes.data.map((route) => (
+                        <Card key={route.id} className="overflow-hidden">
+                            <ImageWithFallback
+                                src={mediaUrl(route.main_image_path)}
+                                alt={`Vista de ${route.name}`}
+                                className="h-36 w-full object-cover"
+                                fallback={
+                                    <div className="flex h-36 items-center justify-center bg-muted text-muted-foreground">
+                                        <MapPinned aria-hidden="true" />
+                                        <span className="sr-only">
+                                            Esta ruta no tiene imagen principal
+                                        </span>
+                                    </div>
+                                }
+                            />
+                            <CardHeader>
+                                <div className="flex items-start justify-between gap-3">
+                                    <div className="flex flex-col gap-2">
+                                        <div className="flex flex-wrap gap-2">
+                                            {route.status && (
+                                                <Badge
+                                                    variant={statusVariant(
+                                                        route.status.name,
+                                                    )}
+                                                >
+                                                    {route.status.name}
+                                                </Badge>
+                                            )}
+                                            {route.category && (
+                                                <Badge variant="outline">
+                                                    {route.category.name}
+                                                </Badge>
+                                            )}
+                                            {route.difficulty && (
+                                                <Badge variant="outline">
+                                                    {route.difficulty.name}
+                                                </Badge>
+                                            )}
+                                        </div>
+                                        <CardTitle className="font-normal tracking-normal">
+                                            {route.name}
+                                        </CardTitle>
+                                        <CardDescription className="line-clamp-2">
+                                            {route.description}
+                                        </CardDescription>
+                                    </div>
+                                    <RouteCardActions route={route} />
+                                </div>
+                            </CardHeader>
+                            <CardContent className="flex flex-col gap-4 text-sm">
+                                <div className="flex items-start gap-2 text-muted-foreground">
+                                    <MapPinned />
+                                    <span className="line-clamp-2">
+                                        {route.start_name} → {route.end_name}
+                                    </span>
+                                </div>
+                                {route.metric && (
+                                    <div className="grid grid-cols-2 gap-3 border-t pt-4 text-muted-foreground">
+                                        <div className="flex flex-col gap-1">
+                                            <span className="text-xs">
+                                                Distancia
+                                            </span>
+                                            <span className="flex items-center gap-2 text-foreground">
+                                                <Bike />
+                                                {route.metric.distance_km.toLocaleString()}{' '}
+                                                km
+                                            </span>
+                                        </div>
+                                        <div className="flex flex-col gap-1">
+                                            <span className="text-xs">
+                                                Tiempo estimado
+                                            </span>
+                                            <span className="flex items-center gap-2 text-foreground">
+                                                <Clock />
+                                                {
+                                                    route.metric
+                                                        .estimated_time_minutes
+                                                }{' '}
+                                                min
+                                            </span>
+                                        </div>
+                                    </div>
+                                )}
+                                {route.metric?.transport_mode && (
+                                    <p className="text-xs text-muted-foreground">
+                                        Medio: {route.metric.transport_mode}
+                                    </p>
+                                )}
+                            </CardContent>
+                        </Card>
+                    ))}
                 </div>
 
                 {routes.data.length === 0 && (

@@ -1,3 +1,4 @@
+import { router } from '@inertiajs/react';
 import {
     ChevronDown,
     ChevronLeft,
@@ -36,7 +37,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { Skeleton } from '@/components/ui/skeleton';
 import {
     Table,
     TableBody,
@@ -45,8 +45,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { usePartialReload } from '@/hooks/use-partial-reload';
-import { capitalize } from '@/lib/utils';
+import { capitalize, cn } from '@/lib/utils';
 
 export type DataTableQuery = Record<string, number | string | undefined>;
 
@@ -105,14 +104,6 @@ type Props<T> = {
     searchPlaceholder?: string;
     title?: string;
 };
-
-/** Claves estables para las filas fantasma: tantas como haya en pantalla. */
-function skeletonRows(count: number): string[] {
-    return Array.from(
-        { length: Math.min(Math.max(count, 3), 8) },
-        (_, index) => `skeleton-${index}`,
-    );
-}
 
 /**
  * Barra de búsqueda y filtros. Vive aparte de la tabla para que un listado con
@@ -241,7 +232,16 @@ export function DataTable<T>({
     title,
 }: Props<T>) {
     const [hiddenColumns, setHiddenColumns] = useState<Set<string>>(new Set());
-    const loading = usePartialReload();
+    // La espera es la de *esta* tabla: si se marcara cualquier recarga parcial,
+    // abrir el panel de notificaciones dejaría el listado en blanco.
+    const [pending, setPending] = useState(false);
+
+    useEffect(() => router.on('finish', () => setPending(false)), []);
+
+    const runQuery = (next: DataTableQuery) => {
+        setPending(true);
+        onQueryChange(next);
+    };
     const visibleColumns = useMemo(
         () => columns.filter((column) => !hiddenColumns.has(column.id)),
         [columns, hiddenColumns],
@@ -288,7 +288,7 @@ export function DataTable<T>({
                 <DataTableToolbar
                     filters={filters}
                     query={query}
-                    onQueryChange={onQueryChange}
+                    onQueryChange={runQuery}
                     searchPlaceholder={searchPlaceholder}
                 >
                     <DropdownMenu>
@@ -327,19 +327,13 @@ export function DataTable<T>({
                     </DropdownMenu>
                 </DataTableToolbar>
 
-                <ul className="ueb-stagger flex flex-col gap-3 md:hidden">
-                    {loading ? (
-                        skeletonRows(data.length).map((key) => (
-                            <li
-                                key={key}
-                                className="flex flex-col gap-3 rounded-[var(--radius-control)] border bg-card p-3"
-                            >
-                                <Skeleton className="h-4 w-2/3" />
-                                <Skeleton className="h-3 w-1/2" />
-                                <Skeleton className="h-3 w-full" />
-                            </li>
-                        ))
-                    ) : data.length > 0 ? (
+                <ul
+                    className={cn(
+                        'flex flex-col gap-3 transition-opacity duration-200 md:hidden',
+                        pending && 'pointer-events-none opacity-60',
+                    )}
+                >
+                    {data.length > 0 ? (
                         data.map((row) => (
                             <li
                                 key={getRowId(row)}
@@ -401,18 +395,13 @@ export function DataTable<T>({
                                 ))}
                             </TableRow>
                         </TableHeader>
-                        <TableBody className="ueb-stagger [&_tr:nth-child(even)]:bg-muted/25">
-                            {loading ? (
-                                skeletonRows(data.length).map((key) => (
-                                    <TableRow key={key}>
-                                        {visibleColumns.map((column) => (
-                                            <TableCell key={column.id}>
-                                                <Skeleton className="h-4 w-full" />
-                                            </TableCell>
-                                        ))}
-                                    </TableRow>
-                                ))
-                            ) : data.length > 0 ? (
+                        <TableBody
+                            className={cn(
+                                'transition-opacity duration-200 [&_tr:nth-child(even)]:bg-muted/25',
+                                pending && 'pointer-events-none opacity-60',
+                            )}
+                        >
+                            {data.length > 0 ? (
                                 data.map((row) => (
                                     <TableRow key={getRowId(row)}>
                                         {visibleColumns.map((column) => (
@@ -454,7 +443,7 @@ export function DataTable<T>({
                         <Select
                             value={String(pagination.perPage)}
                             onValueChange={(value) =>
-                                onQueryChange({
+                                runQuery({
                                     ...query,
                                     page: 1,
                                     per_page: Number(value),
@@ -494,7 +483,7 @@ export function DataTable<T>({
                             size="icon"
                             className="hidden sm:inline-flex"
                             disabled={pagination.currentPage === 1}
-                            onClick={() => onQueryChange({ ...query, page: 1 })}
+                            onClick={() => runQuery({ ...query, page: 1 })}
                         >
                             <ChevronsLeft />
                             <span className="sr-only">Primera página</span>
@@ -505,7 +494,7 @@ export function DataTable<T>({
                             size="icon"
                             disabled={pagination.currentPage === 1}
                             onClick={() =>
-                                onQueryChange({
+                                runQuery({
                                     ...query,
                                     page: pagination.currentPage - 1,
                                 })
@@ -522,7 +511,7 @@ export function DataTable<T>({
                                 pagination.currentPage === pagination.lastPage
                             }
                             onClick={() =>
-                                onQueryChange({
+                                runQuery({
                                     ...query,
                                     page: pagination.currentPage + 1,
                                 })
@@ -540,7 +529,7 @@ export function DataTable<T>({
                                 pagination.currentPage === pagination.lastPage
                             }
                             onClick={() =>
-                                onQueryChange({
+                                runQuery({
                                     ...query,
                                     page: pagination.lastPage,
                                 })
