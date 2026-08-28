@@ -130,7 +130,8 @@
     --elevation-raised: 0 4px 12px var(--shadow);
     --elevation-floating: 0 12px 40px var(--overlay-shadow);
     --safe-bottom: env(safe-area-inset-bottom, 0px);
-    --bottom-nav-height: 58px;
+    /* Barra inferior al 120% de su medida original (58px) para dar toque cómodo. */
+    --bottom-nav-height: 70px;
 
     /* Scrollbars y widgets nativos siguen el tema. */
     color-scheme: light;
